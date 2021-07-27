@@ -14,30 +14,58 @@ find_package(tf2 REQUIRED)
 
 nav2_package()
 
-include_directories(
-  include
-)
+string(REPLACE " -Werror" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-set(dependencies
-  rclcpp
-  geometry_msgs
-  nav2_costmap_2d
-  pluginlib
-  nav_msgs
-  nav2_util
-  nav2_core
-  tf2
-)
+# Download automatically, you can also just copy the conan.cmake file
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+   file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/master/conan.cmake"
+                  "${CMAKE_BINARY_DIR}/conan.cmake")
+endif()
+
+include(${CMAKE_BINARY_DIR}/conan.cmake)
+
+conan_cmake_run(REQUIRES 
+                xtensor/0.21.5                
+                BASIC_SETUP CMAKE_TARGETS)
+
+
 
 add_library(mppic SHARED
-        src/mppic.cpp)
+    src/Controller.cpp
+    src/Optimizer.cpp)
 
 # prevent pluginlib from using boost
-target_compile_definitions(mppic PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_compile_definitions(mppic PRIVATE "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_compile_options(mppic PRIVATE -fconcepts)
+target_include_directories(mppic PRIVATE include)
+
+
+set_target_properties(mppic
+    PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED YES
+)
+
+
+set(mppic_dependencies
+  rclcpp
+  pluginlib
+  tf2
+
+  geometry_msgs
+  nav_msgs
+
+  nav2_core
+  nav2_costmap_2d
+  nav2_util
+)
 
 ament_target_dependencies(mppic
-  ${dependencies}
+  ${mppic_dependencies}
 )
+
+target_link_libraries(mppic CONAN_PKG::xtensor)
 
 install(TARGETS mppic
   ARCHIVE DESTINATION lib
@@ -56,10 +84,11 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_export_include_directories(include)
 ament_export_libraries(mppic)
-ament_export_dependencies(${dependencies})
+ament_export_dependencies(${mppic_dependencies})
+ament_export_include_directories(include)
 pluginlib_export_plugin_description_file(nav2_core mppic.xml)
+
 
 ament_package()
 
