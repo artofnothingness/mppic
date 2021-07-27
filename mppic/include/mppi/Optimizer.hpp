@@ -82,26 +82,26 @@ public:
   auto integrateVelocities(double robot_x, double robot_y, double robot_yaw) {
     using namespace xt::placeholders;
 
-    auto linear_v_batches = xt::view(batches, xt::all(), xt::all(), 0); // batch_size x time_steps
-    auto angular_v_batches = xt::view(batches, xt::all(), xt::all(), 1); // batch_size x time_steps
+    auto v = xt::view(batches, xt::all(), xt::all(), 0);
+    auto w = xt::view(batches, xt::all(), xt::all(), 1);
 
-    auto angular_offsets = angular_v_batches * model_dt; // batch_size x time_steps
-    auto rotation_batches = xt::cumsum(angular_offsets, 1); // batch_size x time_steps
+    auto d_yaw = w * model_dt;
+    auto yaw = xt::cumsum(d_yaw, 1);
+    yaw -= xt::view(yaw, xt::all(), xt::range(_, 1));
+    yaw += robot_yaw;
 
-    rotation_batches -= xt::view(rotation_batches, xt::all(), xt::range(_, 1)); //  batch_size x time_steps
-    rotation_batches += robot_yaw;
+    auto d_x = v * xt::cos(yaw) * model_dt;
+    auto d_y = v * xt::sin(yaw) * model_dt;
 
-    auto v_x = linear_v_batches * xt::cos(rotation_batches);
-    auto v_y = linear_v_batches * xt::sin(rotation_batches);
-
-    auto x = xt::cumsum(v_x * model_dt, 1);
-    auto y = xt::cumsum(v_y * model_dt, 1);
+    auto x = xt::cumsum(d_x, 1);
+    auto y = xt::cumsum(d_y, 1);
     x = robot_x - xt::view(x, xt::all(), xt::range(_, 1));
     y = robot_y - xt::view(x, xt::all(), xt::range(_, 1));
 
+    // Add axis
     x = xt::view(x, xt::all(), xt::all(), xt::newaxis());
     y = xt::view(y, xt::all(), xt::all(), xt::newaxis());
-    auto yaw = xt::view(rotation_batches, xt::all(), xt::all(), xt::newaxis());
+    yaw = xt::view(yaw, xt::all(), xt::all(), xt::newaxis());
 
     return xt::concatenate(xtuple(x, y, yaw), 2);
   }
