@@ -3,6 +3,6 @@
 #include "pluginlib/class_list_macros.hpp"
 #include "pluginlib/class_loader.hpp"
 
-using Controller = ultra::mppi::Controller<float>;
+template class ultra::mppi::Controller<float>;
 
-PLUGINLIB_EXPORT_CLASS(Controller, nav2_core::Controller)
+PLUGINLIB_EXPORT_CLASS(ultra::mppi::Controller<float>, nav2_core::Controller)
