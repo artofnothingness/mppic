@@ -42,12 +42,17 @@ public:
     getParams();
   }
 
-  void cleanup() override;
-  void activate() override;
-  void deactivate() override;
+  void cleanup() override {}
+  void activate() override {}
+  void deactivate() override {}
 
   auto computeVelocityCommands(PoseStamped const &pose, Twist const &velocity)
-      -> TwistStamped override;
+  -> TwistStamped override {
+
+    (void)velocity;
+    (void)pose;
+    return TwistStamped{};
+  }
 
   void setPlan(Path const &path) override { global_plan_ = path; }
 
