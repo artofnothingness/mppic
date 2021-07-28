@@ -30,8 +30,7 @@ conan_cmake_run(REQUIRES
 
 
 add_library(mppic SHARED
-    src/Controller.cpp
-    src/Optimizer.cpp)
+    src/Controller.cpp)
 
 # prevent pluginlib from using boost
 target_compile_definitions(mppic PRIVATE "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")

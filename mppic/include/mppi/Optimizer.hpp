@@ -1,9 +1,8 @@
 #pragma once
 
-#include "geometry_msgs/msg/pose_stamped.hpp"
-#include "geometry_msgs/msg/pose.hpp"
-#include "geometry_msgs/msg/twist.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "geometry_msgs/msg/twist_stamped.hpp"
+#include "geometry_msgs/msg/twist.hpp"
 #include "nav_msgs/msg/path.hpp"
 
 #include "xtensor/xadapt.hpp"
@@ -13,12 +12,16 @@
 #include "xtensor/xslice.hpp"
 #include <xtensor/xmath.hpp>
 
-namespace ultra::mppi {
+namespace ultra::mppi::optimization {
 
+template <
+  typename T, 
+  typename Container = xt::xarray<T> 
+>
 class Optimizer {
   using TwistStamped = geometry_msgs::msg::TwistStamped;
-  using PoseStamped = geometry_msgs::msg::PoseStamped;
   using Twist = geometry_msgs::msg::Twist;
+  using PoseStamped = geometry_msgs::msg::PoseStamped;
   using Path = nav_msgs::msg::Path;
 
 public:
@@ -61,12 +64,12 @@ public:
   }
 
   auto generateNoise() 
-  -> xt::xarray<double> {
+  -> Container {
 
     auto v_noises =
-        xt::random::randn<double>({batch_size, time_steps}, 0.0, v_std);
+        xt::random::randn<T>({batch_size, time_steps}, 0.0, v_std);
     auto w_noises =
-        xt::random::randn<double>({batch_size, time_steps}, 0.0, w_std);
+        xt::random::randn<T>({batch_size, time_steps}, 0.0, w_std);
 
     return xt::concatenate(xtuple(v_noises, w_noises), 2);
   }
@@ -121,9 +124,11 @@ public:
   int n_optimizations;
   double lookahead_dist;
 
-  xt::xarray<float> batches;
-  xt::xarray<float> control_sequence;
-  std::function<xt::xarray<float>(xt::xarray<float>)> model;
+  Container batches;
+  Container control_sequence;
+
+  using functor_t = Container(Container);
+  std::function<functor_t> model;
 };
 
 } // namespace ultra::mppi
