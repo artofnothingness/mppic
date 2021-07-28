@@ -38,13 +38,6 @@ target_compile_options(mppic PRIVATE -fconcepts)
 target_include_directories(mppic PRIVATE include)
 
 
-set_target_properties(mppic
-    PROPERTIES
-        CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED YES
-)
-
-
 set(mppic_dependencies
   rclcpp
   pluginlib
@@ -76,15 +69,37 @@ install(DIRECTORY include/
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gtest(optimizer-test test/OptimizerTest.cpp)
+  ament_target_dependencies(optimizer-test ${mppic_dependencies})
+  target_link_libraries(optimizer-test CONAN_PKG::xtensor)
+  target_include_directories(optimizer-test PRIVATE include)
+
   # the following line skips the linter which checks for copyrights
   set(ament_cmake_copyright_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
+
+  set_target_properties(optimizer-test
+      PROPERTIES
+          CXX_STANDARD 17
+          CXX_STANDARD_REQUIRED YES
+  )
+
 endif()
 
 ament_export_libraries(mppic)
 ament_export_dependencies(${mppic_dependencies})
 ament_export_include_directories(include)
 pluginlib_export_plugin_description_file(nav2_core mppic.xml)
+
+set_target_properties(mppic
+    PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED YES
+)
+
+
 
 
 ament_package()
