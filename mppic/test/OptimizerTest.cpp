@@ -21,16 +21,6 @@ protected:
 
     opt.reset();
 
-    auto shape = opt.batches.shape();
-    std::vector<int> expected_shape = {
-      opt.batch_size, 
-      opt.time_steps, 
-      opt.control_dim
-    };
-
-    for (int i =0 ; i < shape.size(); ++i) {
-      EXPECT_EQ(, expected_batches_size);
-    }
   }
 
   void TearDown() override {}
@@ -38,7 +28,31 @@ protected:
   Optimizer<float> opt;
 };
 
-TEST_F(OptimizerTest, Test_one) {
+TEST_F(OptimizerTest, SetUpBatchDimTest) {
+    auto shape = opt.batches.shape();
+
+    std::vector<int> expected_shape = {
+      opt.batch_size, 
+      opt.time_steps, 
+      opt.last_dim
+    };
+
+    for (unsigned int i = 0; i < shape.size(); ++i) {
+      EXPECT_EQ(shape[i], static_cast<unsigned int>(expected_shape[i]));
+    }
+}
+
+TEST_F(OptimizerTest, SetUpControlSeqDimTest) {
+    auto shape = opt.control_sequence.shape();
+
+    std::vector<int> expected_shape = {
+      opt.time_steps, 
+      opt.control_dim, 
+    };
+
+    for (unsigned int i = 0; i < shape.size(); ++i) {
+      EXPECT_EQ(shape[i], static_cast<unsigned int>(expected_shape[i]));
+    }
 }
 
 

@@ -36,7 +36,7 @@ public:
    * @param Path Current global path
    * @return Next control
    */
-  auto operator()(PoseStamped const &pose, Twist const &twist, Path const &path)
+  auto operator()(PoseStamped const& pose, Twist const& twist, Path const& path)
   -> TwistStamped;
 
   void reset() {
@@ -109,8 +109,8 @@ public:
     return xt::concatenate(xtuple(x, y, yaw), 2);
   }
 
-  static constexpr int last_dim = 5;
-  static constexpr int control_dim = 2;
+  static int constexpr last_dim = 5;
+  static int constexpr control_dim = 2;
   int time_steps;
   int batch_size;
 
