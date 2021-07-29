@@ -3,95 +3,38 @@ project(mppic)
 
 find_package(ament_cmake REQUIRED)
 find_package(nav2_common REQUIRED)
-find_package(nav2_core REQUIRED)
-find_package(nav2_costmap_2d REQUIRED)
-find_package(nav2_util REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(nav_msgs REQUIRED)
-find_package(pluginlib REQUIRED)
-find_package(tf2 REQUIRED)
 
-nav2_package()
+include(cmake/conan.cmake)
 
-# Download automatically, you can also just copy the conan.cmake file
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-   file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/master/conan.cmake"
-                  "${CMAKE_BINARY_DIR}/conan.cmake")
-endif()
-
-include(${CMAKE_BINARY_DIR}/conan.cmake)
-
-conan_cmake_run(REQUIRES 
-                xtensor/0.21.5                
-                BASIC_SETUP CMAKE_TARGETS)
-
-
-
-add_library(mppic SHARED
-    src/Controller.cpp)
-
-# prevent pluginlib from using boost
-target_compile_definitions(mppic PRIVATE "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
-target_compile_options(mppic PRIVATE -fconcepts)
-target_include_directories(mppic PRIVATE include)
-
-
-set(mppic_dependencies
+set(packages
   rclcpp
   pluginlib
   tf2
-
   geometry_msgs
   nav_msgs
-
   nav2_core
   nav2_costmap_2d
   nav2_util
 )
 
+foreach(pkg IN LISTS packages)
+  find_package(${pkg} REQUIRED)
+endforeach()
+
+nav2_package()
+
+add_library(mppic SHARED src/Controller.cpp)
+target_include_directories(mppic PRIVATE include)
+
 ament_target_dependencies(mppic
-  ${mppic_dependencies}
+  ${packages}
 )
 
 target_link_libraries(mppic CONAN_PKG::xtensor)
 
-install(TARGETS mppic
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-install(DIRECTORY include/
-  DESTINATION include/
-)
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  find_package(ament_cmake_gtest REQUIRED)
-
-  ament_add_gtest(optimizer-test test/OptimizerTest.cpp)
-  ament_target_dependencies(optimizer-test ${mppic_dependencies})
-  target_link_libraries(optimizer-test CONAN_PKG::xtensor)
-  target_include_directories(optimizer-test PRIVATE include)
-
-  # the following line skips the linter which checks for copyrights
-  set(ament_cmake_copyright_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-
-  set_target_properties(optimizer-test
-      PROPERTIES
-          CXX_STANDARD 17
-          CXX_STANDARD_REQUIRED YES
-  )
-
-endif()
-
-ament_export_libraries(mppic)
-ament_export_dependencies(${mppic_dependencies})
-ament_export_include_directories(include)
-pluginlib_export_plugin_description_file(nav2_core mppic.xml)
+# prevent pluginlib from using boost
+target_compile_definitions(mppic PRIVATE "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_compile_options(mppic PRIVATE -fconcepts)
 
 set_target_properties(mppic
     PROPERTIES
@@ -101,6 +44,22 @@ set_target_properties(mppic
 
 
 
+install(TARGETS mppic
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+
+install(DIRECTORY include/
+  DESTINATION include/
+)
+
+ament_export_libraries(mppic)
+ament_export_dependencies(${packages})
+ament_export_include_directories(include)
+pluginlib_export_plugin_description_file(nav2_core mppic.xml)
+
+add_subdirectory(test)
 
 ament_package()
-

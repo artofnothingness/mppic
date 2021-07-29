@@ -19,12 +19,13 @@ template <
   typename Container = xt::xarray<T> 
 >
 class Optimizer {
+
+public:
   using TwistStamped = geometry_msgs::msg::TwistStamped;
   using Twist = geometry_msgs::msg::Twist;
   using PoseStamped = geometry_msgs::msg::PoseStamped;
   using Path = nav_msgs::msg::Path;
 
-public:
   Optimizer() = default;
   ~Optimizer() = default;
 
@@ -46,6 +47,7 @@ public:
     control_sequence = xt::zeros<float>({time_steps, control_dim});
   }
 
+private:
   void generateTrajectories () {
     updateBatches();
   }
@@ -66,10 +68,8 @@ public:
   auto generateNoise() 
   -> Container {
 
-    auto v_noises =
-        xt::random::randn<T>({batch_size, time_steps}, 0.0, v_std);
-    auto w_noises =
-        xt::random::randn<T>({batch_size, time_steps}, 0.0, w_std);
+    auto v_noises = xt::random::randn<T>({batch_size, time_steps}, 0.0, v_std);
+    auto w_noises = xt::random::randn<T>({batch_size, time_steps}, 0.0, w_std);
 
     return xt::concatenate(xtuple(v_noises, w_noises), 2);
   }
@@ -82,7 +82,9 @@ public:
     }
   }
 
-  auto integrateVelocities(double robot_x, double robot_y, double robot_yaw) {
+  auto integrateVelocities(double robot_x, double robot_y, double robot_yaw) 
+  -> Container {
+
     using namespace xt::placeholders;
 
     auto v = xt::view(batches, xt::all(), xt::all(), 0);
@@ -90,7 +92,7 @@ public:
 
     auto d_yaw = w * model_dt;
     auto yaw = xt::cumsum(d_yaw, 1);
-    yaw -= xt::view(yaw, xt::all(), xt::range(_, 1));
+    yaw -= xt::view(yaw, xt::all(), 0, xt::newaxis());
     yaw += robot_yaw;
 
     auto d_x = v * xt::cos(yaw) * model_dt;
@@ -98,8 +100,8 @@ public:
 
     auto x = xt::cumsum(d_x, 1);
     auto y = xt::cumsum(d_y, 1);
-    x = robot_x - xt::view(x, xt::all(), xt::range(_, 1));
-    y = robot_y - xt::view(x, xt::all(), xt::range(_, 1));
+    x = robot_x - xt::view(x, xt::all(), 0, xt::newaxis());
+    y = robot_y - xt::view(x, xt::all(), 0, xt::newaxis());
 
     // Add axis
     x = xt::view(x, xt::all(), xt::all(), xt::newaxis());
@@ -109,6 +111,7 @@ public:
     return xt::concatenate(xtuple(x, y, yaw), 2);
   }
 
+public:
   static int constexpr last_dim = 5;
   static int constexpr control_dim = 2;
   int time_steps;
@@ -117,7 +120,6 @@ public:
   double model_dt;
   double v_std;
   double w_std;
-
   double v_limit;
   double w_limit;
 

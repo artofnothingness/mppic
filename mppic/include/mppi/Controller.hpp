@@ -33,6 +33,7 @@ public:
                  std::shared_ptr<TfBuffer> const &tf,
                  std::shared_ptr<Costmap2DROS> const &costmap_ros) override {
 
+
     optimizer_ = Optimizer();
     costmap_ros_ = costmap_ros;
     tf_ = tf;
@@ -71,7 +72,7 @@ private:
     optimizer_.reset();
   }
 
-  void getParam(auto &param, std::string param_name, auto default_value) {
+  void getParam(auto &param, std::string const& param_name, auto default_value) {
     auto full_name = node_name_ + '.' + param_name;
     node_->declare_parameter(full_name, rclcpp::ParameterValue(default_value));
     node_->get_parameter(full_name, param);

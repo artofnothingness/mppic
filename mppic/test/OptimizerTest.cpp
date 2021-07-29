@@ -20,7 +20,6 @@ protected:
     opt.lookahead_dist = 1.2;
 
     opt.reset();
-
   }
 
   void TearDown() override {}
@@ -28,7 +27,8 @@ protected:
   Optimizer<float> opt;
 };
 
-TEST_F(OptimizerTest, SetUpBatchDimTest) {
+
+TEST_F(OptimizerTest, SetUpBatchShapeTest) {
     auto shape = opt.batches.shape();
 
     std::vector<int> expected_shape = {
@@ -38,11 +38,12 @@ TEST_F(OptimizerTest, SetUpBatchDimTest) {
     };
 
     for (unsigned int i = 0; i < shape.size(); ++i) {
-      EXPECT_EQ(shape[i], static_cast<unsigned int>(expected_shape[i]));
+      EXPECT_EQ(shape[i], static_cast<unsigned int>(expected_shape[i])) << "Shapes differ at index " << i;
     }
 }
 
-TEST_F(OptimizerTest, SetUpControlSeqDimTest) {
+
+TEST_F(OptimizerTest, SetUpControlSeqShapeTest) {
     auto shape = opt.control_sequence.shape();
 
     std::vector<int> expected_shape = {
@@ -51,7 +52,7 @@ TEST_F(OptimizerTest, SetUpControlSeqDimTest) {
     };
 
     for (unsigned int i = 0; i < shape.size(); ++i) {
-      EXPECT_EQ(shape[i], static_cast<unsigned int>(expected_shape[i]));
+      EXPECT_EQ(shape[i], static_cast<unsigned int>(expected_shape[i])) << "Shapes differ at index " << i ;
     }
 }
 
