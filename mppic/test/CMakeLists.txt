@@ -2,9 +2,12 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(optimizer-test OptimizerTest.cpp)
+
   ament_target_dependencies(optimizer-test ${packages})
   target_link_libraries(optimizer-test CONAN_PKG::xtensor)
   target_include_directories(optimizer-test PRIVATE ../include)
+
+  target_compile_options(optimizer-test PRIVATE -fconcepts)
 
   set_target_properties(optimizer-test
       PROPERTIES

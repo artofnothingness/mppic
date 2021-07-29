@@ -1,40 +1,46 @@
 #include <gtest/gtest.h>
+#include <rclcpp/executors.hpp>
 
 #include "mppi/Optimizer.hpp" 
 
-using namespace ultra::mppi::optimization;
+using namespace ultra::mppi;
 
-/// @brief Test Fixture
+
 class OptimizerTest : public ::testing::Test {
 protected:
+  using ManagedNode = rclcpp_lifecycle::LifecycleNode;
+  using Optimizer = optimization::Optimizer<float>;
 
   void SetUp() override {
-    opt.model_dt = 0.1;
-    opt.time_steps = 20;
-    opt.batch_size = 100;
-    opt.v_std = 0.1;
-    opt.w_std = 0.1;
-    opt.v_limit = 0.5;
-    opt.w_limit = 1.0;
-    opt.n_optimizations = 2;
-    opt.lookahead_dist = 1.2;
+    auto node = std::make_shared<ManagedNode>("TestNode");
+    optimizer = Optimizer();
 
-    opt.reset();
+    optimizer.m_model_dt = 0.1;
+    optimizer.m_time_steps = 20;
+    optimizer.m_batch_size = 100;
+    optimizer.m_std_v = 0.1;
+    optimizer.m_std_w = 0.1;
+    optimizer.m_limit_v = 0.5;
+    optimizer.m_limit_w = 1.0;
+    optimizer.m_iterations_count = 2;
+    optimizer.m_lookahead_dist = 1.2;
+    optimizer.reset();
+
   }
 
   void TearDown() override {}
 
-  Optimizer<float> opt;
+  Optimizer optimizer;
 };
 
 
 TEST_F(OptimizerTest, SetUpBatchShapeTest) {
-    auto shape = opt.batches.shape();
+    auto shape = optimizer.m_batches.shape();
 
     std::vector<int> expected_shape = {
-      opt.batch_size, 
-      opt.time_steps, 
-      opt.last_dim
+      optimizer.m_batch_size, 
+      optimizer.m_time_steps, 
+      optimizer.m_last_dim
     };
 
     for (unsigned int i = 0; i < shape.size(); ++i) {
@@ -44,11 +50,11 @@ TEST_F(OptimizerTest, SetUpBatchShapeTest) {
 
 
 TEST_F(OptimizerTest, SetUpControlSeqShapeTest) {
-    auto shape = opt.control_sequence.shape();
+    auto shape = optimizer.m_control_sequence.shape();
 
     std::vector<int> expected_shape = {
-      opt.time_steps, 
-      opt.control_dim, 
+      optimizer.m_time_steps, 
+      optimizer.m_control_dim, 
     };
 
     for (unsigned int i = 0; i < shape.size(); ++i) {
@@ -56,9 +62,11 @@ TEST_F(OptimizerTest, SetUpControlSeqShapeTest) {
     }
 }
 
-
-int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-
-  return RUN_ALL_TESTS();
+int main(int argc, char** argv)
+{
+    rclcpp::init(argc, argv);
+    ::testing::InitGoogleTest(&argc, argv);
+    auto res = RUN_ALL_TESTS();
+    rclcpp::shutdown();
+    return res;
 }
