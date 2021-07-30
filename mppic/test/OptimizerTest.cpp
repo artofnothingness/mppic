@@ -1,66 +1,55 @@
 #include <gtest/gtest.h>
+
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include <rclcpp/executors.hpp>
 
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#include "geometry_msgs/msg/twist_stamped.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+
 #include "mppi/Optimizer.hpp" 
+#include "mppi/Models.hpp"
 
 using namespace ultra::mppi;
 
 
 class OptimizerTest : public ::testing::Test {
 protected:
+  using T = float;
   using ManagedNode = rclcpp_lifecycle::LifecycleNode;
-  using Optimizer = optimization::Optimizer<float>;
+  using Optimizer = optimization::Optimizer<T>;
+  using Costmap2DROS = nav2_costmap_2d::Costmap2DROS;
+  using TfBuffer = tf2_ros::Buffer;
+
 
   void SetUp() override {
-    auto node = std::make_shared<ManagedNode>("TestNode");
-    optimizer = Optimizer();
+    using namespace std::string_literals;
 
-    optimizer.m_model_dt = 0.1;
-    optimizer.m_time_steps = 20;
-    optimizer.m_batch_size = 100;
-    optimizer.m_std_v = 0.1;
-    optimizer.m_std_w = 0.1;
-    optimizer.m_limit_v = 0.5;
-    optimizer.m_limit_w = 1.0;
-    optimizer.m_iterations_count = 2;
-    optimizer.m_lookahead_dist = 1.2;
-    optimizer.reset();
+    auto node_name = "TestNode"s;
+    auto node = std::make_shared<ManagedNode>(node_name);
+    auto cost_map = std::make_shared<Costmap2DROS>("cost_map_node");
+    auto tf_buffer = std::shared_ptr<TfBuffer>();
 
+    auto model = models::NaiveModel<T>;
+
+    auto optimizer = Optimizer(node, node_name, tf_buffer, cost_map, model);
   }
 
   void TearDown() override {}
-
   Optimizer optimizer;
 };
 
 
-TEST_F(OptimizerTest, SetUpBatchShapeTest) {
-    auto shape = optimizer.m_batches.shape();
+TEST_F(OptimizerTest, evalNextControlTest) {
 
-    std::vector<int> expected_shape = {
-      optimizer.m_batch_size, 
-      optimizer.m_time_steps, 
-      optimizer.m_last_dim
-    };
-
-    for (unsigned int i = 0; i < shape.size(); ++i) {
-      EXPECT_EQ(shape[i], static_cast<unsigned int>(expected_shape[i])) << "Shapes differ at index " << i;
-    }
+  geometry_msgs::msg::PoseStamped pose;
+  geometry_msgs::msg::Twist twist;
+  geometry_msgs::msg::TwistStamped result;
+  
+  result = optimizer.evalNextControl(pose, twist);
+  EXPECT_TRUE( result == geometry_msgs::msg::TwistStamped{} );
 }
 
-
-TEST_F(OptimizerTest, SetUpControlSeqShapeTest) {
-    auto shape = optimizer.m_control_sequence.shape();
-
-    std::vector<int> expected_shape = {
-      optimizer.m_time_steps, 
-      optimizer.m_control_dim, 
-    };
-
-    for (unsigned int i = 0; i < shape.size(); ++i) {
-      EXPECT_EQ(shape[i], static_cast<unsigned int>(expected_shape[i])) << "Shapes differ at index " << i ;
-    }
-}
 
 int main(int argc, char** argv)
 {

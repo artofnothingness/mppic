@@ -8,6 +8,7 @@
 
 #include "mppi/Optimizer.hpp"
 #include "mppi/Utils.hpp"
+#include "mppi/Models.hpp"
 
 
 namespace ultra::mppi {
@@ -34,14 +35,7 @@ public:
                  std::shared_ptr<TfBuffer> const &tf,
                  std::shared_ptr<Costmap2DROS> const &costmap_ros) override {
 
-
-    m_costmap_ros_ = costmap_ros;
-    m_tf_ = tf;
-    m_node_name_ = node_name;
-    m_parent = parent;
-
-    m_optimizer_ = Optimizer();
-    m_optimizer_.configure(parent);
+    m_optimizer_ = Optimizer(parent, node_name, tf, costmap_ros, models::NaiveModel<T>);
   }
 
   void cleanup() override {}
@@ -50,23 +44,14 @@ public:
 
   auto computeVelocityCommands(PoseStamped const &pose, Twist const &velocity)
   -> TwistStamped override {
-
-    (void)velocity;
-    (void)pose;
-    return TwistStamped{};
+    return m_optimizer_.evalNextControl(pose, velocity);
   }
 
-  void setPlan(Path const &path) override { m_global_plan_ = path; }
+  void setPlan(Path const &path) override { m_optimizer_.setPlan(path); }
 
-  rclcpp_lifecycle::LifecycleNode::SharedPtr m_parent;
 private:
-
-  // Configure step params
-  std::shared_ptr<tf2_ros::Buffer> m_tf_;
+  rclcpp_lifecycle::LifecycleNode::SharedPtr m_parent;
   std::string m_node_name_;
-  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> m_costmap_ros_;
-
-  Path m_global_plan_;
 
   // Entities
   Optimizer m_optimizer_;
