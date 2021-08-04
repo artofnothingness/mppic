@@ -1,0 +1,22 @@
+[
+{
+  "directory": "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/src",
+  "command": "/usr/bin/g++-9  -DDEFAULT_RMW_IMPLEMENTATION=rmw_fastrtps_cpp -DPLUGINLIB__DISABLE_BOOST_FUNCTIONS -DRCUTILS_ENABLE_FAULT_INJECTION -DSPDLOG_COMPILED_LIB -DXTENSOR_USE_XSIMD -Dmppic_EXPORTS -I/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/../include -isystem /opt/ros/foxy/include -isystem /usr/include/eigen3 -isystem /home/alex/.conan/data/xtensor/0.21.5/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include -isystem /home/alex/.conan/data/xtl/0.6.12/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include -isystem /home/alex/.conan/data/nlohmann_json/3.7.3/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include -isystem /home/alex/.conan/data/xsimd/7.4.6/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include    -g -fPIC   -Wall -Wextra -Wpedantic -Werror -Wdeprecated -fPIC -fconcepts -std=gnu++17 -o CMakeFiles/mppic.dir/Controller.cpp.o -c /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/Controller.cpp",
+  "file": "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/Controller.cpp"
+},
+{
+  "directory": "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test",
+  "command": "/usr/bin/g++-9  -DDEFAULT_RMW_IMPLEMENTATION=rmw_fastrtps_cpp -DRCUTILS_ENABLE_FAULT_INJECTION -DSPDLOG_COMPILED_LIB -DXTENSOR_USE_XSIMD -I/opt/ros/foxy/src/gtest_vendor/include -I/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/test/../include -isystem /opt/ros/foxy/include -isystem /usr/include/eigen3 -isystem /home/alex/.conan/data/xtensor/0.21.5/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include -isystem /home/alex/.conan/data/xtl/0.6.12/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include -isystem /home/alex/.conan/data/nlohmann_json/3.7.3/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include -isystem /home/alex/.conan/data/xsimd/7.4.6/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include    -g   -Wall -Wextra -Wpedantic -Werror -Wdeprecated -fPIC -fconcepts -std=gnu++17 -o CMakeFiles/optimizer-test.dir/OptimizerTest.cpp.o -c /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/test/OptimizerTest.cpp",
+  "file": "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/test/OptimizerTest.cpp"
+},
+{
+  "directory": "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/gtest",
+  "command": "/usr/bin/g++-9   -I/opt/ros/foxy/src/gtest_vendor/include -I/opt/ros/foxy/src/gtest_vendor/.    -g   -Wall -Wextra -Wpedantic -Werror -Wdeprecated -fPIC -std=gnu++14 -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.o -c /opt/ros/foxy/src/gtest_vendor/src/gtest_main.cc",
+  "file": "/opt/ros/foxy/src/gtest_vendor/src/gtest_main.cc"
+},
+{
+  "directory": "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/gtest",
+  "command": "/usr/bin/g++-9   -I/opt/ros/foxy/src/gtest_vendor/include -I/opt/ros/foxy/src/gtest_vendor/.    -g   -Wno-missing-field-initializers -Wall -Wextra -Wpedantic -Werror -Wdeprecated -fPIC -std=gnu++14 -o CMakeFiles/gtest.dir/src/gtest-all.cc.o -c /opt/ros/foxy/src/gtest_vendor/src/gtest-all.cc",
+  "file": "/opt/ros/foxy/src/gtest_vendor/src/gtest-all.cc"
+}
+]

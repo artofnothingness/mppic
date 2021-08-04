@@ -1,0 +1,84 @@
+[0.395s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'test', '--packages-select', 'mppic', '--ctest-args', '--event-handlers', 'console_direct+']
+[0.395s] DEBUG:colcon:Parsed command line arguments: Namespace(abort_on_error=False, base_paths=['.'], build_base='build', ctest_args=[], event_handlers=['console_direct+'], executor='parallel', ignore_user_meta=False, install_base='install', log_base=None, log_level=None, main=<bound method TestVerb.main of <colcon_core.verb.test.TestVerb object at 0x7f013d8f8f70>>, merge_install=False, metas=['./colcon.meta'], packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_end=None, packages_ignore=None, packages_ignore_regex=None, packages_select=['mppic'], packages_select_build_failed=False, packages_select_by_dep=None, packages_select_regex=None, packages_select_test_failures=False, packages_skip=None, packages_skip_build_finished=False, packages_skip_by_dep=None, packages_skip_regex=None, packages_skip_test_passed=False, packages_skip_up_to=None, packages_start=None, packages_up_to=None, packages_up_to_regex=None, parallel_workers=4, paths=None, pytest_args=None, pytest_with_coverage=False, python_testing=None, retest_until_fail=0, retest_until_pass=0, return_code_on_test_failure=False, test_result_base=None, unittest_args=None, verb_extension=<colcon_core.verb.test.TestVerb object at 0x7f013d8f8f70>, verb_name='test', verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0x7f013d8511f0>)
+[0.423s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.423s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.423s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.423s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.423s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.423s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.424s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners'
+[0.424s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.424s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.424s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.424s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.424s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.425s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.425s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.425s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.425s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.438s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[0.438s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.438s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.438s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.438s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.439s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.439s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[0.439s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[0.439s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.439s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[0.439s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[0.440s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.440s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.440s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.440s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extensions ['ignore', 'ignore_ament_install']
+[0.441s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extension 'ignore'
+[0.441s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extension 'ignore_ament_install'
+[0.441s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extensions ['colcon_pkg']
+[0.441s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extension 'colcon_pkg'
+[0.441s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extensions ['colcon_meta']
+[0.441s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extension 'colcon_meta'
+[0.441s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extensions ['ros']
+[0.441s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extension 'ros'
+[0.462s] DEBUG:colcon.colcon_core.package_identification:Package 'mppic' with type 'ros.ament_cmake' and name 'mppic'
+[0.463s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extensions ['ignore', 'ignore_ament_install']
+[0.463s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extension 'ignore'
+[0.463s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extension 'ignore_ament_install'
+[0.463s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extensions ['colcon_pkg']
+[0.463s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extension 'colcon_pkg'
+[0.463s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extensions ['colcon_meta']
+[0.463s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extension 'colcon_meta'
+[0.463s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extensions ['ros']
+[0.463s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extension 'ros'
+[0.465s] DEBUG:colcon.colcon_core.package_identification:Package 'nav2_pure_pursuit_controller' with type 'ros.ament_cmake' and name 'nav2_pure_pursuit_controller'
+[0.465s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.465s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.466s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.466s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.466s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.485s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'nav2_pure_pursuit_controller' in 'nav2_pure_pursuit_controller'
+[0.487s] Level 5:colcon.colcon_core.verb:set package 'mppic' test argument 'ctest_args' from command line to '[]'
+[0.487s] Level 5:colcon.colcon_core.verb:set package 'mppic' test argument 'python_testing' from command line to 'None'
+[0.487s] Level 5:colcon.colcon_core.verb:set package 'mppic' test argument 'pytest_args' from command line to 'None'
+[0.487s] Level 5:colcon.colcon_core.verb:set package 'mppic' test argument 'pytest_with_coverage' from command line to 'False'
+[0.488s] Level 5:colcon.colcon_core.verb:set package 'mppic' test argument 'unittest_args' from command line to 'None'
+[0.488s] Level 5:colcon.colcon_core.verb:set package 'mppic' test argument 'retest_until_pass' from command line to '0'
+[0.488s] Level 5:colcon.colcon_core.verb:set package 'mppic' test argument 'retest_until_fail' from command line to '0'
+[0.488s] DEBUG:colcon.colcon_core.verb.test:Testing package 'mppic' with the following arguments: {'build_base': '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic', 'ctest_args': [], 'install_base': '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic', 'path': '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic', 'pytest_args': None, 'pytest_with_coverage': False, 'python_testing': None, 'retest_until_fail': 0, 'retest_until_pass': 0, 'test_result_base': None, 'unittest_args': None}
+[0.488s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.490s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.491s] INFO:colcon.colcon_ros.task.ament_cmake.test:Testing ROS package in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic' with build type 'ament_cmake'
+[0.491s] INFO:colcon.colcon_cmake.task.cmake.test:Testing CMake package in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic'
+[0.495s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.495s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.495s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.498s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/opt/ros/foxy'
+[0.557s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic': AMENT_PREFIX_PATH=/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic LD_LIBRARY_PATH=/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/lib:${LD_LIBRARY_PATH} /usr/bin/ctest -C Release -D ExperimentalTest --no-compress-output -V --force-new-ctest-process
+[0.740s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[0.741s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic' returned '0': AMENT_PREFIX_PATH=/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic LD_LIBRARY_PATH=/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/lib:${LD_LIBRARY_PATH} /usr/bin/ctest -C Release -D ExperimentalTest --no-compress-output -V --force-new-ctest-process
+[0.741s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[0.741s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[0.741s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[0.753s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[0.753s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[0.753s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[0.755s] DEBUG:colcon.colcon_core.event_reactor:joined thread

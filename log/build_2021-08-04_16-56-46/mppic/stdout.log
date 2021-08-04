@@ -1,0 +1,5 @@
+[35m[1mScanning dependencies of target mppic[0m
+[ 50%] Built target gtest
+[ 50%] Built target gtest_main
+[ 75%] Built target optimizer-test
+[ 87%] [32mBuilding CXX object src/CMakeFiles/mppic.dir/Controller.cpp.o[0m

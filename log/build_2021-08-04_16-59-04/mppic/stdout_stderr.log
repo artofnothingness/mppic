@@ -1,0 +1,37 @@
+[35m[1mScanning dependencies of target mppic[0m
+[ 25%] Built target gtest
+[ 50%] Built target gtest_main
+[ 75%] Built target optimizer-test
+[ 87%] [32mBuilding CXX object src/CMakeFiles/mppic.dir/Controller.cpp.o[0m
+[100%] [32m[1mLinking CXX shared library ../lib/libmppic.so[0m
+[100%] Built target mppic
+-- Install configuration: "DEBUG"
+-- Execute custom install script
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/lib/libmppic.so
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/Controller.hpp
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/Models.hpp
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/Optimizer.hpp
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/PathHandler.hpp
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/Utils.hpp
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/library_path.sh
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/library_path.dsv
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic//mppic.xml
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/ament_index/resource_index/package_run_dependencies/mppic
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/ament_index/resource_index/parent_prefix_path/mppic
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/ament_prefix_path.sh
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/ament_prefix_path.dsv
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/path.sh
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/path.dsv
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/local_setup.bash
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/local_setup.sh
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/local_setup.zsh
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/local_setup.dsv
+-- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/package.dsv
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/ament_index/resource_index/packages/mppic
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/ament_index/resource_index/nav2_core__pluginlib__plugin/mppic
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/ament_cmake_export_libraries-extras.cmake
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/ament_cmake_export_dependencies-extras.cmake
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/ament_cmake_export_include_directories-extras.cmake
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/mppicConfig.cmake
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/mppicConfig-version.cmake
+-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/package.xml

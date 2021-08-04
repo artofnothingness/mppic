@@ -1,0 +1,222 @@
+[0.000000] (-) TimerEvent: {}
+[0.002374] (-) JobUnselected: {'identifier': 'nav2_pure_pursuit_controller'}
+[0.002538] (mppic) JobQueued: {'identifier': 'mppic', 'dependencies': OrderedDict()}
+[0.002840] (mppic) JobStarted: {'identifier': 'mppic'}
+[0.027993] (mppic) JobProgress: {'identifier': 'mppic', 'progress': 'cmake'}
+[0.030442] (mppic) JobProgress: {'identifier': 'mppic', 'progress': 'build'}
+[0.031875] (mppic) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic', '--', '-j4', '-l4'], 'cwd': '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic', 'env': OrderedDict([('TMUX', '/tmp//tmux-1000/default,3133,0'), ('LC_TIME', 'ru_RU.UTF-8'), ('USER', 'alex'), ('XDG_SEAT', 'seat0'), ('SSH_AGENT_PID', '1925'), ('XDG_SESSION_TYPE', 'x11'), ('CC_OV_IMAGE', 'cc_ov_image'), ('LD_LIBRARY_PATH', '/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/foxy/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/opt/rviz_ogre_vendor/lib:/opt/ros/foxy/lib/x86_64-linux-gnu:/opt/ros/foxy/lib'), ('SHLVL', '2'), ('HOME', '/home/alex'), ('LESS', '-R'), ('OLDPWD', '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms'), ('DESKTOP_SESSION', 'i3'), ('LSCOLORS', 'Gxfxcxdxbxegedabagacad'), ('ZSH', '/home/alex/.oh-my-zsh'), ('GTK_MODULES', 'gail:atk-bridge'), ('PAGER', 'less'), ('ROS_PYTHON_VERSION', '3'), ('LC_MONETARY', 'ru_RU.UTF-8'), ('NIX_PROFILES', '/nix/var/nix/profiles/default /home/alex/.nix-profile'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('NIX_PATH', '/home/alex/.nix-defexpr/channels'), ('NOTES_DIRECTORY', '/home/alex/Documents/Notes'), ('P9K_TTY', 'old'), ('VISUAL', 'nvim'), ('COLORTERM', 'truecolor'), ('CC_OV_CONTAINER', 'cc_ov'), ('ROSBOT_CONTROL_PATH', '/home/alex/Media/Develop/Job/ros/mppi_ws/src'), ('ROS_DISTRO', 'foxy'), ('LOGNAME', 'alex'), ('WINDOWID', '16777218'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('ALACRITTY_LOG', '/tmp/Alacritty-2005.log'), ('GAZEBO_MODEL_PATH', ':/opt/ros/foxy/share/turtlebot3_gazebo/models:/opt/ros/foxy/share/turtlebot3_gazebo/models'), ('TERM', 'xterm-256color'), ('USERNAME', 'alex'), ('XDG_SESSION_ID', '2'), ('AUTOJUMP_ERROR_PATH', '/home/alex/.local/share/autojump/errors.log'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/home/alex/.autojump/bin:/home/alex/.autojump/bin:/home/alex/bin:/home/alex/.local/bin:/opt/ros/foxy/bin:/home/alex/.autojump/bin:/home/alex/.autojump/bin:/home/alex/bin:/home/alex/.local/bin:/home/alex/.cargo/bin:/home/alex/.nix-profile/bin:/home/alex/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/alex/.fzf/bin'), ('LC_ADDRESS', 'ru_RU.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('LC_TELEPHONE', 'ru_RU.UTF-8'), ('XDG_CURRENT_DESKTOP', 'i3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('XDG_SESSION_DESKTOP', 'i3'), ('AMENT_PREFIX_PATH', '/opt/ros/foxy'), ('ROS_DOMAIN_ID', '30'), ('SSH_AUTH_SOCK', '/tmp/ssh-1OxlomOa9lbq/agent.1856'), ('is_vim', 'echo "#{pane_current_command}" | grep -iqE "(^|\\/)g?(view|n?vim?)(diff)?$"'), ('LC_NAME', 'ru_RU.UTF-8'), ('SHELL', '/usr/bin/zsh'), ('CXX', '/usr/bin/g++-9'), ('GDMSESSION', 'i3'), ('QT_ACCESSIBILITY', '1'), ('CC_OV_PATH', '/home/alex/Media/Develop/Job/ML-Inference/examples/CXX/openvino'), ('LC_MEASUREMENT', 'ru_RU.UTF-8'), ('NIX_SSL_CERT_FILE', '/etc/ssl/certs/ca-certificates.crt'), ('ROSBOT_CONTROL_CONTAINER_NAME', 'gazebo-control'), ('GAZEBO_RESOURCE_PATH', '/usr/share/gazebo-11:/usr/share/gazebo-11/models:/usr/share/gazebo-11:/usr/share/gazebo-11/models:'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'ru_RU.UTF-8'), ('P9K_SSH', '0'), ('XDG_VTNR', '2'), ('FZF_DEFAULT_COMMAND', 'rg --files --hidden --glob "!.git/*"'), ('PWD', '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-i3:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/i3:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('_P9K_TTY', '/dev/pts/2'), ('AUTOJUMP_SOURCED', '1'), ('LC_NUMERIC', 'ru_RU.UTF-8'), ('PYTHONPATH', '/opt/ros/foxy/lib/python3.8/site-packages'), ('CC', '/usr/bin/gcc-9'), ('I3SOCK', '/run/user/1000/i3/ipc-socket.1856'), ('LC_PAPER', 'ru_RU.UTF-8'), ('COLCON', '1'), ('TMUX_PANE', '%1'), ('EDITOR', 'nvim'), ('MARKPATH', '/home/alex/.marks'), ('CMAKE_PREFIX_PATH', '/opt/ros/foxy')]), 'shell': False}
+[0.099629] (-) TimerEvent: {}
+[0.122233] (mppic) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target mppic\x1b[0m\n'}
+[0.138703] (mppic) StdoutLine: {'line': b'[ 25%] Built target gtest\n'}
+[0.157612] (mppic) StdoutLine: {'line': b'[ 50%] Built target gtest_main\n'}
+[0.199729] (-) TimerEvent: {}
+[0.261392] (mppic) StdoutLine: {'line': b'[ 75%] Built target optimizer-test\n'}
+[0.299856] (-) TimerEvent: {}
+[0.400232] (-) TimerEvent: {}
+[0.500572] (-) TimerEvent: {}
+[0.547913] (mppic) StdoutLine: {'line': b'[ 87%] \x1b[32mBuilding CXX object src/CMakeFiles/mppic.dir/Controller.cpp.o\x1b[0m\n'}
+[0.600687] (-) TimerEvent: {}
+[0.701181] (-) TimerEvent: {}
+[0.801624] (-) TimerEvent: {}
+[0.902068] (-) TimerEvent: {}
+[1.002659] (-) TimerEvent: {}
+[1.103180] (-) TimerEvent: {}
+[1.203702] (-) TimerEvent: {}
+[1.304227] (-) TimerEvent: {}
+[1.404712] (-) TimerEvent: {}
+[1.505239] (-) TimerEvent: {}
+[1.605732] (-) TimerEvent: {}
+[1.706225] (-) TimerEvent: {}
+[1.806717] (-) TimerEvent: {}
+[1.907224] (-) TimerEvent: {}
+[2.007756] (-) TimerEvent: {}
+[2.108250] (-) TimerEvent: {}
+[2.208777] (-) TimerEvent: {}
+[2.309301] (-) TimerEvent: {}
+[2.409771] (-) TimerEvent: {}
+[2.510289] (-) TimerEvent: {}
+[2.610813] (-) TimerEvent: {}
+[2.711311] (-) TimerEvent: {}
+[2.811860] (-) TimerEvent: {}
+[2.912372] (-) TimerEvent: {}
+[3.012882] (-) TimerEvent: {}
+[3.113363] (-) TimerEvent: {}
+[3.213844] (-) TimerEvent: {}
+[3.314351] (-) TimerEvent: {}
+[3.414857] (-) TimerEvent: {}
+[3.515325] (-) TimerEvent: {}
+[3.615796] (-) TimerEvent: {}
+[3.716306] (-) TimerEvent: {}
+[3.816801] (-) TimerEvent: {}
+[3.917321] (-) TimerEvent: {}
+[4.017811] (-) TimerEvent: {}
+[4.118317] (-) TimerEvent: {}
+[4.218812] (-) TimerEvent: {}
+[4.319282] (-) TimerEvent: {}
+[4.419776] (-) TimerEvent: {}
+[4.520293] (-) TimerEvent: {}
+[4.620839] (-) TimerEvent: {}
+[4.721397] (-) TimerEvent: {}
+[4.821932] (-) TimerEvent: {}
+[4.922439] (-) TimerEvent: {}
+[5.022882] (-) TimerEvent: {}
+[5.123371] (-) TimerEvent: {}
+[5.223824] (-) TimerEvent: {}
+[5.324320] (-) TimerEvent: {}
+[5.424874] (-) TimerEvent: {}
+[5.525446] (-) TimerEvent: {}
+[5.625931] (-) TimerEvent: {}
+[5.726490] (-) TimerEvent: {}
+[5.827038] (-) TimerEvent: {}
+[5.927588] (-) TimerEvent: {}
+[6.028109] (-) TimerEvent: {}
+[6.128644] (-) TimerEvent: {}
+[6.229181] (-) TimerEvent: {}
+[6.329647] (-) TimerEvent: {}
+[6.430128] (-) TimerEvent: {}
+[6.530650] (-) TimerEvent: {}
+[6.631147] (-) TimerEvent: {}
+[6.731642] (-) TimerEvent: {}
+[6.832078] (-) TimerEvent: {}
+[6.932589] (-) TimerEvent: {}
+[7.033137] (-) TimerEvent: {}
+[7.133633] (-) TimerEvent: {}
+[7.234133] (-) TimerEvent: {}
+[7.334653] (-) TimerEvent: {}
+[7.435203] (-) TimerEvent: {}
+[7.535743] (-) TimerEvent: {}
+[7.636288] (-) TimerEvent: {}
+[7.736821] (-) TimerEvent: {}
+[7.837358] (-) TimerEvent: {}
+[7.937858] (-) TimerEvent: {}
+[8.038313] (-) TimerEvent: {}
+[8.138786] (-) TimerEvent: {}
+[8.239356] (-) TimerEvent: {}
+[8.339907] (-) TimerEvent: {}
+[8.440370] (-) TimerEvent: {}
+[8.540884] (-) TimerEvent: {}
+[8.641391] (-) TimerEvent: {}
+[8.741888] (-) TimerEvent: {}
+[8.842375] (-) TimerEvent: {}
+[8.942849] (-) TimerEvent: {}
+[9.043390] (-) TimerEvent: {}
+[9.143879] (-) TimerEvent: {}
+[9.244379] (-) TimerEvent: {}
+[9.344865] (-) TimerEvent: {}
+[9.445374] (-) TimerEvent: {}
+[9.545876] (-) TimerEvent: {}
+[9.646396] (-) TimerEvent: {}
+[9.746856] (-) TimerEvent: {}
+[9.847392] (-) TimerEvent: {}
+[9.947843] (-) TimerEvent: {}
+[10.048298] (-) TimerEvent: {}
+[10.148835] (-) TimerEvent: {}
+[10.249381] (-) TimerEvent: {}
+[10.349921] (-) TimerEvent: {}
+[10.450442] (-) TimerEvent: {}
+[10.550972] (-) TimerEvent: {}
+[10.651488] (-) TimerEvent: {}
+[10.752044] (-) TimerEvent: {}
+[10.852579] (-) TimerEvent: {}
+[10.953136] (-) TimerEvent: {}
+[11.053665] (-) TimerEvent: {}
+[11.154207] (-) TimerEvent: {}
+[11.254744] (-) TimerEvent: {}
+[11.355281] (-) TimerEvent: {}
+[11.455821] (-) TimerEvent: {}
+[11.556335] (-) TimerEvent: {}
+[11.656840] (-) TimerEvent: {}
+[11.757383] (-) TimerEvent: {}
+[11.857918] (-) TimerEvent: {}
+[11.958449] (-) TimerEvent: {}
+[12.058991] (-) TimerEvent: {}
+[12.159539] (-) TimerEvent: {}
+[12.260051] (-) TimerEvent: {}
+[12.360523] (-) TimerEvent: {}
+[12.460928] (-) TimerEvent: {}
+[12.561350] (-) TimerEvent: {}
+[12.661755] (-) TimerEvent: {}
+[12.762157] (-) TimerEvent: {}
+[12.862634] (-) TimerEvent: {}
+[12.963112] (-) TimerEvent: {}
+[13.063591] (-) TimerEvent: {}
+[13.164073] (-) TimerEvent: {}
+[13.264559] (-) TimerEvent: {}
+[13.365027] (-) TimerEvent: {}
+[13.465519] (-) TimerEvent: {}
+[13.565982] (-) TimerEvent: {}
+[13.666538] (-) TimerEvent: {}
+[13.767017] (-) TimerEvent: {}
+[13.867460] (-) TimerEvent: {}
+[13.967868] (-) TimerEvent: {}
+[14.068309] (-) TimerEvent: {}
+[14.168783] (-) TimerEvent: {}
+[14.269248] (-) TimerEvent: {}
+[14.369711] (-) TimerEvent: {}
+[14.470159] (-) TimerEvent: {}
+[14.570609] (-) TimerEvent: {}
+[14.671057] (-) TimerEvent: {}
+[14.771536] (-) TimerEvent: {}
+[14.871991] (-) TimerEvent: {}
+[14.972453] (-) TimerEvent: {}
+[15.072939] (-) TimerEvent: {}
+[15.173269] (-) TimerEvent: {}
+[15.273579] (-) TimerEvent: {}
+[15.341146] (mppic) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX shared library ../lib/libmppic.so\x1b[0m\n'}
+[15.373678] (-) TimerEvent: {}
+[15.474079] (-) TimerEvent: {}
+[15.574491] (-) TimerEvent: {}
+[15.674961] (-) TimerEvent: {}
+[15.775443] (-) TimerEvent: {}
+[15.875996] (-) TimerEvent: {}
+[15.976484] (-) TimerEvent: {}
+[16.077064] (-) TimerEvent: {}
+[16.177656] (-) TimerEvent: {}
+[16.278231] (-) TimerEvent: {}
+[16.378778] (-) TimerEvent: {}
+[16.479178] (-) TimerEvent: {}
+[16.579618] (-) TimerEvent: {}
+[16.680025] (-) TimerEvent: {}
+[16.780466] (-) TimerEvent: {}
+[16.880896] (-) TimerEvent: {}
+[16.981263] (-) TimerEvent: {}
+[16.984311] (mppic) StdoutLine: {'line': b'[100%] Built target mppic\n'}
+[17.006830] (mppic) CommandEnded: {'returncode': 0}
+[17.039964] (mppic) JobProgress: {'identifier': 'mppic', 'progress': 'install'}
+[17.055017] (mppic) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic'], 'cwd': '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic', 'env': OrderedDict([('TMUX', '/tmp//tmux-1000/default,3133,0'), ('LC_TIME', 'ru_RU.UTF-8'), ('USER', 'alex'), ('XDG_SEAT', 'seat0'), ('SSH_AGENT_PID', '1925'), ('XDG_SESSION_TYPE', 'x11'), ('CC_OV_IMAGE', 'cc_ov_image'), ('LD_LIBRARY_PATH', '/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/foxy/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/opt/rviz_ogre_vendor/lib:/opt/ros/foxy/lib/x86_64-linux-gnu:/opt/ros/foxy/lib'), ('SHLVL', '2'), ('HOME', '/home/alex'), ('LESS', '-R'), ('OLDPWD', '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms'), ('DESKTOP_SESSION', 'i3'), ('LSCOLORS', 'Gxfxcxdxbxegedabagacad'), ('ZSH', '/home/alex/.oh-my-zsh'), ('GTK_MODULES', 'gail:atk-bridge'), ('PAGER', 'less'), ('ROS_PYTHON_VERSION', '3'), ('LC_MONETARY', 'ru_RU.UTF-8'), ('NIX_PROFILES', '/nix/var/nix/profiles/default /home/alex/.nix-profile'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('NIX_PATH', '/home/alex/.nix-defexpr/channels'), ('NOTES_DIRECTORY', '/home/alex/Documents/Notes'), ('P9K_TTY', 'old'), ('VISUAL', 'nvim'), ('COLORTERM', 'truecolor'), ('CC_OV_CONTAINER', 'cc_ov'), ('ROSBOT_CONTROL_PATH', '/home/alex/Media/Develop/Job/ros/mppi_ws/src'), ('ROS_DISTRO', 'foxy'), ('LOGNAME', 'alex'), ('WINDOWID', '16777218'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('ALACRITTY_LOG', '/tmp/Alacritty-2005.log'), ('GAZEBO_MODEL_PATH', ':/opt/ros/foxy/share/turtlebot3_gazebo/models:/opt/ros/foxy/share/turtlebot3_gazebo/models'), ('TERM', 'xterm-256color'), ('USERNAME', 'alex'), ('XDG_SESSION_ID', '2'), ('AUTOJUMP_ERROR_PATH', '/home/alex/.local/share/autojump/errors.log'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/home/alex/.autojump/bin:/home/alex/.autojump/bin:/home/alex/bin:/home/alex/.local/bin:/opt/ros/foxy/bin:/home/alex/.autojump/bin:/home/alex/.autojump/bin:/home/alex/bin:/home/alex/.local/bin:/home/alex/.cargo/bin:/home/alex/.nix-profile/bin:/home/alex/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/alex/.fzf/bin'), ('LC_ADDRESS', 'ru_RU.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('LC_TELEPHONE', 'ru_RU.UTF-8'), ('XDG_CURRENT_DESKTOP', 'i3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('XDG_SESSION_DESKTOP', 'i3'), ('AMENT_PREFIX_PATH', '/opt/ros/foxy'), ('ROS_DOMAIN_ID', '30'), ('SSH_AUTH_SOCK', '/tmp/ssh-1OxlomOa9lbq/agent.1856'), ('is_vim', 'echo "#{pane_current_command}" | grep -iqE "(^|\\/)g?(view|n?vim?)(diff)?$"'), ('LC_NAME', 'ru_RU.UTF-8'), ('SHELL', '/usr/bin/zsh'), ('CXX', '/usr/bin/g++-9'), ('GDMSESSION', 'i3'), ('QT_ACCESSIBILITY', '1'), ('CC_OV_PATH', '/home/alex/Media/Develop/Job/ML-Inference/examples/CXX/openvino'), ('LC_MEASUREMENT', 'ru_RU.UTF-8'), ('NIX_SSL_CERT_FILE', '/etc/ssl/certs/ca-certificates.crt'), ('ROSBOT_CONTROL_CONTAINER_NAME', 'gazebo-control'), ('GAZEBO_RESOURCE_PATH', '/usr/share/gazebo-11:/usr/share/gazebo-11/models:/usr/share/gazebo-11:/usr/share/gazebo-11/models:'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'ru_RU.UTF-8'), ('P9K_SSH', '0'), ('XDG_VTNR', '2'), ('FZF_DEFAULT_COMMAND', 'rg --files --hidden --glob "!.git/*"'), ('PWD', '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-i3:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/i3:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('_P9K_TTY', '/dev/pts/2'), ('AUTOJUMP_SOURCED', '1'), ('LC_NUMERIC', 'ru_RU.UTF-8'), ('PYTHONPATH', '/opt/ros/foxy/lib/python3.8/site-packages'), ('CC', '/usr/bin/gcc-9'), ('I3SOCK', '/run/user/1000/i3/ipc-socket.1856'), ('LC_PAPER', 'ru_RU.UTF-8'), ('COLCON', '1'), ('TMUX_PANE', '%1'), ('EDITOR', 'nvim'), ('MARKPATH', '/home/alex/.marks'), ('CMAKE_PREFIX_PATH', '/opt/ros/foxy')]), 'shell': False}
+[17.070345] (mppic) StdoutLine: {'line': b'-- Install configuration: "DEBUG"\n'}
+[17.071734] (mppic) StdoutLine: {'line': b'-- Execute custom install script\n'}
+[17.076199] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/lib/libmppic.so\n'}
+[17.081359] (-) TimerEvent: {}
+[17.084443] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/Controller.hpp\n'}
+[17.088471] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/Models.hpp\n'}
+[17.092650] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/Optimizer.hpp\n'}
+[17.097905] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/PathHandler.hpp\n'}
+[17.102887] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/Utils.hpp\n'}
+[17.105718] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/library_path.sh\n'}
+[17.109980] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/library_path.dsv\n'}
+[17.113513] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic//mppic.xml\n'}
+[17.121611] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/ament_index/resource_index/package_run_dependencies/mppic\n'}
+[17.127888] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/ament_index/resource_index/parent_prefix_path/mppic\n'}
+[17.131214] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/ament_prefix_path.sh\n'}
+[17.135967] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/ament_prefix_path.dsv\n'}
+[17.138753] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/path.sh\n'}
+[17.143366] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/path.dsv\n'}
+[17.148022] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/local_setup.bash\n'}
+[17.152399] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/local_setup.sh\n'}
+[17.156595] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/local_setup.zsh\n'}
+[17.160746] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/local_setup.dsv\n'}
+[17.162194] (mppic) StdoutLine: {'line': b'-- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/package.dsv\n'}
+[17.181467] (-) TimerEvent: {}
+[17.182429] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/ament_index/resource_index/packages/mppic\n'}
+[17.188729] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/ament_index/resource_index/nav2_core__pluginlib__plugin/mppic\n'}
+[17.193900] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[17.198718] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[17.203503] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[17.209433] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/mppicConfig.cmake\n'}
+[17.213013] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/mppicConfig-version.cmake\n'}
+[17.216629] (mppic) StdoutLine: {'line': b'-- Up-to-date symlink: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/package.xml\n'}
+[17.221538] (mppic) CommandEnded: {'returncode': 0}
+[17.281661] (-) TimerEvent: {}
+[17.351067] (mppic) JobEnded: {'identifier': 'mppic', 'rc': 0}
+[17.352745] (-) EventReactorShutdown: {}

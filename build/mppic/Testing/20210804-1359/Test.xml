@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="(empty)"
+	BuildStamp="20210804-1359-Experimental"
+	Name="alex-G771JW"
+	Generator="ctest-3.16.3"
+	CompilerName="/usr/bin/g++-9"
+	CompilerVersion="9.3.0"
+	OSName="Linux"
+	Hostname="alex-G771JW"
+	OSRelease="5.8.0-59-generic"
+	OSVersion="#66~20.04.1-Ubuntu SMP Thu Jun 17 11:14:10 UTC 2021"
+	OSPlatform="x86_64"
+	Is64Bits="1"
+	VendorString="GenuineIntel"
+	VendorID="Intel Corporation"
+	FamilyID="6"
+	ModelID="60"
+	ProcessorCacheSize="3072"
+	NumberOfLogicalCPU="4"
+	NumberOfPhysicalCPU="2"
+	TotalVirtualMemory="2047"
+	TotalPhysicalMemory="11870"
+	LogicalProcessorsPerPhysical="2"
+	ProcessorClockFrequency="3295.77"
+	>
+	<Testing>
+		<StartDateTime>Aug 04 16:59 MSK</StartDateTime>
+		<StartTestTime>1628085562</StartTestTime>
+		<TestList>
+			<Test>./test/optimizer-test</Test>
+		</TestList>
+		<Test Status="passed">
+			<Name>optimizer-test</Name>
+			<Path>./test</Path>
+			<FullName>./test/optimizer-test</FullName>
+			<FullCommandLine>/usr/bin/python3 "-u" "/opt/ros/foxy/share/ament_cmake_test/cmake/run_test.py" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml" "--package-name" "mppic" "--output-file" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/ament_cmake_gtest/optimizer-test.txt" "--command" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/bin/optimizer-test" "--gtest_output=xml:/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml"</FullCommandLine>
+			<Results>
+				<NamedMeasurement type="numeric/double" name="Execution Time">
+					<Value>0.119465</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Processors">
+					<Value>1</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Completion Status">
+					<Value>Completed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Command Line">
+					<Value>/usr/bin/python3 "-u" "/opt/ros/foxy/share/ament_cmake_test/cmake/run_test.py" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml" "--package-name" "mppic" "--output-file" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/ament_cmake_gtest/optimizer-test.txt" "--command" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/bin/optimizer-test" "--gtest_output=xml:/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml"</Value>
+				</NamedMeasurement>
+				<Measurement>
+					<Value>-- run_test.py: invoking following command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test':
+ - /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/bin/optimizer-test --gtest_output=xml:/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from OptimizerTest
+[ RUN      ] OptimizerTest.evalNextControlTest
+[       OK ] OptimizerTest.evalNextControlTest (0 ms)
+[----------] 1 test from OptimizerTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+-- run_test.py: return code 0
+-- run_test.py: inject classname prefix into gtest result file '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml'
+-- run_test.py: verify result file '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml'
+</Value>
+				</Measurement>
+			</Results>
+			<Labels>
+				<Label>gtest</Label>
+			</Labels>
+		</Test>
+		<EndDateTime>Aug 04 16:59 MSK</EndDateTime>
+		<EndTestTime>1628085562</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>

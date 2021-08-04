@@ -1,0 +1,4 @@
+[requires]
+xtensor/0.21.5
+[generators]
+cmake

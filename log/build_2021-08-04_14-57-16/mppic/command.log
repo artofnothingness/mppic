@@ -1,0 +1,2 @@
+Invoking command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --build /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic -- -j4 -l4
+Invoked command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic' returned '2': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --build /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic -- -j4 -l4

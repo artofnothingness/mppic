@@ -6,14 +6,14 @@
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
-#include "xtensor/xarray.hpp"
 #include "algorithm"
+#include "xtensor/xarray.hpp"
 
 namespace ultra::mppi::utils {
 
-using geometry_msgs::msg::TwistStamped;
-using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::Pose;
+using geometry_msgs::msg::PoseStamped;
+using geometry_msgs::msg::TwistStamped;
 
 using rclcpp_lifecycle::LifecycleNode;
 using std::string;
@@ -35,9 +35,7 @@ TwistStamped toTwistStamped(auto const &velocities, auto const &header) {
   return twist;
 }
 
-
-template <typename T>
-auto hypot(T const &p1, T const &p2) {
+template <typename T> auto hypot(T const &p1, T const &p2) {
   double dx = p1.x - p2.x;
   double dy = p1.y - p2.y;
   double dz = p1.z - p2.z;
@@ -45,23 +43,18 @@ auto hypot(T const &p1, T const &p2) {
   return std::hypot(dx, dy, dz);
 }
 
-template<>
-auto hypot(Pose const &lhs, Pose const &rhs) {
+template <> auto hypot(Pose const &lhs, Pose const &rhs) {
   auto const &p1 = rhs.position;
   auto const &p2 = lhs.position;
 
   return hypot(p1, p2);
 }
 
-template<>
-auto hypot(PoseStamped const &lhs, PoseStamped const &rhs) {
+template <> auto hypot(PoseStamped const &lhs, PoseStamped const &rhs) {
   auto const &p1 = rhs.pose;
   auto const &p2 = lhs.pose;
 
   return hypot(p1, p2);
 }
-
-
-
 
 } // namespace ultra::mppi::utils
