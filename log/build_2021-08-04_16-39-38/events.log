@@ -1,4 +1,0 @@
-[0.000000] (-) TimerEvent: {}
-[0.000332] (-) JobUnselected: {'identifier': 'mppic'}
-[0.000481] (-) JobUnselected: {'identifier': 'nav2_pure_pursuit_controller'}
-[0.001042] (-) EventReactorShutdown: {}

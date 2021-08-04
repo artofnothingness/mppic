@@ -1,1 +1,0 @@
-ament_cmake_symlink_install_targets("TARGET_FILES" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/lib/libmppic.so" "TARGETS" "mppic" "ARCHIVE_DESTINATION" "lib" "LIBRARY_DESTINATION" "lib" "RUNTIME_DESTINATION" "bin")
