@@ -76,11 +76,20 @@ public:
    * @brief Evaluate next control
    *
    * @param Pose current pose of the robot
-   * @param Twist Current speed of the rosbot
+   * @param Twist current speed of the rosbot
+   * @param Path global plan
    * @return Next control
    */
-  auto evalNextControl(const PoseStamped &pose, const Twist &twist, const Path &path)
-      -> TwistStamped {
+  /**
+   * @brief Evaluate next control
+   *
+   * @param pose current pose of the robot
+   * @param twist curent speed of the robot
+   * @param path global plan
+   * @return best control
+   */
+  auto evalNextControl(const PoseStamped &pose, const Twist &twist,
+                       const Path &path) -> TwistStamped {
 
     for (int i = 0; i < iteration_count_; ++i) {
       Tensor trajectories = generateNoisedTrajectoryBatches(pose, twist);
@@ -169,8 +178,9 @@ private:
         2);
   }
 
-  Tensor evalBatchesCosts(const Tensor &trajectory_batches, const Path &path) const {
-    (void) path;
+  Tensor evalBatchesCosts(const Tensor &trajectory_batches,
+                          const Path &path) const {
+    (void)path;
 
     std::vector<size_t> shape = {trajectory_batches.shape()[0]};
 
