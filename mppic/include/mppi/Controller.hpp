@@ -8,53 +8,60 @@
 
 #include "mppi/Optimizer.hpp"
 #include "mppi/Utils.hpp"
+
 #include "mppi/Models.hpp"
 
 
 namespace ultra::mppi {
+
+using std::string;
+using std::shared_ptr;
+
+using tf2_ros::Buffer;
+using rclcpp_lifecycle::LifecycleNode;
+
+using geometry_msgs::msg::PoseStamped;
+using geometry_msgs::msg::TwistStamped;
+using geometry_msgs::msg::Twist;
+using nav_msgs::msg::Path;
+
+using nav2_costmap_2d::Costmap2DROS;
 
 template<typename T>
 class Controller : public nav2_core::Controller {
 
   using Optimizer = optimization::Optimizer<T>;
 
-  using PoseStamped = geometry_msgs::msg::PoseStamped;
-  using Twist = geometry_msgs::msg::Twist;
-  using TwistStamped = geometry_msgs::msg::TwistStamped;
-  using Path = nav_msgs::msg::Path;
-  using Costmap2DROS = nav2_costmap_2d::Costmap2DROS;
-  using TfBuffer = tf2_ros::Buffer;
-  using ManagedNode = rclcpp_lifecycle::LifecycleNode;
-
 public:
   Controller() = default;
   ~Controller() override = default;
 
-  void configure(ManagedNode::SharedPtr const &parent,
-                 std::string node_name, 
-                 std::shared_ptr<TfBuffer> const &tf,
-                 std::shared_ptr<Costmap2DROS> const &costmap_ros) override {
+  void configure(LifecycleNode::SharedPtr const& parent,
+                 string node_name, 
+                 shared_ptr<Buffer> const& tf,
+                 shared_ptr<Costmap2DROS> const& costmap_ros) override {
 
-    m_optimizer_ = Optimizer(parent, node_name, tf, costmap_ros, models::NaiveModel<T>);
+    auto &model = models::NaiveModel<T>;
+
+    optimizer_ = Optimizer(parent, node_name, tf, costmap_ros, model);
   }
 
   void cleanup() override {}
   void activate() override {}
   void deactivate() override {}
 
-  auto computeVelocityCommands(PoseStamped const &pose, Twist const &velocity)
+  auto computeVelocityCommands(PoseStamped const& pose, Twist const& velocity)
   -> TwistStamped override {
-    return m_optimizer_.evalNextControl(pose, velocity);
+    return optimizer_.evalNextControl(pose, velocity);
   }
 
-  void setPlan(Path const &path) override { m_optimizer_.setPlan(path); }
+  void setPlan(Path const &path) override { optimizer_.setPlan(path); }
 
 private:
-  rclcpp_lifecycle::LifecycleNode::SharedPtr m_parent;
-  std::string m_node_name_;
+  LifecycleNode::SharedPtr parent_;
+  std::string node_name_;
 
-  // Entities
-  Optimizer m_optimizer_;
+  Optimizer optimizer_;
 };
 
 } // namespace ultra::mppi

@@ -3,16 +3,14 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "tf2/utils.h"
 
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
-#include "geometry_msgs/msg/twist_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
-#include "xtensor/xadapt.hpp"
 #include "xtensor/xarray.hpp"
-#include "xtensor/xio.hpp"
 #include "xtensor/xrandom.hpp"
 #include "xtensor/xslice.hpp"
 #include <xtensor/xmath.hpp>
@@ -22,51 +20,62 @@
 
 namespace ultra::mppi::optimization {
 
-template <
-  typename T, 
-  typename Tensor = xt::xarray<T> 
->
+using std::shared_ptr;
+using std::string;
+
+using nav2_costmap_2d::Costmap2D;
+using nav2_costmap_2d::Costmap2DROS;
+using rclcpp_lifecycle::LifecycleNode;
+
+using tf2_ros::Buffer;
+
+using geometry_msgs::msg::PoseStamped;
+using geometry_msgs::msg::Twist;
+using geometry_msgs::msg::TwistStamped;
+using nav_msgs::msg::Path;
+
+template <typename T, typename Tensor = xt::xarray<T>,
+          typename Model = Tensor(Tensor const &),
+          typename Cost = Tensor(Tensor const &, Path const &,
+                                 std::shared_ptr<Costmap2DROS> const &)>
 class Optimizer {
 public:
-  using ManagedNode = rclcpp_lifecycle::LifecycleNode;
-  using Costmap2DROS = nav2_costmap_2d::Costmap2DROS;
-  using TfBuffer = tf2_ros::Buffer;
-
-  using TwistStamped = geometry_msgs::msg::TwistStamped;
-  using Twist = geometry_msgs::msg::Twist;
-  using PoseStamped = geometry_msgs::msg::PoseStamped;
-  using Path = nav_msgs::msg::Path;
-
   Optimizer() = default;
   ~Optimizer() = default;
 
-  template<typename Callable>
-  Optimizer(
-      ManagedNode::SharedPtr const& parent, 
-      std::string const& node_name, 
-      std::shared_ptr<TfBuffer> const &tf,
-      std::shared_ptr<Costmap2DROS> const& costmap_ros,
-      Callable&& model) {
+  Optimizer(LifecycleNode::SharedPtr const &parent, string const &node_name,
+            shared_ptr<Buffer> const &tf,
+            shared_ptr<Costmap2DROS> const &costmap_ros, Model &&model) {
 
-      m_parent = parent;
-      m_costmap_ros_ = costmap_ros;
-      m_tf_ = tf;
-      m_node_name_ = node_name;
+    parent_ = parent;
+    costmap_ros_ = costmap_ros;
+    tf_buffer_ = tf;
+    node_name_ = node_name;
 
-      m_model = model;
+    model_ = model;
 
-      using namespace utils;
-      getParam("model_dt", 0.1, m_parent, m_model_dt);
-      getParam("time_steps", 20, m_parent, m_time_steps);
-      getParam("batch_size", 100, m_parent, m_batch_size);
-      getParam("std_v", 0.1, m_parent, m_std_v);
-      getParam("std_w", 0.1, m_parent, m_std_w);
-      getParam("limit_v", 0.5, m_parent, m_limit_v);
-      getParam("limit_w", 1.0, m_parent, m_limit_w);
-      getParam("iteration_count", 2, m_parent, m_iterations_count);
-      getParam("lookahead_dist", 1.2, m_parent, m_lookahead_dist);
-      getParam("temperature", 0.25, m_parent, m_temperature);
-      resetBatches();
+    using namespace utils;
+    getParam("model_dt", 0.1, parent_, model_dt_);
+    getParam("time_steps", 20, parent_, time_steps_);
+    getParam("batch_size", 100, parent_, batch_size_);
+    getParam("std_v", 0.1, parent_, std_v_);
+    getParam("std_w", 0.1, parent_, std_w_);
+    getParam("limit_v", 0.5, parent_, limit_v_);
+    getParam("limit_w", 1.0, parent_, limit_w_);
+    getParam("iteration_count", 2, parent_, iteration_count_);
+    getParam("lookahead_dist", 1.2, parent_, lookagead_dist_);
+    getParam("temperature", 0.25, parent_, temperature_);
+    resetBatches();
+  }
+
+  void setPlan(Path const &path) { global_plan_ = path; }
+
+  void resetBatches() {
+    batches_ = xt::zeros<float>({batch_size_, time_steps_, last_dim_});
+
+    xt::view(batches_, xt::all(), xt::all(), 4) = model_dt_;
+
+    control_sequence_ = xt::zeros<float>({time_steps_, control_dim_size_});
   }
 
   /**
@@ -74,104 +83,72 @@ public:
    *
    * @param Pose current pose of the robot
    * @param Twist Current speed of the rosbot
-   * @param Path Current global path
    * @return Next control
    */
-  auto evalNextControl(PoseStamped const& pose, Twist const& twist)
-  -> TwistStamped {
-    (void)pose;
-    (void)twist;
+  auto evalNextControl(PoseStamped const &pose, Twist const &twist)
+      -> TwistStamped {
 
-    for (int i = 0; i < m_iterations_count; ++i) {
+    auto transformed_plan = transformGlobalPlan(pose);
+
+    for (int i = 0; i < iteration_count_; ++i) {
       Tensor trajectories = generateNoisedTrajectoryBatches(pose, twist);
-      /* Tensor costs = evalBatchesCosts(trajectories);  // TODO */
-      /* updateControlSequence(costs); // NOT TESTED */
+      Tensor costs = evalBatchesCosts(trajectories);
+      updateControlSequence(costs);
     }
 
-    return TwistStamped{}; // TODO
+    return getControlFromSequence(pose.header);
   };
 
-  void setPlan(Path const &path) { m_global_plan_ = path; }
-
-  void resetBatches() {
-    m_batches = xt::zeros<float>({m_batch_size, m_time_steps, m_last_dim});
-    xt::view(m_batches, xt::all(), xt::all(), 4) = m_model_dt;
-
-    m_control_sequence = xt::zeros<float>({m_time_steps, m_control_dim});
-  }
-
 private:
-  void updateControlSequence(Tensor costs) {
-    costs = costs - xt::amin(costs);
-    auto exponents = xt::exp(-1 / m_temperature * costs);
-    auto softmaxes = exponents / xt::sum(exponents); // Shape = [ batch_size ]
-    auto values = Tensor(xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis()));
-
-    m_control_sequence = getControlBatches() * xt::sum(softmaxes, 0);
-  }
-
-  Tensor evalBatchesCosts(Tensor const& trajectory_batches) const {
-    return m_cost(trajectory_batches, m_global_plan_);
-  }
-
-
-  Tensor generateNoisedTrajectoryBatches(PoseStamped const& pose, Twist const& twist) {
+  Tensor generateNoisedTrajectoryBatches(PoseStamped const &pose,
+                                         Twist const &twist) {
     getControlBatches() = generateNoisedControlBatches();
     applyControlConstraints();
     setBatchesVelocity(twist);
     return integrateVelocityBatches(pose);
   }
 
-  void applyControlConstraints(){
-    xt::clip(getLinearVelocitControlBatches(), -m_limit_v, m_limit_v); // TODO Does it clip tensor itself or do i need to assign?
-    xt::clip(getAngularVelocityControlBatches(), -m_limit_w, m_limit_w);
+  auto generateNoisedControlBatches() -> Tensor {
+
+    auto v_noises =
+        xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, std_v_);
+    auto w_noises =
+        xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, std_w_);
+
+    return control_sequence_ + xt::concatenate(xtuple(v_noises, w_noises), 2);
   }
 
-  void setBatchesVelocity(Twist const& twist) {
+  void applyControlConstraints() {
+    auto v = getLinearVelocityControlBatches();
+    auto w = getAngularVelocityControlBatches();
+
+    v = xt::clip(v, -limit_v_, limit_v_);
+    w = xt::clip(w, -limit_w_, limit_w_);
+  }
+
+  void setBatchesVelocity(Twist const &twist) {
     setBatchesInitialVelocities(twist);
     propagateBatchesVelocityFromInitials();
   }
 
-  void setBatchesInitialVelocities(Twist const& twist) {
-    xt::view(m_batches, xt::all(), 0, 0) = twist.linear.x;
-    xt::view(m_batches, xt::all(), 0, 1) = twist.angular.z;
+  void setBatchesInitialVelocities(Twist const &twist) {
+    xt::view(batches_, xt::all(), 0, 0) = twist.linear.x;
+    xt::view(batches_, xt::all(), 0, 1) = twist.angular.z;
   }
 
   void propagateBatchesVelocityFromInitials() {
     using namespace xt::placeholders;
 
-    for (int t = 0; t < m_time_steps - 1; t++) {
-      auto curr_batch = xt::view(m_batches, xt::all(), t); // -> batch x 5
-      auto predicted_velocities = m_model(curr_batch); // -> batch x 2
-      auto next_batch_velocities = xt::view(m_batches, xt::all(), t + 1, xt::range(_, 2));  // batch x 2
+    for (int t = 0; t < time_steps_ - 1; t++) {
+      auto curr_batch = xt::view(batches_, xt::all(), t); // -> batch x 5
+      auto next_batch_velocities =
+          xt::view(batches_, xt::all(), t + 1, xt::range(_, 2)); // batch x 2
 
-      next_batch_velocities = predicted_velocities;
+      next_batch_velocities = model_(curr_batch);
     }
   }
 
-  decltype(auto) getControlBatches() {
-    return xt::view(m_batches, xt::all(), xt::all(), xt::range(2, 4));
-  }
-
-  decltype(auto) getLinearVelocitControlBatches() {
-    return xt::view(m_batches, xt::all(), xt::all(), 2);
-  }
-
-  decltype(auto) getAngularVelocityControlBatches() {
-    return xt::view(m_batches, xt::all(), xt::all(), 3);
-  }
-
-  auto generateNoisedControlBatches()
-  -> Tensor {
-
-    auto v_noises = xt::random::randn<T>({m_batch_size, m_time_steps, 1}, 0.0, m_std_v);
-    auto w_noises = xt::random::randn<T>({m_batch_size, m_time_steps, 1}, 0.0, m_std_w);
-
-    return m_control_sequence + xt::concatenate(xtuple(v_noises, w_noises), 2);
-  }
-
-  auto integrateVelocityBatches(PoseStamped const& robot_pose) const
-  -> Tensor {
+  auto integrateVelocityBatches(PoseStamped const &robot_pose) const -> Tensor {
 
     using namespace xt::placeholders;
 
@@ -179,58 +156,203 @@ private:
     double robot_y = robot_pose.pose.position.y;
     double robot_yaw = tf2::getYaw(robot_pose.pose.orientation);
 
-    auto v = xt::view(m_batches, xt::all(), xt::all(), 0);
-    auto w = xt::view(m_batches, xt::all(), xt::all(), 1);
+    auto v = xt::view(batches_, xt::all(), xt::all(), 0);
+    auto w = xt::view(batches_, xt::all(), xt::all(), 1);
 
-    auto yaw = xt::cumsum(w * m_model_dt, 1);
+    auto yaw = xt::cumsum(w * model_dt_, 1);
     yaw -= xt::view(yaw, xt::all(), xt::range(_, 1));
 
     yaw += robot_yaw;
 
-    auto x = xt::cumsum(v * xt::cos(yaw) * m_model_dt, 1);
-    auto y = xt::cumsum(v * xt::sin(yaw) * m_model_dt, 1);
+    auto x = xt::cumsum(v * xt::cos(yaw) * model_dt_, 1);
+    auto y = xt::cumsum(v * xt::sin(yaw) * model_dt_, 1);
 
-    x += robot_x - xt::view(x, xt::all(), xt::range(_, 1) );
-    y += robot_y - xt::view(x, xt::all(), xt::range(_, 1) );
+    x += robot_x - xt::view(x, xt::all(), xt::range(_, 1));
+    y += robot_y - xt::view(x, xt::all(), xt::range(_, 1));
 
-    return xt::concatenate(xtuple(
-      xt::view(x, xt::all(), xt::all(), xt::newaxis()),
-      xt::view(y, xt::all(), xt::all(), xt::newaxis()),
-      xt::view(yaw, xt::all(), xt::all(), xt::newaxis())
-      ), 2);
+    return xt::concatenate(
+        xtuple(xt::view(x, xt::all(), xt::all(), xt::newaxis()),
+               xt::view(y, xt::all(), xt::all(), xt::newaxis()),
+               xt::view(yaw, xt::all(), xt::all(), xt::newaxis())),
+        2);
   }
 
-public:
-  ManagedNode::SharedPtr m_parent;
-  Path m_global_plan_;
-  std::string m_node_name_;
-  std::shared_ptr<Costmap2DROS> m_costmap_ros_;
-  std::shared_ptr<TfBuffer> m_tf_;
+  Tensor evalBatchesCosts(Tensor const &trajectory_batches) const {
+    std::vector<size_t> shape = {trajectory_batches.shape()[0]};
 
-  static int constexpr m_last_dim = 5;
-  static int constexpr m_control_dim = 2;
-  int m_time_steps;
-  int m_batch_size;
+    auto obstacle_cost = xt::zeros<T>(shape);
+    auto reference_cost = xt::zeros<T>(shape);
+    auto goal_cost = xt::zeros<T>(shape);
 
-  double m_model_dt;
-  double m_std_v;
-  double m_std_w;
-  double m_limit_w;
-  double m_limit_v;
+    return obstacle_cost + reference_cost + goal_cost;
+  }
 
-  int m_iterations_count;
-  double m_lookahead_dist;
+  template <typename Iter, typename Stamp>
+  Path getTransformedToLocalPlan(Iter begin, Iter end, Stamp const &stamp) {
 
-  double m_temperature;
+    auto transform_pose = [&](auto const &global_plan_pose) {
+      PoseStamped global_pose;
+      PoseStamped local_pose;
 
-  Tensor m_batches;
-  Tensor m_control_sequence;
+      global_pose.header.frame_id = global_plan_.header.frame_id;
+      global_pose.header.stamp = stamp;
+      global_pose.pose = global_plan_pose.pose;
 
-  using model_t = Tensor(Tensor);
-  std::function<model_t> m_model;
+      transformPose(costmap_ros_->getBaseFrameID(), global_pose, local_pose);
+      return local_pose;
+    };
 
-  using cost_t = Tensor(Tensor const&, Path const&, Costmap2DROS const&);
-  std::function<cost_t> m_cost;
+    Path plan;
+    std::transform(begin, end, std::back_inserter(plan.poses), transform_pose);
+
+    plan.header.frame_id = costmap_ros_->getBaseFrameID();
+    plan.header.stamp = stamp;
+
+    return plan;
+  }
+
+  auto pruneGlobalPlan(auto const &end) {
+    global_plan_.poses.erase(global_plan_.poses.begin(), end);
+  }
+
+  Path transformGlobalPlan(PoseStamped const &pose) {
+
+    auto robot_pose = transformToGlobalFrame(pose);
+    auto const &stamp = robot_pose.header.stamp;
+    double max_dist = getMaxTransformDistance();
+
+    auto &&[constrained_begin, constrained_end] =
+        getLocalPlanBounds(robot_pose, max_dist);
+
+    auto transformed_plan =
+        getTransformedToLocalPlan(constrained_begin, constrained_end, stamp);
+
+    pruneGlobalPlan(constrained_begin);
+
+    /* global_path_pub_->publish(transformed_plan); */
+
+    if (transformed_plan.poses.empty())
+      throw std::runtime_error("Resulting plan has 0 poses in it.");
+
+    return transformed_plan;
+  }
+
+  bool transformPose(string const &frame, PoseStamped const &in_pose,
+                     PoseStamped &out_pose) const {
+
+    if (in_pose.header.frame_id == frame) {
+      out_pose = in_pose;
+      return true;
+    }
+
+    try {
+      tf_buffer_->transform(in_pose, out_pose, frame,
+                            tf2::durationFromSec(transform_tolerance_));
+      out_pose.header.frame_id = frame;
+      return true;
+    } catch (tf2::TransformException &ex) {
+      RCLCPP_ERROR(parent_->get_logger(), "Exception in transformPose: %s",
+                   ex.what());
+    }
+    return false;
+  }
+
+  auto transformToGlobalFrame(PoseStamped const &pose) -> PoseStamped {
+
+    if (global_plan_.poses.empty()) {
+      throw std::runtime_error("Received plan with zero length");
+    }
+
+    geometry_msgs::msg::PoseStamped robot_pose;
+    if (!transformPose(global_plan_.header.frame_id, pose, robot_pose)) {
+      throw std::runtime_error(
+          "Unable to transform robot pose into global plan's frame");
+    }
+
+    return robot_pose;
+  }
+
+  auto getLocalPlanBounds(PoseStamped const &pose, double max_transform_dist) {
+
+    auto begin = global_plan_.poses.begin();
+    auto end = global_plan_.poses.end();
+
+    auto closest_point = std::min_element(
+        begin, end, [&pose](PoseStamped const& lhs, PoseStamped const& rhs) {
+          return utils::hypot(lhs, pose) < utils::hypot(rhs, pose);
+        });
+
+    // Find points definitely outside of the costmap so we won't transform them.
+    auto outside_costmap_point = std::find_if(
+        closest_point, end, [&](PoseStamped const &global_plan_pose) {
+          return utils::hypot(pose, global_plan_pose) > max_transform_dist;
+        });
+
+    return std::tuple{closest_point, outside_costmap_point};
+  }
+
+  double getMaxTransformDistance() {
+    Costmap2D *costmap = costmap_ros_->getCostmap();
+
+    return std::max(costmap->getSizeInCellsX(), costmap->getSizeInCellsY()) *
+           costmap->getResolution() / 2.0;
+  }
+
+  void updateControlSequence(Tensor costs) {
+    costs = costs - xt::amin(costs);
+    auto exponents = xt::exp(-1 / temperature_ * costs);
+    auto softmaxes = exponents / xt::sum(exponents);
+    auto softmaxes_expanded =
+        xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
+
+    control_sequence_ = xt::sum(getControlBatches() * softmaxes_expanded, 0);
+  }
+
+  TwistStamped getControlFromSequence(auto const &header) {
+    return utils::toTwistStamped(xt::view(control_sequence_, 0), header);
+  }
+
+  decltype(auto) getControlBatches() {
+    return xt::view(batches_, xt::all(), xt::all(), xt::range(2, 4));
+  }
+
+  decltype(auto) getLinearVelocityControlBatches() {
+    return xt::view(batches_, xt::all(), xt::all(), 2);
+  }
+
+  decltype(auto) getAngularVelocityControlBatches() {
+    return xt::view(batches_, xt::all(), xt::all(), 3);
+  }
+
+private:
+  LifecycleNode::SharedPtr parent_;
+  Path global_plan_;
+  std::string node_name_;
+  std::shared_ptr<Costmap2DROS> costmap_ros_;
+  std::shared_ptr<Buffer> tf_buffer_;
+
+  static int constexpr last_dim_ = 5;
+  static int constexpr control_dim_size_ = 2;
+  int time_steps_;
+  int batch_size_;
+
+  double model_dt_;
+  double std_v_;
+  double std_w_;
+  double limit_w_;
+  double limit_v_;
+
+  int iteration_count_;
+  double lookagead_dist_;
+
+  double temperature_;
+
+  Tensor batches_;
+  Tensor control_sequence_;
+
+  std::function<Model> model_;
+
+  static double constexpr transform_tolerance_ = 0.1;
 };
 
-} // namespace ultra::mppi
+} // namespace ultra::mppi::optimization

@@ -30,7 +30,7 @@ protected:
     auto cost_map = std::make_shared<Costmap2DROS>("cost_map_node");
     auto tf_buffer = std::shared_ptr<TfBuffer>();
 
-    auto model = models::NaiveModel<T>;
+    auto &model = models::NaiveModel<T>;
 
     auto optimizer = Optimizer(node, node_name, tf_buffer, cost_map, model);
   }
