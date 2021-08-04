@@ -1,0 +1,44 @@
+UpdateCTestConfiguration  from :/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/CTestConfiguration.ini
+Parse Config file:/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/CTestConfiguration.ini
+   Site: alex-G771JW
+   Build name: (empty)
+ Add coverage exclude regular expressions.
+SetCTestConfiguration:CMakeCommand:/usr/bin/cmake
+Create new tag: 20210804-1359 - Experimental
+UpdateCTestConfiguration  from :/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/CTestConfiguration.ini
+Parse Config file:/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/CTestConfiguration.ini
+Test project /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: optimizer-test
+
+1: Test command: /usr/bin/python3 "-u" "/opt/ros/foxy/share/ament_cmake_test/cmake/run_test.py" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml" "--package-name" "mppic" "--output-file" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/ament_cmake_gtest/optimizer-test.txt" "--command" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/bin/optimizer-test" "--gtest_output=xml:/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml"
+1: Test timeout computed to be: 60
+1: -- run_test.py: invoking following command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test':
+1:  - /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/bin/optimizer-test --gtest_output=xml:/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml
+1: [==========] Running 1 test from 1 test case.
+1: [----------] Global test environment set-up.
+1: [----------] 1 test from OptimizerTest
+1: [ RUN      ] OptimizerTest.evalNextControlTest
+1: [       OK ] OptimizerTest.evalNextControlTest (0 ms)
+1: [----------] 1 test from OptimizerTest (0 ms total)
+1: 
+1: [----------] Global test environment tear-down
+1: [==========] 1 test from 1 test case ran. (0 ms total)
+1: [  PASSED  ] 1 test.
+1: -- run_test.py: return code 0
+1: -- run_test.py: inject classname prefix into gtest result file '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml'
+1: -- run_test.py: verify result file '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml'
+1/1 Test #1: optimizer-test ...................   Passed    0.12 sec
+
+[0;32m100% tests passed[0;0m, 0 tests failed[0;0m out of 1
+
+Label Time Summary:
+gtest    =   0.12 sec*proc (1 test)
+
+Total Test time (real) =   0.13 sec

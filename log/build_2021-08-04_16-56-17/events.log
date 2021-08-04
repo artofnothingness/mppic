@@ -1,0 +1,155 @@
+[0.000000] (-) TimerEvent: {}
+[0.000620] (-) JobUnselected: {'identifier': 'nav2_pure_pursuit_controller'}
+[0.000973] (mppic) JobQueued: {'identifier': 'mppic', 'dependencies': OrderedDict()}
+[0.006876] (mppic) JobStarted: {'identifier': 'mppic'}
+[0.022681] (mppic) JobProgress: {'identifier': 'mppic', 'progress': 'cmake'}
+[0.025185] (mppic) JobProgress: {'identifier': 'mppic', 'progress': 'build'}
+[0.026984] (mppic) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic', '--', '-j4', '-l4'], 'cwd': '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic', 'env': OrderedDict([('TMUX', '/tmp//tmux-1000/default,3133,0'), ('LC_TIME', 'ru_RU.UTF-8'), ('USER', 'alex'), ('XDG_SEAT', 'seat0'), ('SSH_AGENT_PID', '1925'), ('XDG_SESSION_TYPE', 'x11'), ('CC_OV_IMAGE', 'cc_ov_image'), ('LD_LIBRARY_PATH', '/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/foxy/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/opt/rviz_ogre_vendor/lib:/opt/ros/foxy/lib/x86_64-linux-gnu:/opt/ros/foxy/lib'), ('SHLVL', '2'), ('HOME', '/home/alex'), ('LESS', '-R'), ('OLDPWD', '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms'), ('DESKTOP_SESSION', 'i3'), ('LSCOLORS', 'Gxfxcxdxbxegedabagacad'), ('ZSH', '/home/alex/.oh-my-zsh'), ('GTK_MODULES', 'gail:atk-bridge'), ('PAGER', 'less'), ('ROS_PYTHON_VERSION', '3'), ('LC_MONETARY', 'ru_RU.UTF-8'), ('NIX_PROFILES', '/nix/var/nix/profiles/default /home/alex/.nix-profile'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('NIX_PATH', '/home/alex/.nix-defexpr/channels'), ('NOTES_DIRECTORY', '/home/alex/Documents/Notes'), ('P9K_TTY', 'old'), ('VISUAL', 'nvim'), ('COLORTERM', 'truecolor'), ('CC_OV_CONTAINER', 'cc_ov'), ('ROSBOT_CONTROL_PATH', '/home/alex/Media/Develop/Job/ros/mppi_ws/src'), ('ROS_DISTRO', 'foxy'), ('LOGNAME', 'alex'), ('WINDOWID', '16777218'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('ALACRITTY_LOG', '/tmp/Alacritty-2005.log'), ('GAZEBO_MODEL_PATH', ':/opt/ros/foxy/share/turtlebot3_gazebo/models:/opt/ros/foxy/share/turtlebot3_gazebo/models'), ('TERM', 'xterm-256color'), ('USERNAME', 'alex'), ('XDG_SESSION_ID', '2'), ('AUTOJUMP_ERROR_PATH', '/home/alex/.local/share/autojump/errors.log'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/home/alex/.autojump/bin:/home/alex/.autojump/bin:/home/alex/bin:/home/alex/.local/bin:/opt/ros/foxy/bin:/home/alex/.autojump/bin:/home/alex/.autojump/bin:/home/alex/bin:/home/alex/.local/bin:/home/alex/.cargo/bin:/home/alex/.nix-profile/bin:/home/alex/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/alex/.fzf/bin'), ('LC_ADDRESS', 'ru_RU.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('LC_TELEPHONE', 'ru_RU.UTF-8'), ('XDG_CURRENT_DESKTOP', 'i3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('XDG_SESSION_DESKTOP', 'i3'), ('AMENT_PREFIX_PATH', '/opt/ros/foxy'), ('ROS_DOMAIN_ID', '30'), ('SSH_AUTH_SOCK', '/tmp/ssh-1OxlomOa9lbq/agent.1856'), ('is_vim', 'echo "#{pane_current_command}" | grep -iqE "(^|\\/)g?(view|n?vim?)(diff)?$"'), ('LC_NAME', 'ru_RU.UTF-8'), ('SHELL', '/usr/bin/zsh'), ('CXX', '/usr/bin/g++-9'), ('GDMSESSION', 'i3'), ('QT_ACCESSIBILITY', '1'), ('CC_OV_PATH', '/home/alex/Media/Develop/Job/ML-Inference/examples/CXX/openvino'), ('LC_MEASUREMENT', 'ru_RU.UTF-8'), ('NIX_SSL_CERT_FILE', '/etc/ssl/certs/ca-certificates.crt'), ('ROSBOT_CONTROL_CONTAINER_NAME', 'gazebo-control'), ('GAZEBO_RESOURCE_PATH', '/usr/share/gazebo-11:/usr/share/gazebo-11/models:/usr/share/gazebo-11:/usr/share/gazebo-11/models:'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'ru_RU.UTF-8'), ('P9K_SSH', '0'), ('XDG_VTNR', '2'), ('FZF_DEFAULT_COMMAND', 'rg --files --hidden --glob "!.git/*"'), ('PWD', '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-i3:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/i3:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('_P9K_TTY', '/dev/pts/2'), ('AUTOJUMP_SOURCED', '1'), ('LC_NUMERIC', 'ru_RU.UTF-8'), ('PYTHONPATH', '/opt/ros/foxy/lib/python3.8/site-packages'), ('CC', '/usr/bin/gcc-9'), ('I3SOCK', '/run/user/1000/i3/ipc-socket.1856'), ('LC_PAPER', 'ru_RU.UTF-8'), ('COLCON', '1'), ('TMUX_PANE', '%1'), ('EDITOR', 'nvim'), ('MARKPATH', '/home/alex/.marks'), ('CMAKE_PREFIX_PATH', '/opt/ros/foxy')]), 'shell': False}
+[0.097970] (-) TimerEvent: {}
+[0.110191] (mppic) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target mppic\x1b[0m\n'}
+[0.116067] (mppic) StdoutLine: {'line': b'[ 25%] Built target gtest\n'}
+[0.117611] (mppic) StdoutLine: {'line': b'[ 50%] Built target gtest_main\n'}
+[0.142876] (mppic) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target optimizer-test\x1b[0m\n'}
+[0.198059] (-) TimerEvent: {}
+[0.298414] (-) TimerEvent: {}
+[0.398755] (-) TimerEvent: {}
+[0.499099] (-) TimerEvent: {}
+[0.535914] (mppic) StdoutLine: {'line': b'[ 62%] \x1b[32mBuilding CXX object src/CMakeFiles/mppic.dir/Controller.cpp.o\x1b[0m\n'}
+[0.587262] (mppic) StdoutLine: {'line': b'[ 75%] \x1b[32mBuilding CXX object test/CMakeFiles/optimizer-test.dir/OptimizerTest.cpp.o\x1b[0m\n'}
+[0.599218] (-) TimerEvent: {}
+[0.699649] (-) TimerEvent: {}
+[0.800014] (-) TimerEvent: {}
+[0.900404] (-) TimerEvent: {}
+[1.000813] (-) TimerEvent: {}
+[1.101310] (-) TimerEvent: {}
+[1.201861] (-) TimerEvent: {}
+[1.302291] (-) TimerEvent: {}
+[1.402666] (-) TimerEvent: {}
+[1.503064] (-) TimerEvent: {}
+[1.603537] (-) TimerEvent: {}
+[1.703947] (-) TimerEvent: {}
+[1.804353] (-) TimerEvent: {}
+[1.904761] (-) TimerEvent: {}
+[2.005169] (-) TimerEvent: {}
+[2.105585] (-) TimerEvent: {}
+[2.205993] (-) TimerEvent: {}
+[2.306405] (-) TimerEvent: {}
+[2.406961] (-) TimerEvent: {}
+[2.507491] (-) TimerEvent: {}
+[2.608020] (-) TimerEvent: {}
+[2.708544] (-) TimerEvent: {}
+[2.809081] (-) TimerEvent: {}
+[2.909637] (-) TimerEvent: {}
+[3.010150] (-) TimerEvent: {}
+[3.111002] (-) TimerEvent: {}
+[3.211560] (-) TimerEvent: {}
+[3.312093] (-) TimerEvent: {}
+[3.412586] (-) TimerEvent: {}
+[3.513148] (-) TimerEvent: {}
+[3.613658] (-) TimerEvent: {}
+[3.714180] (-) TimerEvent: {}
+[3.814724] (-) TimerEvent: {}
+[3.915236] (-) TimerEvent: {}
+[4.015728] (-) TimerEvent: {}
+[4.116261] (-) TimerEvent: {}
+[4.216800] (-) TimerEvent: {}
+[4.317329] (-) TimerEvent: {}
+[4.417883] (-) TimerEvent: {}
+[4.518418] (-) TimerEvent: {}
+[4.618947] (-) TimerEvent: {}
+[4.719473] (-) TimerEvent: {}
+[4.820027] (-) TimerEvent: {}
+[4.920572] (-) TimerEvent: {}
+[5.021111] (-) TimerEvent: {}
+[5.121703] (-) TimerEvent: {}
+[5.222203] (-) TimerEvent: {}
+[5.265877] (mppic) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/../include/mppi/Controller.hpp:10\x1b[m\x1b[K,\n'}
+[5.266466] (mppic) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/Controller.cpp:1\x1b[m\x1b[K:\n'}
+[5.266879] (mppic) StderrLine: {'line': b'\x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/../include/mppi/PathHandler.hpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Knav_msgs::msg::Path ultra::mppi::handlers::PathHandler::transformPath(const PoseStamped&)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[5.267306] (mppic) StderrLine: {'line': b'\x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/../include/mppi/PathHandler.hpp:83:32:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[Kuse of \xe2\x80\x98\x1b[01m\x1b[Kauto ultra::mppi::handlers::PathHandler::pruneGlobalPlan(const auto:122&) [with auto:122 = __gnu_cxx::__normal_iterator<geometry_msgs::msg::PoseStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::PoseStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PoseStamped_<std::allocator<void> > > > >]\x1b[m\x1b[K\xe2\x80\x99 before deduction of \xe2\x80\x98\x1b[01m\x1b[Kauto\x1b[m\x1b[K\xe2\x80\x99\n'}
+[5.267707] (mppic) StderrLine: {'line': b'   83 |     pruneGlobalPlan(lower_bound\x1b[01;31m\x1b[K)\x1b[m\x1b[K;\n'}
+[5.268042] (mppic) StderrLine: {'line': b'      |                                \x1b[01;31m\x1b[K^\x1b[m\x1b[K\n'}
+[5.322334] (-) TimerEvent: {}
+[5.422833] (-) TimerEvent: {}
+[5.477754] (mppic) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/Controller.cpp:1\x1b[m\x1b[K:\n'}
+[5.478233] (mppic) StderrLine: {'line': b'/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/../include/mppi/Controller.hpp: In instantiation of \xe2\x80\x98\x1b[01m\x1b[Kgeometry_msgs::msg::TwistStamped ultra::mppi::Controller<T>::computeVelocityCommands(const PoseStamped&, const Twist&) [with T = float; geometry_msgs::msg::TwistStamped = geometry_msgs::msg::TwistStamped_<std::allocator<void> >; geometry_msgs::msg::PoseStamped = geometry_msgs::msg::PoseStamped_<std::allocator<void> >; geometry_msgs::msg::Twist = geometry_msgs::msg::Twist_<std::allocator<void> >]\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[5.478602] (mppic) StderrLine: {'line': b'\x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/Controller.cpp:6:29:\x1b[m\x1b[K   required from here\n'}
+[5.478931] (mppic) StderrLine: {'line': b'\x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/../include/mppi/Controller.hpp:65:33:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[Kmoving a local object in a return statement prevents copy elision [\x1b[01;31m\x1b[K-Werror=pessimizing-move\x1b[m\x1b[K]\n'}
+[5.479244] (mppic) StderrLine: {'line': b'   65 |     return std::move(control_cmd\x1b[01;31m\x1b[K)\x1b[m\x1b[K; // TODO\n'}
+[5.479549] (mppic) StderrLine: {'line': b'      |                                 \x1b[01;31m\x1b[K^\x1b[m\x1b[K\n'}
+[5.479867] (mppic) StderrLine: {'line': b'\x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/../include/mppi/Controller.hpp:65:33:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[Kremove \xe2\x80\x98\x1b[01m\x1b[Kstd::move\x1b[m\x1b[K\xe2\x80\x99 call\n'}
+[5.522952] (-) TimerEvent: {}
+[5.623450] (-) TimerEvent: {}
+[5.723981] (-) TimerEvent: {}
+[5.824490] (-) TimerEvent: {}
+[5.924975] (-) TimerEvent: {}
+[6.025464] (-) TimerEvent: {}
+[6.125921] (-) TimerEvent: {}
+[6.226441] (-) TimerEvent: {}
+[6.326934] (-) TimerEvent: {}
+[6.427453] (-) TimerEvent: {}
+[6.527937] (-) TimerEvent: {}
+[6.628407] (-) TimerEvent: {}
+[6.728915] (-) TimerEvent: {}
+[6.829422] (-) TimerEvent: {}
+[6.929981] (-) TimerEvent: {}
+[7.030443] (-) TimerEvent: {}
+[7.130934] (-) TimerEvent: {}
+[7.231412] (-) TimerEvent: {}
+[7.331886] (-) TimerEvent: {}
+[7.432346] (-) TimerEvent: {}
+[7.532829] (-) TimerEvent: {}
+[7.633306] (-) TimerEvent: {}
+[7.733818] (-) TimerEvent: {}
+[7.834308] (-) TimerEvent: {}
+[7.934799] (-) TimerEvent: {}
+[8.035280] (-) TimerEvent: {}
+[8.135776] (-) TimerEvent: {}
+[8.236264] (-) TimerEvent: {}
+[8.336759] (-) TimerEvent: {}
+[8.437225] (-) TimerEvent: {}
+[8.537694] (-) TimerEvent: {}
+[8.638206] (-) TimerEvent: {}
+[8.738665] (-) TimerEvent: {}
+[8.839244] (-) TimerEvent: {}
+[8.923543] (mppic) StdoutLine: {'line': b'[ 87%] \x1b[32m\x1b[1mLinking CXX executable ../bin/optimizer-test\x1b[0m\n'}
+[8.940542] (-) TimerEvent: {}
+[9.046306] (-) TimerEvent: {}
+[9.079602] (mppic) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/opt/ros/foxy/include/class_loader/class_loader_core.hpp:57\x1b[m\x1b[K,\n'}
+[9.080186] (mppic) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/foxy/include/class_loader/class_loader.hpp:55\x1b[m\x1b[K,\n'}
+[9.080565] (mppic) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/foxy/include/class_loader/multi_library_class_loader.hpp:52\x1b[m\x1b[K,\n'}
+[9.080990] (mppic) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/foxy/include/pluginlib/class_loader.hpp:58\x1b[m\x1b[K,\n'}
+[9.081391] (mppic) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/foxy/include/nav2_costmap_2d/costmap_2d_ros.hpp:53\x1b[m\x1b[K,\n'}
+[9.081736] (mppic) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/foxy/include/nav2_core/controller.hpp:42\x1b[m\x1b[K,\n'}
+[9.082194] (mppic) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/../include/mppi/Controller.hpp:3\x1b[m\x1b[K,\n'}
+[9.082657] (mppic) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/Controller.cpp:1\x1b[m\x1b[K:\n'}
+[9.083084] (mppic) StderrLine: {'line': b'/opt/ros/foxy/include/class_loader/meta_object.hpp: In instantiation of \xe2\x80\x98\x1b[01m\x1b[KB* class_loader::impl::MetaObject<C, B>::create() const [with C = ultra::mppi::Controller<float>; B = nav2_core::Controller]\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[9.083516] (mppic) StderrLine: {'line': b'\x1b[01m\x1b[K/opt/ros/foxy/include/class_loader/meta_object.hpp:216:7:\x1b[m\x1b[K   required from here\n'}
+[9.083950] (mppic) StderrLine: {'line': b'\x1b[01m\x1b[K/opt/ros/foxy/include/class_loader/meta_object.hpp:218:12:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[Kuse of deleted function \xe2\x80\x98\x1b[01m\x1b[Kultra::mppi::Controller<T>::Controller() [with T = float]\x1b[m\x1b[K\xe2\x80\x99\n'}
+[9.084359] (mppic) StderrLine: {'line': b'  218 |     return \x1b[01;31m\x1b[Knew C\x1b[m\x1b[K;\n'}
+[9.084714] (mppic) StderrLine: {'line': b'      |            \x1b[01;31m\x1b[K^~~~~\x1b[m\x1b[K\n'}
+[9.085120] (mppic) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/Controller.cpp:1\x1b[m\x1b[K:\n'}
+[9.085601] (mppic) StderrLine: {'line': b'\x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/../include/mppi/Controller.hpp:35:3:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kultra::mppi::Controller<T>::Controller() [with T = float]\x1b[m\x1b[K\xe2\x80\x99 is implicitly deleted because the default definition would be ill-formed:\n'}
+[9.085979] (mppic) StderrLine: {'line': b'   35 |   \x1b[01;36m\x1b[KController\x1b[m\x1b[K() = default;\n'}
+[9.086343] (mppic) StderrLine: {'line': b'      |   \x1b[01;36m\x1b[K^~~~~~~~~~\x1b[m\x1b[K\n'}
+[9.086756] (mppic) StderrLine: {'line': b'\x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/../include/mppi/Controller.hpp:35:3:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[Kuse of deleted function \xe2\x80\x98\x1b[01m\x1b[Kultra::mppi::handlers::PathHandler::PathHandler()\x1b[m\x1b[K\xe2\x80\x99\n'}
+[9.087215] (mppic) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/../include/mppi/Controller.hpp:10\x1b[m\x1b[K,\n'}
+[9.087560] (mppic) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/Controller.cpp:1\x1b[m\x1b[K:\n'}
+[9.087963] (mppic) StderrLine: {'line': b'\x1b[01m\x1b[K/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/src/../include/mppi/PathHandler.hpp:34:3:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[Kdeclared here\n'}
+[9.088378] (mppic) StderrLine: {'line': b'   34 |   \x1b[01;36m\x1b[KPathHandler\x1b[m\x1b[K() = delete;\n'}
+[9.088760] (mppic) StderrLine: {'line': b'      |   \x1b[01;36m\x1b[K^~~~~~~~~~~\x1b[m\x1b[K\n'}
+[9.146446] (-) TimerEvent: {}
+[9.246962] (-) TimerEvent: {}
+[9.347384] (-) TimerEvent: {}
+[9.447845] (-) TimerEvent: {}
+[9.519485] (mppic) StdoutLine: {'line': b'[ 87%] Built target optimizer-test\n'}
+[9.547963] (-) TimerEvent: {}
+[9.648365] (-) TimerEvent: {}
+[9.656229] (mppic) StderrLine: {'line': b'cc1plus: all warnings being treated as errors\n'}
+[9.682651] (mppic) StderrLine: {'line': b'make[2]: *** [src/CMakeFiles/mppic.dir/build.make:63: src/CMakeFiles/mppic.dir/Controller.cpp.o] Error 1\n'}
+[9.683261] (mppic) StderrLine: {'line': b'make[1]: *** [CMakeFiles/Makefile2:192: src/CMakeFiles/mppic.dir/all] Error 2\n'}
+[9.683626] (mppic) StderrLine: {'line': b'make: *** [Makefile:141: all] Error 2\n'}
+[9.685918] (mppic) CommandEnded: {'returncode': 2}
+[9.748508] (-) TimerEvent: {}
+[9.769577] (mppic) JobEnded: {'identifier': 'mppic', 'rc': 2}
+[9.781125] (-) EventReactorShutdown: {}

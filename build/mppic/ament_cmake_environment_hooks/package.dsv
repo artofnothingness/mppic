@@ -1,0 +1,4 @@
+source;share/mppic/local_setup.bash
+source;share/mppic/local_setup.dsv
+source;share/mppic/local_setup.sh
+source;share/mppic/local_setup.zsh

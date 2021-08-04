@@ -1,0 +1,44 @@
+[0.023s] Invoking command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --build /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic -- -j4 -l4
+[0.161s] [35m[1mScanning dependencies of target mppic[0m
+[0.168s] [ 25%] Built target gtest
+[0.179s] [ 50%] Built target gtest_main
+[0.206s] [35m[1mScanning dependencies of target optimizer-test[0m
+[0.605s] [ 62%] [32mBuilding CXX object src/CMakeFiles/mppic.dir/Controller.cpp.o[0m
+[0.657s] [ 75%] [32mBuilding CXX object test/CMakeFiles/optimizer-test.dir/OptimizerTest.cpp.o[0m
+[9.059s] [ 87%] [32m[1mLinking CXX executable ../bin/optimizer-test[0m
+[9.809s] [ 87%] Built target optimizer-test
+[16.862s] [100%] [32m[1mLinking CXX shared library ../lib/libmppic.so[0m
+[18.414s] [100%] Built target mppic
+[18.433s] Invoked command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic' returned '0': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --build /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic -- -j4 -l4
+[18.485s] Invoking command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --install /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic
+[18.498s] -- Install configuration: "DEBUG"
+[18.499s] -- Execute custom install script
+[18.503s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/lib/libmppic.so
+[18.520s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/Controller.hpp
+[18.533s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/Models.hpp
+[18.546s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/Optimizer.hpp
+[18.560s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/PathHandler.hpp
+[18.574s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/include//mppi/Utils.hpp
+[18.588s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/library_path.sh
+[18.603s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/library_path.dsv
+[18.628s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic//mppic.xml
+[18.679s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/ament_index/resource_index/package_run_dependencies/mppic
+[18.694s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/ament_index/resource_index/parent_prefix_path/mppic
+[18.709s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/ament_prefix_path.sh
+[18.723s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/ament_prefix_path.dsv
+[18.740s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/path.sh
+[18.754s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/environment/path.dsv
+[18.768s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/local_setup.bash
+[18.783s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/local_setup.sh
+[18.799s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/local_setup.zsh
+[18.816s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/local_setup.dsv
+[18.833s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/package.dsv
+[18.851s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/ament_index/resource_index/packages/mppic
+[18.871s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/ament_index/resource_index/nav2_core__pluginlib__plugin/mppic
+[18.888s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/ament_cmake_export_libraries-extras.cmake
+[18.903s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/ament_cmake_export_dependencies-extras.cmake
+[18.920s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/ament_cmake_export_include_directories-extras.cmake
+[18.937s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/mppicConfig.cmake
+[18.952s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/cmake/mppicConfig-version.cmake
+[18.966s] -- Symlinking: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/package.xml
+[18.986s] Invoked command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic' returned '0': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --install /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic

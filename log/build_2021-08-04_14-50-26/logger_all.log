@@ -1,0 +1,110 @@
+[0.354s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--packages-select', 'mppic', '--symlink-install', '--cmake-args', '-DCMAKE_BUILD_TYPE=DEBUG', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-DBUILD_TESTING=ON']
+[0.354s] DEBUG:colcon:Parsed command line arguments: Namespace(ament_cmake_args=None, base_paths=['.'], build_base='build', catkin_cmake_args=None, catkin_skip_building_tests=False, cmake_args=['-DCMAKE_BUILD_TYPE=DEBUG', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-DBUILD_TESTING=ON'], cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, cmake_target=None, cmake_target_skip_unavailable=False, continue_on_error=False, event_handlers=None, executor='parallel', ignore_user_meta=False, install_base='install', log_base=None, log_level=None, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x7f4a720790a0>>, merge_install=False, metas=['./colcon.meta'], packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_end=None, packages_ignore=None, packages_ignore_regex=None, packages_select=['mppic'], packages_select_build_failed=False, packages_select_by_dep=None, packages_select_regex=None, packages_select_test_failures=False, packages_skip=None, packages_skip_build_finished=False, packages_skip_by_dep=None, packages_skip_regex=None, packages_skip_test_passed=False, packages_skip_up_to=None, packages_start=None, packages_up_to=None, packages_up_to_regex=None, parallel_workers=4, paths=None, symlink_install=True, test_result_base=None, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x7f4a720790a0>, verb_name='build', verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0x7f4a720795e0>)
+[0.361s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.362s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.362s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.362s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.362s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.362s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.362s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners'
+[0.362s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.362s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.363s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.363s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.363s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.363s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.363s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.363s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.363s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.376s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[0.376s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.377s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.377s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.377s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.377s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.377s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[0.377s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[0.378s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.378s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[0.378s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[0.378s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.379s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.379s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.379s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extensions ['ignore', 'ignore_ament_install']
+[0.379s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extension 'ignore'
+[0.379s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extension 'ignore_ament_install'
+[0.380s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extensions ['colcon_pkg']
+[0.380s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extension 'colcon_pkg'
+[0.380s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extensions ['colcon_meta']
+[0.380s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extension 'colcon_meta'
+[0.380s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extensions ['ros']
+[0.380s] Level 1:colcon.colcon_core.package_identification:_identify(mppic) by extension 'ros'
+[0.384s] DEBUG:colcon.colcon_core.package_identification:Package 'mppic' with type 'ros.ament_cmake' and name 'mppic'
+[0.384s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extensions ['ignore', 'ignore_ament_install']
+[0.384s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extension 'ignore'
+[0.384s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extension 'ignore_ament_install'
+[0.385s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extensions ['colcon_pkg']
+[0.385s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extension 'colcon_pkg'
+[0.385s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extensions ['colcon_meta']
+[0.385s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extension 'colcon_meta'
+[0.385s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extensions ['ros']
+[0.385s] Level 1:colcon.colcon_core.package_identification:_identify(nav2_pure_pursuit_controller) by extension 'ros'
+[0.387s] DEBUG:colcon.colcon_core.package_identification:Package 'nav2_pure_pursuit_controller' with type 'ros.ament_cmake' and name 'nav2_pure_pursuit_controller'
+[0.387s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.387s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.387s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.387s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.387s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.405s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'nav2_pure_pursuit_controller' in 'nav2_pure_pursuit_controller'
+[0.407s] Level 5:colcon.colcon_core.verb:set package 'mppic' build argument 'cmake_args' from command line to '['-DCMAKE_BUILD_TYPE=DEBUG', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-DBUILD_TESTING=ON']'
+[0.407s] Level 5:colcon.colcon_core.verb:set package 'mppic' build argument 'cmake_target' from command line to 'None'
+[0.408s] Level 5:colcon.colcon_core.verb:set package 'mppic' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.408s] Level 5:colcon.colcon_core.verb:set package 'mppic' build argument 'cmake_clean_cache' from command line to 'False'
+[0.408s] Level 5:colcon.colcon_core.verb:set package 'mppic' build argument 'cmake_clean_first' from command line to 'False'
+[0.408s] Level 5:colcon.colcon_core.verb:set package 'mppic' build argument 'cmake_force_configure' from command line to 'False'
+[0.408s] Level 5:colcon.colcon_core.verb:set package 'mppic' build argument 'ament_cmake_args' from command line to 'None'
+[0.408s] Level 5:colcon.colcon_core.verb:set package 'mppic' build argument 'catkin_cmake_args' from command line to 'None'
+[0.408s] Level 5:colcon.colcon_core.verb:set package 'mppic' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.408s] DEBUG:colcon.colcon_core.verb:Building package 'mppic' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': ['-DCMAKE_BUILD_TYPE=DEBUG', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-DBUILD_TESTING=ON'], 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic', 'merge_install': False, 'path': '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic', 'symlink_install': True, 'test_result_base': None}
+[0.408s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.413s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.413s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic' with build type 'ament_cmake'
+[0.413s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic'
+[0.419s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.420s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.420s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.423s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/opt/ros/foxy'
+[0.436s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTING=ON -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic
+[12.316s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic' returned '0': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTING=ON -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic
+[12.320s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --build /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic -- -j4 -l4
+[31.581s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic' returned '2': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --build /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic -- -j4 -l4
+[31.613s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(mppic)
+[31.619s] Level 1:colcon.colcon_core.environment:checking '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic' for CMake module files
+[31.623s] Level 1:colcon.colcon_core.environment:checking '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic' for CMake config files
+[31.624s] Level 1:colcon.colcon_core.environment:checking '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/bin'
+[31.625s] Level 1:colcon.colcon_core.environment:checking '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/lib/pkgconfig/mppic.pc'
+[31.625s] Level 1:colcon.colcon_core.environment:checking '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/lib/python3.8/site-packages'
+[31.626s] INFO:colcon.colcon_core.shell:Creating package script '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/package.ps1'
+[31.628s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/package.dsv'
+[31.630s] INFO:colcon.colcon_core.shell:Creating package script '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/package.sh'
+[31.631s] INFO:colcon.colcon_core.shell:Creating package script '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/package.bash'
+[31.634s] INFO:colcon.colcon_core.shell:Creating package script '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/mppic/package.zsh'
+[31.635s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/mppic/share/colcon-core/packages/mppic)
+[31.647s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[31.647s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[31.648s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '2'
+[31.648s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[31.659s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[31.659s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[31.659s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[31.662s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[31.664s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/local_setup.ps1'
+[31.667s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/_local_setup_util_ps1.py'
+[31.671s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/setup.ps1'
+[31.677s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/local_setup.sh'
+[31.679s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/_local_setup_util_sh.py'
+[31.680s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/setup.sh'
+[31.686s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/local_setup.bash'
+[31.688s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/setup.bash'
+[31.693s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/local_setup.zsh'
+[31.695s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/install/setup.zsh'

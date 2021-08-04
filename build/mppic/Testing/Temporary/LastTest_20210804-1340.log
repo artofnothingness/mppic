@@ -1,0 +1,36 @@
+Start testing: Aug 04 16:40 MSK
+----------------------------------------------------------
+1/1 Testing: optimizer-test
+1/1 Test: optimizer-test
+Command: "/usr/bin/python3" "-u" "/opt/ros/foxy/share/ament_cmake_test/cmake/run_test.py" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml" "--package-name" "mppic" "--output-file" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/ament_cmake_gtest/optimizer-test.txt" "--command" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/bin/optimizer-test" "--gtest_output=xml:/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml"
+Directory: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test
+"optimizer-test" start time: Aug 04 16:40 MSK
+Output:
+----------------------------------------------------------
+-- run_test.py: invoking following command in '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test':
+ - /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/bin/optimizer-test --gtest_output=xml:/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from OptimizerTest
+[ RUN      ] OptimizerTest.evalNextControlTest
+[       OK ] OptimizerTest.evalNextControlTest (0 ms)
+[----------] 1 test from OptimizerTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+-- run_test.py: return code 0
+-- run_test.py: inject classname prefix into gtest result file '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml'
+-- run_test.py: verify result file '/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml'
+<end of output>
+Test time =   0.12 sec
+----------------------------------------------------------
+Test Passed.
+"optimizer-test" end time: Aug 04 16:40 MSK
+"optimizer-test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Aug 04 16:40 MSK
+
+gtest =   0.12 sec*proc
+

@@ -1,0 +1,9 @@
+# CMake generated Testfile for 
+# Source directory: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/test
+# Build directory: /home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test
+# 
+# This file includes the relevant testing commands required for 
+# testing this directory and lists subdirectories to be tested as well.
+add_test(optimizer-test "/usr/bin/python3" "-u" "/opt/ros/foxy/share/ament_cmake_test/cmake/run_test.py" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml" "--package-name" "mppic" "--output-file" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/ament_cmake_gtest/optimizer-test.txt" "--command" "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/bin/optimizer-test" "--gtest_output=xml:/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test_results/mppic/optimizer-test.gtest.xml")
+set_tests_properties(optimizer-test PROPERTIES  LABELS "gtest" REQUIRED_FILES "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/bin/optimizer-test" TIMEOUT "60" WORKING_DIRECTORY "/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/build/mppic/test" _BACKTRACE_TRIPLES "/opt/ros/foxy/share/ament_cmake_test/cmake/ament_add_test.cmake;118;add_test;/opt/ros/foxy/share/ament_cmake_gtest/cmake/ament_add_gtest_test.cmake;86;ament_add_test;/opt/ros/foxy/share/ament_cmake_gtest/cmake/ament_add_gtest.cmake;93;ament_add_gtest_test;/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/test/CMakeLists.txt;4;ament_add_gtest;/home/alex/Media/Develop/Job/ros2/rosbot/src/algorithms/local_planners/mppic/test/CMakeLists.txt;0;")
+subdirs("../gtest")

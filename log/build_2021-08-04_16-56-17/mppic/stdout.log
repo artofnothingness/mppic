@@ -1,0 +1,8 @@
+[35m[1mScanning dependencies of target mppic[0m
+[ 25%] Built target gtest
+[ 50%] Built target gtest_main
+[35m[1mScanning dependencies of target optimizer-test[0m
+[ 62%] [32mBuilding CXX object src/CMakeFiles/mppic.dir/Controller.cpp.o[0m
+[ 75%] [32mBuilding CXX object test/CMakeFiles/optimizer-test.dir/OptimizerTest.cpp.o[0m
+[ 87%] [32m[1mLinking CXX executable ../bin/optimizer-test[0m
+[ 87%] Built target optimizer-test

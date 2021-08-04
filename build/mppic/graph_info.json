@@ -1,0 +1,22 @@
+{
+ "options": [
+  [
+   "xtensor:openmp",
+   "False"
+  ],
+  [
+   "xtensor:tbb",
+   "False"
+  ],
+  [
+   "xtensor:xsimd",
+   "True"
+  ]
+ ],
+ "root": {
+  "name": null,
+  "version": null,
+  "user": null,
+  "channel": null
+ }
+}
