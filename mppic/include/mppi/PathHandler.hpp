@@ -55,7 +55,7 @@ private:
     auto begin = global_plan_.poses.begin();
     auto end = global_plan_.poses.end();
 
-    auto begin_constrained = std::min_element(
+    auto closes_point = std::min_element(
         begin, end,
         [&global_pose](const PoseStamped &lhs, const PoseStamped &rhs) {
           return utils::hypot(lhs, global_pose) <
@@ -63,13 +63,13 @@ private:
         });
 
     // Find points definitely outside of the costmap so we won't transform them.
-    auto end_constrained = std::find_if(
-        begin_constrained, end, [&](const PoseStamped &global_plan_pose) {
+    auto outside_costmap_point = std::find_if(
+        closes_point, end, [&](const PoseStamped &global_plan_pose) {
           return utils::hypot(global_pose, global_plan_pose) >
                  max_transform_dist;
         });
 
-    return std::tuple{begin_constrained, end_constrained};
+    return std::tuple{closes_point, outside_costmap_point};
   }
 
 public:

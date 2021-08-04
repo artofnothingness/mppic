@@ -47,14 +47,11 @@ template <> auto hypot(Pose const &lhs, Pose const &rhs) {
   auto const &p1 = rhs.position;
   auto const &p2 = lhs.position;
 
-  return hypot(p1, p2);
+  return hypot(lhs.position, rhs.position);
 }
 
 template <> auto hypot(PoseStamped const &lhs, PoseStamped const &rhs) {
-  auto const &p1 = rhs.pose;
-  auto const &p2 = lhs.pose;
-
-  return hypot(p1, p2);
+  return hypot(lhs.pose, rhs.pose);
 }
 
 } // namespace ultra::mppi::utils
