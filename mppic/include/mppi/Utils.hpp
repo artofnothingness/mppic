@@ -19,14 +19,18 @@ using rclcpp_lifecycle::LifecycleNode;
 using std::string;
 
 template <typename T>
-void getParam(string const &param_name, T default_value,
-              LifecycleNode::SharedPtr node, T &param) {
+T getParam(string const &param_name, T default_value,
+           std::shared_ptr<LifecycleNode> node) {
 
+  T param;
   node->declare_parameter(param_name, rclcpp::ParameterValue(default_value));
   node->get_parameter(param_name, param);
+
+  return param;
 }
 
-TwistStamped toTwistStamped(auto const &velocities, auto const &header) {
+template <typename T, typename H>
+TwistStamped toTwistStamped(T const &velocities, H const &header) {
   TwistStamped twist;
   twist.header.frame_id = header.frame_id;
   twist.header.stamp = header.stamp;
@@ -44,9 +48,6 @@ template <typename T> auto hypot(T const &p1, T const &p2) {
 }
 
 template <> auto hypot(Pose const &lhs, Pose const &rhs) {
-  auto const &p1 = rhs.position;
-  auto const &p2 = lhs.position;
-
   return hypot(lhs.position, rhs.position);
 }
 
