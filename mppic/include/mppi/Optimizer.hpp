@@ -3,12 +3,12 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "tf2/utils.h"
 
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
+
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
-
-#include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 #include "xtensor/xarray.hpp"
 #include "xtensor/xrandom.hpp"
@@ -20,14 +20,7 @@
 
 namespace ultra::mppi::optimization {
 
-using std::shared_ptr;
-using std::string;
-
 using nav2_costmap_2d::Costmap2D;
-using nav2_costmap_2d::Costmap2DROS;
-using rclcpp_lifecycle::LifecycleNode;
-
-using tf2_ros::Buffer;
 
 using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::Twist;
@@ -41,63 +34,46 @@ public:
   Optimizer() = default;
   ~Optimizer() = default;
 
-  Optimizer(const shared_ptr<LifecycleNode> &parent, const string &node_name,
-            const shared_ptr<Buffer> &tf,
-            const shared_ptr<Costmap2DROS> &costmap_ros, Model &&model) {
+  Optimizer(int batch_size, double std_v, double std_w, double limit_v,
+            double limit_w, double model_dt, int time_steps,
+            int iteration_count, double temperature, Model model)
+      : batch_size_(batch_size), time_steps_(time_steps),
+        iteration_count_(iteration_count), model_dt_(model_dt), std_v_(std_v),
+        std_w_(std_w), limit_v_(limit_v), limit_w_(limit_w),
+        temperature_(temperature), model_(model) {
 
-    parent_ = parent;
-    costmap_ros_ = costmap_ros;
-    tf_buffer_ = tf;
-    model_ = model;
-
-    using namespace utils;
-    getParam(node_name + ".model_dt", 0.1, parent_, model_dt_);
-    getParam(node_name + ".time_steps", 20, parent_, time_steps_);
-    getParam(node_name + ".batch_size", 100, parent_, batch_size_);
-    getParam(node_name + ".std_v", 0.1, parent_, std_v_);
-    getParam(node_name + ".std_w", 0.1, parent_, std_w_);
-    getParam(node_name + ".limit_v", 0.5, parent_, limit_v_);
-    getParam(node_name + ".limit_w", 1.0, parent_, limit_w_);
-    getParam(node_name + ".iteration_count", 2, parent_, iteration_count_);
-    getParam(node_name + ".lookahead_dist", 1.2, parent_, lookagead_dist_);
-    getParam(node_name + ".temperature", 0.25, parent_, temperature_);
     resetBatches();
   }
 
   void resetBatches() {
     batches_ = xt::zeros<float>({batch_size_, time_steps_, last_dim_});
-
-    xt::view(batches_, xt::all(), xt::all(), 4) = model_dt_;
-
     control_sequence_ = xt::zeros<float>({time_steps_, control_dim_size_});
+    xt::view(batches_, xt::all(), xt::all(), 4) = model_dt_;
   }
 
-  /**
-   * @brief Evaluate next control
-   *
-   * @param Pose current pose of the robot
-   * @param Twist current speed of the rosbot
-   * @param Path global plan
-   * @return Next control
-   */
   /**
    * @brief Evaluate next control
    *
    * @param pose current pose of the robot
    * @param twist curent speed of the robot
    * @param path global plan
+   * @param costmap costmap
    * @return best control
    */
   auto evalNextControl(const PoseStamped &pose, const Twist &twist,
-                       const Path &path) -> TwistStamped {
+                       const Path &path, const Costmap2D &costmap)
+      -> TwistStamped {
 
     for (int i = 0; i < iteration_count_; ++i) {
       Tensor trajectories = generateNoisedTrajectoryBatches(pose, twist);
-      Tensor costs = evalBatchesCosts(trajectories, path);
+      Tensor costs = evalBatchesCosts(trajectories, path, costmap);
       updateControlSequence(costs);
     }
 
-    return getControlFromSequence(pose.header);
+    TwistStamped cmd = getControlFromSequence(pose.header);
+
+    RCLCPP_INFO(logger_, "Send Speed { %f %: }", cmd.twist.linear.x, cmd.twist.angular.z);
+    return cmd;
   };
 
 private:
@@ -110,19 +86,16 @@ private:
   }
 
   auto generateNoisedControlBatches() -> Tensor {
-
     auto v_noises =
         xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, std_v_);
     auto w_noises =
         xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, std_w_);
-
     return control_sequence_ + xt::concatenate(xtuple(v_noises, w_noises), 2);
   }
 
   void applyControlConstraints() {
     auto v = getLinearVelocityControlBatches();
     auto w = getAngularVelocityControlBatches();
-
     v = xt::clip(v, -limit_v_, limit_v_);
     w = xt::clip(w, -limit_w_, limit_w_);
   }
@@ -178,17 +151,33 @@ private:
         2);
   }
 
-  Tensor evalBatchesCosts(const Tensor &trajectory_batches,
-                          const Path &path) const {
-    (void)path;
+  Tensor evalBatchesCosts(const Tensor &trajectory_batches, const Path &path,
+                          const Costmap2D /*&costmap*/) const {
 
     std::vector<size_t> shape = {trajectory_batches.shape()[0]};
 
-    auto obstacle_cost = xt::zeros<T>(shape);
     auto reference_cost = xt::zeros<T>(shape);
-    auto goal_cost = xt::zeros<T>(shape);
+    auto obstacle_cost = xt::zeros<T>(shape);
 
-    return obstacle_cost + reference_cost + goal_cost;
+    auto goal_cost = [&](int weight, int power) {
+      Tensor last_goal = {static_cast<T>(path.poses.back().pose.position.x),
+                          static_cast<T>(path.poses.back().pose.position.y)};
+
+      Tensor x = xt::view(trajectory_batches, xt::all(), xt::all(), 0);
+      Tensor y = xt::view(trajectory_batches, xt::all(), xt::all(), 1);
+
+      auto dx = x - last_goal[0];
+      auto dy = y - last_goal[1];
+
+      auto dists = xt::hypot(dx, dy);
+
+      auto result = weight * xt::pow(xt::view(dists, xt::all(), -1), power);
+      return Tensor(result);
+    };
+
+    auto result = obstacle_cost + reference_cost + goal_cost(2, 2);
+
+    return result;
   }
 
   void updateControlSequence(Tensor &costs) {
@@ -201,7 +190,7 @@ private:
     control_sequence_ = xt::sum(getControlBatches() * softmaxes_expanded, 0);
   }
 
-  TwistStamped getControlFromSequence(const auto &header) {
+  template <typename H> TwistStamped getControlFromSequence(const H &header) {
     return utils::toTwistStamped(xt::view(control_sequence_, 0), header);
   }
 
@@ -218,32 +207,25 @@ private:
   }
 
 private:
-  shared_ptr<LifecycleNode> parent_;
-  shared_ptr<Costmap2DROS> costmap_ros_;
-  shared_ptr<Buffer> tf_buffer_;
-
   static constexpr int last_dim_ = 5;
   static constexpr int control_dim_size_ = 2;
-  int time_steps_;
+
   int batch_size_;
+  int time_steps_;
+  int iteration_count_;
 
   double model_dt_;
   double std_v_;
   double std_w_;
-  double limit_w_;
   double limit_v_;
-
-  int iteration_count_;
-  double lookagead_dist_;
-
+  double limit_w_;
   double temperature_;
 
   Tensor batches_;
   Tensor control_sequence_;
-
   std::function<Model> model_;
 
-  static constexpr double transform_tolerance_ = 0.1;
+  rclcpp::Logger logger_{rclcpp::get_logger("Optimizer")};
 };
 
 } // namespace ultra::mppi::optimization
