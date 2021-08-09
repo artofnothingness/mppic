@@ -8,6 +8,7 @@
 #include "nav_msgs/msg/path.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "tf2_ros/buffer.h"
 
 #include "mppi/Utils.hpp"
@@ -17,6 +18,7 @@ namespace ultra::mppi::handlers {
 using std::shared_ptr;
 using std::string;
 
+using rclcpp_lifecycle::LifecycleNode;
 using tf2_ros::Buffer;
 
 using geometry_msgs::msg::PoseStamped;
@@ -24,22 +26,41 @@ using geometry_msgs::msg::Twist;
 using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::Path;
 
+using nav2_costmap_2d::Costmap2DROS;
+
 class PathHandler {
 
 public:
   PathHandler() = default;
   ~PathHandler() = default;
 
-  PathHandler(double lookagead_dist, double transform_tolerance,
-              const std::shared_ptr<Buffer> &buffer)
-      : lookahead_dist_(lookagead_dist),
-        transform_tolerance_(transform_tolerance), tf_buffer_(buffer) {
-    (void)lookahead_dist_; // TODO
+  PathHandler(const shared_ptr<LifecycleNode> &parent, const string &node_name,
+              const shared_ptr<Costmap2DROS> &costmap,
+              const shared_ptr<Buffer> &buffer) {
+
+    node_name_ = node_name;
+    tf_buffer_ = buffer;
+    parent_ = parent;
+    costmap_ = costmap;
   }
 
+  void on_configure() { getParams(); }
+  void on_cleanup() {}
+  void on_activate() {}
+  void on_deactivate() {}
+
 private:
-  auto getGlobalPlanConsideringBounds(const PoseStamped &global_pose,
-                                      const double &max_dist) {
+  void getParams() {
+    auto getParam = [&](const string &param_name, auto default_value) {
+      string name = node_name_ + '.' + param_name;
+      return utils::getParam(name, default_value, parent_);
+    };
+
+    lookahead_dist_ = getParam("lookahead_dist", 1.2);
+    transform_tolerance_ = getParam("transform_tolerance", 1.2);
+  }
+
+  auto getGlobalPlanConsideringBounds(const PoseStamped &global_pose) {
 
     auto begin = global_plan_.poses.begin();
     auto end = global_plan_.poses.end();
@@ -51,29 +72,29 @@ private:
                  utils::hypot(rhs, global_pose);
         });
 
-    // Find points definitely outside of the costmap so we won't transform them.
-    auto outside_costmap_point = std::find_if(
+    auto max_dist = getMaxTransformDistance();
+    auto last_point = std::find_if(
         closest_point, end, [&](const PoseStamped &global_plan_pose) {
-          return utils::hypot(global_pose, global_plan_pose) > max_dist;
+          auto &&dist = utils::hypot(global_pose, global_plan_pose);
+          return dist > max_dist or dist > lookahead_dist_;
         });
 
-    return std::tuple{closest_point, outside_costmap_point};
+    return std::tuple{closest_point, last_point};
   }
 
 public:
   void setPath(const Path &plan) { global_plan_ = plan; }
-  Path& getPath() { return global_plan_; }
+  Path &getPath() { return global_plan_; }
 
-  Path transformPath(const PoseStamped &robot_pose,
-                     const std::string &local_frame, const double &max_dist) {
+  Path transformPath(const PoseStamped &robot_pose) {
     auto global_pose = transformToGlobalFrame(robot_pose);
     const auto &stamp = global_pose.header.stamp;
 
     auto &&[lower_bound, upper_bound] =
-        getGlobalPlanConsideringBounds(global_pose, max_dist);
+        getGlobalPlanConsideringBounds(global_pose);
 
-    auto transformed_plan = transformGlobalPlanToLocal(lower_bound, upper_bound,
-                                                       stamp, local_frame);
+    auto transformed_plan =
+        transformGlobalPlanToLocal(lower_bound, upper_bound, stamp);
 
     pruneGlobalPlan(lower_bound);
 
@@ -85,8 +106,9 @@ public:
 
 private:
   template <typename Iter, typename Stamp>
-  Path transformGlobalPlanToLocal(Iter begin, Iter end, const Stamp &stamp,
-                                  const string &frame) {
+  Path transformGlobalPlanToLocal(Iter begin, Iter end, const Stamp &stamp) {
+
+    auto base_frame = costmap_->getBaseFrameID();
 
     auto transform_pose = [&](const auto &global_plan_pose) {
       PoseStamped global_pose;
@@ -96,13 +118,13 @@ private:
       global_pose.header.stamp = stamp;
       global_pose.pose = global_plan_pose.pose;
 
-      transformPose(frame, global_pose, local_pose);
+      transformPose(base_frame, global_pose, local_pose);
       return local_pose;
     };
 
     Path plan;
     std::transform(begin, end, std::back_inserter(plan.poses), transform_pose);
-    plan.header.frame_id = frame;
+    plan.header.frame_id = base_frame;
     plan.header.stamp = stamp;
 
     return plan;
@@ -131,6 +153,12 @@ private:
     global_plan_.poses.erase(global_plan_.poses.begin(), end);
   }
 
+  double getMaxTransformDistance() {
+    const auto &costmap = costmap_->getCostmap();
+    return std::max(costmap->getSizeInCellsX(), costmap->getSizeInCellsY()) *
+           costmap->getResolution() / 2.0;
+  }
+
   auto transformToGlobalFrame(const PoseStamped &pose) -> PoseStamped {
     if (global_plan_.poses.empty()) {
       throw std::runtime_error("Received plan with zero length");
@@ -146,12 +174,16 @@ private:
   }
 
 private:
+  shared_ptr<LifecycleNode> parent_;
+  string node_name_;
+  shared_ptr<Costmap2DROS> costmap_;
+  shared_ptr<Buffer> tf_buffer_;
+
   double lookahead_dist_;
   double transform_tolerance_;
   rclcpp::Logger logger_{rclcpp::get_logger("PathHandler")};
 
   Path global_plan_;
-  shared_ptr<Buffer> tf_buffer_;
 };
 
 } // namespace ultra::mppi::handlers
