@@ -30,12 +30,12 @@ T getParam(string const &param_name, T default_value,
 }
 
 template <typename T, typename H>
-TwistStamped toTwistStamped(T const &velocities, H const &header) {
+TwistStamped toTwistStamped(T &&velocities, H const &header) {
   TwistStamped twist;
   twist.header.frame_id = header.frame_id;
   twist.header.stamp = header.stamp;
-  twist.twist.linear.x = velocities[0];
-  twist.twist.angular.z = velocities[1];
+  twist.twist.linear.x = velocities(0);
+  twist.twist.angular.z = velocities(1);
   return twist;
 }
 

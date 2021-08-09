@@ -11,6 +11,7 @@ set(packages
   pluginlib 
   tf2 
   geometry_msgs 
+  visualization_msgs
   nav_msgs 
   nav2_core 
   nav2_costmap_2d 

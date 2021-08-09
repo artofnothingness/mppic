@@ -8,6 +8,7 @@ endif()
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 conan_cmake_run(REQUIRES 
-                xtensor/0.21.5                
+                xtensor/0.23.9
+                xsimd/7.5.0
                 BASIC_SETUP CMAKE_TARGETS)
 

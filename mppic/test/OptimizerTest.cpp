@@ -26,30 +26,22 @@ using nav_msgs::msg::Path;
 
 class OptimizerTest : public ::testing::Test {
 protected:
-
   void SetUp() override {
 
+    std::string node_name = "Test";
     costmap_ros_ = std::make_shared<Costmap2DROS>("cost_map_node");
+    node_ = std::make_shared<LifecycleNode>(node_name);
 
-    auto optimizer = [&] {
-      auto &model = models::NaiveModel<T>;
-      double model_dt = 0.1;
-      int time_steps = 20;
-      int batch_size = 100;
-      double std_v = 0.1;
-      double std_w = 0.1;
-      double limit_v = 0.5;
-      double limit_w = 1.0;
-      int iteration_count = 2;
-      double temperature = 0.25;
-      return Optimizer(batch_size, std_v, std_w, limit_v, limit_w, model_dt,
-                       time_steps, iteration_count, temperature, model);
-    }();
+    auto &model = models::NaiveModel<T>;
+    auto costmap = costmap_ros_->getCostmap();
+
+    optimizer_ = Optimizer(node_, node_name, costmap, model);
   }
 
   void TearDown() override {}
 
 protected:
+  shared_ptr<LifecycleNode> node_;
   Optimizer optimizer_;
   shared_ptr<Costmap2DROS> costmap_ros_;
 };
@@ -60,9 +52,8 @@ TEST_F(OptimizerTest, evalNextControlTest) {
   TwistStamped result;
   Path path;
 
-  auto &costmap = *(costmap_ros_->getCostmap());
+  result = optimizer_.evalNextControl(pose, twist, path);
 
-  result = optimizer_.evalNextControl(pose, twist, path, costmap);
   EXPECT_TRUE(result == TwistStamped{});
 }
 
