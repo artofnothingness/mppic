@@ -63,7 +63,7 @@ public:
     setPublishers();
     resetBatches();
 
-    RCLCPP_INFO(logger_, "MPPI Optimizer Configured");
+    RCLCPP_INFO(logger_, "Configured");
   }
 
   void on_cleanup() { trajectories_publisher_.reset(); }

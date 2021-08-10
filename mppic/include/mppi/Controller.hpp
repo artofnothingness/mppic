@@ -59,7 +59,7 @@ public:
   void activate() override {
     transformed_path_pub_->on_activate();
     optimizer_.on_activate();
-    path_handler_.on_cleanup();
+    path_handler_.on_activate();
   }
   void deactivate() override {
     transformed_path_pub_->on_deactivate();
