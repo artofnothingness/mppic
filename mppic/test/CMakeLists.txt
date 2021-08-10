@@ -7,7 +7,7 @@ if(BUILD_TESTING)
   target_link_libraries(optimizer-test CONAN_PKG::xtensor)
   target_include_directories(optimizer-test PRIVATE ../include)
 
-  target_compile_options(optimizer-test PRIVATE -fconcepts)
+  target_compile_options(optimizer-test PRIVATE -fconcepts -fno-omit-frame-pointer -g )
 
   set_target_properties(optimizer-test
       PROPERTIES

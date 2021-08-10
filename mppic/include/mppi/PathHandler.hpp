@@ -44,7 +44,10 @@ public:
     costmap_ = costmap;
   }
 
-  void on_configure() { getParams(); }
+  void on_configure() {
+    getParams();
+    RCLCPP_INFO(logger_, "MPPI PathHandler Configured");
+  }
   void on_cleanup() {}
   void on_activate() {}
   void on_deactivate() {}
@@ -181,7 +184,7 @@ private:
 
   double lookahead_dist_;
   double transform_tolerance_;
-  rclcpp::Logger logger_{rclcpp::get_logger("PathHandler")};
+  rclcpp::Logger logger_{rclcpp::get_logger("MPPI PathHandler")};
 
   Path global_plan_;
 };

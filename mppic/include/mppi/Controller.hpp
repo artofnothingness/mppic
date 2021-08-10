@@ -51,16 +51,28 @@ public:
     configureComponents();
   }
 
-  void cleanup() override { global_path_pub_.reset(); }
-  void activate() override { global_path_pub_->on_activate(); }
-  void deactivate() override { global_path_pub_->on_deactivate(); }
+  void cleanup() override {
+    transformed_path_pub_.reset();
+    optimizer_.on_cleanup();
+    path_handler_.on_cleanup();
+  }
+  void activate() override {
+    transformed_path_pub_->on_activate();
+    optimizer_.on_activate();
+    path_handler_.on_cleanup();
+  }
+  void deactivate() override {
+    transformed_path_pub_->on_deactivate();
+    optimizer_.on_deactivate();
+    path_handler_.on_deactivate();
+  }
 
   auto computeVelocityCommands(const PoseStamped &pose, const Twist &velocity)
       -> TwistStamped override {
     auto transformed_plan = path_handler_.transformPath(pose);
 
-    if (visualize_)
-      global_path_pub_->publish(transformed_plan);
+    if (visualize_transformed_path_)
+      transformed_path_pub_->publish(transformed_plan);
 
     auto cmd = optimizer_.evalNextControl(pose, velocity, transformed_plan);
 
@@ -75,11 +87,11 @@ private:
       string name = node_name_ + '.' + param_name;
       return utils::getParam(name, default_value, parent_);
     };
-    visualize_ = getParam("visualize", true);
+    visualize_transformed_path_ = getParam("visualize", true);
   }
 
   void setPublishers() {
-    global_path_pub_ =
+    transformed_path_pub_ =
         parent_->create_publisher<Path>("transformed_global_plan", 1);
   }
 
@@ -102,8 +114,8 @@ private:
   shared_ptr<Buffer> tf_buffer_;
   string node_name_;
 
-  bool visualize_;
-  shared_ptr<LifecyclePublisher<Path>> global_path_pub_;
+  bool visualize_transformed_path_;
+  shared_ptr<LifecyclePublisher<Path>> transformed_path_pub_;
 
   Optimizer optimizer_;
   PathHandler path_handler_;

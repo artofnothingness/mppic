@@ -11,6 +11,7 @@
 
 #include "mppi/Models.hpp"
 #include "mppi/Optimizer.hpp"
+#include <benchmark/benchmark.h>
 
 using namespace ultra::mppi;
 
@@ -25,26 +26,6 @@ using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::Twist;
 using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::Path;
-
-class OptimizerTest : public ::testing::Test {
-protected:
-  void SetUp() override {
-
-    std::string node_name = "TestNode";
-    node_ = std::make_shared<LifecycleNode>(node_name);
-    costmap_ = new Costmap2D(500, 500, 0.1, 0, 0, 100);
-    auto &model = models::NaiveModel<T>;
-
-    optimizer_ = Optimizer(node_, node_name, costmap_, model);
-  }
-
-  void TearDown() override { delete costmap_; }
-
-protected:
-  shared_ptr<LifecycleNode> node_;
-  Optimizer optimizer_;
-  Costmap2D *costmap_;
-};
 
 template <typename T> void setDefaultHeader(T &msg) {
   msg.header.frame_id = "map";
@@ -86,22 +67,52 @@ Path createPath() {
   return path;
 }
 
-TEST_F(OptimizerTest, evalNextControlTest) {
-  PoseStamped pose;
-  Twist twist;
-  Path path;
+class OptimizerBenchmark : public benchmark::Fixture {
+public:
+  void SetUp(const ::benchmark::State &state) {
+    (void)state;
 
-  TwistStamped result1;
-  result1 = optimizer_.evalNextControl(pose, twist, path);
+    std::string node_name = "BenchmarkNode";
+    node_ = std::make_shared<LifecycleNode>(node_name);
+    costmap_ = new Costmap2D(500, 500, 0.1, 0, 0, 100);
+    auto &model = models::NaiveModel<T>;
 
-  EXPECT_TRUE(result1 == TwistStamped{});
+    optimizer_ = Optimizer(node_, node_name, costmap_, model);
+    optimizer_.on_configure();
+    optimizer_.on_activate();
+  }
+
+  void TearDown(const ::benchmark::State &state) {
+    (void)state;
+    optimizer_.on_cleanup();
+    node_.reset();
+    delete costmap_;
+  }
+
+protected:
+  shared_ptr<LifecycleNode> node_;
+  Optimizer optimizer_;
+  Costmap2D *costmap_;
+};
+
+BENCHMARK_DEFINE_F(OptimizerBenchmark, evalNextControlBenchmark)
+(benchmark::State &st) {
+  for (auto _ : st) {
+    PoseStamped pose = createPose();
+    Twist twist = createTwist();
+    Path path = createPath();
+    TwistStamped result;
+    result = optimizer_.evalNextControl(pose, twist, path);
+  }
 }
+
+BENCHMARK_REGISTER_F(OptimizerBenchmark, evalNextControlBenchmark)
+    ->Unit(benchmark::kMillisecond);
 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
 
-  ::testing::InitGoogleTest(&argc, argv);
-  auto res = RUN_ALL_TESTS();
-  rclcpp::shutdown();
-  return res;
+  ::benchmark::Initialize(&argc, argv);
+  ::benchmark::RunSpecifiedBenchmarks();
+  return 0;
 }
