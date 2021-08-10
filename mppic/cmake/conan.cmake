@@ -9,6 +9,6 @@ include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 conan_cmake_run(REQUIRES 
                 xtensor/0.23.9
-                xsimd/7.5.0
+                benchmark/1.5.3
                 BASIC_SETUP CMAKE_TARGETS)
 

@@ -26,7 +26,15 @@ nav2_package()
 
 add_subdirectory(src)
 
-install(TARGETS mppic
+ament_export_libraries(mppic)
+ament_export_dependencies(${packages})
+ament_export_include_directories(include)
+pluginlib_export_plugin_description_file(nav2_core mppic.xml)
+
+add_subdirectory(test)
+add_subdirectory(benchmarks)
+
+install(TARGETS mppic optimizer-benchmark
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -37,11 +45,5 @@ install(DIRECTORY include/
   DESTINATION include/
 )
 
-ament_export_libraries(mppic)
-ament_export_dependencies(${packages})
-ament_export_include_directories(include)
-pluginlib_export_plugin_description_file(nav2_core mppic.xml)
-
-add_subdirectory(test)
 
 ament_package()
