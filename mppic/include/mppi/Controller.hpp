@@ -10,7 +10,10 @@
 #include "mppi/Models.hpp"
 #include "mppi/Optimizer.hpp"
 #include "mppi/PathHandler.hpp"
-#include "mppi/Utils.hpp"
+
+#include "utils/common.hpp"
+#include "utils/geometry.hpp"
+#include "utils/visualization.hpp"
 
 namespace ultra::mppi {
 
@@ -32,6 +35,7 @@ template <typename T> class Controller : public nav2_core::Controller {
 public:
   using Optimizer = optimization::Optimizer<T>;
   using PathHandler = handlers::PathHandler;
+  using TrajectoryVisualizer = utils::visualization::TrajectoryVisualizer;
 
   Controller() = default;
   ~Controller() override = default;
@@ -48,33 +52,33 @@ public:
     getParams();
     setPublishers();
     createComponents();
-    configureComponents();
+
+    utils::common::configure(optimizer_, path_handler_, trajectory_visualizer_);
   }
 
   void cleanup() override {
     transformed_path_pub_.reset();
-    optimizer_.on_cleanup();
-    path_handler_.on_cleanup();
+    utils::common::cleanup(optimizer_, path_handler_, trajectory_visualizer_);
   }
   void activate() override {
     transformed_path_pub_->on_activate();
-    optimizer_.on_activate();
-    path_handler_.on_activate();
+    utils::common::activate(optimizer_, path_handler_, trajectory_visualizer_);
   }
   void deactivate() override {
     transformed_path_pub_->on_deactivate();
-    optimizer_.on_deactivate();
-    path_handler_.on_deactivate();
+    utils::common::deactivate(optimizer_, path_handler_,
+                              trajectory_visualizer_);
   }
 
   auto computeVelocityCommands(const PoseStamped &pose, const Twist &velocity)
       -> TwistStamped override {
-    auto transformed_plan = path_handler_.transformPath(pose);
+    auto &&transformed_plan = path_handler_.transformPath(pose);
+    auto &&cmd = optimizer_.evalNextControl(velocity, transformed_plan);
 
-    if (visualize_transformed_path_)
+    if (visualize_) {
       transformed_path_pub_->publish(transformed_plan);
-
-    auto cmd = optimizer_.evalNextControl(pose, velocity, transformed_plan);
+      trajectory_visualizer_.visualize(optimizer_.getTrajectories(), 10, 2);
+    }
 
     return cmd;
   }
@@ -85,9 +89,9 @@ private:
   void getParams() {
     auto getParam = [&](const string &param_name, auto default_value) {
       string name = node_name_ + '.' + param_name;
-      return utils::getParam(name, default_value, parent_);
+      return utils::common::getParam(name, default_value, parent_);
     };
-    visualize_transformed_path_ = getParam("visualize", true);
+    visualize_ = getParam("visualize", true);
   }
 
   void setPublishers() {
@@ -101,11 +105,12 @@ private:
 
     optimizer_ = Optimizer(parent_, node_name_, costmap, model);
     path_handler_ = PathHandler(parent_, node_name_, costmap_ros_, tf_buffer_);
-  }
 
-  void configureComponents() {
-    optimizer_.on_configure();
-    path_handler_.on_configure();
+    RCLCPP_INFO(parent_->get_logger(), "FRAME %s ",
+                costmap_ros_->getBaseFrameID().c_str());
+
+    trajectory_visualizer_ =
+        TrajectoryVisualizer(parent_, costmap_ros_->getBaseFrameID());
   }
 
 private:
@@ -114,11 +119,12 @@ private:
   shared_ptr<Buffer> tf_buffer_;
   string node_name_;
 
-  bool visualize_transformed_path_;
+  bool visualize_;
   shared_ptr<LifecyclePublisher<Path>> transformed_path_pub_;
 
   Optimizer optimizer_;
   PathHandler path_handler_;
+  TrajectoryVisualizer trajectory_visualizer_;
 };
 
 } // namespace ultra::mppi

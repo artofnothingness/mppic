@@ -9,7 +9,7 @@
 #include "algorithm"
 #include "xtensor/xarray.hpp"
 
-namespace ultra::mppi::utils {
+namespace ultra::mppi::utils::geometry {
 
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseStamped;
@@ -47,12 +47,12 @@ template <typename T> auto hypot(T const &p1, T const &p2) {
   return std::hypot(dx, dy, dz);
 }
 
-template <> auto hypot(Pose const &lhs, Pose const &rhs) {
+template <> inline auto hypot(Pose const &lhs, Pose const &rhs) {
   return hypot(lhs.position, rhs.position);
 }
 
-template <> auto hypot(PoseStamped const &lhs, PoseStamped const &rhs) {
+template <> inline auto hypot(PoseStamped const &lhs, PoseStamped const &rhs) {
   return hypot(lhs.pose, rhs.pose);
 }
 
-} // namespace ultra::mppi::utils
+} // namespace ultra::mppi::utils::geometry

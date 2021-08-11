@@ -98,11 +98,9 @@ protected:
 BENCHMARK_DEFINE_F(OptimizerBenchmark, evalNextControlBenchmark)
 (benchmark::State &st) {
   for (auto _ : st) {
-    PoseStamped pose = createPose();
     Twist twist = createTwist();
     Path path = createPath();
-    TwistStamped result;
-    result = optimizer_.evalNextControl(pose, twist, path);
+    auto result = optimizer_.evalNextControl(twist, path);
   }
 }
 

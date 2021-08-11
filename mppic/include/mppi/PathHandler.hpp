@@ -11,7 +11,8 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "tf2_ros/buffer.h"
 
-#include "mppi/Utils.hpp"
+#include "utils/common.hpp"
+#include "utils/geometry.hpp"
 
 namespace ultra::mppi::handlers {
 
@@ -46,7 +47,7 @@ public:
 
   void on_configure() {
     getParams();
-    RCLCPP_INFO(logger_, "MPPI PathHandler Configured");
+    RCLCPP_INFO(logger_, "Configured");
   }
   void on_cleanup() {}
   void on_activate() {}
@@ -56,7 +57,7 @@ private:
   void getParams() {
     auto getParam = [&](const string &param_name, auto default_value) {
       string name = node_name_ + '.' + param_name;
-      return utils::getParam(name, default_value, parent_);
+      return utils::common::getParam(name, default_value, parent_);
     };
 
     lookahead_dist_ = getParam("lookahead_dist", 1.2);
@@ -71,15 +72,15 @@ private:
     auto closest_point = std::min_element(
         begin, end,
         [&global_pose](const PoseStamped &lhs, const PoseStamped &rhs) {
-          return utils::hypot(lhs, global_pose) <
-                 utils::hypot(rhs, global_pose);
+          return utils::geometry::hypot(lhs, global_pose) <
+                 utils::geometry::hypot(rhs, global_pose);
         });
 
-    auto max_dist = getMaxTransformDistance();
+    auto max_costmap_dist = getMaxCostmapDist();
     auto last_point = std::find_if(
         closest_point, end, [&](const PoseStamped &global_plan_pose) {
-          auto &&dist = utils::hypot(global_pose, global_plan_pose);
-          return dist > max_dist or dist > lookahead_dist_;
+          auto &&dist = utils::geometry::hypot(global_pose, global_plan_pose);
+          return dist > max_costmap_dist or dist > lookahead_dist_;
         });
 
     return std::tuple{closest_point, last_point};
@@ -156,7 +157,7 @@ private:
     global_plan_.poses.erase(global_plan_.poses.begin(), end);
   }
 
-  double getMaxTransformDistance() {
+  double getMaxCostmapDist() {
     const auto &costmap = costmap_->getCostmap();
     return std::max(costmap->getSizeInCellsX(), costmap->getSizeInCellsY()) *
            costmap->getResolution() / 2.0;
