@@ -87,14 +87,12 @@ Path createPath() {
 }
 
 TEST_F(OptimizerTest, evalNextControlTest) {
-  PoseStamped pose;
   Twist twist;
   Path path;
 
-  TwistStamped result1;
-  result1 = optimizer_.evalNextControl(pose, twist, path);
+  auto &&result = optimizer_.evalNextControl(twist, path);
 
-  EXPECT_TRUE(result1 == TwistStamped{});
+  EXPECT_TRUE(result == TwistStamped{});
 }
 
 int main(int argc, char **argv) {
