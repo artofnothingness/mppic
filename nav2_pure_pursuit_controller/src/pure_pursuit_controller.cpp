@@ -142,8 +142,8 @@ geometry_msgs::msg::TwistStamped PurePursuitController::computeVelocityCommands(
     angular_vel = max_angular_vel_;
   }
 
-  // Create and publish a TwistStamped message with the desired velocity
-  geometry_msgs::msg::TwistStamped cmd_vel;
+  // Create and publish a geometry_msgs::msg::TwistStamped message with the desired velocity
+geometry_msgs::msg::TwistStamped cmd_vel;
   cmd_vel.header.frame_id = pose.header.frame_id;
   cmd_vel.header.stamp = clock_->now();
   cmd_vel.twist.linear.x = linear_vel;

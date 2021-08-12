@@ -12,38 +12,28 @@
 #include "mppi/Models.hpp"
 #include "mppi/Optimizer.hpp"
 
-using namespace ultra::mppi;
-
-using T = float;
-using Optimizer = optimization::Optimizer<T>;
-using nav2_costmap_2d::Costmap2D;
-using rclcpp_lifecycle::LifecycleNode;
-using std::shared_ptr;
-
-using geometry_msgs::msg::Pose;
-using geometry_msgs::msg::PoseStamped;
-using geometry_msgs::msg::Twist;
-using geometry_msgs::msg::TwistStamped;
-using nav_msgs::msg::Path;
-
 class OptimizerTest : public ::testing::Test {
+
+  using T = float;
+
 protected:
   void SetUp() override {
 
     std::string node_name = "TestNode";
-    node_ = std::make_shared<LifecycleNode>(node_name);
-    costmap_ = new Costmap2D(500, 500, 0.1, 0, 0, 100);
-    auto &model = models::NaiveModel<T>;
+    node_ = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name);
+    costmap_ = new nav2_costmap_2d::Costmap2D(500, 500, 0.1, 0, 0, 100);
+    auto &model = mppi::models::NaiveModel<T>;
 
-    optimizer_ = Optimizer(node_, node_name, costmap_, model);
+    optimizer_ =
+        mppi::optimization::Optimizer<T>(node_, node_name, costmap_, model);
   }
 
   void TearDown() override { delete costmap_; }
 
 protected:
-  shared_ptr<LifecycleNode> node_;
-  Optimizer optimizer_;
-  Costmap2D *costmap_;
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
+  mppi::optimization::Optimizer<T> optimizer_;
+  nav2_costmap_2d::Costmap2D *costmap_;
 };
 
 template <typename T> void setDefaultHeader(T &msg) {
@@ -52,8 +42,8 @@ template <typename T> void setDefaultHeader(T &msg) {
   msg.header.stamp.sec = 0;
 }
 
-PoseStamped createPose() {
-  PoseStamped pose;
+geometry_msgs::msg::PoseStamped createPose() {
+  geometry_msgs::msg::PoseStamped pose;
   setDefaultHeader(pose);
   pose.pose.position.x = 1;
   pose.pose.position.y = 1;
@@ -61,8 +51,8 @@ PoseStamped createPose() {
   return pose;
 }
 
-Twist createTwist() {
-  Twist twist;
+geometry_msgs::msg::Twist createTwist() {
+  geometry_msgs::msg::Twist twist;
 
   twist.linear.x = 1;
   twist.linear.y = 0;
@@ -70,12 +60,12 @@ Twist createTwist() {
   return twist;
 }
 
-Path createPath() {
-  Path path;
+nav_msgs::msg::Path createPath() {
+  nav_msgs::msg::Path path;
   setDefaultHeader(path);
 
   for (int i = 0; i < 100; i++) {
-    PoseStamped p;
+    geometry_msgs::msg::PoseStamped p;
     setDefaultHeader(p);
     p.pose.position.x = i;
     p.pose.position.y = i * i;
@@ -87,12 +77,12 @@ Path createPath() {
 }
 
 TEST_F(OptimizerTest, evalNextControlTest) {
-  Twist twist;
-  Path path;
+  geometry_msgs::msg::Twist twist;
+  nav_msgs::msg::Path path;
 
   auto &&result = optimizer_.evalNextControl(twist, path);
 
-  EXPECT_TRUE(result == TwistStamped{});
+  EXPECT_TRUE(result == geometry_msgs::msg::TwistStamped{});
 }
 
 int main(int argc, char **argv) {

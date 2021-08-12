@@ -5,24 +5,17 @@
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "xtensor/xarray.hpp"
 
-namespace ultra::mppi::utils::visualization {
-
-using geometry_msgs::msg::Pose;
-using geometry_msgs::msg::Vector3;
-using rclcpp::Time;
-using rclcpp_lifecycle::LifecycleNode;
-using rclcpp_lifecycle::LifecyclePublisher;
-using std_msgs::msg::ColorRGBA;
-using visualization_msgs::msg::Marker;
-using visualization_msgs::msg::MarkerArray;
-
-using std::shared_ptr;
-using std::string;
+namespace mppi::visualization {
 
 namespace details {
 
-inline Marker createMarker(int id, Pose pose, Vector3 scale, ColorRGBA color,
-                           const string &frame_id, const Time &time) {
+inline visualization_msgs::msg::Marker
+createMarker(int id, geometry_msgs::msg::Pose pose,
+             geometry_msgs::msg::Vector3 scale, std_msgs::msg::ColorRGBA color,
+             const std::string &frame_id, const rclcpp::Time &time) {
+
+  using visualization_msgs::msg::Marker;
+
   Marker marker;
   marker.header.frame_id = frame_id;
   marker.header.stamp = time;
@@ -38,8 +31,8 @@ inline Marker createMarker(int id, Pose pose, Vector3 scale, ColorRGBA color,
   return marker;
 }
 
-inline Pose createPose(double x, double y, double z) {
-  Pose pose;
+inline geometry_msgs::msg::Pose createPose(double x, double y, double z) {
+  geometry_msgs::msg::Pose pose;
   pose.position.x = x;
   pose.position.y = y;
   pose.position.z = z;
@@ -52,8 +45,8 @@ inline Pose createPose(double x, double y, double z) {
   return pose;
 }
 
-inline Vector3 createScale(double x, double y, double z) {
-  Vector3 scale;
+inline geometry_msgs::msg::Vector3 createScale(double x, double y, double z) {
+  geometry_msgs::msg::Vector3 scale;
   scale.x = x;
   scale.y = y;
   scale.z = z;
@@ -61,8 +54,9 @@ inline Vector3 createScale(double x, double y, double z) {
   return scale;
 }
 
-inline ColorRGBA createColor(double r, double g, double b, double a) {
-  ColorRGBA color;
+inline std_msgs::msg::ColorRGBA createColor(double r, double g, double b,
+                                            double a) {
+  std_msgs::msg::ColorRGBA color;
   color.r = r;
   color.g = g;
   color.b = b;
@@ -77,15 +71,17 @@ class TrajectoryVisualizer {
 public:
   TrajectoryVisualizer() = default;
 
-  TrajectoryVisualizer(const shared_ptr<LifecycleNode> &parent,
-                       const std::string &frame_id) {
+  TrajectoryVisualizer(
+      const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
+      const std::string &frame_id) {
     parent_ = parent;
     frame_id_ = frame_id;
   };
 
   void on_configure() {
     trajectories_publisher_ =
-        parent_->create_publisher<MarkerArray>("/trajectories", 1);
+        parent_->create_publisher<visualization_msgs::msg::MarkerArray>(
+            "/trajectories", 1);
 
     RCLCPP_INFO(logger_, "Configured");
   }
@@ -97,7 +93,7 @@ public:
   template <typename Container>
   void visualize(Container &&trajectories, double batch_step,
                  double time_step) {
-    MarkerArray points;
+    visualization_msgs::msg::MarkerArray points;
     auto &shape = trajectories.shape();
 
     int marker_id = 0;
@@ -123,10 +119,13 @@ public:
   }
 
 private:
-  string frame_id_;
-  shared_ptr<LifecycleNode> parent_;
-  shared_ptr<LifecyclePublisher<MarkerArray>> trajectories_publisher_;
+  std::string frame_id_;
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
+  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<
+      visualization_msgs::msg::MarkerArray>>
+
+      trajectories_publisher_;
   rclcpp::Logger logger_{rclcpp::get_logger("Trajectory Visualizer")};
 };
 
-} // namespace ultra::mppi::utils::visualization
+} // namespace mppi::visualization

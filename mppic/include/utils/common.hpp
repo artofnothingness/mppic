@@ -2,8 +2,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-namespace ultra::mppi::utils::common {
-using std::string;
+namespace mppi::utils {
 
 template <typename... Components> void configure(Components &&...cmps) {
   (cmps.on_configure(), ...);
@@ -22,7 +21,7 @@ template <typename... Components> void deactivate(Components &&...cmps) {
 }
 
 template <typename N, typename T>
-T getParam(string const &param_name, T default_value,
+T getParam(std::string const &param_name, T default_value,
            const std::shared_ptr<N> &node) {
 
   T param;
@@ -32,4 +31,4 @@ T getParam(string const &param_name, T default_value,
   return param;
 }
 
-} // namespace ultra::mppi::utils::common
+} // namespace mppi::utils

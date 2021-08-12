@@ -13,28 +13,14 @@
 #include "mppi/Optimizer.hpp"
 #include <benchmark/benchmark.h>
 
-using namespace ultra::mppi;
-
-using T = float;
-using Optimizer = optimization::Optimizer<T>;
-using nav2_costmap_2d::Costmap2D;
-using rclcpp_lifecycle::LifecycleNode;
-using std::shared_ptr;
-
-using geometry_msgs::msg::Pose;
-using geometry_msgs::msg::PoseStamped;
-using geometry_msgs::msg::Twist;
-using geometry_msgs::msg::TwistStamped;
-using nav_msgs::msg::Path;
-
 template <typename T> void setDefaultHeader(T &msg) {
   msg.header.frame_id = "map";
   msg.header.stamp.nanosec = 0;
   msg.header.stamp.sec = 0;
 }
 
-PoseStamped createPose() {
-  PoseStamped pose;
+geometry_msgs::msg::PoseStamped createPose() {
+  geometry_msgs::msg::PoseStamped pose;
   setDefaultHeader(pose);
   pose.pose.position.x = 1;
   pose.pose.position.y = 1;
@@ -42,8 +28,8 @@ PoseStamped createPose() {
   return pose;
 }
 
-Twist createTwist() {
-  Twist twist;
+geometry_msgs::msg::Twist createTwist() {
+  geometry_msgs::msg::Twist twist;
 
   twist.linear.x = 1;
   twist.linear.y = 0;
@@ -51,12 +37,12 @@ Twist createTwist() {
   return twist;
 }
 
-Path createPath() {
-  Path path;
+nav_msgs::msg::Path createPath() {
+  nav_msgs::msg::Path path;
   setDefaultHeader(path);
 
   for (int i = 0; i < 100; i++) {
-    PoseStamped p;
+    geometry_msgs::msg::PoseStamped p;
     setDefaultHeader(p);
     p.pose.position.x = i;
     p.pose.position.y = i * i;
@@ -68,16 +54,19 @@ Path createPath() {
 }
 
 class OptimizerBenchmark : public benchmark::Fixture {
+  using T = float;
+
 public:
   void SetUp(const ::benchmark::State &state) {
     (void)state;
 
     std::string node_name = "BenchmarkNode";
-    node_ = std::make_shared<LifecycleNode>(node_name);
-    costmap_ = new Costmap2D(500, 500, 0.1, 0, 0, 100);
-    auto &model = models::NaiveModel<T>;
+    node_ = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name);
+    costmap_ = new nav2_costmap_2d::Costmap2D(500, 500, 0.1, 0, 0, 100);
+    auto &model = mppi::models::NaiveModel<float>;
 
-    optimizer_ = Optimizer(node_, node_name, costmap_, model);
+    optimizer_ =
+        mppi::optimization::Optimizer<T>(node_, node_name, costmap_, model);
     optimizer_.on_configure();
     optimizer_.on_activate();
   }
@@ -90,16 +79,16 @@ public:
   }
 
 protected:
-  shared_ptr<LifecycleNode> node_;
-  Optimizer optimizer_;
-  Costmap2D *costmap_;
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
+  mppi::optimization::Optimizer<T> optimizer_;
+  nav2_costmap_2d::Costmap2D *costmap_;
 };
 
 BENCHMARK_DEFINE_F(OptimizerBenchmark, evalNextControlBenchmark)
 (benchmark::State &st) {
   for (auto _ : st) {
-    Twist twist = createTwist();
-    Path path = createPath();
+    geometry_msgs::msg::Twist twist = createTwist();
+    nav_msgs::msg::Path path = createPath();
     auto result = optimizer_.evalNextControl(twist, path);
   }
 }
