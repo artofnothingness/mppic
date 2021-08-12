@@ -9,18 +9,12 @@
 #include "algorithm"
 #include "xtensor/xarray.hpp"
 
-namespace ultra::mppi::utils::geometry {
+namespace mppi::geometry {
 
-using geometry_msgs::msg::Pose;
-using geometry_msgs::msg::PoseStamped;
-using geometry_msgs::msg::TwistStamped;
-
-using rclcpp_lifecycle::LifecycleNode;
-using std::string;
 
 template <typename T>
-T getParam(string const &param_name, T default_value,
-           std::shared_ptr<LifecycleNode> node) {
+T getParam(std::string const &param_name, T default_value, 
+    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node) {
 
   T param;
   node->declare_parameter(param_name, rclcpp::ParameterValue(default_value));
@@ -30,8 +24,9 @@ T getParam(string const &param_name, T default_value,
 }
 
 template <typename T, typename H>
-TwistStamped toTwistStamped(T &&velocities, H const &header) {
-  TwistStamped twist;
+geometry_msgs::msg::TwistStamped toTwistStamped(T &&velocities,
+                                                const H &header) {
+  geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = header.frame_id;
   twist.header.stamp = header.stamp;
   twist.twist.linear.x = velocities(0);
@@ -39,7 +34,7 @@ TwistStamped toTwistStamped(T &&velocities, H const &header) {
   return twist;
 }
 
-template <typename T> auto hypot(T const &p1, T const &p2) {
+template <typename T> auto hypot(const T &p1, const T &p2) {
   double dx = p1.x - p2.x;
   double dy = p1.y - p2.y;
   double dz = p1.z - p2.z;
@@ -47,12 +42,16 @@ template <typename T> auto hypot(T const &p1, T const &p2) {
   return std::hypot(dx, dy, dz);
 }
 
-template <> inline auto hypot(Pose const &lhs, Pose const &rhs) {
+template <>
+inline auto hypot(const geometry_msgs::msg::Pose &lhs,
+                  const geometry_msgs::msg::Pose &rhs) {
   return hypot(lhs.position, rhs.position);
 }
 
-template <> inline auto hypot(PoseStamped const &lhs, PoseStamped const &rhs) {
+template <>
+inline auto hypot(const geometry_msgs::msg::PoseStamped &lhs,
+                  const geometry_msgs::msg::PoseStamped &rhs) {
   return hypot(lhs.pose, rhs.pose);
 }
 
-} // namespace ultra::mppi::utils::geometry
+} // namespace mppi::utils::geometry

@@ -14,27 +14,12 @@
 #include "xtensor/xrandom.hpp"
 #include "xtensor/xslice.hpp"
 #include <xtensor/xmath.hpp>
-#include <xtensor/xnoalias.hpp>
 #include <xtensor/xview.hpp>
 
 #include "utils/common.hpp"
 #include "utils/geometry.hpp"
 
-namespace ultra::mppi::optimization {
-
-using std::string;
-
-using geometry_msgs::msg::Pose;
-using geometry_msgs::msg::PoseStamped;
-using geometry_msgs::msg::Twist;
-using geometry_msgs::msg::TwistStamped;
-using nav2_costmap_2d::Costmap2D;
-using nav_msgs::msg::Path;
-
-using rclcpp_lifecycle::LifecycleNode;
-
-using std::shared_ptr;
-using xt::evaluation_strategy::immediate;
+namespace mppi::optimization {
 
 template <typename T, typename Tensor = xt::xarray<T>,
           typename Model = Tensor(const Tensor &)>
@@ -44,8 +29,9 @@ public:
   Optimizer() = default;
   ~Optimizer() = default;
 
-  Optimizer(const shared_ptr<LifecycleNode> &parent, const string &node_name,
-            Costmap2D *costmap, Model &&model)
+  Optimizer(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
+            const std::string &node_name, nav2_costmap_2d::Costmap2D *costmap,
+            Model &&model)
       : model_(model) {
 
     node_name_ = node_name;
@@ -59,11 +45,13 @@ public:
     RCLCPP_INFO(logger_, "Configured");
   }
 
-  void on_cleanup() {}
-  void on_activate() {}
-  void on_deactivate() {}
+  void on_cleanup(){};
+  void on_activate(){};
+  void on_deactivate(){};
 
-  auto evalNextControl(const Twist &twist, const Path &path) -> TwistStamped {
+  auto evalNextControl(const geometry_msgs::msg::Twist &twist,
+                       const nav_msgs::msg::Path &path)
+      -> geometry_msgs::msg::TwistStamped {
     static Tensor costs;
 
     for (int i = 0; i < iteration_count_; ++i) {
@@ -73,15 +61,15 @@ public:
     }
 
     return getControlFromSequence(path.header);
-  };
+  }
 
   Tensor getTrajectories() { return trajectories_; }
 
 private:
   void getParams() {
-    auto getParam = [&](const string &param_name, auto default_value) {
-      string name = node_name_ + '.' + param_name;
-      return utils::common::getParam(name, default_value, parent_);
+    auto getParam = [&](const std::string &param_name, auto default_value) {
+      std::string name = node_name_ + '.' + param_name;
+      return utils::getParam(name, default_value, parent_);
     };
 
     model_dt_ = getParam("model_dt", 0.1);
@@ -101,7 +89,8 @@ private:
     xt::view(batches_, xt::all(), xt::all(), 4) = model_dt_;
   }
 
-  Tensor generateNoisedTrajectoryBatches(const Twist &twist) {
+  Tensor
+  generateNoisedTrajectoryBatches(const geometry_msgs::msg::Twist &twist) {
     getControlBatches() = generateNoisedControlBatches();
     applyControlConstraints();
     setBatchesVelocity(twist);
@@ -125,12 +114,12 @@ private:
     w = xt::clip(w, -limit_w_, limit_w_);
   }
 
-  void setBatchesVelocity(const Twist &twist) {
+  void setBatchesVelocity(const geometry_msgs::msg::Twist &twist) {
     setBatchesInitialVelocities(twist);
     propagateBatchesVelocityFromInitials();
   }
 
-  void setBatchesInitialVelocities(const Twist &twist) {
+  void setBatchesInitialVelocities(const geometry_msgs::msg::Twist &twist) {
     xt::view(batches_, xt::all(), 0, 0) = twist.linear.x;
     xt::view(batches_, xt::all(), 0, 1) = twist.angular.z;
   }
@@ -169,7 +158,7 @@ private:
   }
 
   Tensor evalBatchesCosts(const Tensor &trajectory_batches,
-                          const Path &path) const {
+                          const nav_msgs::msg::Path &path) const {
 
     std::vector<size_t> shape = {trajectory_batches.shape()[0]};
 
@@ -196,9 +185,10 @@ private:
   }
 
   void updateControlSequence(Tensor &costs) {
-    costs -= xt::amin(costs, immediate);
+    costs -= xt::amin(costs, xt::evaluation_strategy::immediate);
     Tensor exponents = xt::exp(-1 / temperature_ * costs);
-    auto softmaxes = exponents / xt::sum(exponents, immediate);
+    auto softmaxes =
+        exponents / xt::sum(exponents, xt::evaluation_strategy::immediate);
 
     Tensor softmaxes_expanded =
         xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
@@ -206,8 +196,9 @@ private:
     control_sequence_ = xt::sum(getControlBatches() * softmaxes_expanded, 0);
   }
 
-  template <typename H> TwistStamped getControlFromSequence(const H &header) {
-    return utils::geometry::toTwistStamped(xt::view(control_sequence_, 0),
+  template <typename H>
+  geometry_msgs::msg::TwistStamped getControlFromSequence(const H &header) {
+    return geometry::toTwistStamped(xt::view(control_sequence_, 0),
                                            header);
   }
 
@@ -224,9 +215,9 @@ private:
   }
 
 private:
-  shared_ptr<LifecycleNode> parent_;
-  string node_name_;
-  Costmap2D *costmap_;
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
+  std::string node_name_;
+  nav2_costmap_2d::Costmap2D *costmap_;
 
   static constexpr int last_dim_ = 5;
   static constexpr int control_dim_size_ = 2;
@@ -251,4 +242,4 @@ private:
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
 };
 
-} // namespace ultra::mppi::optimization
+} // namespace mppi::optimization

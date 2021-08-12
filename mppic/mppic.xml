@@ -1,6 +1,6 @@
 <class_libraries>
     <library path="mppic">
-      <class type="ultra::mppi::Controller<float>" base_class_type="nav2_core::Controller">
+      <class type="mppi::Controller<float>" base_class_type="nav2_core::Controller">
             <description>
                 mppic
             </description>

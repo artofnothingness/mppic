@@ -2,7 +2,7 @@
 
 #include <xtensor/xview.hpp>
 
-namespace ultra::mppi::models {
+namespace mppi::models {
 
 template <typename T, typename Tensor = xt::xarray<T>>
 Tensor NaiveModel(const Tensor &tensor) {

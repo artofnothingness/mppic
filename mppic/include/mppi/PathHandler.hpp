@@ -14,20 +14,7 @@
 #include "utils/common.hpp"
 #include "utils/geometry.hpp"
 
-namespace ultra::mppi::handlers {
-
-using std::shared_ptr;
-using std::string;
-
-using rclcpp_lifecycle::LifecycleNode;
-using tf2_ros::Buffer;
-
-using geometry_msgs::msg::PoseStamped;
-using geometry_msgs::msg::Twist;
-using geometry_msgs::msg::TwistStamped;
-using nav_msgs::msg::Path;
-
-using nav2_costmap_2d::Costmap2DROS;
+namespace mppi::handlers {
 
 class PathHandler {
 
@@ -35,9 +22,10 @@ public:
   PathHandler() = default;
   ~PathHandler() = default;
 
-  PathHandler(const shared_ptr<LifecycleNode> &parent, const string &node_name,
-              const shared_ptr<Costmap2DROS> &costmap,
-              const shared_ptr<Buffer> &buffer) {
+  PathHandler(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
+              const std::string &node_name,
+              const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap,
+              const std::shared_ptr<tf2_ros::Buffer> &buffer) {
 
     node_name_ = node_name;
     tf_buffer_ = buffer;
@@ -55,31 +43,34 @@ public:
 
 private:
   void getParams() {
-    auto getParam = [&](const string &param_name, auto default_value) {
-      string name = node_name_ + '.' + param_name;
-      return utils::common::getParam(name, default_value, parent_);
+    auto getParam = [&](const std::string &param_name, auto default_value) {
+      std::string name = node_name_ + '.' + param_name;
+      return utils::getParam(name, default_value, parent_);
     };
 
     lookahead_dist_ = getParam("lookahead_dist", 1.2);
     transform_tolerance_ = getParam("transform_tolerance", 1.2);
   }
 
-  auto getGlobalPlanConsideringBounds(const PoseStamped &global_pose) {
+  auto getGlobalPlanConsideringBounds(
+      const geometry_msgs::msg::PoseStamped &global_pose) {
 
     auto begin = global_plan_.poses.begin();
     auto end = global_plan_.poses.end();
 
     auto closest_point = std::min_element(
         begin, end,
-        [&global_pose](const PoseStamped &lhs, const PoseStamped &rhs) {
-          return utils::geometry::hypot(lhs, global_pose) <
-                 utils::geometry::hypot(rhs, global_pose);
+        [&global_pose](const geometry_msgs::msg::PoseStamped &lhs,
+                       const geometry_msgs::msg::PoseStamped &rhs) {
+          return geometry::hypot(lhs, global_pose) <
+                 geometry::hypot(rhs, global_pose);
         });
 
     auto max_costmap_dist = getMaxCostmapDist();
     auto last_point = std::find_if(
-        closest_point, end, [&](const PoseStamped &global_plan_pose) {
-          auto &&dist = utils::geometry::hypot(global_pose, global_plan_pose);
+        closest_point, end,
+        [&](const geometry_msgs::msg::PoseStamped &global_plan_pose) {
+          auto &&dist = geometry::hypot(global_pose, global_plan_pose);
           return dist > max_costmap_dist or dist > lookahead_dist_;
         });
 
@@ -87,10 +78,11 @@ private:
   }
 
 public:
-  void setPath(const Path &plan) { global_plan_ = plan; }
-  Path &getPath() { return global_plan_; }
+  void setPath(const nav_msgs::msg::Path &plan) { global_plan_ = plan; }
+  nav_msgs::msg::Path &getPath() { return global_plan_; }
 
-  Path transformPath(const PoseStamped &robot_pose) {
+  nav_msgs::msg::Path
+  transformPath(const geometry_msgs::msg::PoseStamped &robot_pose) {
     auto global_pose = transformToGlobalFrame(robot_pose);
     const auto &stamp = global_pose.header.stamp;
 
@@ -110,13 +102,14 @@ public:
 
 private:
   template <typename Iter, typename Stamp>
-  Path transformGlobalPlanToLocal(Iter begin, Iter end, const Stamp &stamp) {
+  nav_msgs::msg::Path transformGlobalPlanToLocal(Iter begin, Iter end,
+                                                 const Stamp &stamp) {
 
     auto base_frame = costmap_->getBaseFrameID();
 
     auto transform_pose = [&](const auto &global_plan_pose) {
-      PoseStamped global_pose;
-      PoseStamped local_pose;
+      geometry_msgs::msg::PoseStamped global_pose;
+      geometry_msgs::msg::PoseStamped local_pose;
 
       global_pose.header.frame_id = global_plan_.header.frame_id;
       global_pose.header.stamp = stamp;
@@ -126,7 +119,7 @@ private:
       return local_pose;
     };
 
-    Path plan;
+    nav_msgs::msg::Path plan;
     std::transform(begin, end, std::back_inserter(plan.poses), transform_pose);
     plan.header.frame_id = base_frame;
     plan.header.stamp = stamp;
@@ -134,8 +127,9 @@ private:
     return plan;
   }
 
-  bool transformPose(const string &frame, const PoseStamped &in_pose,
-                     PoseStamped &out_pose) const {
+  bool transformPose(const std::string &frame,
+                     const geometry_msgs::msg::PoseStamped &in_pose,
+                     geometry_msgs::msg::PoseStamped &out_pose) const {
 
     if (in_pose.header.frame_id == frame) {
       out_pose = in_pose;
@@ -163,12 +157,13 @@ private:
            costmap->getResolution() / 2.0;
   }
 
-  auto transformToGlobalFrame(const PoseStamped &pose) -> PoseStamped {
+  auto transformToGlobalFrame(const geometry_msgs::msg::PoseStamped &pose)
+      -> geometry_msgs::msg::PoseStamped {
     if (global_plan_.poses.empty()) {
       throw std::runtime_error("Received plan with zero length");
     }
 
-    PoseStamped robot_pose;
+    geometry_msgs::msg::PoseStamped robot_pose;
     if (!transformPose(global_plan_.header.frame_id, pose, robot_pose)) {
       throw std::runtime_error(
           "Unable to transform robot pose into global plan's frame");
@@ -178,16 +173,16 @@ private:
   }
 
 private:
-  shared_ptr<LifecycleNode> parent_;
-  string node_name_;
-  shared_ptr<Costmap2DROS> costmap_;
-  shared_ptr<Buffer> tf_buffer_;
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
+  std::string node_name_;
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
   double lookahead_dist_;
   double transform_tolerance_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI PathHandler")};
 
-  Path global_plan_;
+  nav_msgs::msg::Path global_plan_;
 };
 
-} // namespace ultra::mppi::handlers
+} // namespace mppi::handlers
