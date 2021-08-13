@@ -1,16 +1,13 @@
-#include <gtest/gtest.h>
-
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
-#include <rclcpp/executors.hpp>
 
 #include "geometry_msgs/msg/pose.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
 #include "mppi/Models.hpp"
-#include "mppi/Optimizer.hpp"
+#include "mppi/impl/Optimizer.hpp"
 #include <benchmark/benchmark.h>
 
 template <typename T> void setDefaultHeader(T &msg) {
