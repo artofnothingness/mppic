@@ -46,7 +46,7 @@ public:
                        const nav_msgs::msg::Path &path)
       -> geometry_msgs::msg::TwistStamped;
 
-  Tensor getTrajectories() { return trajectories_; }
+  auto getTrajectories() -> Tensor { return trajectories_; }
 
 private:
   void getParams();
@@ -66,7 +66,8 @@ private:
   void updateControlSequence(Tensor &costs);
 
   template <typename H>
-  geometry_msgs::msg::TwistStamped getControlFromSequence(const H &header);
+  auto getControlFromSequence(const H &header)
+      -> geometry_msgs::msg::TwistStamped;
 
   decltype(auto) getControlBatches() {
     return xt::view(batches_, xt::all(), xt::all(), xt::range(2, 4));

@@ -9,4 +9,4 @@ Tensor NaiveModel(const Tensor &tensor) {
   return xt::view(tensor, xt::all(), xt::range(2, 4));
 }
 
-} // namespace ultra::mppi::models
+} // namespace mppi::models
