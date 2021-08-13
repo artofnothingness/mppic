@@ -7,9 +7,10 @@
 #include "mppi/impl/Optimizer.hpp"
 #include "mppi/impl/PathHandler.hpp"
 
+#include "visualization/TrajectoryVisualizer.hpp"
+
 #include "utils/common.hpp"
 #include "utils/geometry.hpp"
-#include "utils/visualization.hpp"
 
 namespace mppi {
 
@@ -50,13 +51,14 @@ private:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::string node_name_;
 
-  bool visualize_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>>
       transformed_path_pub_;
 
   optimization::Optimizer<T, Tensor, Model> optimizer_;
   handlers::PathHandler path_handler_;
   visualization::TrajectoryVisualizer trajectory_visualizer_;
+
+  bool visualize_;
 };
 
 } // namespace mppi
