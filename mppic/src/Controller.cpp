@@ -1,4 +1,4 @@
-#include "mppi/Controller.hpp"
+#include "mppi/impl/Controller.hpp"
 
 #include "pluginlib/class_list_macros.hpp"
 #include "pluginlib/class_loader.hpp"

@@ -1,7 +1,7 @@
 
-add_library(mppic SHARED Controller.cpp)
-target_include_directories(mppic PRIVATE ../include)
+add_library(mppic SHARED Controller.cpp PathHandler.cpp)
 
+target_include_directories(mppic PRIVATE ../include)
 ament_target_dependencies(mppic
   ${packages}
 )

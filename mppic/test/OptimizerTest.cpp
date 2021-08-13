@@ -10,7 +10,7 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
 #include "mppi/Models.hpp"
-#include "mppi/Optimizer.hpp"
+#include "mppi/impl/Optimizer.hpp"
 
 class OptimizerTest : public ::testing::Test {
 
