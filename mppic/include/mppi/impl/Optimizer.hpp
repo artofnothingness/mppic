@@ -6,6 +6,8 @@
 #include "xtensor/xrandom.hpp"
 #include "xtensor/xslice.hpp"
 
+#include "xtensor/xio.hpp"
+
 #include "utils/common.hpp"
 #include "utils/geometry.hpp"
 
@@ -18,12 +20,19 @@ auto Optimizer<T, Tensor, Model>::evalNextControl(
   static Tensor costs;
 
   for (int i = 0; i < iteration_count_; ++i) {
-    trajectories_ = generateNoisedTrajectoryBatches(twist);
-    costs = evalBatchesCosts(trajectories_, path);
+    generated_trajectories_ = generateNoisedTrajectories(twist);
+    costs = evalBatchesCosts(generated_trajectories_, path);
     updateControlSequence(costs);
   }
 
   return getControlFromSequence(path.header);
+}
+
+template <typename T, typename Tensor, typename Model>
+void Optimizer<T, Tensor, Model>::on_configure() {
+  getParams();
+  resetBatches();
+  RCLCPP_INFO(logger_, "Configured");
 }
 
 template <typename T, typename Tensor, typename Model>
@@ -36,53 +45,55 @@ void Optimizer<T, Tensor, Model>::getParams() {
   model_dt_ = getParam("model_dt", 0.1);
   time_steps_ = getParam("time_steps", 20);
   batch_size_ = getParam("batch_size", 300);
-  std_v_ = getParam("std_v", 0.1);
-  std_w_ = getParam("std_w", 0.3);
-  limit_v_ = getParam("limit_v", 0.5);
-  limit_w_ = getParam("limit_w", 1.0);
+  v_std_ = getParam("v_std", 0.1);
+  w_std_ = getParam("w_std", 0.3);
+  v_limit_ = getParam("v_limit", 0.5);
+  w_limit_ = getParam("w_limit", 1.3);
   iteration_count_ = getParam("iteration_count", 1);
   temperature_ = getParam("temperature", 0.25);
 }
 
 template <typename T, typename Tensor, typename Model>
 void Optimizer<T, Tensor, Model>::resetBatches() {
-  batches_ = xt::zeros<float>({batch_size_, time_steps_, last_dim_});
-  control_sequence_ = xt::zeros<float>({time_steps_, control_dim_size_});
+  batches_ = xt::zeros<T>({batch_size_, time_steps_, last_dim_size});
+  control_sequence_ = xt::zeros<T>({time_steps_, control_dim_size_});
   xt::view(batches_, xt::all(), xt::all(), 4) = model_dt_;
 }
 
 template <typename T, typename Tensor, typename Model>
-Tensor Optimizer<T, Tensor, Model>::generateNoisedTrajectoryBatches(
+Tensor Optimizer<T, Tensor, Model>::generateNoisedTrajectories(
     const geometry_msgs::msg::Twist &twist) {
-  getControlBatches() = generateNoisedControlBatches();
+
+  getBatchesControls() = generateNoisedControlBatches();
   applyControlConstraints();
-  setBatchesVelocity(twist);
-  return integrateVelocityBatches();
+  setBatchesVelocities(twist);
+
+  return integrateBatchesVelocities();
 }
 
 template <typename T, typename Tensor, typename Model>
 auto Optimizer<T, Tensor, Model>::generateNoisedControlBatches() -> Tensor {
-  auto v_noises =
-      xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, std_v_);
-  auto w_noises =
-      xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, std_w_);
+  Tensor v_noises =
+      xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, v_std_);
+  Tensor w_noises =
+      xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, w_std_);
   return control_sequence_ + xt::concatenate(xt::xtuple(v_noises, w_noises), 2);
 }
 
 template <typename T, typename Tensor, typename Model>
 void Optimizer<T, Tensor, Model>::applyControlConstraints() {
-  auto v = getLinearVelocityControlBatches();
-  auto w = getAngularVelocityControlBatches();
+  auto v = getBatchesControlLinearVelocities();
+  auto w = getBatchesControlAngularVelocities();
 
-  v = xt::clip(v, -limit_v_, limit_v_);
-  w = xt::clip(w, -limit_w_, limit_w_);
+  v = xt::clip(v, -v_limit_, v_limit_);
+  w = xt::clip(w, -w_limit_, w_limit_);
 }
 
 template <typename T, typename Tensor, typename Model>
-void Optimizer<T, Tensor, Model>::setBatchesVelocity(
+void Optimizer<T, Tensor, Model>::setBatchesVelocities(
     const geometry_msgs::msg::Twist &twist) {
   setBatchesInitialVelocities(twist);
-  propagateBatchesVelocityFromInitials();
+  propagateBatchesVelocitiesFromInitials();
 }
 
 template <typename T, typename Tensor, typename Model>
@@ -93,32 +104,36 @@ void Optimizer<T, Tensor, Model>::setBatchesInitialVelocities(
 }
 
 template <typename T, typename Tensor, typename Model>
-void Optimizer<T, Tensor, Model>::propagateBatchesVelocityFromInitials() {
+void Optimizer<T, Tensor, Model>::propagateBatchesVelocitiesFromInitials() {
   using namespace xt::placeholders;
 
   for (int t = 0; t < time_steps_ - 1; t++) {
     auto curr_batch = xt::view(batches_, xt::all(), t); // -> batch x 5
     auto next_batch_velocities =
         xt::view(batches_, xt::all(), t + 1, xt::range(_, 2)); // batch x 2
-
-    next_batch_velocities = model_(curr_batch);
+    next_batch_velocities = model_(curr_batch); // TODO maybe pass view ?
   }
 }
 
 template <typename T, typename Tensor, typename Model>
-auto Optimizer<T, Tensor, Model>::integrateVelocityBatches() const -> Tensor {
+auto Optimizer<T, Tensor, Model>::integrateBatchesVelocities() const -> Tensor {
   using namespace xt::placeholders;
 
-  auto v = xt::view(batches_, xt::all(), xt::all(), 0);
-  auto w = xt::view(batches_, xt::all(), xt::all(), 1);
+  auto v = getBatchesLinearVelocities();
+  auto w = getBatchesAngularVelocities();
+
   auto yaw = xt::cumsum(w * model_dt_, 1);
-  yaw -= xt::view(yaw, xt::all(), xt::range(_, 1));
 
-  auto x = xt::cumsum(v * model_dt_ * xt::cos(yaw), 1);
-  auto y = xt::cumsum(w * model_dt_ * xt::sin(yaw), 1);
+  xt::view(yaw, xt::all(), xt::range(1, _)) =
+      xt::view(yaw, xt::all(), xt::range(_, -1));
 
-  x -= xt::view(x, xt::all(), xt::range(_, 1));
-  y -= xt::view(x, xt::all(), xt::range(_, 1));
+  xt::view(yaw, xt::all(), 0) = 0;
+
+  auto v_x = v * xt::cos(yaw);
+  auto v_y = v * xt::sin(yaw);
+
+  auto x = xt::cumsum(v_x * model_dt_, 1);
+  auto y = xt::cumsum(v_y * model_dt_, 1);
 
   return xt::concatenate(
       xt::xtuple(xt::view(x, xt::all(), xt::all(), xt::newaxis()),
@@ -128,36 +143,38 @@ auto Optimizer<T, Tensor, Model>::integrateVelocityBatches() const -> Tensor {
 }
 
 template <typename T, typename Tensor, typename Model>
-Tensor Optimizer<T, Tensor, Model>::evalBatchesCosts(
-    const Tensor &trajectory_batches, const nav_msgs::msg::Path &path) const {
+auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
+    const Tensor &trajectory_batches, const nav_msgs::msg::Path &path) const
+    -> Tensor {
 
   std::vector<size_t> shape = {trajectory_batches.shape()[0]};
 
   auto reference_cost = xt::zeros<T>(shape);
   auto obstacle_cost = xt::zeros<T>(shape);
 
-  auto goal_cost = [&](int weight, int power) {
+  auto goal_cost = [&](int weight, int power) -> Tensor {
     Tensor last_goal = {static_cast<T>(path.poses.back().pose.position.x),
                         static_cast<T>(path.poses.back().pose.position.y)};
 
     Tensor x = xt::view(trajectory_batches, xt::all(), xt::all(), 0);
     Tensor y = xt::view(trajectory_batches, xt::all(), xt::all(), 1);
 
-    auto dx = x - last_goal[0];
-    auto dy = y - last_goal[1];
+    auto dx = x - last_goal(0);
+    auto dy = y - last_goal(1);
 
     auto dists = xt::hypot(dx, dy);
 
     auto result = weight * xt::pow(xt::view(dists, xt::all(), -1), power);
-    return Tensor(result);
+    return result;
   };
 
-  return obstacle_cost + reference_cost + goal_cost(2, 2);
+  return goal_cost(2, 2);
 }
 
 template <typename T, typename Tensor, typename Model>
-void Optimizer<T, Tensor, Model>::updateControlSequence(Tensor &costs) {
-  costs -= xt::amin(costs, xt::evaluation_strategy::immediate);
+void Optimizer<T, Tensor, Model>::updateControlSequence(const Tensor &costs) {
+  Tensor costs_normalized =
+      costs - xt::amin(costs, xt::evaluation_strategy::immediate);
   Tensor exponents = xt::exp(-1 / temperature_ * costs);
   auto softmaxes =
       exponents / xt::sum(exponents, xt::evaluation_strategy::immediate);
@@ -165,7 +182,7 @@ void Optimizer<T, Tensor, Model>::updateControlSequence(Tensor &costs) {
   Tensor softmaxes_expanded =
       xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
 
-  control_sequence_ = xt::sum(getControlBatches() * softmaxes_expanded, 0);
+  control_sequence_ = xt::sum(getBatchesControls() * softmaxes_expanded, 0);
 }
 
 template <typename T, typename Tensor, typename Model>
@@ -174,6 +191,56 @@ auto Optimizer<T, Tensor, Model>::getControlFromSequence(const H &header)
     -> geometry_msgs::msg::TwistStamped {
 
   return geometry::toTwistStamped(xt::view(control_sequence_, 0), header);
+}
+
+template <typename T, typename Tensor, typename Model>
+auto Optimizer<T, Tensor, Model>::getBatchesLinearVelocities() const {
+  return xt::view(batches_, xt::all(), xt::all(), 0);
+}
+
+template <typename T, typename Tensor, typename Model>
+auto Optimizer<T, Tensor, Model>::getBatchesAngularVelocities() const {
+  return xt::view(batches_, xt::all(), xt::all(), 1);
+}
+
+template <typename T, typename Tensor, typename Model>
+auto Optimizer<T, Tensor, Model>::getBatchesControlLinearVelocities() const {
+  return xt::view(batches_, xt::all(), xt::all(), 2);
+}
+
+template <typename T, typename Tensor, typename Model>
+auto Optimizer<T, Tensor, Model>::getBatchesControlAngularVelocities() const {
+  return xt::view(batches_, xt::all(), xt::all(), 3);
+}
+
+template <typename T, typename Tensor, typename Model>
+auto Optimizer<T, Tensor, Model>::getBatchesControls() const {
+  return xt::view(batches_, xt::all(), xt::all(), xt::range(2, 4));
+}
+
+template <typename T, typename Tensor, typename Model>
+auto Optimizer<T, Tensor, Model>::getBatchesLinearVelocities() {
+  return xt::view(batches_, xt::all(), xt::all(), 0);
+}
+
+template <typename T, typename Tensor, typename Model>
+auto Optimizer<T, Tensor, Model>::getBatchesAngularVelocities() {
+  return xt::view(batches_, xt::all(), xt::all(), 1);
+}
+
+template <typename T, typename Tensor, typename Model>
+auto Optimizer<T, Tensor, Model>::getBatchesControls() {
+  return xt::view(batches_, xt::all(), xt::all(), xt::range(2, 4));
+}
+
+template <typename T, typename Tensor, typename Model>
+auto Optimizer<T, Tensor, Model>::getBatchesControlLinearVelocities() {
+  return xt::view(batches_, xt::all(), xt::all(), 2);
+}
+
+template <typename T, typename Tensor, typename Model>
+auto Optimizer<T, Tensor, Model>::getBatchesControlAngularVelocities() {
+  return xt::view(batches_, xt::all(), xt::all(), 3);
 }
 
 } // namespace mppi::optimization

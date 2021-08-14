@@ -1,8 +1,8 @@
 #pragma once
 
 #include "mppi/Controller.hpp"
-#include "mppi/Models.hpp"
 
+#include "mppi/Models.hpp"
 #include "utils/common.hpp"
 #include "utils/geometry.hpp"
 
@@ -54,7 +54,7 @@ auto Controller<T, Tensor, Model>::computeVelocityCommands(
   auto &&cmd = optimizer_.evalNextControl(velocity, transformed_plan);
 
   if (visualize_) {
-    trajectory_visualizer_.visualize(optimizer_.getTrajectories(), 10, 2);
+    trajectory_visualizer_.visualize(optimizer_.getGeneratedTrajectories(), 1, 3);
     transformed_path_pub_->publish(transformed_plan);
   }
 
@@ -75,7 +75,6 @@ void Controller<T, Tensor, Model>::setPublishers() {
   transformed_path_pub_ = parent_->create_publisher<nav_msgs::msg::Path>(
       "transformed_global_plan", 1);
 }
-
 
 template <typename T, typename Tensor, typename Model>
 void Controller<T, Tensor, Model>::createComponents() {

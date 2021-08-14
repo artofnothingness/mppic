@@ -11,18 +11,6 @@
 
 namespace mppi::geometry {
 
-
-template <typename T>
-T getParam(std::string const &param_name, T default_value, 
-    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node) {
-
-  T param;
-  node->declare_parameter(param_name, rclcpp::ParameterValue(default_value));
-  node->get_parameter(param_name, param);
-
-  return param;
-}
-
 template <typename T, typename H>
 geometry_msgs::msg::TwistStamped toTwistStamped(T &&velocities,
                                                 const H &header) {
