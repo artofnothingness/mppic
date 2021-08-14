@@ -42,14 +42,14 @@ public:
     for (size_t i = 0; i < shape[0]; i += batch_step) {
       for (size_t j = 0; j < shape[1]; j += time_step) {
 
-        double blue_component = static_cast<double>(j) / shape[1];
-        double red_component = 1 - (static_cast<double>(j) / shape[1]);
+        double blue_component = 1 - static_cast<double>(j) / shape[1];
+        double red_component = static_cast<double>(j) / shape[1];
 
-        auto pose = createPose(trajectories(i, j, 0), trajectories(i, j, 1), 0);
-        auto scale = createScale(0.03, 0.03, 0.3);
+        auto pose =
+            createPose(trajectories(i, j, 0), trajectories(i, j, 1), 0.03);
+        auto scale = createScale(0.03, 0.03, 0.03);
         auto color = createColor(red_component, 0, blue_component, 1);
-        auto marker =
-            createMarker(marker_id++, pose, scale, color, frame_id_, parent_);
+        auto marker = createMarker(marker_id++, pose, scale, color, frame_id_);
 
         points.markers.push_back(marker);
       }
