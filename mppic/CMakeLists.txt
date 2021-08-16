@@ -32,7 +32,7 @@ ament_export_include_directories(include)
 pluginlib_export_plugin_description_file(nav2_core mppic.xml)
 
 add_subdirectory(test)
-add_subdirectory(benchmarks)
+add_subdirectory(benchmark)
 
 install(TARGETS mppic optimizer-benchmark
   ARCHIVE DESTINATION lib

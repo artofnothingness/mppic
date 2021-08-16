@@ -12,8 +12,7 @@
 namespace mppi::geometry {
 
 template <typename T, typename H>
-geometry_msgs::msg::TwistStamped toTwistStamped(T &&velocities,
-                                                const H &header) {
+geometry_msgs::msg::TwistStamped toTwistStamped(T &&velocities, const H &header) {
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = header.frame_id;
   twist.header.stamp = header.stamp;
@@ -22,7 +21,8 @@ geometry_msgs::msg::TwistStamped toTwistStamped(T &&velocities,
   return twist;
 }
 
-template <typename T> auto hypot(const T &p1, const T &p2) {
+template <typename T>
+auto hypot(const T &p1, const T &p2) {
   double dx = p1.x - p2.x;
   double dy = p1.y - p2.y;
   double dz = p1.z - p2.z;
@@ -31,8 +31,7 @@ template <typename T> auto hypot(const T &p1, const T &p2) {
 }
 
 template <>
-inline auto hypot(const geometry_msgs::msg::Pose &lhs,
-                  const geometry_msgs::msg::Pose &rhs) {
+inline auto hypot(const geometry_msgs::msg::Pose &lhs, const geometry_msgs::msg::Pose &rhs) {
   return hypot(lhs.position, rhs.position);
 }
 
@@ -42,4 +41,4 @@ inline auto hypot(const geometry_msgs::msg::PoseStamped &lhs,
   return hypot(lhs.pose, rhs.pose);
 }
 
-} // namespace mppi::utils::geometry
+} // namespace mppi::geometry
