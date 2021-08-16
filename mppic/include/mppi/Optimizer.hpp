@@ -14,23 +14,17 @@
 
 namespace mppi::optimization {
 
-template <typename T, typename Tensor = xt::xarray<T>,
-          typename Model = Tensor(const Tensor &)>
+template <typename T, typename Tensor = xt::xarray<T>, typename Model = Tensor(const Tensor &)>
 class Optimizer {
-
 public:
   Optimizer() = default;
   ~Optimizer() = default;
 
   Optimizer(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
-            const std::string &node_name, nav2_costmap_2d::Costmap2D *costmap,
+            const std::string &node_name,
+            nav2_costmap_2d::Costmap2D *costmap,
             Model &&model)
-      : model_(model) {
-
-    node_name_ = node_name;
-    parent_ = parent;
-    costmap_ = costmap;
-  }
+      : parent_(parent), node_name_(node_name), costmap_(costmap), model_(model) {}
 
   void on_configure();
 
@@ -38,8 +32,7 @@ public:
   void on_activate(){};
   void on_deactivate(){};
 
-  auto evalNextControl(const geometry_msgs::msg::Twist &twist,
-                       const nav_msgs::msg::Path &path)
+  auto evalNextControl(const geometry_msgs::msg::Twist &twist, const nav_msgs::msg::Path &path)
       -> geometry_msgs::msg::TwistStamped;
 
   auto getGeneratedTrajectories() -> Tensor { return generated_trajectories_; }
@@ -48,22 +41,20 @@ private:
   void getParams();
   void resetBatches();
 
-  auto generateNoisedTrajectories(const geometry_msgs::msg::Twist &twist)
-      -> Tensor;
+  auto generateNoisedTrajectories(const geometry_msgs::msg::Twist &twist) -> Tensor;
   auto generateNoisedControlBatches() -> Tensor;
   void applyControlConstraints();
   void setBatchesVelocities(const geometry_msgs::msg::Twist &twist);
   void setBatchesInitialVelocities(const geometry_msgs::msg::Twist &twist);
   void propagateBatchesVelocitiesFromInitials();
   auto integrateBatchesVelocities() const -> Tensor;
-  auto evalBatchesCosts(const Tensor &trajectory_batches,
-                        const nav_msgs::msg::Path &path) const -> Tensor;
+  auto evalBatchesCosts(const Tensor &trajectory_batches, const nav_msgs::msg::Path &path) const
+      -> Tensor;
 
   void updateControlSequence(const Tensor &costs);
 
   template <typename H>
-  auto getControlFromSequence(const H &header)
-      -> geometry_msgs::msg::TwistStamped;
+  auto getControlFromSequence(const H &header) -> geometry_msgs::msg::TwistStamped;
 
   auto getBatchesControls() const;
   auto getBatchesControls();
@@ -80,6 +71,7 @@ private:
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
   std::string node_name_;
   nav2_costmap_2d::Costmap2D *costmap_;
+  std::function<Model> model_;
 
   static constexpr int last_dim_size = 5;
   static constexpr int control_dim_size_ = 2;
@@ -98,8 +90,6 @@ private:
   Tensor batches_;
   Tensor control_sequence_;
   Tensor generated_trajectories_;
-
-  std::function<Model> model_;
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
 };

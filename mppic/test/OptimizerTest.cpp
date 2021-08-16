@@ -24,8 +24,7 @@ protected:
     costmap_ = new nav2_costmap_2d::Costmap2D(500, 500, 0.1, 0, 0, 100);
     auto &model = mppi::models::NaiveModel<T>;
 
-    optimizer_ =
-        mppi::optimization::Optimizer<T>(node_, node_name, costmap_, model);
+    optimizer_ = mppi::optimization::Optimizer<T>(node_, node_name, costmap_, model);
   }
 
   void TearDown() override { delete costmap_; }
@@ -36,7 +35,8 @@ protected:
   nav2_costmap_2d::Costmap2D *costmap_;
 };
 
-template <typename T> void setDefaultHeader(T &msg) {
+template <typename T>
+void setDefaultHeader(T &msg) {
   msg.header.frame_id = "map";
   msg.header.stamp.nanosec = 0;
   msg.header.stamp.sec = 0;

@@ -14,11 +14,11 @@
 namespace mppi::optimization {
 
 template <typename T, typename Tensor, typename Model>
-auto Optimizer<T, Tensor, Model>::evalNextControl(
-    const geometry_msgs::msg::Twist &twist, const nav_msgs::msg::Path &path)
+auto Optimizer<T, Tensor, Model>::evalNextControl(const geometry_msgs::msg::Twist &twist,
+                                                  const nav_msgs::msg::Path &path)
     -> geometry_msgs::msg::TwistStamped {
-  static Tensor costs;
 
+  static Tensor costs;
   for (int i = 0; i < iteration_count_; ++i) {
     generated_trajectories_ = generateNoisedTrajectories(twist);
     costs = evalBatchesCosts(generated_trajectories_, path);
@@ -37,16 +37,17 @@ void Optimizer<T, Tensor, Model>::on_configure() {
 
 template <typename T, typename Tensor, typename Model>
 void Optimizer<T, Tensor, Model>::getParams() {
+
   auto getParam = [&](const std::string &param_name, auto default_value) {
     std::string name = node_name_ + '.' + param_name;
     return utils::getParam(name, default_value, parent_);
   };
 
   model_dt_ = getParam("model_dt", 0.1);
-  time_steps_ = getParam("time_steps", 20);
+  time_steps_ = getParam("time_steps", 30);
   batch_size_ = getParam("batch_size", 300);
   v_std_ = getParam("v_std", 0.1);
-  w_std_ = getParam("w_std", 0.3);
+  w_std_ = getParam("w_std", 0.5);
   v_limit_ = getParam("v_limit", 0.5);
   w_limit_ = getParam("w_limit", 1.3);
   iteration_count_ = getParam("iteration_count", 1);
@@ -61,9 +62,8 @@ void Optimizer<T, Tensor, Model>::resetBatches() {
 }
 
 template <typename T, typename Tensor, typename Model>
-Tensor Optimizer<T, Tensor, Model>::generateNoisedTrajectories(
-    const geometry_msgs::msg::Twist &twist) {
-
+auto Optimizer<T, Tensor, Model>::generateNoisedTrajectories(const geometry_msgs::msg::Twist &twist)
+    -> Tensor {
   getBatchesControls() = generateNoisedControlBatches();
   applyControlConstraints();
   setBatchesVelocities(twist);
@@ -73,10 +73,8 @@ Tensor Optimizer<T, Tensor, Model>::generateNoisedTrajectories(
 
 template <typename T, typename Tensor, typename Model>
 auto Optimizer<T, Tensor, Model>::generateNoisedControlBatches() -> Tensor {
-  Tensor v_noises =
-      xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, v_std_);
-  Tensor w_noises =
-      xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, w_std_);
+  auto v_noises = xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, v_std_);
+  auto w_noises = xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, w_std_);
   return control_sequence_ + xt::concatenate(xt::xtuple(v_noises, w_noises), 2);
 }
 
@@ -90,8 +88,7 @@ void Optimizer<T, Tensor, Model>::applyControlConstraints() {
 }
 
 template <typename T, typename Tensor, typename Model>
-void Optimizer<T, Tensor, Model>::setBatchesVelocities(
-    const geometry_msgs::msg::Twist &twist) {
+void Optimizer<T, Tensor, Model>::setBatchesVelocities(const geometry_msgs::msg::Twist &twist) {
   setBatchesInitialVelocities(twist);
   propagateBatchesVelocitiesFromInitials();
 }
@@ -109,9 +106,8 @@ void Optimizer<T, Tensor, Model>::propagateBatchesVelocitiesFromInitials() {
 
   for (int t = 0; t < time_steps_ - 1; t++) {
     auto curr_batch = xt::view(batches_, xt::all(), t); // -> batch x 5
-    auto next_batch_velocities =
-        xt::view(batches_, xt::all(), t + 1, xt::range(_, 2)); // batch x 2
-    next_batch_velocities = model_(curr_batch); // TODO maybe pass view ?
+    auto next_batch_velocities = xt::view(batches_, xt::all(), t + 1, xt::range(_, 2)); // batch x 2
+    next_batch_velocities = model_(curr_batch);
   }
 }
 
@@ -124,8 +120,7 @@ auto Optimizer<T, Tensor, Model>::integrateBatchesVelocities() const -> Tensor {
 
   auto yaw = xt::cumsum(w * model_dt_, 1);
 
-  xt::view(yaw, xt::all(), xt::range(1, _)) =
-      xt::view(yaw, xt::all(), xt::range(_, -1));
+  xt::view(yaw, xt::all(), xt::range(1, _)) = xt::view(yaw, xt::all(), xt::range(_, -1));
 
   xt::view(yaw, xt::all(), 0) = 0;
 
@@ -135,16 +130,15 @@ auto Optimizer<T, Tensor, Model>::integrateBatchesVelocities() const -> Tensor {
   auto x = xt::cumsum(v_x * model_dt_, 1);
   auto y = xt::cumsum(v_y * model_dt_, 1);
 
-  return xt::concatenate(
-      xt::xtuple(xt::view(x, xt::all(), xt::all(), xt::newaxis()),
-                 xt::view(y, xt::all(), xt::all(), xt::newaxis()),
-                 xt::view(yaw, xt::all(), xt::all(), xt::newaxis())),
-      2);
+  return xt::concatenate(xt::xtuple(xt::view(x, xt::all(), xt::all(), xt::newaxis()),
+                                    xt::view(y, xt::all(), xt::all(), xt::newaxis()),
+                                    xt::view(yaw, xt::all(), xt::all(), xt::newaxis())),
+                         2);
 }
 
 template <typename T, typename Tensor, typename Model>
-auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
-    const Tensor &trajectory_batches, const nav_msgs::msg::Path &path) const
+auto Optimizer<T, Tensor, Model>::evalBatchesCosts(const Tensor &trajectory_batches,
+                                                   const nav_msgs::msg::Path &path) const
     -> Tensor {
 
   std::vector<size_t> shape = {trajectory_batches.shape()[0]};
@@ -173,14 +167,11 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
 
 template <typename T, typename Tensor, typename Model>
 void Optimizer<T, Tensor, Model>::updateControlSequence(const Tensor &costs) {
-  Tensor costs_normalized =
-      costs - xt::amin(costs, xt::evaluation_strategy::immediate);
+  Tensor costs_normalized = costs - xt::amin(costs, xt::evaluation_strategy::immediate);
   Tensor exponents = xt::exp(-1 / temperature_ * costs);
-  auto softmaxes =
-      exponents / xt::sum(exponents, xt::evaluation_strategy::immediate);
+  auto softmaxes = exponents / xt::sum(exponents, xt::evaluation_strategy::immediate);
 
-  Tensor softmaxes_expanded =
-      xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
+  Tensor softmaxes_expanded = xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
 
   control_sequence_ = xt::sum(getBatchesControls() * softmaxes_expanded, 0);
 }

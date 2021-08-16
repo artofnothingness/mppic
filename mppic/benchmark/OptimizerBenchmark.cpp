@@ -10,7 +10,8 @@
 #include "mppi/impl/Optimizer.hpp"
 #include <benchmark/benchmark.h>
 
-template <typename T> void setDefaultHeader(T &msg) {
+template <typename T>
+void setDefaultHeader(T &msg) {
   msg.header.frame_id = "map";
   msg.header.stamp.nanosec = 0;
   msg.header.stamp.sec = 0;
@@ -62,8 +63,7 @@ public:
     costmap_ = new nav2_costmap_2d::Costmap2D(500, 500, 0.1, 0, 0, 100);
     auto &model = mppi::models::NaiveModel<float>;
 
-    optimizer_ =
-        mppi::optimization::Optimizer<T>(node_, node_name, costmap_, model);
+    optimizer_ = mppi::optimization::Optimizer<T>(node_, node_name, costmap_, model);
     optimizer_.on_configure();
     optimizer_.on_activate();
   }
@@ -90,8 +90,7 @@ BENCHMARK_DEFINE_F(OptimizerBenchmark, evalNextControlBenchmark)
   }
 }
 
-BENCHMARK_REGISTER_F(OptimizerBenchmark, evalNextControlBenchmark)
-    ->Unit(benchmark::kMillisecond);
+BENCHMARK_REGISTER_F(OptimizerBenchmark, evalNextControlBenchmark)->Unit(benchmark::kMillisecond);
 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);

@@ -18,13 +18,8 @@ public:
   PathHandler(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
               const std::string &node_name,
               const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap,
-              const std::shared_ptr<tf2_ros::Buffer> &buffer) {
-
-    node_name_ = node_name;
-    tf_buffer_ = buffer;
-    parent_ = parent;
-    costmap_ = costmap;
-  }
+              const std::shared_ptr<tf2_ros::Buffer> &buffer)
+      : parent_(parent), node_name_(node_name), costmap_(costmap), tf_buffer_(buffer) {}
 
   void on_configure();
   void on_cleanup();
@@ -34,8 +29,7 @@ public:
   void setPath(const nav_msgs::msg::Path &plan) { global_plan_ = plan; }
   auto getPath() -> nav_msgs::msg::Path & { return global_plan_; }
 
-  auto transformPath(const geometry_msgs::msg::PoseStamped &robot_pose)
-      -> nav_msgs::msg::Path;
+  auto transformPath(const geometry_msgs::msg::PoseStamped &robot_pose) -> nav_msgs::msg::Path;
 
 private:
   void getParams();
@@ -50,13 +44,12 @@ private:
       -> geometry_msgs::msg::PoseStamped;
 
   template <typename Iter, typename Stamp>
-  auto transformGlobalPlanToLocal(Iter begin, Iter end, const Stamp &stamp)
-      -> nav_msgs::msg::Path;
+  auto transformGlobalPlanToLocal(Iter begin, Iter end, const Stamp &stamp) -> nav_msgs::msg::Path;
 
-  auto getGlobalPlanConsideringBounds(
-      const geometry_msgs::msg::PoseStamped &global_pose);
+  auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped &global_pose);
 
-  template <typename T> void pruneGlobalPlan(const T &end) {
+  template <typename T>
+  void pruneGlobalPlan(const T &end) {
     global_plan_.poses.erase(global_plan_.poses.begin(), end);
   }
 

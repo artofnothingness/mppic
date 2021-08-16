@@ -5,8 +5,7 @@
 namespace mppi::handlers {
 
 template <typename Iter, typename Stamp>
-auto PathHandler::transformGlobalPlanToLocal(Iter begin, Iter end,
-                                             const Stamp &stamp)
+auto PathHandler::transformGlobalPlanToLocal(Iter begin, Iter end, const Stamp &stamp)
     -> nav_msgs::msg::Path {
 
   auto base_frame = costmap_->getBaseFrameID();

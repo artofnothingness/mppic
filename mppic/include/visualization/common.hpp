@@ -6,10 +6,11 @@
 
 namespace mppi::visualization {
 
-inline visualization_msgs::msg::Marker
-createMarker(int id, const geometry_msgs::msg::Pose &pose,
-             const geometry_msgs::msg::Vector3 &scale,
-             const std_msgs::msg::ColorRGBA &color, const std::string &frame_id) {
+inline visualization_msgs::msg::Marker createMarker(int id,
+                                                    const geometry_msgs::msg::Pose &pose,
+                                                    const geometry_msgs::msg::Vector3 &scale,
+                                                    const std_msgs::msg::ColorRGBA &color,
+                                                    const std::string &frame_id) {
 
   using visualization_msgs::msg::Marker;
   Marker marker;
@@ -50,8 +51,7 @@ inline geometry_msgs::msg::Vector3 createScale(double x, double y, double z) {
   return scale;
 }
 
-inline std_msgs::msg::ColorRGBA createColor(double r, double g, double b,
-                                            double a) {
+inline std_msgs::msg::ColorRGBA createColor(double r, double g, double b, double a) {
   std_msgs::msg::ColorRGBA color;
   color.r = r;
   color.g = g;
