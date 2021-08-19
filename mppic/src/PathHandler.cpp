@@ -69,6 +69,7 @@ auto PathHandler::transformToGlobalFrame(
 
 nav_msgs::msg::Path
 PathHandler::transformPath(const geometry_msgs::msg::PoseStamped &robot_pose) {
+
   auto global_pose = transformToGlobalFrame(robot_pose);
   const auto &stamp = global_pose.header.stamp;
 
