@@ -67,42 +67,66 @@ inline auto hypot(const geometry_msgs::msg::PoseStamped &lhs,
  *
  * @tparam T point value type
  * @tparam Tensor tensor type consisting points
- * @param point given point: Tensor of shape [K..., 2]
- * @param line_start start line point: Tensor of shape [N..., 2]
- * @param line_end end line point: Tensor of shape [N..., 2]
- * @return points on lines xt::array of shape [K... N..., 2]
-
+ * @param point given point: Tensor of shape [P..., 2]
+ * @param line_start start line point: Tensor of shape [L..., 2]
+ * @param line_end end line point: Tensor of shape [L..., 2]
+ * @return points on lines xt::array of shape [L... P..., 2]
  */
 template <typename PointType, typename LineType>
 PointType closestPointToLineSegment2D(const PointType &points,
                                       const LineType &line_start_points,
                                       const LineType &line_end_points) {
 
-  PointType delta = line_end_points - line_start_points;
-  auto sq_norm = xt::norm_sq(delta, {delta.dimension() - 1});
-  auto sq_norm_ext = xt::strided_view(delta, {xt::ellipsis(), xt::newaxis()});
-
-  auto dx = xt::strided_view(delta, {xt::ellipsis(), xt::range(0, 1)});
-  auto dy = xt::strided_view(delta, {xt::ellipsis(), xt::range(1, 2)});
+  auto delta = xt::eval(line_end_points - line_start_points);
 
   auto pt_x = xt::strided_view(points, {xt::ellipsis(), 0});
   auto pt_y = xt::strided_view(points, {xt::ellipsis(), 1});
 
-  auto start_pt_x =
-      xt::strided_view(line_start_points, {xt::ellipsis(), xt::range(0, 1)});
-  auto start_pt_y =
-      xt::strided_view(line_start_points, {xt::ellipsis(), xt::range(1, 2)});
+  auto dx = xt::strided_view(delta, {xt::ellipsis(), xt::newaxis(), 0});
+  auto dy = xt::strided_view(delta, {xt::ellipsis(), xt::newaxis(), 1});
 
-  auto u = ((pt_x - start_pt_x) * dx + (pt_y - start_pt_y) * dy) / sq_norm;
+  auto sq_norm = xt::norm_sq(delta, {delta.dimension() - 1});
+  auto sq_norm_extended =
+      xt::strided_view(sq_norm, {xt::ellipsis(), xt::newaxis()});
+
+  auto st_x =
+      xt::strided_view(line_start_points, {xt::ellipsis(), xt::newaxis(), 0});
+
+  auto st_y =
+      xt::strided_view(line_start_points, {xt::ellipsis(), xt::newaxis(), 1});
+
+  // clang-format off
+  auto u = ((pt_x - st_x) * dx + 
+            (pt_y - st_y) * dy) /
+        /*-------------------------*/     //->  [ L... P... ]
+                sq_norm_extended;
+
 
   double eps = 0.000000000001;
-  auto closest_points = xt::where(
-      xt::abs(sq_norm) < eps,
-      line_start_points,
-      xt::where(
-          u <= 0,
-          line_start_points,
-          xt::where(u >= 1, line_end_points, line_start_points + u * delta)));
+  std::vector<size_t> result_shape(points.shape().begin(), points.shape().end());
+  result_shape.insert(result_shape.end(), sq_norm.shape().begin(), sq_norm.shape().end());
+
+  static auto toStr = [](auto &&container) {
+    std::stringstream ss;
+    ss << "[ ";
+    for (auto val : container) {
+      ss << val << ' ';
+    }
+    ss << "]";
+
+    return ss.str();
+  };
+
+  std::cout << toStr(result_shape);
+
+  auto closest_points = xt::where(xt::abs(xt::broadcast(sq_norm, result_shape)) < eps, 
+                          xt::broadcast(line_start_points, result_shape), 
+                        xt::where(u <= 0, 
+                          xt::broadcast(line_start_points, result_shape),
+                        xt::where(u >= 1, xt::broadcast(line_end_points, result_shape), 
+                          xt::broadcast(line_start_points, result_shape) + 
+                          u * xt::broadcast(delta, result_shape))));
+  // clang-format on
 
   return closest_points;
 }
