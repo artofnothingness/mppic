@@ -5,6 +5,8 @@ find_package(ament_cmake REQUIRED)
 find_package(nav2_common REQUIRED)
 
 include(cmake/conan.cmake)
+include(CTest)
+include(Catch)
 
 set(packages 
   rclcpp 
@@ -32,9 +34,8 @@ ament_export_include_directories(include)
 pluginlib_export_plugin_description_file(nav2_core mppic.xml)
 
 add_subdirectory(test)
-add_subdirectory(benchmark)
 
-install(TARGETS mppic optimizer-benchmark
+install(TARGETS mppic
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin

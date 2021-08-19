@@ -1,95 +1,81 @@
-#include <gtest/gtest.h>
+#define CATCH_CONFIG_RUNNER
+
+#ifdef DO_BENCHMARKS
+#define CATCH_CONFIG_ENABLE_BENCHMARKING
+#endif
+
+#include <catch2/catch.hpp>
 
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include <rclcpp/executors.hpp>
 
-#include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/twist.hpp"
-#include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include "mppi/Models.hpp"
 #include "mppi/impl/Optimizer.hpp"
 
-class OptimizerTest : public ::testing::Test {
-
+TEST_CASE("Optimizer Evaluates Next Control", "") {
   using T = float;
 
-protected:
-  void SetUp() override {
+  std::string node_name = "TestNode";
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name);
+  auto costmap = new nav2_costmap_2d::Costmap2D(500, 500, 0.1, 0, 0, 100);
+  auto &model = mppi::models::NaiveModel<T>;
+  auto optimizer =
+      mppi::optimization::Optimizer<T>(node, node_name, costmap, model);
 
-    std::string node_name = "TestNode";
-    node_ = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name);
-    costmap_ = new nav2_costmap_2d::Costmap2D(500, 500, 0.1, 0, 0, 100);
-    auto &model = mppi::models::NaiveModel<T>;
+  optimizer.on_configure();
+  optimizer.on_activate();
 
-    optimizer_ = mppi::optimization::Optimizer<T>(node_, node_name, costmap_, model);
+  size_t poses_count = GENERATE(0, 1, 10, 1000, 10000, 100000);
+
+#ifdef DO_BENCHMARKS
+  WARN("Path with " << poses_count);
+#else
+  INFO("Path with " << poses_count);
+#endif
+
+  SECTION("Running evalNextControl") {
+    geometry_msgs::msg::Twist twist;
+
+    std::string frame = "odom";
+    auto time = node->get_clock()->now();
+    auto setHeader = [&](auto msg) {
+      msg.header.frame_id = frame;
+      msg.header.stamp = time;
+    };
+
+    nav_msgs::msg::Path path;
+    geometry_msgs::msg::PoseStamped ps;
+    setHeader(ps);
+    setHeader(path);
+
+    auto fillPath = [&](size_t count) {
+      for (size_t i = 0; i < count; i++) {
+        path.poses.push_back(ps);
+      }
+    };
+
+    fillPath(poses_count);
+
+    CHECK_NOTHROW(optimizer.evalNextControl(twist, path));
+
+#ifdef DO_BENCHMARKS
+    BENCHMARK("evalNextControl Benchmark") {
+      return optimizer.evalNextControl(twist, path);
+    };
+#endif
   }
 
-  void TearDown() override { delete costmap_; }
-
-protected:
-  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
-  mppi::optimization::Optimizer<T> optimizer_;
-  nav2_costmap_2d::Costmap2D *costmap_;
-};
-
-template <typename T>
-void setDefaultHeader(T &msg) {
-  msg.header.frame_id = "map";
-  msg.header.stamp.nanosec = 0;
-  msg.header.stamp.sec = 0;
+  optimizer.on_deactivate();
+  optimizer.on_cleanup();
+  delete costmap;
 }
 
-geometry_msgs::msg::PoseStamped createPose() {
-  geometry_msgs::msg::PoseStamped pose;
-  setDefaultHeader(pose);
-  pose.pose.position.x = 1;
-  pose.pose.position.y = 1;
-  pose.pose.position.z = 1;
-  return pose;
-}
-
-geometry_msgs::msg::Twist createTwist() {
-  geometry_msgs::msg::Twist twist;
-
-  twist.linear.x = 1;
-  twist.linear.y = 0;
-  twist.linear.z = 0;
-  return twist;
-}
-
-nav_msgs::msg::Path createPath() {
-  nav_msgs::msg::Path path;
-  setDefaultHeader(path);
-
-  for (int i = 0; i < 100; i++) {
-    geometry_msgs::msg::PoseStamped p;
-    setDefaultHeader(p);
-    p.pose.position.x = i;
-    p.pose.position.y = i * i;
-    p.pose.position.z = 0;
-    path.poses.push_back(p);
-  }
-
-  return path;
-}
-
-TEST_F(OptimizerTest, evalNextControlTest) {
-  geometry_msgs::msg::Twist twist;
-  nav_msgs::msg::Path path;
-
-  auto &&result = optimizer_.evalNextControl(twist, path);
-
-  EXPECT_TRUE(result == geometry_msgs::msg::TwistStamped{});
-}
-
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
-
-  ::testing::InitGoogleTest(&argc, argv);
-  auto res = RUN_ALL_TESTS();
-  rclcpp::shutdown();
-  return res;
+  int result = Catch::Session().run(argc, argv);
+  return result;
 }
