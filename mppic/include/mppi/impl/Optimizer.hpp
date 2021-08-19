@@ -14,8 +14,8 @@
 namespace mppi::optimization {
 
 template <typename T, typename Tensor, typename Model>
-auto Optimizer<T, Tensor, Model>::evalNextControl(const geometry_msgs::msg::Twist &twist,
-                                                  const nav_msgs::msg::Path &path)
+auto Optimizer<T, Tensor, Model>::evalNextControl(
+    const geometry_msgs::msg::Twist &twist, const nav_msgs::msg::Path &path)
     -> geometry_msgs::msg::TwistStamped {
 
   static Tensor costs;
@@ -62,19 +62,20 @@ void Optimizer<T, Tensor, Model>::resetBatches() {
 }
 
 template <typename T, typename Tensor, typename Model>
-auto Optimizer<T, Tensor, Model>::generateNoisedTrajectories(const geometry_msgs::msg::Twist &twist)
-    -> Tensor {
+auto Optimizer<T, Tensor, Model>::generateNoisedTrajectories(
+    const geometry_msgs::msg::Twist &twist) -> Tensor {
   getBatchesControls() = generateNoisedControlBatches();
   applyControlConstraints();
   setBatchesVelocities(twist);
-
   return integrateBatchesVelocities();
 }
 
 template <typename T, typename Tensor, typename Model>
 auto Optimizer<T, Tensor, Model>::generateNoisedControlBatches() -> Tensor {
-  auto v_noises = xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, v_std_);
-  auto w_noises = xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, w_std_);
+  auto v_noises =
+      xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, v_std_);
+  auto w_noises =
+      xt::random::randn<T>({batch_size_, time_steps_, 1}, 0.0, w_std_);
   return control_sequence_ + xt::concatenate(xt::xtuple(v_noises, w_noises), 2);
 }
 
@@ -88,7 +89,8 @@ void Optimizer<T, Tensor, Model>::applyControlConstraints() {
 }
 
 template <typename T, typename Tensor, typename Model>
-void Optimizer<T, Tensor, Model>::setBatchesVelocities(const geometry_msgs::msg::Twist &twist) {
+void Optimizer<T, Tensor, Model>::setBatchesVelocities(
+    const geometry_msgs::msg::Twist &twist) {
   setBatchesInitialVelocities(twist);
   propagateBatchesVelocitiesFromInitials();
 }
@@ -106,7 +108,8 @@ void Optimizer<T, Tensor, Model>::propagateBatchesVelocitiesFromInitials() {
 
   for (int t = 0; t < time_steps_ - 1; t++) {
     auto curr_batch = xt::view(batches_, xt::all(), t); // -> batch x 5
-    auto next_batch_velocities = xt::view(batches_, xt::all(), t + 1, xt::range(_, 2)); // batch x 2
+    auto next_batch_velocities =
+        xt::view(batches_, xt::all(), t + 1, xt::range(_, 2)); // batch x 2
     next_batch_velocities = model_(curr_batch);
   }
 }
@@ -120,8 +123,8 @@ auto Optimizer<T, Tensor, Model>::integrateBatchesVelocities() const -> Tensor {
 
   auto yaw = xt::cumsum(w * model_dt_, 1);
 
-  xt::view(yaw, xt::all(), xt::range(1, _)) = xt::view(yaw, xt::all(), xt::range(_, -1));
-
+  xt::view(yaw, xt::all(), xt::range(1, _)) =
+      xt::view(yaw, xt::all(), xt::range(_, -1));
   xt::view(yaw, xt::all(), 0) = 0;
 
   auto v_x = v * xt::cos(yaw);
@@ -130,23 +133,48 @@ auto Optimizer<T, Tensor, Model>::integrateBatchesVelocities() const -> Tensor {
   auto x = xt::cumsum(v_x * model_dt_, 1);
   auto y = xt::cumsum(v_y * model_dt_, 1);
 
-  return xt::concatenate(xt::xtuple(xt::view(x, xt::all(), xt::all(), xt::newaxis()),
-                                    xt::view(y, xt::all(), xt::all(), xt::newaxis()),
-                                    xt::view(yaw, xt::all(), xt::all(), xt::newaxis())),
-                         2);
+  return xt::concatenate(
+      xt::xtuple(xt::view(x, xt::all(), xt::all(), xt::newaxis()),
+                 xt::view(y, xt::all(), xt::all(), xt::newaxis()),
+                 xt::view(yaw, xt::all(), xt::all(), xt::newaxis())),
+      2);
 }
 
 template <typename T, typename Tensor, typename Model>
-auto Optimizer<T, Tensor, Model>::evalBatchesCosts(const Tensor &trajectory_batches,
-                                                   const nav_msgs::msg::Path &path) const
+auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
+    const Tensor &trajectory_batches, const nav_msgs::msg::Path &path) const
     -> Tensor {
+
+  using namespace xt::placeholders;
 
   std::vector<size_t> shape = {trajectory_batches.shape()[0]};
 
-  auto reference_cost = xt::zeros<T>(shape);
   auto obstacle_cost = xt::zeros<T>(shape);
 
+  auto reference_cost = [&](int weight, int power) -> Tensor {
+    (void)weight;
+    (void)power;
+
+    /* if (path.poses.empty()) */
+    /*   return xt::zeros<T>(shape); */
+
+    /*     auto line_start_points = */
+    /*         xt::view(trajectory_batches, xt::all(), xt::all(), xt::range(0,
+     * -1)); */
+    /*     auto line_end_points = */
+    /*         xt::view(trajectory_batches, xt::all(), xt::all(), xt::range(1,
+     * _)); */
+
+    /* auto cost = xt::mean(dists_to_segments, {0, 2}); */
+
+    return xt::zeros<T>(shape);
+    /* weight * xt::pow(cost, power); */
+  };
+
   auto goal_cost = [&](int weight, int power) -> Tensor {
+    if (path.poses.empty())
+      return xt::zeros<T>(shape);
+
     Tensor last_goal = {static_cast<T>(path.poses.back().pose.position.x),
                         static_cast<T>(path.poses.back().pose.position.y)};
 
@@ -158,20 +186,24 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(const Tensor &trajectory_batc
 
     auto dists = xt::hypot(dx, dy);
 
-    auto result = weight * xt::pow(xt::view(dists, xt::all(), -1), power);
-    return result;
+    auto cost = xt::view(dists, xt::all(), -1);
+
+    return weight * xt::pow(cost, power);
   };
 
-  return goal_cost(2, 2);
+  return goal_cost(2, 2) + reference_cost(2, 2);
 }
 
 template <typename T, typename Tensor, typename Model>
 void Optimizer<T, Tensor, Model>::updateControlSequence(const Tensor &costs) {
-  Tensor costs_normalized = costs - xt::amin(costs, xt::evaluation_strategy::immediate);
+  Tensor costs_normalized =
+      costs - xt::amin(costs, xt::evaluation_strategy::immediate);
   Tensor exponents = xt::exp(-1 / temperature_ * costs);
-  auto softmaxes = exponents / xt::sum(exponents, xt::evaluation_strategy::immediate);
+  auto softmaxes =
+      exponents / xt::sum(exponents, xt::evaluation_strategy::immediate);
 
-  Tensor softmaxes_expanded = xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
+  Tensor softmaxes_expanded =
+      xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
 
   control_sequence_ = xt::sum(getBatchesControls() * softmaxes_expanded, 0);
 }
