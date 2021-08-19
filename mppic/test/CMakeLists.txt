@@ -4,6 +4,7 @@ if(BUILD_TESTING)
 
   add_executable(optimizer-test OptimizerTest.cpp)
   ament_target_dependencies(optimizer-test ${packages})
+
   target_link_libraries(optimizer-test CONAN_PKG::xtensor CONAN_PKG::catch2)
   target_include_directories(optimizer-test PRIVATE ../include)
 

@@ -14,7 +14,9 @@
 
 namespace mppi {
 
-template <typename T, typename Tensor = xt::xarray<T>, typename Model = Tensor(const Tensor &)>
+template <typename T,
+          typename Tensor = xt::xarray<T>,
+          typename Model = Tensor(const Tensor &)>
 class Controller : public nav2_core::Controller {
 
 public:
@@ -24,7 +26,8 @@ public:
   void configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
                  std::string node_name,
                  const std::shared_ptr<tf2_ros::Buffer> &tf,
-                 const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros) override;
+                 const std::shared_ptr<nav2_costmap_2d::Costmap2DROS>
+                     &costmap_ros) override;
 
   void cleanup() override;
   void activate() override;
@@ -34,7 +37,9 @@ public:
                                const geometry_msgs::msg::Twist &velocity)
       -> geometry_msgs::msg::TwistStamped override;
 
-  void setPlan(const nav_msgs::msg::Path &path) override { path_handler_.setPath(path); }
+  void setPlan(const nav_msgs::msg::Path &path) override {
+    path_handler_.setPath(path);
+  }
 
 private:
   void getParams();
@@ -47,7 +52,8 @@ private:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::string node_name_;
 
-  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>> transformed_path_pub_;
+  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>>
+      transformed_path_pub_;
 
   optimization::Optimizer<T, Tensor, Model> optimizer_;
   handlers::PathHandler path_handler_;

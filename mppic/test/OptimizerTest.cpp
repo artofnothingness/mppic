@@ -1,8 +1,5 @@
 #define CATCH_CONFIG_RUNNER
-
-#ifdef DO_BENCHMARKS
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
-#endif
 
 #include <catch2/catch.hpp>
 
@@ -16,13 +13,14 @@
 #include "mppi/Models.hpp"
 #include "mppi/impl/Optimizer.hpp"
 
-TEST_CASE("Optimizer Evaluates Next Control", "") {
+TEST_CASE("Optimizer evaluates Next Control", "") {
   using T = float;
 
   std::string node_name = "TestNode";
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name);
   auto costmap = new nav2_costmap_2d::Costmap2D(500, 500, 0.1, 0, 0, 100);
   auto &model = mppi::models::NaiveModel<T>;
+
   auto optimizer =
       mppi::optimization::Optimizer<T>(node, node_name, costmap, model);
 
@@ -31,11 +29,7 @@ TEST_CASE("Optimizer Evaluates Next Control", "") {
 
   size_t poses_count = GENERATE(0, 1, 10, 1000, 10000, 100000);
 
-#ifdef DO_BENCHMARKS
   WARN("Path with " << poses_count);
-#else
-  INFO("Path with " << poses_count);
-#endif
 
   SECTION("Running evalNextControl") {
     geometry_msgs::msg::Twist twist;
@@ -61,18 +55,16 @@ TEST_CASE("Optimizer Evaluates Next Control", "") {
     fillPath(poses_count);
 
     CHECK_NOTHROW(optimizer.evalNextControl(twist, path));
-
-#ifdef DO_BENCHMARKS
     BENCHMARK("evalNextControl Benchmark") {
       return optimizer.evalNextControl(twist, path);
     };
-#endif
   }
 
   optimizer.on_deactivate();
   optimizer.on_cleanup();
   delete costmap;
 }
+
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);

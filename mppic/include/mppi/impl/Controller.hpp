@@ -47,14 +47,16 @@ void Controller<T, Tensor, Model>::deactivate() {
 
 template <typename T, typename Tensor, typename Model>
 auto Controller<T, Tensor, Model>::computeVelocityCommands(
-    const geometry_msgs::msg::PoseStamped &pose, const geometry_msgs::msg::Twist &velocity)
+    const geometry_msgs::msg::PoseStamped &pose,
+    const geometry_msgs::msg::Twist &velocity)
     -> geometry_msgs::msg::TwistStamped {
 
   auto &&transformed_plan = path_handler_.transformPath(pose);
   auto &&cmd = optimizer_.evalNextControl(velocity, transformed_plan);
 
   if (visualize_) {
-    trajectory_visualizer_.visualize(optimizer_.getGeneratedTrajectories(), 5, 2);
+    trajectory_visualizer_.visualize(
+        optimizer_.getGeneratedTrajectories(), 5, 2);
     transformed_path_pub_->publish(transformed_plan);
   }
 
@@ -72,8 +74,8 @@ void Controller<T, Tensor, Model>::getParams() {
 
 template <typename T, typename Tensor, typename Model>
 void Controller<T, Tensor, Model>::setPublishers() {
-  transformed_path_pub_ =
-      parent_->create_publisher<nav_msgs::msg::Path>("transformed_global_plan", 1);
+  transformed_path_pub_ = parent_->create_publisher<nav_msgs::msg::Path>(
+      "transformed_global_plan", 1);
 }
 
 template <typename T, typename Tensor, typename Model>
@@ -82,10 +84,11 @@ void Controller<T, Tensor, Model>::createComponents() {
   auto costmap = costmap_ros_->getCostmap();
 
   optimizer_ = optimization::Optimizer<T>(parent_, node_name_, costmap, model);
-  path_handler_ = handlers::PathHandler(parent_, node_name_, costmap_ros_, tf_buffer_);
+  path_handler_ =
+      handlers::PathHandler(parent_, node_name_, costmap_ros_, tf_buffer_);
 
-  trajectory_visualizer_ =
-      visualization::TrajectoryVisualizer(parent_, costmap_ros_->getBaseFrameID());
+  trajectory_visualizer_ = visualization::TrajectoryVisualizer(
+      parent_, costmap_ros_->getBaseFrameID());
 }
 
 } // namespace mppi

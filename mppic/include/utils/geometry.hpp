@@ -108,9 +108,9 @@ PointType closestPointToLineSegment2D(const PointType &points,
 }
 
 template <typename PointType, typename LineType>
-PointType distPointToSegment2D(const PointType &points,
-                               const LineType &line_start_points,
-                               const LineType &line_end_points) {
+PointType distPointToLineSegment2D(const PointType &points,
+                                   const LineType &line_start_points,
+                                   const LineType &line_end_points) {
   auto delta = points - closestPointToLineSegment2D(
                             points, line_start_points, line_end_points);
 
