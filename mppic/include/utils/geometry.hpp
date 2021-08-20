@@ -114,9 +114,9 @@ auto closestPointsOnLinesSegment2D(P &&point_tensor, L &&line_tensor) {
 }
 
 template <typename P, typename L>
-auto distPointToLineSegment2D(P &&points, L &&line_points) {
-  auto delta = points - closestPointToLineSegment2D(points, line_points);
-  return xt::norm_l2(std::move(delta), {delta.dimension() - 1});
+auto distPointsToLineSegments2D(P &&points, L &&line_points) {
+  auto diff = points - closestPointsOnLinesSegment2D(points, line_points);
+  return xt::norm_l2(std::move(diff), {diff.dimension() - 1});
 }
 
 } // namespace mppi::geometry
