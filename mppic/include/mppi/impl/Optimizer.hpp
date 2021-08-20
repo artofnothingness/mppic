@@ -151,25 +151,18 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
 
   auto obstacle_cost = xt::zeros<T>(shape);
 
-  auto reference_cost = [&](int weight, int power) -> Tensor {
-    (void)weight;
-    (void)power;
+  /* auto reference_cost = [&](int weight, int power) -> Tensor { */
+    /* (void)weight; */
+  /*   (void)power; */
 
-    /* if (path.poses.empty()) */
-    /*   return xt::zeros<T>(shape); */
+  /*   if (path.poses.empty()) */
+  /*     return xt::zeros<T>(shape); */
 
-    /*     auto line_start_points = */
-    /*         xt::view(trajectory_batches, xt::all(), xt::all(), xt::range(0,
-     * -1)); */
-    /*     auto line_end_points = */
-    /*         xt::view(trajectory_batches, xt::all(), xt::all(), xt::range(1,
-     * _)); */
+  /*   auto cost = xt::mean(dists_to_segments, {0, 2}); */
 
-    /* auto cost = xt::mean(dists_to_segments, {0, 2}); */
-
-    return xt::zeros<T>(shape);
-    /* weight * xt::pow(cost, power); */
-  };
+  /*   return xt::zeros<T>(shape); */
+  /*   weight xt::pow(cost, power); */
+  /* }; */
 
   auto goal_cost = [&](int weight, int power) -> Tensor {
     if (path.poses.empty())
@@ -191,7 +184,7 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
     return weight * xt::pow(cost, power);
   };
 
-  return goal_cost(2, 2) + reference_cost(2, 2);
+  return goal_cost(2, 2);
 }
 
 template <typename T, typename Tensor, typename Model>

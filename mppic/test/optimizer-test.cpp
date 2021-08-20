@@ -27,7 +27,7 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
   optimizer.on_configure();
   optimizer.on_activate();
 
-  size_t poses_count = GENERATE(0, 1, 10, 1000, 10000, 100000);
+  size_t poses_count = GENERATE(1000, 10000, 100000);
 
   WARN("Path with " << poses_count);
 
@@ -64,7 +64,6 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
   optimizer.on_cleanup();
   delete costmap;
 }
-
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
