@@ -3,6 +3,7 @@
 
 #include <catch2/catch.hpp>
 
+#include <cmath>
 #include <vector>
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
@@ -20,7 +21,7 @@ static auto toStr = [](auto &&container) {
   return ss.str();
 };
 
-TEST_CASE("PointTensor 2D, LineTensor 3D", "[closestPointToLineSegment2D]") {
+TEST_CASE("Closest points on Line Segments 2D", "[geometry]") {
   using T = float;
   using Array = xt::xarray<T>;
 
@@ -30,11 +31,13 @@ TEST_CASE("PointTensor 2D, LineTensor 3D", "[closestPointToLineSegment2D]") {
 
   Array line_points = {{{0.0f, 0.0f}, 
                         {1.0f, 1.0f}, 
-                        {2.0f, 2.0f}}, 
+                        {2.0f, 2.0f}, 
+                        {4.0f, 2.0f}}, 
 
                        {{0.0f, 0.0f}, 
                         {-1.0f, -1.0f}, 
-                        {-2.0f, -2.0f}}};
+                        {-2.0f, -2.0f},
+                        {-4.0f, -2.0f}}};
   Array result;
   // clang-format on
 
@@ -64,6 +67,14 @@ TEST_CASE("PointTensor 2D, LineTensor 3D", "[closestPointToLineSegment2D]") {
 
     CHECK(result(1, 1, 0, 0) == line_points(1, 1, 0));
     CHECK(result(1, 1, 0, 1) == line_points(1, 1, 1));
+
+    // Middle of the line check
+    CHECK(result(0, 2, 0, 0) ==
+          (line_points(0, 3, 0) - line_points(0, 2, 0)) / 2 +
+              line_points(0, 2, 0));
+
+    CHECK(result(0, 2, 0, 1) == line_points(0, 3, 1));
+    CHECK(result(0, 2, 0, 1) == line_points(0, 2, 1));
   }
 
   SECTION("Shape Check") {
@@ -81,6 +92,53 @@ TEST_CASE("PointTensor 2D, LineTensor 3D", "[closestPointToLineSegment2D]") {
     CHECK(result.shape()[1] == result_2_dim);
     CHECK(result.shape()[2] == result_3_dim);
     CHECK(result.shape()[3] == result_4_dim);
+  }
+}
+
+TEST_CASE("Distance Points To Line Segments 2D", "[geometry]") {
+  using T = float;
+  using Array = xt::xarray<T>;
+
+  // clang-format off
+  Array points = {{3.0f, 3.0f},
+                  {-3.0f, -3.0f}};
+
+  Array line_points = {{{0.0f, 0.0f},
+                        {1.0f, 1.0f},
+                        {2.0f, 2.0f}},
+
+                       {{0.0f, 0.0f},
+                        {-1.0f, -1.0f},
+                        {-2.0f, -2.0f}}};
+  Array result;
+  // clang-format on
+
+  REQUIRE_NOTHROW(
+      result = mppi::geometry::distPointsToLineSegments2D(points, line_points));
+
+  SECTION("Check Results") {
+
+    INFO("Points: \n" << points);
+    INFO("Line points: \n" << line_points);
+    INFO("Result: \n" << result);
+
+    CHECK(result(0, 0, 0) == Approx(sqrt(8)));
+    CHECK(result(0, 1, 0) == Approx(sqrt(2)));
+  }
+
+  SECTION("Shape Check") {
+
+    INFO("Points shape: \n" << toStr(points.shape()));
+    INFO("Line points shape: \n" << toStr(line_points.shape()));
+    INFO("Result shape: \n" << toStr(result.shape()));
+
+    auto result_1_dim = line_points.shape()[0];
+    auto result_2_dim = line_points.shape()[1] - 1;
+    auto result_3_dim = points.shape()[0];
+
+    CHECK(result.shape()[0] == result_1_dim);
+    CHECK(result.shape()[1] == result_2_dim);
+    CHECK(result.shape()[2] == result_3_dim);
   }
 }
 

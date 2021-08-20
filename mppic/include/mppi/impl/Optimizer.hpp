@@ -152,7 +152,7 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
   auto obstacle_cost = xt::zeros<T>(shape);
 
   /* auto reference_cost = [&](int weight, int power) -> Tensor { */
-    /* (void)weight; */
+  /*   (void)weight; */
   /*   (void)power; */
 
   /*   if (path.poses.empty()) */

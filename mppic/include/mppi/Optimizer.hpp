@@ -71,6 +71,7 @@ private:
   auto getBatchesControlAngularVelocities() const;
   auto getBatchesControlAngularVelocities();
   auto getBatchesLinearVelocities() const;
+
   auto getBatchesLinearVelocities();
   auto getBatchesAngularVelocities() const;
   auto getBatchesAngularVelocities();
