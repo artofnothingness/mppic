@@ -44,13 +44,13 @@ void Optimizer<T, Tensor, Model>::getParams() {
   };
 
   model_dt_ = getParam("model_dt", 0.1);
-  time_steps_ = getParam("time_steps", 30);
+  time_steps_ = getParam("time_steps", 20);
   batch_size_ = getParam("batch_size", 300);
   v_std_ = getParam("v_std", 0.1);
-  w_std_ = getParam("w_std", 0.5);
+  w_std_ = getParam("w_std", 0.3);
   v_limit_ = getParam("v_limit", 0.5);
   w_limit_ = getParam("w_limit", 1.3);
-  iteration_count_ = getParam("iteration_count", 1);
+  iteration_count_ = getParam("iteration_count", 2);
   temperature_ = getParam("temperature", 0.25);
 }
 
@@ -145,57 +145,58 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
     const Tensor &trajectory_batches, const nav_msgs::msg::Path &path) const
     -> Tensor {
 
-  using namespace xt::placeholders;
+  constexpr size_t reference_cost_power = 1;
+  constexpr size_t reference_cost_weight = 20;
 
   std::vector<size_t> shape = {trajectory_batches.shape()[0]};
 
-  auto obstacle_cost = xt::zeros<T>(shape);
+  if (path.poses.empty())
+    return xt::zeros<T>(shape);
 
-  /* auto reference_cost = [&](int weight, int power) -> Tensor { */
-  /*   (void)weight; */
-  /*   (void)power; */
+  using namespace xt::placeholders;
+  using xt::evaluation_strategy::immediate;
 
-  /*   if (path.poses.empty()) */
-  /*     return xt::zeros<T>(shape); */
+  auto points = geometry::toTensor<T>(path);
+  auto lines_points =
+      xt::view(trajectory_batches, xt::all(), xt::all(), xt::range(0, 2));
 
-  /*   auto cost = xt::mean(dists_to_segments, {0, 2}); */
+  auto &&dists = geometry::distPointsToLineSegments2D(points, lines_points);
+  auto &&cost = xt::mean(xt::amin(dists, 1, immediate), 1, immediate);
+  auto &&reference_cost =
+      reference_cost_weight * xt::pow(std::move(cost), reference_cost_power);
 
-  /*   return xt::zeros<T>(shape); */
-  /*   weight xt::pow(cost, power); */
+  /* auto goal_cost = [&](int weight, int power) -> Tensor { */
+  /*   Tensor last_goal = {static_cast<T>(path.poses.back().pose.position.x), */
+  /*                       static_cast<T>(path.poses.back().pose.position.y)};
+   */
+
+  /*   Tensor x = xt::view(trajectory_batches, xt::all(), xt::all(), 0); */
+  /*   Tensor y = xt::view(trajectory_batches, xt::all(), xt::all(), 1); */
+
+  /*   auto dx = x - last_goal(0); */
+  /*   auto dy = y - last_goal(1); */
+
+  /*   auto dists = xt::hypot(dx, dy); */
+
+  /*   auto cost = xt::view(dists, xt::all(), -1); */
+
+  /*   return weight * xt::pow(cost, power); */
   /* }; */
 
-  auto goal_cost = [&](int weight, int power) -> Tensor {
-    if (path.poses.empty())
-      return xt::zeros<T>(shape);
-
-    Tensor last_goal = {static_cast<T>(path.poses.back().pose.position.x),
-                        static_cast<T>(path.poses.back().pose.position.y)};
-
-    Tensor x = xt::view(trajectory_batches, xt::all(), xt::all(), 0);
-    Tensor y = xt::view(trajectory_batches, xt::all(), xt::all(), 1);
-
-    auto dx = x - last_goal(0);
-    auto dy = y - last_goal(1);
-
-    auto dists = xt::hypot(dx, dy);
-
-    auto cost = xt::view(dists, xt::all(), -1);
-
-    return weight * xt::pow(cost, power);
-  };
-
-  return goal_cost(2, 2);
+  return reference_cost;
 }
 
 template <typename T, typename Tensor, typename Model>
 void Optimizer<T, Tensor, Model>::updateControlSequence(const Tensor &costs) {
-  Tensor costs_normalized =
+  auto &&costs_normalized =
       costs - xt::amin(costs, xt::evaluation_strategy::immediate);
-  Tensor exponents = xt::exp(-1 / temperature_ * costs);
+
+  auto exponents = xt::eval(xt::exp(-1 / temperature_ * costs_normalized));
+
   auto softmaxes =
       exponents / xt::sum(exponents, xt::evaluation_strategy::immediate);
 
-  Tensor softmaxes_expanded =
+  auto softmaxes_expanded =
       xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
 
   control_sequence_ = xt::sum(getBatchesControls() * softmaxes_expanded, 0);
