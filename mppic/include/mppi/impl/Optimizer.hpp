@@ -148,6 +148,9 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
   constexpr size_t reference_cost_power = 1;
   constexpr size_t reference_cost_weight = 20;
 
+  constexpr size_t goal_cost_power = 1;
+  constexpr size_t goal_cost_weight = 100;
+
   std::vector<size_t> shape = {trajectory_batches.shape()[0]};
 
   if (path.poses.empty())
@@ -165,25 +168,15 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
   auto &&reference_cost =
       reference_cost_weight * xt::pow(std::move(cost), reference_cost_power);
 
-  /* auto goal_cost = [&](int weight, int power) -> Tensor { */
-  /*   Tensor last_goal = {static_cast<T>(path.poses.back().pose.position.x), */
-  /*                       static_cast<T>(path.poses.back().pose.position.y)};
-   */
+  auto goal_point = xt::view(points, -1, xt::all());
+  auto last_ref_points = xt::view(lines_points, xt::all(), -1, xt::all());
+  auto batches_goal_dists = xt::norm_sq(last_ref_points - goal_point,
+                                        {last_ref_points.dimension() - 1});
 
-  /*   Tensor x = xt::view(trajectory_batches, xt::all(), xt::all(), 0); */
-  /*   Tensor y = xt::view(trajectory_batches, xt::all(), xt::all(), 1); */
+  auto goal_cost =
+      goal_cost_weight * xt::pow(batches_goal_dists, goal_cost_power);
 
-  /*   auto dx = x - last_goal(0); */
-  /*   auto dy = y - last_goal(1); */
-
-  /*   auto dists = xt::hypot(dx, dy); */
-
-  /*   auto cost = xt::view(dists, xt::all(), -1); */
-
-  /*   return weight * xt::pow(cost, power); */
-  /* }; */
-
-  return reference_cost;
+  return reference_cost + goal_cost;
 }
 
 template <typename T, typename Tensor, typename Model>
