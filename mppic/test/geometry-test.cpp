@@ -44,6 +44,20 @@ TEST_CASE("Closest points on Line Segments 2D", "[geometry]") {
   REQUIRE_NOTHROW(result = mppi::geometry::closestPointsOnLinesSegment2D(
                       points, line_points));
 
+  size_t bench_i = GENERATE(10, 100);
+  auto bench_points = Array::from_shape({bench_i, 2});
+  auto bench_lines = Array::from_shape({300, 20, 2});
+  bench_lines.fill(20);
+  bench_lines.fill(10);
+
+  WARN("Points in bench: [ " << bench_i << " ]" << '\n'
+                             << "Bench shape: " << toStr(bench_lines.shape()));
+
+  BENCHMARK("Closest Points on Segments Benchmark") {
+    return mppi::geometry::closestPointsOnLinesSegment2D(bench_points,
+                                                         bench_lines);
+  };
+
   SECTION("Check Results") {
 
     INFO("Points: \n" << points);
@@ -110,14 +124,25 @@ TEST_CASE("Distance Points To Line Segments 2D", "[geometry]") {
                        {{0.0f, 0.0f},
                         {-1.0f, -1.0f},
                         {-2.0f, -2.0f}}};
+
   Array result;
   // clang-format on
 
   REQUIRE_NOTHROW(
       result = mppi::geometry::distPointsToLineSegments2D(points, line_points));
 
-  SECTION("Check Results") {
+  size_t bench_i = GENERATE(10, 30, 100);
+  auto bench_points = Array::from_shape({bench_i, 2});
+  auto bench_lines = Array::from_shape({300, 20, 2});
 
+  WARN("Points in bench: [ " << bench_i << " ]" << '\n'
+                             << "Bench shape: " << toStr(bench_lines.shape()));
+  BENCHMARK("Distance from Lines to Points Benchmark") {
+    return mppi::geometry::distPointsToLineSegments2D(bench_points,
+                                                      bench_lines);
+  };
+
+  SECTION("Check Results") {
     INFO("Points: \n" << points);
     INFO("Line points: \n" << line_points);
     INFO("Result: \n" << result);
@@ -127,7 +152,6 @@ TEST_CASE("Distance Points To Line Segments 2D", "[geometry]") {
   }
 
   SECTION("Shape Check") {
-
     INFO("Points shape: \n" << toStr(points.shape()));
     INFO("Line points shape: \n" << toStr(line_points.shape()));
     INFO("Result shape: \n" << toStr(result.shape()));

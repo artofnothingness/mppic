@@ -31,7 +31,7 @@ geometry_msgs::msg::TwistStamped toTwistStamped(T &&velocities,
 template <typename T, typename Tensor = xt::xarray<T>>
 Tensor toTensor(const nav_msgs::msg::Path &path) {
   size_t size = path.poses.size();
-  size_t last_dim_size = 2;
+  static constexpr size_t last_dim_size = 2;
 
   Tensor points = xt::empty<T>({size, last_dim_size});
 
@@ -66,22 +66,25 @@ inline auto hypot(const geometry_msgs::msg::PoseStamped &lhs,
 
 // http://paulbourke.net/geometry/pointlineplane/
 template <typename P, typename L>
-auto closestPointsOnLinesSegment2D(P &&point_tensor, L &&line_tensor) {
+auto closestPointsOnLinesSegment2D(const P &point_tensor,
+                                   const L &line_tensor) {
   using namespace xt::placeholders;
   using T = typename std::decay_t<P>::value_type;
+  using Tensor = xt::xarray<T>;
 
-  auto closest_points = xt::xarray<T>::from_shape({line_tensor.shape()[0],
-                                                   line_tensor.shape()[1] - 1,
-                                                   point_tensor.shape()[1],
-                                                   point_tensor.shape()[1]});
+  auto closest_points = Tensor::from_shape({line_tensor.shape()[0],
+                                            line_tensor.shape()[1] - 1,
+                                            point_tensor.shape()[0],
+                                            point_tensor.shape()[1]});
 
   auto start_line_points = xt::view(line_tensor, xt::all(), xt::range(_, -1));
   auto end_line_points = xt::view(line_tensor, xt::all(), xt::range(1, _));
 
-  auto diff = end_line_points - start_line_points;
-  auto sq_norm = xt::norm_sq(diff, {diff.dimension() - 1});
+  Tensor diff = end_line_points - start_line_points;
+  Tensor sq_norm = xt::norm_sq(
+      diff, {diff.dimension() - 1}, xt::evaluation_strategy::immediate);
 
-  static constexpr double eps = 0.00000000001;
+  static constexpr double eps = 0.01;
   for (size_t b = 0; b < closest_points.shape()[0]; ++b) {
     for (size_t t = 0; t < closest_points.shape()[1]; ++t) {
       if (abs(sq_norm(b, t)) < eps) {
@@ -114,9 +117,13 @@ auto closestPointsOnLinesSegment2D(P &&point_tensor, L &&line_tensor) {
 }
 
 template <typename P, typename L>
-auto distPointsToLineSegments2D(P &&points, L &&line_points) {
-  auto diff = points - closestPointsOnLinesSegment2D(points, line_points);
-  return xt::norm_l2(std::move(diff), {diff.dimension() - 1});
+auto distPointsToLineSegments2D(const P &points, const L &line_points) {
+
+  auto &&closest_points = closestPointsOnLinesSegment2D(points, line_points);
+
+  auto diff = points - closest_points;
+  size_t dim = diff.dimension() - 1;
+  return xt::eval(xt::norm_l2(std::move(diff), {dim}));
 }
 
 } // namespace mppi::geometry

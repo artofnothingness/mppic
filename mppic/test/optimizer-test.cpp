@@ -27,7 +27,7 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
   optimizer.on_configure();
   optimizer.on_activate();
 
-  size_t poses_count = GENERATE(1000, 10000, 100000);
+  size_t poses_count = GENERATE(10, 30, 100);
 
   WARN("Path with " << poses_count);
 
