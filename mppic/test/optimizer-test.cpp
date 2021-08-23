@@ -1,5 +1,8 @@
 #define CATCH_CONFIG_RUNNER
+
+#ifdef DO_BENCHMARKS
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
+#endif
 
 #include <catch2/catch.hpp>
 
@@ -29,8 +32,6 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
 
   size_t poses_count = GENERATE(10, 30, 100);
 
-  WARN("Path with " << poses_count);
-
   SECTION("Running evalNextControl") {
     geometry_msgs::msg::Twist twist;
 
@@ -55,9 +56,13 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
     fillPath(poses_count);
 
     CHECK_NOTHROW(optimizer.evalNextControl(twist, path));
+
+#ifdef DO_BENCHMARKS
+    WARN("Path with " << poses_count);
     BENCHMARK("evalNextControl Benchmark") {
       return optimizer.evalNextControl(twist, path);
     };
+#endif
   }
 
   optimizer.on_deactivate();

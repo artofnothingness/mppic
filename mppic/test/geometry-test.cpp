@@ -1,5 +1,8 @@
 #define CATCH_CONFIG_RUNNER
+
+#ifdef DO_BENCHMARKS
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
+#endif
 
 #include <catch2/catch.hpp>
 
@@ -50,13 +53,15 @@ TEST_CASE("Closest points on Line Segments 2D", "[geometry]") {
   bench_lines.fill(20);
   bench_lines.fill(10);
 
-  WARN("Points in bench: [ " << bench_i << " ]" << '\n'
-                             << "Bench shape: " << toStr(bench_lines.shape()));
 
+#ifdef DO_BENCHMARKS
+  WARN("Points in bench: [ " << bench_i << " ]" << '\n'
+                             << "Lines shape: " << toStr(bench_lines.shape()));
   BENCHMARK("Closest Points on Segments Benchmark") {
     return mppi::geometry::closestPointsOnLinesSegment2D(bench_points,
                                                          bench_lines);
   };
+#endif
 
   SECTION("Check Results") {
 
@@ -135,12 +140,14 @@ TEST_CASE("Distance Points To Line Segments 2D", "[geometry]") {
   auto bench_points = Array::from_shape({bench_i, 2});
   auto bench_lines = Array::from_shape({300, 20, 2});
 
-  WARN("Points in bench: [ " << bench_i << " ]" << '\n'
-                             << "Bench shape: " << toStr(bench_lines.shape()));
+#ifdef DO_BENCHMARKS
+  WARN("Points in benchmark: [ " << bench_i << " ]" << '\n'
+                            << "Lines shape: " << toStr(bench_lines.shape()));
   BENCHMARK("Distance from Lines to Points Benchmark") {
     return mppi::geometry::distPointsToLineSegments2D(bench_points,
                                                       bench_lines);
   };
+#endif
 
   SECTION("Check Results") {
     INFO("Points: \n" << points);
