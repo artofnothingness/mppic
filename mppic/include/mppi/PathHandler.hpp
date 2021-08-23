@@ -29,6 +29,12 @@ public:
   void setPath(const nav_msgs::msg::Path &plan) { global_plan_ = plan; }
   auto getPath() -> nav_msgs::msg::Path & { return global_plan_; }
 
+  /**
+   * @brief transform global plan to local applying constraints,
+   * then prune global_plan_
+   *
+   * @return global plan in local frame
+   */
   auto transformPath(const geometry_msgs::msg::PoseStamped &robot_pose) -> nav_msgs::msg::Path;
 
 private:
