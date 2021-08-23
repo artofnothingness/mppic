@@ -27,6 +27,13 @@ if(BUILD_TESTING)
           CXX_STANDARD_REQUIRED YES
   )
 
+
+  
+  if (${DO_BENCHMARKS})
+    target_compile_definitions(optimizer-test PRIVATE -DDO_BENCHMARKS)
+    target_compile_definitions(geometry-test PRIVATE -DDO_BENCHMARKS)
+  endif()
+
   catch_discover_tests(optimizer-test)
   catch_discover_tests(geometry-test)
 

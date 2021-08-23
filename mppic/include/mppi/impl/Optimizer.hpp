@@ -52,6 +52,11 @@ void Optimizer<T, Tensor, Model>::getParams() {
   w_limit_ = getParam("w_limit", 1.3);
   iteration_count_ = getParam("iteration_count", 2);
   temperature_ = getParam("temperature", 0.25);
+
+  reference_cost_power_ = getParam("reference_cost_power", 1);
+  reference_cost_weight_ = getParam("reference_cost_weight", 20);
+  goal_cost_power_ = getParam("goal_cost_power", 1);
+  goal_cost_weight_ = getParam("goal_cost_weight", 100);
 }
 
 template <typename T, typename Tensor, typename Model>
@@ -145,12 +150,6 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
     const Tensor &trajectory_batches, const nav_msgs::msg::Path &path) const
     -> Tensor {
 
-  constexpr size_t reference_cost_power = 1;
-  constexpr size_t reference_cost_weight = 20;
-
-  constexpr size_t goal_cost_power = 1;
-  constexpr size_t goal_cost_weight = 100;
-
   std::vector<size_t> shape = {trajectory_batches.shape()[0]};
 
   if (path.poses.empty())
@@ -166,7 +165,7 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
   auto &&dists = geometry::distPointsToLineSegments2D(points, lines_points);
   auto &&cost = xt::mean(xt::amin(dists, 1, immediate), 1, immediate);
   auto &&reference_cost =
-      reference_cost_weight * xt::pow(std::move(cost), reference_cost_power);
+      reference_cost_weight_ * xt::pow(std::move(cost), reference_cost_power_);
 
   auto goal_point = xt::view(points, -1, xt::all());
   auto last_ref_points = xt::view(lines_points, xt::all(), -1, xt::all());
@@ -174,7 +173,7 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
                                         {last_ref_points.dimension() - 1});
 
   auto goal_cost =
-      goal_cost_weight * xt::pow(batches_goal_dists, goal_cost_power);
+      goal_cost_weight_ * xt::pow(batches_goal_dists, goal_cost_power_);
 
   return reference_cost + goal_cost;
 }
