@@ -18,7 +18,7 @@
 namespace mppi::geometry {
 
 template <typename T, typename H>
-geometry_msgs::msg::TwistStamped toTwistStamped(T &&velocities,
+geometry_msgs::msg::TwistStamped toTwistStamped(const T &velocities,
                                                 const H &header) {
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = header.frame_id;
@@ -65,6 +65,18 @@ inline auto hypot(const geometry_msgs::msg::PoseStamped &lhs,
 }
 
 // http://paulbourke.net/geometry/pointlineplane/
+/**
+ * @brief Calculate closest points from batch point sequences on line segments
+ *
+ * @tparam P point batch type
+ * @tparam L line batch type
+ * @param points batch of point sequences 3D data structure
+ * @param line_points sequence of points representing line
+ * segments 2D data structure
+ * @return points on line segments closest to batches sequences points
+ *      4D data structre of shape [ points.shape[0], points.shape()[1] - 1,
+ *      line_points.shape()[0], line_points.shape()[1] ]
+ */
 template <typename P, typename L>
 auto closestPointsOnLinesSegment2D(const P &point_tensor,
                                    const L &line_tensor) {
@@ -116,6 +128,18 @@ auto closestPointsOnLinesSegment2D(const P &point_tensor,
   return closest_points;
 }
 
+/**
+ * @brief Calculate distances from batch point sequences to line segments
+ *
+ * @tparam P point batch type
+ * @tparam L line batch type
+ * @param points batch of point sequences 3D data structure
+ * @param line_points sequence of points representing line
+ * segments 2D data structure
+ * @return distances from batches sequences points to line segments
+ *      3D data structre of shape [ points.shape[0], points.shape()[1] - 1,
+ *      line_points.shape()[0] ]
+ */
 template <typename P, typename L>
 auto distPointsToLineSegments2D(const P &points, const L &line_points) {
 
