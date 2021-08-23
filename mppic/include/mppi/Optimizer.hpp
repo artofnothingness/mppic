@@ -146,6 +146,11 @@ private:
   double w_limit_;
   double temperature_;
 
+  size_t reference_cost_power_ = 1;
+  size_t reference_cost_weight_ = 20;
+  size_t goal_cost_power_ = 1;
+  size_t goal_cost_weight_ = 100;
+
   Tensor batches_;
   Tensor control_sequence_;
   Tensor generated_trajectories_;
