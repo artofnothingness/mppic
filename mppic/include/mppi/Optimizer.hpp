@@ -37,6 +37,13 @@ public:
   void on_activate(){};
   void on_deactivate(){};
 
+  /**
+   * @brief Evaluate current best control
+   *
+   * @param twist current robot speed
+   * @param path current global path
+   * @return best control
+   */
   auto evalNextControl(const geometry_msgs::msg::Twist &twist,
                        const nav_msgs::msg::Path &path)
       -> geometry_msgs::msg::TwistStamped;
@@ -47,19 +54,62 @@ private:
   void getParams();
   void resetBatches();
 
+  /**
+   * @brief Invoke generateNoisedControlBatches and integrate recieved
+   * controls in trajectores
+   *
+   * @param twist current robot speed
+   * @return trajectores Tensor of shape [ batch_size_, time_steps_, 2]
+   */
   auto generateNoisedTrajectories(const geometry_msgs::msg::Twist &twist)
       -> Tensor;
+
+  /**
+   * @brief Generate random controls by gaussian noise with mean in
+   * control_sequence_
+   *
+   * @return Control batches
+   */
   auto generateNoisedControlBatches() -> Tensor;
   void applyControlConstraints();
+
+  /**
+   * @brief Invoke setBatchesInitialVelocities and propagateBatchesVelocitiesFromInitials
+   *
+   * @param twist current robot speed
+   */
   void setBatchesVelocities(const geometry_msgs::msg::Twist &twist);
   void setBatchesInitialVelocities(const geometry_msgs::msg::Twist &twist);
+
+  /**
+   * @brief propagate velocities in batches_ using model_
+   * for time_steps_ time horizont
+   *
+   */
   void propagateBatchesVelocitiesFromInitials();
   auto integrateBatchesVelocities() const -> Tensor;
+
+  /**
+   * @brief Evaluate cost for every batch
+   *
+   * @param trajectory_batches batch of trajectories
+   * @param path global path
+   * @return batches costs Tensor of shape [batch_size]
+   */
   auto evalBatchesCosts(const Tensor &trajectory_batches,
                         const nav_msgs::msg::Path &path) const -> Tensor;
 
+  /**
+   * @brief Update control_sequence_ with weighted by costs batch controls
+   *
+   * @param costs batches costs
+   */
   void updateControlSequence(const Tensor &costs);
 
+  /**
+   * @brief Get first control from control_sequence_
+   *
+   */
   template <typename H>
   auto getControlFromSequence(const H &header)
       -> geometry_msgs::msg::TwistStamped;
