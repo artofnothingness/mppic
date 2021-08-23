@@ -156,26 +156,39 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
     return xt::zeros<T>(shape);
 
   using namespace xt::placeholders;
-  using xt::evaluation_strategy::immediate;
 
-  auto points = geometry::toTensor<T>(path);
-  auto lines_points =
+  auto path_points = geometry::toTensor<T>(path);
+  auto batch_points =
       xt::view(trajectory_batches, xt::all(), xt::all(), xt::range(0, 2));
 
-  auto &&dists = geometry::distPointsToLineSegments2D(points, lines_points);
-  auto &&cost = xt::mean(xt::amin(dists, 1, immediate), 1, immediate);
-  auto &&reference_cost =
-      reference_cost_weight_ * xt::pow(std::move(cost), reference_cost_power_);
-
-  auto goal_point = xt::view(points, -1, xt::all());
-  auto last_ref_points = xt::view(lines_points, xt::all(), -1, xt::all());
-  auto batches_goal_dists = xt::norm_sq(last_ref_points - goal_point,
-                                        {last_ref_points.dimension() - 1});
-
-  auto goal_cost =
-      goal_cost_weight_ * xt::pow(batches_goal_dists, goal_cost_power_);
+  auto &&dists = geometry::distPointsToLineSegments2D(path_points, batch_points);
+  auto &&reference_cost = evalReferenceCost(dists);
+  auto &&goal_cost = evalGoalCost(path_points, batch_points);
 
   return reference_cost + goal_cost;
+}
+
+
+template <typename T, typename Tensor, typename Model>
+template <typename L, typename P>
+auto Optimizer<T, Tensor, Model>::evalGoalCost(const P &path_points, 
+                                               const L &batch_points) const {
+  auto goal_points = xt::view(path_points, -1, xt::all());
+  auto last_timestep_points = xt::view(batch_points, xt::all(), -1, xt::all());
+
+  auto &&batches_goal_dists = xt::norm_sq(last_timestep_points - goal_points,
+                                          {last_timestep_points.dimension() - 1});
+
+  return goal_cost_weight_ * xt::pow(std::move(batches_goal_dists), goal_cost_power_);
+}
+
+template <typename T, typename Tensor, typename Model>
+template <typename D>
+auto Optimizer<T, Tensor, Model>::evalReferenceCost(const D &dists) const {
+  using xt::evaluation_strategy::immediate;
+  auto &&cost = xt::mean(xt::amin(dists, 1, immediate), 1, immediate);
+
+  return reference_cost_weight_ * xt::pow(std::move(cost), reference_cost_power_);
 }
 
 template <typename T, typename Tensor, typename Model>

@@ -55,8 +55,8 @@ private:
   void resetBatches();
 
   /**
-   * @brief Invoke generateNoisedControlBatches and integrate recieved
-   * controls in trajectories
+   * @brief Invoke generateNoisedControlBatches, assign result to batches controls 
+   * and integrate recieved controls in trajectories
    *
    * @param twist current robot speed
    * @return trajectories Tensor of shape [ batch_size_, time_steps_, 2]
@@ -71,6 +71,7 @@ private:
    * @return Control batches
    */
   auto generateNoisedControlBatches() -> Tensor;
+
   void applyControlConstraints();
 
   /**
@@ -79,15 +80,18 @@ private:
    * @param twist current robot speed
    */
   void setBatchesVelocities(const geometry_msgs::msg::Twist &twist);
+
   void setBatchesInitialVelocities(const geometry_msgs::msg::Twist &twist);
 
   /**
-   * @brief propagate velocities in batches_ using model_
+   * @brief propagate velocities in batches_ using model
    * for time_steps_ time horizont
    *
    */
   void propagateBatchesVelocitiesFromInitials();
+
   auto integrateBatchesVelocities() const -> Tensor;
+
 
   /**
    * @brief Evaluate cost for every batch
@@ -98,6 +102,14 @@ private:
    */
   auto evalBatchesCosts(const Tensor &trajectory_batches,
                         const nav_msgs::msg::Path &path) const -> Tensor;
+
+
+ 
+  template<typename D>
+  auto evalReferenceCost(const D &dists) const;
+
+  template <typename L, typename P>
+  auto evalGoalCost(const P &goal_points, const L &last_timestep_points) const;
 
   /**
    * @brief Update control_sequence_ with weighted by costs batch controls
