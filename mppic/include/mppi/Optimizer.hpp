@@ -56,10 +56,10 @@ private:
 
   /**
    * @brief Invoke generateNoisedControlBatches and integrate recieved
-   * controls in trajectores
+   * controls in trajectories
    *
    * @param twist current robot speed
-   * @return trajectores Tensor of shape [ batch_size_, time_steps_, 2]
+   * @return trajectories Tensor of shape [ batch_size_, time_steps_, 2]
    */
   auto generateNoisedTrajectories(const geometry_msgs::msg::Twist &twist)
       -> Tensor;
