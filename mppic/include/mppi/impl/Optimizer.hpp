@@ -147,10 +147,11 @@ auto Optimizer<T, Tensor, Model>::integrateBatchesVelocities() const -> Tensor {
 
 template <typename T, typename Tensor, typename Model>
 auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
-    const Tensor &trajectory_batches, const nav_msgs::msg::Path &path) const
+      const Tensor &batches_of_trajectories_points, 
+      const nav_msgs::msg::Path &path) const
     -> Tensor {
 
-  std::vector<size_t> shape = {trajectory_batches.shape()[0]};
+  std::vector<size_t> shape = {batches_of_trajectories_points.shape()[0]};
 
   if (path.poses.empty())
     return xt::zeros<T>(shape);
@@ -159,7 +160,7 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
 
   auto path_points = geometry::toTensor<T>(path);
   auto batch_points =
-      xt::view(trajectory_batches, xt::all(), xt::all(), xt::range(0, 2));
+      xt::view(batches_of_trajectories_points, xt::all(), xt::all(), xt::range(0, 2));
 
   auto &&dists = geometry::distPointsToLineSegments2D(path_points, batch_points);
   auto &&reference_cost = evalReferenceCost(dists);
@@ -171,10 +172,12 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
 
 template <typename T, typename Tensor, typename Model>
 template <typename L, typename P>
-auto Optimizer<T, Tensor, Model>::evalGoalCost(const P &path_points, 
-                                               const L &batch_points) const {
+auto Optimizer<T, Tensor, Model>::evalGoalCost(
+    const P &path_points, 
+    const L &batchs_of_trajectories_points) const {
+
   auto goal_points = xt::view(path_points, -1, xt::all());
-  auto last_timestep_points = xt::view(batch_points, xt::all(), -1, xt::all());
+  auto last_timestep_points = xt::view(batchs_of_trajectories_points, xt::all(), -1, xt::all());
 
   auto &&batches_goal_dists = xt::norm_sq(last_timestep_points - goal_points,
                                           {last_timestep_points.dimension() - 1});
