@@ -81,9 +81,8 @@ void Controller<T, Tensor, Model>::setPublishers() {
 template <typename T, typename Tensor, typename Model>
 void Controller<T, Tensor, Model>::createComponents() {
   auto &model = models::NaiveModel<T>;
-  auto costmap = costmap_ros_->getCostmap();
 
-  optimizer_ = optimization::Optimizer<T>(parent_, node_name_, costmap, model);
+  optimizer_ = optimization::Optimizer<T>(parent_, node_name_, costmap_ros_, model);
   path_handler_ =
       handlers::PathHandler(parent_, node_name_, costmap_ros_, tf_buffer_);
 

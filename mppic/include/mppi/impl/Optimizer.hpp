@@ -1,15 +1,19 @@
 #pragma once
 
+#include "nav2_costmap_2d/cost_values.hpp"
+#include "nav2_core/exceptions.hpp"
+
 #include "mppi/Optimizer.hpp"
 
 #include "xtensor/xmath.hpp"
 #include "xtensor/xrandom.hpp"
 #include "xtensor/xslice.hpp"
-
 #include "xtensor/xio.hpp"
 
 #include "utils/common.hpp"
 #include "utils/geometry.hpp"
+
+#include <limits>
 
 namespace mppi::optimization {
 
@@ -30,6 +34,7 @@ auto Optimizer<T, Tensor, Model>::evalNextControl(
 
 template <typename T, typename Tensor, typename Model>
 void Optimizer<T, Tensor, Model>::on_configure() {
+  costmap_ = costmap_ros_->getCostmap();
   getParams();
   resetBatches();
   RCLCPP_INFO(logger_, "Configured");
@@ -147,11 +152,11 @@ auto Optimizer<T, Tensor, Model>::integrateBatchesVelocities() const -> Tensor {
 
 template <typename T, typename Tensor, typename Model>
 auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
-      const Tensor &batches_of_trajectories_points, 
+      const Tensor &batches_of_trajectories, 
       const nav_msgs::msg::Path &path) const
     -> Tensor {
 
-  std::vector<size_t> shape = {batches_of_trajectories_points.shape()[0]};
+  std::vector<size_t> shape = {batches_of_trajectories.shape()[0]};
 
   if (path.poses.empty())
     return xt::zeros<T>(shape);
@@ -159,14 +164,15 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
   using namespace xt::placeholders;
 
   auto path_points = geometry::toTensor<T>(path);
-  auto batch_points =
-      xt::view(batches_of_trajectories_points, xt::all(), xt::all(), xt::range(0, 2));
+  auto batch_of_trajectories_points =
+      xt::view(batches_of_trajectories, xt::all(), xt::all(), xt::range(0, 2));
 
-  auto &&dists = geometry::distPointsToLineSegments2D(path_points, batch_points);
+  auto &&dists = geometry::distPointsToLineSegments2D(path_points, batch_of_trajectories_points);
   auto &&reference_cost = evalReferenceCost(dists);
-  auto &&goal_cost = evalGoalCost(path_points, batch_points);
+  auto &&goal_cost = evalGoalCost(path_points, batch_of_trajectories_points);
+  /* auto &&obstacle_cost = evalObstacleCost(batches_of_trajectories); */
 
-  return reference_cost + goal_cost;
+  return reference_cost + goal_cost /* + obstacle_cost */;
 }
 
 
@@ -174,10 +180,10 @@ template <typename T, typename Tensor, typename Model>
 template <typename L, typename P>
 auto Optimizer<T, Tensor, Model>::evalGoalCost(
     const P &path_points, 
-    const L &batchs_of_trajectories_points) const {
+    const L &batches_of_trajectories_points) const {
 
   auto goal_points = xt::view(path_points, -1, xt::all());
-  auto last_timestep_points = xt::view(batchs_of_trajectories_points, xt::all(), -1, xt::all());
+  auto last_timestep_points = xt::view(batches_of_trajectories_points, xt::all(), -1, xt::all());
 
   auto &&batches_goal_dists = xt::norm_sq(last_timestep_points - goal_points,
                                           {last_timestep_points.dimension() - 1});
@@ -194,6 +200,29 @@ auto Optimizer<T, Tensor, Model>::evalReferenceCost(const D &dists) const {
   return reference_cost_weight_ * xt::pow(std::move(cost), reference_cost_power_);
 }
 
+
+template <typename T, typename Tensor, typename Model>
+template <typename L>
+auto Optimizer<T, Tensor, Model>::evalObstacleCost(const L &batches_of_trajectories_points) const {
+  constexpr double obstacle_cost_val = std::numeric_limits<T>::max();
+
+  Tensor costs = xt::zeros<T>({batches_of_trajectories_points.shape()[0]});
+
+  for (size_t i = 0; i < batches_of_trajectories_points.shape()[0]; ++i) {
+    for (size_t j = 0; j < batches_of_trajectories_points.shape()[1]; ++j) {
+      T cost = costAtPose(batches_of_trajectories_points(i, j, 0), batches_of_trajectories_points(i, j, 1));
+      if (inCollision(cost)) {
+        costs[i] = obstacle_cost_val;
+        break;
+      } else {
+        costs[i] += cost;
+      }
+    }
+  }
+
+  return costs;
+}
+
 template <typename T, typename Tensor, typename Model>
 void Optimizer<T, Tensor, Model>::updateControlSequence(const Tensor &costs) {
   auto &&costs_normalized =
@@ -208,6 +237,28 @@ void Optimizer<T, Tensor, Model>::updateControlSequence(const Tensor &costs) {
       xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
 
   control_sequence_ = xt::sum(getBatchesControls() * softmaxes_expanded, 0);
+}
+
+
+template <typename T, typename Tensor, typename Model>
+bool Optimizer<T, Tensor, Model>::inCollision(unsigned char cost) const {
+  if (costmap_ros_->getLayeredCostmap()->isTrackingUnknown()) {
+    return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE && cost != nav2_costmap_2d::NO_INFORMATION;
+  } else {
+    return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
+  }
+}
+
+template <typename T, typename Tensor, typename Model>
+T Optimizer<T, Tensor, Model>::costAtPose(const double & x, const double & y) const {
+
+  unsigned int mx, my;
+  if (not costmap_->worldToMap(x, y, mx, my)) {
+    RCLCPP_FATAL( logger_, "The dimensions of the costmap is too small to fully include your robot's footprint");
+    throw nav2_core::PlannerException("Dimensions of the costmap are too small");
+  }
+
+  return static_cast<T>(costmap_->getCost(mx, my));
 }
 
 template <typename T, typename Tensor, typename Model>
