@@ -21,12 +21,16 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
 
   std::string node_name = "TestNode";
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name);
-  auto costmap = new nav2_costmap_2d::Costmap2D(500, 500, 0.1, 0, 0, 100);
+
+  auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("cost_map_node");
+  auto st =  rclcpp_lifecycle::State{};
+
   auto &model = mppi::models::NaiveModel<T>;
 
   auto optimizer =
-      mppi::optimization::Optimizer<T>(node, node_name, costmap, model);
+      mppi::optimization::Optimizer<T>(node, node_name, costmap_ros, model);
 
+  costmap_ros->on_configure(st);
   optimizer.on_configure();
   optimizer.on_activate();
 
@@ -67,11 +71,15 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
 
   optimizer.on_deactivate();
   optimizer.on_cleanup();
-  delete costmap;
+
+  costmap_ros->on_cleanup(st);
+  costmap_ros.reset();
 }
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
   int result = Catch::Session().run(argc, argv);
+
+  rclcpp::shutdown();
   return result;
 }

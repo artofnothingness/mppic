@@ -24,15 +24,14 @@ public:
 
   Optimizer(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
             const std::string &node_name,
-            nav2_costmap_2d::Costmap2D *costmap,
+            const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros,
             Model &&model)
       : parent_(parent),
         node_name_(node_name),
-        costmap_(costmap),
+        costmap_ros_(costmap_ros),
         model_(model) {}
 
   void on_configure();
-
   void on_cleanup(){};
   void on_activate(){};
   void on_deactivate(){};
@@ -59,7 +58,7 @@ private:
    * and integrate recieved controls in trajectories
    *
    * @param twist current robot speed
-   * @return trajectories Tensor of shape [ batch_size_, time_steps_, 2]
+   * @return trajectories Tensor of shape [ batch_size_, time_steps_, 3]  where 3 stands for x, y, yaw
    */
   auto generateNoisedTrajectories(const geometry_msgs::msg::Twist &twist)
       -> Tensor;
@@ -97,7 +96,7 @@ private:
    * @brief Evaluate cost for every batch
    *
    * @param trajectory_batches batch of trajectories: 
-   * Tensor of shape [batch_size_, time_steps_, 2] where 2 stands for x, y
+   * Tensor of shape [batch_size_, time_steps_, 3] where 3 stands for x, y, yaw
    * @param path global path
    * @return batches costs: Tensor of shape [batch_size]
    */
@@ -123,7 +122,7 @@ private:
    *
    * @tparam P tensor-like type of path points
    * @tparam L tensor-like type of batch_points
-   * @param path_points tensor-like type of shape [ path points count, 2 ]
+   * @param path_points tensor-like type of shape [ path points count, 2 ] 
    * where 2 stands for x, y
    * @param batchs_of_trajectories_points tensor-like type of shape [ batch, time_steps_ 2 ]
    * where 2 stands for x, y 
@@ -131,6 +130,13 @@ private:
    */
   template <typename L, typename P>
   auto evalGoalCost(const P &path_points, const L &batchs_of_trajectories_points) const;
+
+  template <typename L>
+  auto evalObstacleCost(const L &batchs_of_trajectories_points) const;
+
+  T costAtPose(const double & x, const double & y) const;
+
+  bool inCollision(unsigned char cost) const;
 
   /**
    * @brief Update control_sequence_ with weighted by costs batch controls
@@ -162,7 +168,8 @@ private:
 private:
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
   std::string node_name_;
-  nav2_costmap_2d::Costmap2D *costmap_;
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
+  nav2_costmap_2d::Costmap2D * costmap_;
   std::function<Model> model_;
 
   static constexpr int last_dim_size = 5;
@@ -183,6 +190,8 @@ private:
   size_t reference_cost_weight_ = 20;
   size_t goal_cost_power_ = 1;
   size_t goal_cost_weight_ = 100;
+  size_t obstacle_cost_power_ = 1;
+  size_t obstacle_cost_weight_ = 1000;
 
   Tensor batches_;
   Tensor control_sequence_;
