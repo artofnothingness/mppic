@@ -96,20 +96,41 @@ private:
   /**
    * @brief Evaluate cost for every batch
    *
-   * @param trajectory_batches batch of trajectories
+   * @param trajectory_batches batch of trajectories: 
+   * Tensor of shape [batch_size_, time_steps_, 2] where 2 stands for x, y
    * @param path global path
-   * @return batches costs Tensor of shape [batch_size]
+   * @return batches costs: Tensor of shape [batch_size]
    */
-  auto evalBatchesCosts(const Tensor &trajectory_batches,
+  auto evalBatchesCosts(const Tensor &batches_of_trajectories,
                         const nav_msgs::msg::Path &path) const -> Tensor;
-
-
  
+  /**
+   * @brief Evaluate cost related to distances between generated 
+   * and reference trajectories
+   *
+   * @tparam D type of tensor consisting distances between points of generated 
+   * and reference trajectories
+   * @param dists distances between points of generated 
+   * and reference trajectories: Tensor of shape [ batch_size_, time_steps_, point_size ]
+   * @return batches costs: type of shape [ batch_size_ ]
+   */
   template<typename D>
   auto evalReferenceCost(const D &dists) const;
 
+  /**
+   * @brief Evaluate cost related to distances between last path 
+   * points and batch trajectories points on last time step
+   *
+   * @tparam P tensor-like type of path points
+   * @tparam L tensor-like type of batch_points
+   * @param path_points tensor-like type of shape [ path points count, 2 ]
+   * where 2 stands for x, y
+   * @param batchs_of_trajectories_points tensor-like type of shape [ batch, time_steps_ 2 ]
+   * where 2 stands for x, y 
+   * @return batches costs: type of shape [ batch_size_ ]
+   */
   template <typename L, typename P>
-  auto evalGoalCost(const P &goal_points, const L &last_timestep_points) const;
+  auto evalGoalCost(const P &path_points, const L &batchs_of_trajectories_points) const;
 
   /**
    * @brief Update control_sequence_ with weighted by costs batch controls

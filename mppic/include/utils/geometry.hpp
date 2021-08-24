@@ -129,7 +129,7 @@ auto closestPointsOnLinesSegment2D(const P &point_tensor,
 }
 
 /**
- * @brief Calculate distances from batch point sequences to line segments
+ * @brief Calculate distances from batches of point sequences to line segments
  *
  * @tparam P point batch type
  * @tparam L line batch type
