@@ -19,19 +19,19 @@ namespace mppi::optimization {
 
 template <typename T, typename Tensor, typename Model>
 auto Optimizer<T, Tensor, Model>::evalNextControl(
-    const geometry_msgs::msg::PoseStamped &pose,
-    const geometry_msgs::msg::Twist &twist,
-    const nav_msgs::msg::Path &path)
+    const geometry_msgs::msg::PoseStamped &robot_pose,
+    const geometry_msgs::msg::Twist &robot_speed,
+    const nav_msgs::msg::Path &plan)
     -> geometry_msgs::msg::TwistStamped {
 
   static Tensor costs;
   for (int i = 0; i < iteration_count_; ++i) {
-    generated_trajectories_ = generateNoisedTrajectories(pose, twist);
-    costs = evalBatchesCosts(generated_trajectories_, path);
+    generated_trajectories_ = generateNoisedTrajectories(robot_pose, robot_speed);
+    costs = evalBatchesCosts(generated_trajectories_, plan);
     updateControlSequence(costs);
   }
 
-  return getControlFromSequence(path.header.stamp, costmap_ros_->getBaseFrameID());
+  return getControlFromSequence(plan.header.stamp, costmap_ros_->getBaseFrameID());
 }
 
 template <typename T, typename Tensor, typename Model>
@@ -63,7 +63,7 @@ void Optimizer<T, Tensor, Model>::getParams() {
   reference_cost_power_ = getParam("reference_cost_power", 1);
   reference_cost_weight_ = getParam("reference_cost_weight", 20);
   goal_cost_power_ = getParam("goal_cost_power", 1);
-  goal_cost_weight_ = getParam("goal_cost_weight", 100);
+  goal_cost_weight_ = getParam("goal_cost_weight", 1);
 }
 
 template <typename T, typename Tensor, typename Model>
@@ -210,7 +210,7 @@ auto Optimizer<T, Tensor, Model>::evalReferenceCost(const D &dists) const {
 template <typename T, typename Tensor, typename Model>
 template <typename L>
 auto Optimizer<T, Tensor, Model>::evalObstacleCost(const L &batches_of_trajectories_points) const {
-  constexpr double collision_val = std::numeric_limits<T>::max();
+  constexpr T collision_cost_value = std::numeric_limits<T>::max();
 
   Tensor costs = xt::zeros<T>({batches_of_trajectories_points.shape()[0]});
 
@@ -218,10 +218,16 @@ auto Optimizer<T, Tensor, Model>::evalObstacleCost(const L &batches_of_trajector
     for (size_t j = 0; j < batches_of_trajectories_points.shape()[1]; ++j) {
       T cost = costAtPose(batches_of_trajectories_points(i, j, 0), batches_of_trajectories_points(i, j, 1));
       if (inCollision(cost)) {
-        costs[i] = collision_val;
+        costs[i] = collision_cost_value;
         break;
       } else {
         costs[i] += cost;
+      }
+      if (j == batches_of_trajectories_points.shape()[1] - 1) {
+        if (costs[i] != 0) {
+        }
+        auto mean = costs[i] / batches_of_trajectories_points.shape()[1];
+        costs[i] = obstacle_cost_weight_ * pow(mean, obstacle_cost_power_);
       }
     }
   }
