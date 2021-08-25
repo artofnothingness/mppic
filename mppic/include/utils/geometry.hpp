@@ -107,7 +107,7 @@ auto closestPointsOnLinesSegment2D(const P &point_tensor,
   Tensor sq_norm = xt::norm_sq(
       diff, {diff.dimension() - 1}, xt::evaluation_strategy::immediate);
 
-  static constexpr double eps = 0.01;
+  static constexpr double eps = 1e-2;
   for (size_t b = 0; b < closest_points.shape()[0]; ++b) {
     for (size_t t = 0; t < closest_points.shape()[1]; ++t) {
       if (abs(sq_norm(b, t)) < eps) {

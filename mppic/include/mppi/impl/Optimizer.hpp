@@ -37,6 +37,7 @@ auto Optimizer<T, Tensor, Model>::evalNextControl(
 template <typename T, typename Tensor, typename Model>
 void Optimizer<T, Tensor, Model>::on_configure() {
   costmap_ = costmap_ros_->getCostmap();
+  inscribed_radius_ = costmap_ros_->getLayeredCostmap()->getInscribedRadius();
   getParams();
   resetBatches();
   RCLCPP_INFO(logger_, "Configured");
@@ -61,9 +62,17 @@ void Optimizer<T, Tensor, Model>::getParams() {
   temperature_ = getParam("temperature", 0.25);
 
   reference_cost_power_ = getParam("reference_cost_power", 1);
-  reference_cost_weight_ = getParam("reference_cost_weight", 20);
-  goal_cost_power_ = getParam("goal_cost_power", 1);
-  goal_cost_weight_ = getParam("goal_cost_weight", 1);
+  reference_cost_weight_ = getParam("reference_cost_weight", 5);
+
+  goal_cost_power_ = getParam("goal_cost_power", 1.0);
+  goal_cost_weight_ = getParam("goal_cost_weight", 20.0);
+
+  obstacle_cost_power_ = getParam("obstacle_cost_power", 2);
+  obstacle_cost_weight_ = getParam("obstacle_cost_weight", 10);
+
+  inflation_cost_scaling_factor_ = getParam("inflation_cost_scaling_factor", 3);
+  inflation_radius_ = getParam("inflation_radius_", 0.75);
+
 }
 
 template <typename T, typename Tensor, typename Model>
@@ -161,10 +170,9 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
       const nav_msgs::msg::Path &path) const
     -> Tensor {
 
-  std::vector<size_t> shape = {batches_of_trajectories.shape()[0]};
 
   if (path.poses.empty())
-    return xt::zeros<T>(shape);
+    return xt::zeros<T>({batch_size_});
 
   using namespace xt::placeholders;
 
@@ -194,7 +202,7 @@ auto Optimizer<T, Tensor, Model>::evalGoalCost(
   auto batches_goal_dists = xt::norm_sq(std::move(last_timestep_points) - std::move(goal_points),
                                           {dim});
 
-  return goal_cost_weight_ * xt::pow(std::move(batches_goal_dists), goal_cost_power_);
+  return xt::pow(std::move(batches_goal_dists) * goal_cost_weight_, goal_cost_power_);
 }
 
 template <typename T, typename Tensor, typename Model>
@@ -203,7 +211,7 @@ auto Optimizer<T, Tensor, Model>::evalReferenceCost(const D &dists) const {
   using xt::evaluation_strategy::immediate;
   auto &&cost = xt::mean(xt::amin(dists, 1, immediate), 1, immediate);
 
-  return reference_cost_weight_ * xt::pow(std::move(cost), reference_cost_power_);
+  return xt::pow(std::move(cost) * reference_cost_weight_, reference_cost_power_);
 }
 
 
@@ -212,24 +220,38 @@ template <typename L>
 auto Optimizer<T, Tensor, Model>::evalObstacleCost(const L &batches_of_trajectories_points) const {
   constexpr T collision_cost_value = std::numeric_limits<T>::max();
 
-  Tensor costs = xt::zeros<T>({batches_of_trajectories_points.shape()[0]});
+  Tensor costs = xt::zeros<T>({batch_size_});
 
-  for (size_t i = 0; i < batches_of_trajectories_points.shape()[0]; ++i) {
-    for (size_t j = 0; j < batches_of_trajectories_points.shape()[1]; ++j) {
-      T cost = costAtPose(batches_of_trajectories_points(i, j, 0), batches_of_trajectories_points(i, j, 1));
+  auto minDistToObstacle = [this] (const auto cost) {
+    return  (-1.0 / inflation_cost_scaling_factor_) *
+      std::log(cost / (nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE - 1)) + inscribed_radius_;
+  };
+
+  for (size_t i = 0; i < static_cast<size_t>(batch_size_); ++i) {
+    double min_dist = std::numeric_limits<T>::max();
+    bool is_closest_point_inflated = false;
+    size_t j = 0;
+    for (; j < static_cast<size_t>(time_steps_); ++j) {
+      double cost = costAtPose(batches_of_trajectories_points(i, j, 0), batches_of_trajectories_points(i, j, 1));
       if (inCollision(cost)) {
         costs[i] = collision_cost_value;
+        is_closest_point_inflated = false;
         break;
       } else {
-        costs[i] += cost;
-      }
-      if (j == batches_of_trajectories_points.shape()[1] - 1) {
-        if (costs[i] != 0) {
+        if (cost != nav2_costmap_2d::FREE_SPACE) {
+          double dist = minDistToObstacle(cost);
+          if (dist < min_dist) {
+            is_closest_point_inflated = true;
+            min_dist = dist;
+          }
         }
-        auto mean = costs[i] / batches_of_trajectories_points.shape()[1];
-        costs[i] = obstacle_cost_weight_ * pow(mean, obstacle_cost_power_);
       }
     }
+
+    if (is_closest_point_inflated) {
+      costs[i] = pow((1.01 * inflation_radius_ - min_dist) * obstacle_cost_weight_, obstacle_cost_power_);
+    }
+
   }
 
   return costs;
@@ -262,14 +284,14 @@ bool Optimizer<T, Tensor, Model>::inCollision(unsigned char cost) const {
 }
 
 template <typename T, typename Tensor, typename Model>
-T Optimizer<T, Tensor, Model>::costAtPose(const double & x, const double & y) const {
+double Optimizer<T, Tensor, Model>::costAtPose(const double & x, const double & y) const {
 
   unsigned int mx, my;
   if (not costmap_->worldToMap(x, y, mx, my)) {
-    return static_cast<T>(nav2_costmap_2d::LETHAL_OBSTACLE);
+    return static_cast<double>(nav2_costmap_2d::LETHAL_OBSTACLE);
   }
 
-  return static_cast<T>(costmap_->getCost(mx, my));
+  return static_cast<double>(costmap_->getCost(mx, my));
 }
 
 template <typename T, typename Tensor, typename Model>

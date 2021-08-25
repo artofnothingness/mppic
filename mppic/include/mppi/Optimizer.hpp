@@ -136,7 +136,7 @@ private:
   template <typename L>
   auto evalObstacleCost(const L &batchs_of_trajectories_points) const;
 
-  T costAtPose(const double & x, const double & y) const;
+  double costAtPose(const double & x, const double & y) const;
 
   bool inCollision(unsigned char cost) const;
 
@@ -174,6 +174,10 @@ private:
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_;
   std::function<Model> model_;
+
+  double inflation_cost_scaling_factor_;
+  double inscribed_radius_;
+  double inflation_radius_;
 
   static constexpr int last_dim_size = 5;
   static constexpr int control_dim_size_ = 2;
