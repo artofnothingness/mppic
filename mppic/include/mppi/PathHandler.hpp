@@ -50,7 +50,8 @@ private:
       -> geometry_msgs::msg::PoseStamped;
 
   template <typename Iter, typename Stamp>
-  auto transformGlobalPlanToLocal(Iter begin, Iter end, const Stamp &stamp) -> nav_msgs::msg::Path;
+  auto transformGlobalPlan(Iter begin, Iter end, const Stamp &stamp, 
+                                  const std::string &frame)-> nav_msgs::msg::Path;
 
   auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped &global_pose);
 

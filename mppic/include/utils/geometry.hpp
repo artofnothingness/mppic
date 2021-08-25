@@ -28,6 +28,17 @@ geometry_msgs::msg::TwistStamped toTwistStamped(const T &velocities,
   return twist;
 }
 
+template <typename T, typename S>
+geometry_msgs::msg::TwistStamped toTwistStamped(const T &velocities, const S &stamp, 
+                                                const std::string &frame) {
+  geometry_msgs::msg::TwistStamped twist;
+  twist.header.frame_id = frame;
+  twist.header.stamp = stamp;
+  twist.twist.linear.x = velocities(0);
+  twist.twist.angular.z = velocities(1);
+  return twist;
+}
+
 template <typename T, typename Tensor = xt::xarray<T>>
 Tensor toTensor(const nav_msgs::msg::Path &path) {
   size_t size = path.poses.size();

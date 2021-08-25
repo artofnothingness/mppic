@@ -19,17 +19,19 @@ namespace mppi::optimization {
 
 template <typename T, typename Tensor, typename Model>
 auto Optimizer<T, Tensor, Model>::evalNextControl(
-    const geometry_msgs::msg::Twist &twist, const nav_msgs::msg::Path &path)
+    const geometry_msgs::msg::PoseStamped &pose,
+    const geometry_msgs::msg::Twist &twist,
+    const nav_msgs::msg::Path &path)
     -> geometry_msgs::msg::TwistStamped {
 
   static Tensor costs;
   for (int i = 0; i < iteration_count_; ++i) {
-    generated_trajectories_ = generateNoisedTrajectories(twist);
+    generated_trajectories_ = generateNoisedTrajectories(pose, twist);
     costs = evalBatchesCosts(generated_trajectories_, path);
     updateControlSequence(costs);
   }
 
-  return getControlFromSequence(path.header);
+  return getControlFromSequence(path.header.stamp, costmap_ros_->getBaseFrameID());
 }
 
 template <typename T, typename Tensor, typename Model>
@@ -73,11 +75,13 @@ void Optimizer<T, Tensor, Model>::resetBatches() {
 
 template <typename T, typename Tensor, typename Model>
 auto Optimizer<T, Tensor, Model>::generateNoisedTrajectories(
+    const geometry_msgs::msg::PoseStamped &pose,
     const geometry_msgs::msg::Twist &twist) -> Tensor {
+
   getBatchesControls() = generateNoisedControlBatches();
   applyControlConstraints();
   setBatchesVelocities(twist);
-  return integrateBatchesVelocities();
+  return integrateBatchesVelocities(pose);
 }
 
 template <typename T, typename Tensor, typename Model>
@@ -125,7 +129,8 @@ void Optimizer<T, Tensor, Model>::propagateBatchesVelocitiesFromInitials() {
 }
 
 template <typename T, typename Tensor, typename Model>
-auto Optimizer<T, Tensor, Model>::integrateBatchesVelocities() const -> Tensor {
+auto Optimizer<T, Tensor, Model>::integrateBatchesVelocities(
+    const geometry_msgs::msg::PoseStamped &pose) const -> Tensor {
   using namespace xt::placeholders;
 
   auto v = getBatchesLinearVelocities();
@@ -135,13 +140,13 @@ auto Optimizer<T, Tensor, Model>::integrateBatchesVelocities() const -> Tensor {
 
   xt::view(yaw, xt::all(), xt::range(1, _)) =
       xt::view(yaw, xt::all(), xt::range(_, -1));
-  xt::view(yaw, xt::all(), 0) = 0;
+  xt::view(yaw, xt::all(), xt::all()) += tf2::getYaw(pose.pose.orientation);
 
   auto v_x = v * xt::cos(yaw);
   auto v_y = v * xt::sin(yaw);
 
-  auto x = xt::cumsum(v_x * model_dt_, 1);
-  auto y = xt::cumsum(v_y * model_dt_, 1);
+  auto x = pose.pose.position.x + xt::cumsum(v_x * model_dt_, 1);
+  auto y = pose.pose.position.y + xt::cumsum(v_y * model_dt_, 1);
 
   return xt::concatenate(
       xt::xtuple(xt::view(x, xt::all(), xt::all(), xt::newaxis()),
@@ -170,9 +175,9 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
   auto &&dists = geometry::distPointsToLineSegments2D(path_points, batch_of_trajectories_points);
   auto &&reference_cost = evalReferenceCost(dists);
   auto &&goal_cost = evalGoalCost(path_points, batch_of_trajectories_points);
-  /* auto &&obstacle_cost = evalObstacleCost(batches_of_trajectories); */
+  auto &&obstacle_cost = evalObstacleCost(batches_of_trajectories);
 
-  return reference_cost + goal_cost /* + obstacle_cost */;
+  return reference_cost + goal_cost  + obstacle_cost;
 }
 
 
@@ -184,9 +189,10 @@ auto Optimizer<T, Tensor, Model>::evalGoalCost(
 
   auto goal_points = xt::view(path_points, -1, xt::all());
   auto last_timestep_points = xt::view(batches_of_trajectories_points, xt::all(), -1, xt::all());
+  auto dim = last_timestep_points.dimension() - 1;
 
-  auto &&batches_goal_dists = xt::norm_sq(last_timestep_points - goal_points,
-                                          {last_timestep_points.dimension() - 1});
+  auto batches_goal_dists = xt::norm_sq(std::move(last_timestep_points) - std::move(goal_points),
+                                          {dim});
 
   return goal_cost_weight_ * xt::pow(std::move(batches_goal_dists), goal_cost_power_);
 }
@@ -204,7 +210,7 @@ auto Optimizer<T, Tensor, Model>::evalReferenceCost(const D &dists) const {
 template <typename T, typename Tensor, typename Model>
 template <typename L>
 auto Optimizer<T, Tensor, Model>::evalObstacleCost(const L &batches_of_trajectories_points) const {
-  constexpr double obstacle_cost_val = std::numeric_limits<T>::max();
+  constexpr double collision_val = std::numeric_limits<T>::max();
 
   Tensor costs = xt::zeros<T>({batches_of_trajectories_points.shape()[0]});
 
@@ -212,7 +218,7 @@ auto Optimizer<T, Tensor, Model>::evalObstacleCost(const L &batches_of_trajector
     for (size_t j = 0; j < batches_of_trajectories_points.shape()[1]; ++j) {
       T cost = costAtPose(batches_of_trajectories_points(i, j, 0), batches_of_trajectories_points(i, j, 1));
       if (inCollision(cost)) {
-        costs[i] = obstacle_cost_val;
+        costs[i] = collision_val;
         break;
       } else {
         costs[i] += cost;
@@ -254,19 +260,18 @@ T Optimizer<T, Tensor, Model>::costAtPose(const double & x, const double & y) co
 
   unsigned int mx, my;
   if (not costmap_->worldToMap(x, y, mx, my)) {
-    RCLCPP_FATAL( logger_, "The dimensions of the costmap is too small to fully include your robot's footprint");
-    throw nav2_core::PlannerException("Dimensions of the costmap are too small");
+    return static_cast<T>(nav2_costmap_2d::LETHAL_OBSTACLE);
   }
 
   return static_cast<T>(costmap_->getCost(mx, my));
 }
 
 template <typename T, typename Tensor, typename Model>
-template <typename H>
-auto Optimizer<T, Tensor, Model>::getControlFromSequence(const H &header)
+template <typename S>
+auto Optimizer<T, Tensor, Model>::getControlFromSequence(const S &stamp, const std::string &frame)
     -> geometry_msgs::msg::TwistStamped {
 
-  return geometry::toTwistStamped(xt::view(control_sequence_, 0), header);
+  return geometry::toTwistStamped(xt::view(control_sequence_, 0), stamp, frame);
 }
 
 template <typename T, typename Tensor, typename Model>

@@ -35,9 +35,9 @@ public:
 
   auto computeVelocityCommands(const geometry_msgs::msg::PoseStamped &pose,
                                const geometry_msgs::msg::Twist &velocity)
-      -> geometry_msgs::msg::TwistStamped override;
+      -> geometry_msgs::msg::TwistStamped final;
 
-  void setPlan(const nav_msgs::msg::Path &path) override {
+  void setPlan(const nav_msgs::msg::Path &path) final {
     path_handler_.setPath(path);
   }
 

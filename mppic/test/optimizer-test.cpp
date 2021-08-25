@@ -59,12 +59,12 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
 
     fillPath(poses_count);
 
-    CHECK_NOTHROW(optimizer.evalNextControl(twist, path));
+    CHECK_NOTHROW(optimizer.evalNextControl(ps, twist, path));
 
 #ifdef DO_BENCHMARKS
     WARN("Path with " << poses_count);
     BENCHMARK("evalNextControl Benchmark") {
-      return optimizer.evalNextControl(twist, path);
+      return optimizer.evalNextControl(ps, twist, path);
     };
 #endif
   }

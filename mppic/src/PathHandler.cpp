@@ -77,7 +77,7 @@ PathHandler::transformPath(const geometry_msgs::msg::PoseStamped &robot_pose) {
       getGlobalPlanConsideringBounds(global_pose);
 
   auto transformed_plan =
-      transformGlobalPlanToLocal(lower_bound, upper_bound, stamp);
+      transformGlobalPlan(lower_bound, upper_bound, stamp, costmap_->getGlobalFrameID());
 
   pruneGlobalPlan(lower_bound);
 
