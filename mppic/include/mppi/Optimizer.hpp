@@ -40,13 +40,11 @@ public:
   /**
    * @brief Evaluate current best control
    *
-   * @param twist current robot speed
-   * @param path current global path
    * @return best control
    */
-  auto evalNextControl(const geometry_msgs::msg::PoseStamped &pose,
-                       const geometry_msgs::msg::Twist &twist,
-                       const nav_msgs::msg::Path &path)
+  auto evalNextControl(const geometry_msgs::msg::PoseStamped &robot_pose,
+                       const geometry_msgs::msg::Twist &robot_speed,
+                       const nav_msgs::msg::Path &plan)
       -> geometry_msgs::msg::TwistStamped;
 
   auto getGeneratedTrajectories() -> Tensor { return generated_trajectories_; }
@@ -59,11 +57,10 @@ private:
    * @brief Invoke generateNoisedControlBatches, assign result to batches controls 
    * and integrate recieved controls in trajectories
    *
-   * @param twist current robot speed
    * @return trajectories Tensor of shape [ batch_size_, time_steps_, 3]  where 3 stands for x, y, yaw
    */
-  auto generateNoisedTrajectories(const geometry_msgs::msg::PoseStamped &pose,
-                                  const geometry_msgs::msg::Twist &twist)
+  auto generateNoisedTrajectories(const geometry_msgs::msg::PoseStamped &robot_pose,
+                                  const geometry_msgs::msg::Twist &robot_speed)
       -> Tensor;
 
   /**
@@ -192,12 +189,12 @@ private:
   double w_limit_;
   double temperature_;
 
-  size_t reference_cost_power_ = 1;
-  size_t reference_cost_weight_ = 20;
-  size_t goal_cost_power_ = 1;
-  size_t goal_cost_weight_ = 100;
-  size_t obstacle_cost_power_ = 1;
-  size_t obstacle_cost_weight_ = 1000;
+  size_t reference_cost_power_;
+  size_t reference_cost_weight_;
+  size_t goal_cost_power_;
+  size_t goal_cost_weight_;
+  size_t obstacle_cost_power_;
+  size_t obstacle_cost_weight_;
 
   Tensor batches_;
   Tensor control_sequence_;
