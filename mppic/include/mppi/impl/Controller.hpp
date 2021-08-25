@@ -52,7 +52,7 @@ auto Controller<T, Tensor, Model>::computeVelocityCommands(
     -> geometry_msgs::msg::TwistStamped {
 
   auto &&transformed_plan = path_handler_.transformPath(pose);
-  auto &&cmd = optimizer_.evalNextControl(velocity, transformed_plan);
+  auto &&cmd = optimizer_.evalNextControl(pose, velocity, transformed_plan);
 
   if (visualize_) {
     trajectory_visualizer_.visualize(
@@ -87,7 +87,7 @@ void Controller<T, Tensor, Model>::createComponents() {
       handlers::PathHandler(parent_, node_name_, costmap_ros_, tf_buffer_);
 
   trajectory_visualizer_ = visualization::TrajectoryVisualizer(
-      parent_, costmap_ros_->getBaseFrameID());
+      parent_, costmap_ros_->getGlobalFrameID());
 }
 
 } // namespace mppi

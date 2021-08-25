@@ -6,6 +6,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 #include "geometry_msgs/msg/twist.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
 
@@ -43,7 +44,8 @@ public:
    * @param path current global path
    * @return best control
    */
-  auto evalNextControl(const geometry_msgs::msg::Twist &twist,
+  auto evalNextControl(const geometry_msgs::msg::PoseStamped &pose,
+                       const geometry_msgs::msg::Twist &twist,
                        const nav_msgs::msg::Path &path)
       -> geometry_msgs::msg::TwistStamped;
 
@@ -60,7 +62,8 @@ private:
    * @param twist current robot speed
    * @return trajectories Tensor of shape [ batch_size_, time_steps_, 3]  where 3 stands for x, y, yaw
    */
-  auto generateNoisedTrajectories(const geometry_msgs::msg::Twist &twist)
+  auto generateNoisedTrajectories(const geometry_msgs::msg::PoseStamped &pose,
+                                  const geometry_msgs::msg::Twist &twist)
       -> Tensor;
 
   /**
@@ -89,7 +92,9 @@ private:
    */
   void propagateBatchesVelocitiesFromInitials();
 
-  auto integrateBatchesVelocities() const -> Tensor;
+  auto integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped &pose) 
+    const -> Tensor;
+
 
 
   /**
@@ -149,8 +154,9 @@ private:
    * @brief Get first control from control_sequence_
    *
    */
-  template <typename H>
-  auto getControlFromSequence(const H &header)
+
+template <typename S>
+auto getControlFromSequence(const S &stamp, const std::string &frame)
       -> geometry_msgs::msg::TwistStamped;
 
   auto getBatchesControls() const;

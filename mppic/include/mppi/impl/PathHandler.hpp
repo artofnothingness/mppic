@@ -5,10 +5,9 @@
 namespace mppi::handlers {
 
 template <typename Iter, typename Stamp>
-auto PathHandler::transformGlobalPlanToLocal(Iter begin, Iter end, const Stamp &stamp)
+auto PathHandler::transformGlobalPlan(Iter begin, Iter end, const Stamp &stamp, 
+                                             const std::string &frame)
     -> nav_msgs::msg::Path {
-
-  auto base_frame = costmap_->getBaseFrameID();
 
   auto transform_pose = [&](const auto &global_plan_pose) {
     geometry_msgs::msg::PoseStamped global_pose;
@@ -18,13 +17,13 @@ auto PathHandler::transformGlobalPlanToLocal(Iter begin, Iter end, const Stamp &
     global_pose.header.stamp = stamp;
     global_pose.pose = global_plan_pose.pose;
 
-    transformPose(base_frame, global_pose, local_pose);
+    transformPose(frame, global_pose, local_pose);
     return local_pose;
   };
 
   nav_msgs::msg::Path plan;
   std::transform(begin, end, std::back_inserter(plan.poses), transform_pose);
-  plan.header.frame_id = base_frame;
+  plan.header.frame_id = frame;
   plan.header.stamp = stamp;
 
   return plan;
