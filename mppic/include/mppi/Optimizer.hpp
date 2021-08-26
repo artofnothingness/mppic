@@ -103,7 +103,8 @@ private:
    * @return batches costs: Tensor of shape [batch_size]
    */
   auto evalBatchesCosts(const Tensor &batches_of_trajectories,
-                        const nav_msgs::msg::Path &path) const -> Tensor;
+                        const geometry_msgs::msg::PoseStamped &pose,
+                        const nav_msgs::msg::Path &path) -> Tensor const;
  
   /**
    * @brief Evaluate cost related to distances between generated 
@@ -115,8 +116,10 @@ private:
    * and reference trajectories: Tensor of shape [ batch_size_, time_steps_, point_size ]
    * @return batches costs: type of shape [ batch_size_ ]
    */
-  template<typename D>
-  auto evalReferenceCost(const D &dists) const;
+  template <typename P, typename B, typename C>
+  void evalReferenceCost(const P &path_tensor, 
+                        const B &batches_of_trajectories, 
+                        C &costs) const;
 
   /**
    * @brief Evaluate cost related to distances between last path 
@@ -130,14 +133,30 @@ private:
    * where 2 stands for x, y 
    * @return batches costs: type of shape [ batch_size_ ]
    */
-  template <typename L, typename P>
-  auto evalGoalCost(const P &path_points, const L &batchs_of_trajectories_points) const;
 
-  template <typename L>
-  auto evalObstacleCost(const L &batchs_of_trajectories_points) const;
+  template <typename B, typename P, typename C>
+  void evalGoalCost(const P &path_points, const B &batchs_of_trajectories_points, C &costs) const;
 
-  double costAtPose(const double & x, const double & y) const;
+  /**
+   * @brief Evalutate cost related to the near obstacles. Must go last, coz can write inf to cost
+   *
+   * @tparam L tensor-like type of batch_points
+   * @param batchs_of_trajectories_points tensor-like type of shape [ batch, time_steps_ 2 ]
+   * where 2 stands for x, y 
+   * @return batches costs: type of shape [ batch_size_ ]
+   */
+  template <typename B, typename C>
+  void evalObstacleCost(const B &batchs_of_trajectories_points, C &costs) const;
 
+
+
+  template <typename P, typename B,typename C>
+  void evalGoalAngleCost(const B &batch_of_trajectories, 
+                         const P &path_tensor, 
+                         const geometry_msgs::msg::PoseStamped &pose,
+                         C &costs) const;
+
+  auto costAtPose(const double & x, const double & y) const -> double;
   bool inCollision(unsigned char cost) const;
 
   /**
@@ -151,7 +170,6 @@ private:
    * @brief Get first control from control_sequence_
    *
    */
-
 template <typename S>
 auto getControlFromSequence(const S &stamp, const std::string &frame)
       -> geometry_msgs::msg::TwistStamped;
@@ -179,7 +197,9 @@ private:
   double inscribed_radius_;
   double inflation_radius_;
 
-  static constexpr int last_dim_size = 5;
+  double threshold_to_consider_goal_angle_;
+
+  static constexpr int last_dim_size_ = 5;
   static constexpr int control_dim_size_ = 2;
 
   int batch_size_;
@@ -199,6 +219,10 @@ private:
   size_t goal_cost_weight_;
   size_t obstacle_cost_power_;
   size_t obstacle_cost_weight_;
+
+  size_t goal_angle_cost_power_;
+  size_t goal_angle_cost_weight_;
+
 
   Tensor batches_;
   Tensor control_sequence_;

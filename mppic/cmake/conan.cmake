@@ -7,8 +7,6 @@ endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
-
-
 conan_cmake_run(REQUIRES 
                 xtensor/0.23.9
                 catch2/2.13.4

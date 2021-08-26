@@ -6,6 +6,7 @@
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#include "tf2/utils.h"
 
 #include "algorithm"
 #include "xtensor/xarray.hpp"
@@ -42,13 +43,14 @@ geometry_msgs::msg::TwistStamped toTwistStamped(const T &velocities, const S &st
 template <typename T, typename Tensor = xt::xarray<T>>
 Tensor toTensor(const nav_msgs::msg::Path &path) {
   size_t size = path.poses.size();
-  static constexpr size_t last_dim_size = 2;
+  static constexpr size_t last_dim_size = 3;
 
   Tensor points = xt::empty<T>({size, last_dim_size});
 
   for (size_t i = 0; i < size; ++i) {
     points(i, 0) = path.poses[i].pose.position.x;
     points(i, 1) = path.poses[i].pose.position.y;
+    points(i, 2) = tf2::getYaw(path.poses[i].pose.orientation);
   }
 
   return points;
@@ -77,37 +79,34 @@ inline auto hypot(const geometry_msgs::msg::PoseStamped &lhs,
 
 // http://paulbourke.net/geometry/pointlineplane/
 /**
- * @brief Calculate closest points from batch point sequences on line segments
+ * @brief Calculate closest between path points and batch lines segments
  *
- * @tparam P point batch type
- * @tparam L line batch type
- * @param points batch of point sequences 3D data structure
- * @param line_points sequence of points representing line
- * segments 2D data structure
+ * @param batch_of_lines batches of sequences of points. Sequences considering as lines
+ * @param path_points 2D data structure with last dim size stands for x, y
  * @return points on line segments closest to batches sequences points
  *      4D data structre of shape [ points.shape[0], points.shape()[1] - 1,
  *      line_points.shape()[0], line_points.shape()[1] ]
  */
 template <typename P, typename L>
-auto closestPointsOnLinesSegment2D(const P &point_tensor,
-                                   const L &line_tensor) {
+auto closestPointsOnLinesSegment2D(const P &path_points,
+                                   const L &batch_of_lines) {
   using namespace xt::placeholders;
   using T = typename std::decay_t<P>::value_type;
   using Tensor = xt::xarray<T>;
 
-  auto closest_points = Tensor::from_shape({line_tensor.shape()[0],
-                                            line_tensor.shape()[1] - 1,
-                                            point_tensor.shape()[0],
-                                            point_tensor.shape()[1]});
+  auto closest_points = Tensor::from_shape({batch_of_lines.shape()[0],
+                                            batch_of_lines.shape()[1] - 1,
+                                            path_points.shape()[0],
+                                            path_points.shape()[1]});
 
-  auto start_line_points = xt::view(line_tensor, xt::all(), xt::range(_, -1));
-  auto end_line_points = xt::view(line_tensor, xt::all(), xt::range(1, _));
+  auto start_line_points = xt::view(batch_of_lines, xt::all(), xt::range(_, -1));
+  auto end_line_points = xt::view(batch_of_lines, xt::all(), xt::range(1, _));
 
   Tensor diff = end_line_points - start_line_points;
   Tensor sq_norm = xt::norm_sq(
       diff, {diff.dimension() - 1}, xt::evaluation_strategy::immediate);
 
-  static constexpr double eps = 1e-2;
+  static constexpr double eps = 1e-3;
   for (size_t b = 0; b < closest_points.shape()[0]; ++b) {
     for (size_t t = 0; t < closest_points.shape()[1]; ++t) {
       if (abs(sq_norm(b, t)) < eps) {
@@ -117,7 +116,7 @@ auto closestPointsOnLinesSegment2D(const P &point_tensor,
 
       for (size_t p = 0; p < closest_points.shape()[2]; ++p) {
         auto curr_closest_pt = xt::view(closest_points, b, t, p);
-        auto curr_pt = xt::view(point_tensor, p);
+        auto curr_pt = xt::view(path_points, p);
         auto curr_start_pt = xt::view(start_line_points, b, t);
         auto curr_end_pt = xt::view(end_line_points, b, t);
         auto curr_line_diff = xt::view(diff, b, t);
@@ -142,21 +141,24 @@ auto closestPointsOnLinesSegment2D(const P &point_tensor,
 /**
  * @brief Calculate distances from batches of point sequences to line segments
  *
- * @tparam P point batch type
- * @tparam L line batch type
- * @param points batch of point sequences 3D data structure
- * @param line_points sequence of points representing line
- * segments 2D data structure
+ * @param batch_of_trajectories batches of line segments. last dim must have at least 2 dim
+ * @param path_tensor 2D data structure with last dim must have at least 2 dim
  * @return distances from batches sequences points to line segments
- *      3D data structre of shape [ points.shape[0], points.shape()[1] - 1,
- *      line_points.shape()[0] ]
+ *      3D data structre of shape [ batch_of_lines.shape[0], batch_of_lines.shape()[1] - 1,
+ *      path_points.shape()[0] ]
  */
 template <typename P, typename L>
-auto distPointsToLineSegments2D(const P &points, const L &line_points) {
+auto distPointsToLineSegments2D(const P &path_tensor, const L &batches_of_trajectories) {
 
-  auto &&closest_points = closestPointsOnLinesSegment2D(points, line_points);
+  auto path_points = xt::view(path_tensor, xt::all(), xt::range(0, 2));
+  auto batch_of_lines =
+      xt::view(batches_of_trajectories, xt::all(), xt::all(), xt::range(0, 2));
 
-  auto diff = points - closest_points;
+
+  auto &&closest_points = closestPointsOnLinesSegment2D(std::move(path_points), 
+                                                        std::move(batch_of_lines));
+
+  auto &&diff = path_points - std::move(closest_points);
   size_t dim = diff.dimension() - 1;
   return xt::eval(xt::norm_l2(std::move(diff), {dim}));
 }
