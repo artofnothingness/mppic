@@ -46,8 +46,8 @@ void PathHandler::getParams() {
     return utils::getParam(name, default_value, parent_);
   };
 
-  lookahead_dist_ = getParam("lookahead_dist", 1.2);
-  transform_tolerance_ = getParam("transform_tolerance", 1.2);
+  lookahead_dist_ = getParam("lookahead_dist", 1.0);
+  transform_tolerance_ = getParam("transform_tolerance", 1);
 }
 
 auto PathHandler::transformToGlobalFrame(
