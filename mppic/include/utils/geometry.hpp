@@ -159,10 +159,10 @@ auto distPointsToLineSegments2D(const P &path_tensor, const L &batches_of_trajec
       xt::view(batches_of_trajectories, xt::all(), xt::all(), xt::range(0, 2));
 
 
-  auto &&closest_points = closestPointsOnLinesSegment2D(path_points, 
-                                                        batch_of_lines);
+  auto &&closest_points = closestPointsOnLinesSegment2D(std::move(path_points), 
+                                                        std::move(batch_of_lines));
 
-  auto &&diff = path_points - std::move(closest_points);
+  auto &&diff = std::move(path_points) - std::move(closest_points);
   size_t dim = diff.dimension() - 1;
   return xt::norm_l2(std::move(diff), {dim});
 }
