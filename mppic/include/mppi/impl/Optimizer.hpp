@@ -59,7 +59,7 @@ void Optimizer<T, Tensor, Model>::getParams() {
   w_std_ = getParam("w_std", 0.3);
   v_limit_ = getParam("v_limit", 0.5);
   w_limit_ = getParam("w_limit", 1.3);
-  iteration_count_ = getParam("iteration_count", 2);
+  iteration_count_ = getParam("iteration_count", 1);
   temperature_ = getParam("temperature", 0.25);
 
   reference_cost_power_ = getParam("reference_cost_power", 1);
@@ -190,7 +190,7 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
   auto &&angle_cost = evalGoalAngleCost(path_tensor, batches_of_trajectories, pose); 
   auto &&obstacle_cost = evalObstacleCost(batches_of_trajectories);
 
-  return ref_cost + goal_cost + angle_cost + obstacle_cost;
+  return ref_cost;
 }
 
 
@@ -217,7 +217,7 @@ template <typename P, typename B>
 auto Optimizer<T, Tensor, Model>::evalReferenceCost(const P &path_tensor, 
                                                     const B &batches_of_trajectories) const {
 
-  auto&& path_to_batches_dists = geometry::distPointsToLineSegments2D(path_tensor, 
+  auto &&path_to_batches_dists = geometry::distPointsToLineSegments2D(path_tensor, 
                                                                       batches_of_trajectories);
   auto &&cost = xt::mean(xt::amin(std::move(path_to_batches_dists), 1), 1);
 
