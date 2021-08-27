@@ -8,13 +8,16 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "tf2/utils.h"
 
-#include "algorithm"
 #include "xtensor/xarray.hpp"
 #include "xtensor/xmath.hpp"
 #include "xtensor/xnorm.hpp"
 #include "xtensor/xstrided_view.hpp"
 #include "xtensor/xview.hpp"
 #include <xtensor/xio.hpp>
+
+#include "algorithm"
+#include <chrono>
+
 
 namespace mppi::geometry {
 
@@ -89,7 +92,7 @@ inline auto hypot(const geometry_msgs::msg::PoseStamped &lhs,
  */
 template <typename P, typename L>
 auto closestPointsOnLinesSegment2D(const P &path_points,
-                                          const L &batch_of_lines) {
+                                   const L &batch_of_lines) {
   using namespace xt::placeholders;
   using T = typename std::decay_t<P>::value_type;
   using Tensor = xt::xarray<T>;
@@ -109,7 +112,7 @@ auto closestPointsOnLinesSegment2D(const P &path_points,
   static constexpr double eps = 1e-3;
   for (size_t b = 0; b < closest_points.shape()[0]; ++b) {
     for (size_t t = 0; t < closest_points.shape()[1]; ++t) {
-      if (abs(sq_norm(b, t)) < eps) {
+      if (abs(sq_norm.unchecked(b, t)) < eps) {
         xt::view(closest_points, b, t) = xt::view(start_line_points, b, t);
         continue;
       }
@@ -121,9 +124,9 @@ auto closestPointsOnLinesSegment2D(const P &path_points,
         auto curr_end_pt = xt::view(end_line_points, b, t);
         auto curr_line_diff = xt::view(diff, b, t);
 
-        T u = ((curr_pt(0) - curr_start_pt(0)) * curr_line_diff(0) +
-               (curr_pt(1) - curr_start_pt(1)) * curr_line_diff(1)) /
-              sq_norm(b, t);
+        T u = ((curr_pt.unchecked(0) - curr_start_pt.unchecked(0)) * curr_line_diff.unchecked(0) +
+               (curr_pt.unchecked(1) - curr_start_pt.unchecked(1)) * curr_line_diff.unchecked(1)) /
+              sq_norm.unchecked(b, t);
 
         if (u <= 0)
           curr_closest_pt = curr_start_pt;
@@ -134,6 +137,7 @@ auto closestPointsOnLinesSegment2D(const P &path_points,
       }
     }
   }
+
 
   return closest_points;
 }
@@ -156,7 +160,7 @@ auto distPointsToLineSegments2D(const P &path_tensor, const L &batches_of_trajec
 
 
   auto &&closest_points = closestPointsOnLinesSegment2D(path_points, 
-                                                        (batch_of_lines));
+                                                        batch_of_lines);
 
   auto &&diff = path_points - std::move(closest_points);
   size_t dim = diff.dimension() - 1;
@@ -164,3 +168,4 @@ auto distPointsToLineSegments2D(const P &path_tensor, const L &batches_of_trajec
 }
 
 } // namespace mppi::geometry
+
