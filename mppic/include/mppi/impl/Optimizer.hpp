@@ -183,14 +183,13 @@ auto Optimizer<T, Tensor, Model>::evalBatchesCosts(
   if (path.poses.empty())
     return costs;
 
-  Tensor &&path_tensor = geometry::toTensor<T>(path);
-
+  auto path_tensor = geometry::toTensor<T>(path);
   auto &&ref_cost = evalReferenceCost(path_tensor, batches_of_trajectories);
   auto &&goal_cost = evalGoalCost(path_tensor, batches_of_trajectories); 
   auto &&angle_cost = evalGoalAngleCost(path_tensor, batches_of_trajectories, pose); 
   auto &&obstacle_cost = evalObstacleCost(batches_of_trajectories);
 
-  return ref_cost;
+  return ref_cost + goal_cost + angle_cost + obstacle_cost;
 }
 
 
@@ -221,7 +220,7 @@ auto Optimizer<T, Tensor, Model>::evalReferenceCost(const P &path_tensor,
                                                                       batches_of_trajectories);
   auto &&cost = xt::mean(xt::amin(std::move(path_to_batches_dists), 1), 1);
 
-  return xt::pow(std::move(cost) * reference_cost_weight_, reference_cost_power_);
+  return xt::eval(xt::pow(std::move(cost) * reference_cost_weight_, reference_cost_power_));
 }
 
 
