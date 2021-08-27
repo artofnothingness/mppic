@@ -91,13 +91,13 @@ inline auto hypot(const geometry_msgs::msg::PoseStamped &lhs,
  *      line_points.shape()[0], line_points.shape()[1] ]
  */
 template <typename P, typename L>
-auto closestPointsOnLinesSegment2D(const P &path_points,
-                                   const L &batch_of_lines) {
+auto closestPointsOnLinesSegment2D(P &&path_points,
+                                   L &&batch_of_lines) {
   using namespace xt::placeholders;
   using T = typename std::decay_t<P>::value_type;
   using Tensor = xt::xarray<T>;
 
-  auto closest_points = Tensor::from_shape({batch_of_lines.shape()[0],
+  auto &&closest_points = Tensor::from_shape({batch_of_lines.shape()[0],
                                             batch_of_lines.shape()[1] - 1,
                                             path_points.shape()[0],
                                             path_points.shape()[1]});
@@ -118,22 +118,21 @@ auto closestPointsOnLinesSegment2D(const P &path_points,
       }
 
       for (size_t p = 0; p < closest_points.shape()[2]; ++p) {
-        auto curr_closest_pt = xt::view(closest_points, b, t, p);
-        auto curr_pt = xt::view(path_points, p);
-        auto curr_start_pt = xt::view(start_line_points, b, t);
-        auto curr_end_pt = xt::view(end_line_points, b, t);
-        auto curr_line_diff = xt::view(diff, b, t);
-
-        T u = ((curr_pt.unchecked(0) - curr_start_pt.unchecked(0)) * curr_line_diff.unchecked(0) +
-               (curr_pt.unchecked(1) - curr_start_pt.unchecked(1)) * curr_line_diff.unchecked(1)) /
+        T u = ((path_points.unchecked(p, 0) - start_line_points.unchecked(b, t, 0)) * diff.unchecked(b, t, 0) +
+               (path_points.unchecked(p, 1) - start_line_points.unchecked(b, t, 1)) * diff.unchecked(b, t, 1)) /
               sq_norm.unchecked(b, t);
 
-        if (u <= 0)
-          curr_closest_pt = curr_start_pt;
-        else if (u >= 1)
-          curr_closest_pt = curr_end_pt;
-        else
-          curr_closest_pt = curr_start_pt + u * curr_line_diff;
+        if (u <= 0) {
+          closest_points.unchecked(b, t, p, 0) = start_line_points.unchecked(b, t, 0);
+          closest_points.unchecked(b, t, p, 1) = start_line_points.unchecked(b, t, 1);
+        } else if (u >= 1) {
+          closest_points.unchecked(b, t, p, 0) = end_line_points.unchecked(b, t, 0);
+          closest_points.unchecked(b, t, p, 1) = end_line_points.unchecked(b, t, 1);
+        }
+        else {
+          closest_points.unchecked(b, t, p, 0) = start_line_points.unchecked(b, t, 0) + u * diff.unchecked(b, t);
+          closest_points.unchecked(b, t, p, 1) = start_line_points.unchecked(b, t, 1) + u * diff.unchecked(b, t);
+        }
       }
     }
   }
@@ -152,19 +151,19 @@ auto closestPointsOnLinesSegment2D(const P &path_points,
  *      path_points.shape()[0] ]
  */
 template <typename P, typename L>
-auto distPointsToLineSegments2D(const P &path_tensor, const L &batches_of_trajectories) {
+auto distPointsToLineSegments2D(P &&path_tensor, L &&batches_of_trajectories) {
 
   auto path_points = xt::view(path_tensor, xt::all(), xt::range(0, 2));
   auto batch_of_lines =
       xt::view(batches_of_trajectories, xt::all(), xt::all(), xt::range(0, 2));
 
 
-  auto &&closest_points = closestPointsOnLinesSegment2D(std::move(path_points), 
-                                                        std::move(batch_of_lines));
+  auto &&closest_points = closestPointsOnLinesSegment2D(path_points, 
+                                                        batch_of_lines);
 
   auto &&diff = std::move(path_points) - std::move(closest_points);
   size_t dim = diff.dimension() - 1;
-  return xt::norm_l2(std::move(diff), {dim});
+  return xt::eval(xt::norm_l2(std::move(diff), {dim}));
 }
 
 } // namespace mppi::geometry

@@ -51,8 +51,11 @@ auto Controller<T, Tensor, Model>::computeVelocityCommands(
     const geometry_msgs::msg::Twist &velocity)
     -> geometry_msgs::msg::TwistStamped {
 
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
   auto &&transformed_plan = path_handler_.transformPath(pose);
   auto &&cmd = optimizer_.evalNextControl(pose, velocity, transformed_plan);
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::cout << "Control Loop time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
   if (visualize_) {
     trajectory_visualizer_.visualize(

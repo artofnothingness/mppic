@@ -120,18 +120,21 @@ private:
   auto evalReferenceCost(const P &path_tensor, 
                         const B &batches_of_trajectories) const;
 
-  /**
-   * @brief Evaluate cost related to distances between last path 
-   * points and batch trajectories points on last time step
-   *
-   * @tparam P tensor-like type of path points
-   * @tparam L tensor-like type of batch_points
-   * @param path_points tensor-like type of shape [ path points count, 2 ] 
-   * where 2 stands for x, y
-   * @param batchs_of_trajectories_points tensor-like type of shape [ batch, time_steps_ 2 ]
-   * where 2 stands for x, y 
-   * @return batches costs: type of shape [ batch_size_ ]
-   */
+  template <typename P, typename B>
+  auto evalApproxReferenceCost(const P &path_tensor, const B &batches_of_trajectories) const;
+
+    /**
+    * @brief Evaluate cost related to distances between last path 
+    * points and batch trajectories points on last time step
+    *
+    * @tparam P tensor-like type of path points
+    * @tparam L tensor-like type of batch_points
+    * @param path_points tensor-like type of shape [ path points count, 2 ] 
+    * where 2 stands for x, y
+    * @param batchs_of_trajectories_points tensor-like type of shape [ batch, time_steps_ 2 ]
+    * where 2 stands for x, y 
+    * @return batches costs: type of shape [ batch_size_ ]
+    */
 
   template <typename B, typename P>
   auto evalGoalCost(const P &path_points, const B &batchs_of_trajectories_points) const;
@@ -196,6 +199,7 @@ private:
   double inflation_radius_;
 
   double threshold_to_consider_goal_angle_;
+  bool approx_reference_cost_;
 
   static constexpr int last_dim_size_ = 5;
   static constexpr int control_dim_size_ = 2;
@@ -213,14 +217,12 @@ private:
 
   size_t reference_cost_power_;
   size_t reference_cost_weight_;
-  size_t goal_cost_power_;
-  size_t goal_cost_weight_;
   size_t obstacle_cost_power_;
   size_t obstacle_cost_weight_;
-
+  size_t goal_cost_power_;
+  size_t goal_cost_weight_;
   size_t goal_angle_cost_power_;
   size_t goal_angle_cost_weight_;
-
 
   Tensor batches_;
   Tensor control_sequence_;
