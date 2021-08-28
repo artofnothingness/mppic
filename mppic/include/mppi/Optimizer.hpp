@@ -32,10 +32,10 @@ public:
         costmap_ros_(costmap_ros),
         model_(model) {}
 
-  void on_configure();
-  void on_cleanup(){};
-  void on_activate(){};
-  void on_deactivate(){};
+  auto on_configure() -> void;
+  auto on_cleanup() -> void {};
+  auto on_activate() -> void {};
+  auto on_deactivate() -> void {};
 
   /**
    * @brief Evaluate current best control
@@ -45,9 +45,10 @@ public:
   auto evalNextControl(const geometry_msgs::msg::PoseStamped &robot_pose,
                        const geometry_msgs::msg::Twist &robot_speed,
                        const nav_msgs::msg::Path &plan)
-      -> geometry_msgs::msg::TwistStamped;
+  -> geometry_msgs::msg::TwistStamped;
 
-  auto getGeneratedTrajectories() -> Tensor { return generated_trajectories_; }
+  auto getGeneratedTrajectories() 
+  -> Tensor { return generated_trajectories_; }
 
 private:
   void getParams();
@@ -61,7 +62,7 @@ private:
    */
   auto generateNoisedTrajectories(const geometry_msgs::msg::PoseStamped &robot_pose,
                                   const geometry_msgs::msg::Twist &robot_speed)
-      -> Tensor;
+  -> Tensor;
 
   /**
    * @brief Generate random controls by gaussian noise with mean in
@@ -69,7 +70,8 @@ private:
    *
    * @return Control batches
    */
-  auto generateNoisedControlBatches() -> Tensor;
+  auto generateNoisedControlBatches() 
+  -> Tensor;
 
   void applyControlConstraints();
 
@@ -89,8 +91,8 @@ private:
    */
   void propagateBatchesVelocitiesFromInitials();
 
-  auto integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped &pose) 
-    const -> Tensor;
+  auto integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped &pose) const 
+  -> Tensor;
 
 
 
@@ -104,7 +106,8 @@ private:
    */
   auto evalBatchesCosts(const Tensor &batches_of_trajectories,
                         const geometry_msgs::msg::PoseStamped &pose,
-                        const nav_msgs::msg::Path &path) -> Tensor const;
+                        const nav_msgs::msg::Path &path) const 
+  -> Tensor;
  
   /**
    * @brief Evaluate cost related to distances between generated 
@@ -158,22 +161,24 @@ private:
                          const geometry_msgs::msg::PoseStamped &pose) const;
 
   auto costAtPose(const double & x, const double & y) const -> double;
-  bool inCollision(unsigned char cost) const;
+  auto inCollision(unsigned char cost) const 
+  -> bool;
 
   /**
    * @brief Update control_sequence_ with weighted by costs batch controls
    *
    * @param costs batches costs
    */
-  void updateControlSequence(const Tensor &costs);
+  auto updateControlSequence(const Tensor &costs)
+  -> void;
 
   /**
    * @brief Get first control from control_sequence_
    *
    */
-template <typename S>
-auto getControlFromSequence(const S &stamp, const std::string &frame)
-      -> geometry_msgs::msg::TwistStamped;
+  template <typename S>
+  auto getControlFromSequence(const S &stamp, const std::string &frame)
+  -> geometry_msgs::msg::TwistStamped;
 
   auto getBatchesControls() const;
   auto getBatchesControls();

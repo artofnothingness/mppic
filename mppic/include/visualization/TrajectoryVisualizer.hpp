@@ -13,20 +13,23 @@ public:
                        const std::string &frame_id)
       : frame_id_(frame_id), parent_(parent) {}
 
-  void on_configure() {
+  auto on_configure() 
+  -> void 
+  {
     trajectories_publisher_ =
         parent_->create_publisher<visualization_msgs::msg::MarkerArray>("/trajectories", 1);
 
     RCLCPP_INFO(logger_, "Configured");
   }
 
-  void on_cleanup() { trajectories_publisher_.reset(); }
-  void on_activate() { trajectories_publisher_->on_activate(); }
-  void on_deactivate() { trajectories_publisher_->on_deactivate(); }
+  auto on_cleanup() -> void { trajectories_publisher_.reset(); }
+  auto on_activate() -> void  { trajectories_publisher_->on_activate(); }
+  auto on_deactivate() -> void  { trajectories_publisher_->on_deactivate(); }
 
-  template <typename Container>
-  void visualize(Container &&trajectories, double batch_step, double time_step) {
-
+  template <typename Container> auto
+  visualize(Container &&trajectories, double batch_step, double time_step) 
+  -> void 
+  {
     if (not trajectories.shape()[0])
       return;
 
@@ -39,7 +42,6 @@ public:
 
         double blue_component = 1 - static_cast<double>(j) / shape[1];
         double green_component = static_cast<double>(j) / shape[1];
-        /* double red_component = static_cast<double>(j) / shape[1]; */
 
         auto pose = createPose(trajectories(i, j, 0), trajectories(i, j, 1), 0.03);
         auto scale = createScale(0.03, 0.03, 0.03);

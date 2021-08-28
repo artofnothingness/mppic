@@ -6,7 +6,6 @@
 
 #include "mppi/impl/Optimizer.hpp"
 #include "mppi/impl/PathHandler.hpp"
-
 #include "visualization/TrajectoryVisualizer.hpp"
 
 #include "utils/common.hpp"
@@ -23,28 +22,30 @@ public:
   Controller() = default;
   ~Controller() override = default;
 
-  void configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
+  auto configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
                  std::string node_name,
                  const std::shared_ptr<tf2_ros::Buffer> &tf,
-                 const std::shared_ptr<nav2_costmap_2d::Costmap2DROS>
-                     &costmap_ros) override;
+                 const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros) 
+  -> void override;
 
-  void cleanup() override;
-  void activate() override;
-  void deactivate() override;
+  auto cleanup() -> void override;
+  auto activate() -> void override;
+  auto deactivate() -> void override;
 
   auto computeVelocityCommands(const geometry_msgs::msg::PoseStamped &pose,
                                const geometry_msgs::msg::Twist &velocity)
-      -> geometry_msgs::msg::TwistStamped final;
+  -> geometry_msgs::msg::TwistStamped final;
 
-  void setPlan(const nav_msgs::msg::Path &path) final {
+  auto setPlan(const nav_msgs::msg::Path &path) 
+  -> void final 
+  {
     path_handler_.setPath(path);
   }
 
 private:
-  void getParams();
-  void setPublishers();
-  void createComponents();
+  auto getParams() -> void;
+  auto setPublishers() -> void;
+  auto createComponents() -> void;
 
 private:
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;

@@ -4,28 +4,37 @@
 
 namespace mppi::utils {
 
-template <typename... Components>
-void configure(Components &&...cmps) {
+template <typename... Components> auto 
+configure(Components &&...cmps) 
+-> void {
   (cmps.on_configure(), ...);
 }
 
-template <typename... Components>
-void activate(Components &&...cmps) {
+template <typename... Components> auto 
+activate(Components &&...cmps) 
+-> void
+{
   (cmps.on_activate(), ...);
 }
 
-template <typename... Components>
-void cleanup(Components &&...cmps) {
+template <typename... Components> auto 
+cleanup(Components &&...cmps) 
+-> void
+{
   (cmps.on_cleanup(), ...);
 }
 
-template <typename... Components>
-void deactivate(Components &&...cmps) {
+template <typename... Components> auto 
+deactivate(Components &&...cmps) 
+-> void
+{
   (cmps.on_deactivate(), ...);
 }
 
-template <typename N, typename T>
-T getParam(std::string const &param_name, T default_value, const std::shared_ptr<N> &node) {
+template <typename N, typename T> auto 
+getParam(std::string const &param_name, T default_value, const std::shared_ptr<N> &node) 
+-> T
+{
 
   T param;
   node->declare_parameter(param_name, rclcpp::ParameterValue(default_value));

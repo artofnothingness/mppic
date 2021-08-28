@@ -4,11 +4,13 @@
 
 namespace mppi::handlers {
 
-template <typename Iter, typename Stamp>
-auto PathHandler::transformGlobalPlan(Iter begin, Iter end, const Stamp &stamp, 
-                                             const std::string &frame)
-    -> nav_msgs::msg::Path {
-
+template <typename Iter, typename Stamp> auto 
+PathHandler::
+transformGlobalPlan(Iter begin, Iter end, 
+                    const Stamp &stamp, 
+                    const std::string &frame)
+-> nav_msgs::msg::Path 
+{
   auto transform_pose = [&](const auto &global_plan_pose) {
     geometry_msgs::msg::PoseStamped global_pose;
     geometry_msgs::msg::PoseStamped local_pose;
