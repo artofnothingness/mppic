@@ -140,8 +140,8 @@ closestPointsOnLinesSegment2D(P &&path_points,
           closest_points.unchecked(b, t, p, 1) = end_line_points.unchecked(b, t, 1);
         }
         else {
-          closest_points.unchecked(b, t, p, 0) = start_line_points.unchecked(b, t, 0) + u * diff.unchecked(b, t);
-          closest_points.unchecked(b, t, p, 1) = start_line_points.unchecked(b, t, 1) + u * diff.unchecked(b, t);
+          closest_points.unchecked(b, t, p, 0) = start_line_points.unchecked(b, t, 0) + u * diff.unchecked(b, t, 0);
+          closest_points.unchecked(b, t, p, 1) = start_line_points.unchecked(b, t, 1) + u * diff.unchecked(b, t, 1);
         }
       }
     }
