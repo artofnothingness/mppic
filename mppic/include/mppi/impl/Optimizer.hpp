@@ -71,7 +71,7 @@ getParams()
   goal_cost_weight_ = getParam("goal_cost_weight", 20.0);
 
   goal_angle_cost_power_ = getParam("goal_angle_cost_power_", 1.0);
-  goal_angle_cost_weight_ = getParam("goal_angle_cost_weight_", 100.0);
+  goal_angle_cost_weight_ = getParam("goal_angle_cost_weight_", 5.0);
 
   obstacle_cost_power_ = getParam("obstacle_cost_power", 2);
   obstacle_cost_weight_ = getParam("obstacle_cost_weight", 10);
@@ -80,7 +80,7 @@ getParams()
   inflation_radius_ = getParam("inflation_radius", 0.75);
   threshold_to_consider_goal_angle_ = getParam("threshold_to_consider_goal_angle", 0.25);
 
-  approx_reference_cost_ = getParam("approx_reference_cost_", false);
+  approx_reference_cost_ = getParam("approx_reference_cost", false);
 
 
 }
@@ -162,6 +162,36 @@ propagateBatchesVelocitiesFromInitials()
         xt::view(batches_, xt::all(), t + 1, xt::range(_, 2)); // batch x 2
     next_batch_velocities = model_(curr_batch);
   }
+}
+
+template <typename T, typename Tensor, typename Model> auto 
+Optimizer<T, Tensor, Model>::
+integrateControlSequence(const geometry_msgs::msg::PoseStamped &pose) const  
+-> Tensor
+{
+  using namespace xt::placeholders;
+
+  auto v = xt::view(control_sequence_, xt::all(), 0);
+  auto w = xt::view(control_sequence_, xt::all(), 1);
+
+  auto yaw = xt::cumsum(w * model_dt_, 0);
+
+  xt::view(yaw,  xt::range(1, _)) =
+    xt::view(yaw, xt::range(_, -1));
+  xt::view(yaw, xt::all()) += tf2::getYaw(pose.pose.orientation);
+
+  auto v_x = v * xt::cos(yaw);
+  auto v_y = v * xt::sin(yaw);
+
+  auto x = pose.pose.position.x + xt::cumsum(v_x * model_dt_, 0);
+  auto y = pose.pose.position.y + xt::cumsum(v_y * model_dt_, 0);
+
+  return xt::concatenate(
+      xt::xtuple(xt::view(x, xt::all(), xt::newaxis()),
+                 xt::view(y, xt::all(), xt::newaxis()),
+                 xt::view(yaw, xt::all(), xt::newaxis())),
+      1);
+
 }
 
 template <typename T, typename Tensor, typename Model> auto 
@@ -322,10 +352,10 @@ evalGoalAngleCost(const P &path_tensor,
   Tensor costs = xt::zeros<T>({batch_size_});
   Tensor tensor_pose = { static_cast<T>(pose.pose.position.x), static_cast<T>(pose.pose.position.y) };
   auto last_path_point = xt::view(path_tensor, -1, xt::range(0, 2));
-  T points_to_goal_dists =  xt::norm_l2(tensor_pose - last_path_point, {0})();
+  T points_to_goal_dists = xt::norm_l2(tensor_pose - last_path_point, {0})();
 
   if (points_to_goal_dists < threshold_to_consider_goal_angle_) {
-    auto yaws = xt::view(batch_of_trajectories, xt::all(), 0, 2);
+    auto yaws = xt::view(batch_of_trajectories, xt::all(), -1, 2);
     auto goal_yaw = xt::view(path_tensor, -1, 2);
     costs = xt::pow(xt::abs(yaws - goal_yaw) * goal_angle_cost_weight_, goal_angle_cost_power_); 
   }

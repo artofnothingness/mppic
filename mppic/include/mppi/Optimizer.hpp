@@ -50,6 +50,9 @@ public:
   auto getGeneratedTrajectories() 
   -> Tensor { return generated_trajectories_; }
 
+  auto evalTrajectoryFromControlSequence(const geometry_msgs::msg::PoseStamped &pose) 
+  -> Tensor { return integrateControlSequence(pose); }
+
 private:
   void getParams();
   void resetBatches();
@@ -92,6 +95,9 @@ private:
   void propagateBatchesVelocitiesFromInitials();
 
   auto integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped &pose) const 
+  -> Tensor;
+
+  auto integrateControlSequence(const geometry_msgs::msg::PoseStamped &pose) const 
   -> Tensor;
 
 

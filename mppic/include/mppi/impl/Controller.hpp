@@ -69,8 +69,11 @@ computeVelocityCommands(const geometry_msgs::msg::PoseStamped &pose,
   std::cout << "Control Loop time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
   if (visualize_) {
-    trajectory_visualizer_.visualize(
-        optimizer_.getGeneratedTrajectories(), 5, 2);
+    trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories(), 5, 2);
+    trajectory_visualizer_.add(optimizer_.evalTrajectoryFromControlSequence(pose));
+    trajectory_visualizer_.visualize();
+    trajectory_visualizer_.reset();
+
     transformed_path_pub_->publish(transformed_plan);
   }
 
