@@ -35,28 +35,37 @@ public:
    *
    * @return global plan in local frame
    */
-  auto transformPath(const geometry_msgs::msg::PoseStamped &robot_pose) -> nav_msgs::msg::Path;
+  auto transformPath(const geometry_msgs::msg::PoseStamped &robot_pose) 
+  -> nav_msgs::msg::Path;
 
 private:
-  void getParams();
+  auto getParams()
+  -> void;
 
-  bool transformPose(const std::string &frame,
-                     const geometry_msgs::msg::PoseStamped &in_pose,
-                     geometry_msgs::msg::PoseStamped &out_pose) const;
+  auto 
+  transformPose(
+      const std::string &frame,
+      const geometry_msgs::msg::PoseStamped &in_pose,
+      geometry_msgs::msg::PoseStamped &out_pose
+  ) const
+  -> bool;
 
   double getMaxCostmapDist();
 
   auto transformToGlobalFrame(const geometry_msgs::msg::PoseStamped &pose)
-      -> geometry_msgs::msg::PoseStamped;
+  -> geometry_msgs::msg::PoseStamped;
 
   template <typename Iter, typename Stamp>
   auto transformGlobalPlan(Iter begin, Iter end, const Stamp &stamp, 
-                                  const std::string &frame)-> nav_msgs::msg::Path;
+                           const std::string &frame)
+  -> nav_msgs::msg::Path;
 
   auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped &global_pose);
 
   template <typename T>
-  void pruneGlobalPlan(const T &end) {
+  auto pruneGlobalPlan(const T &end) 
+  -> void 
+  {
     global_plan_.poses.erase(global_plan_.poses.begin(), end);
   }
 

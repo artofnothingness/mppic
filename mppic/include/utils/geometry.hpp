@@ -9,21 +9,20 @@
 #include "tf2/utils.h"
 
 #include "xtensor/xarray.hpp"
-#include "xtensor/xmath.hpp"
 #include "xtensor/xnorm.hpp"
-#include "xtensor/xstrided_view.hpp"
 #include "xtensor/xview.hpp"
-#include <xtensor/xio.hpp>
 
-#include "algorithm"
+#include <algorithm>
 #include <chrono>
 
 
 namespace mppi::geometry {
 
-template <typename T, typename H>
-geometry_msgs::msg::TwistStamped toTwistStamped(const T &velocities,
-                                                const H &header) {
+template <typename T, typename H> auto
+toTwistStamped(const T &velocities,
+              const H &header) 
+-> geometry_msgs::msg::TwistStamped
+{
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = header.frame_id;
   twist.header.stamp = header.stamp;
@@ -32,9 +31,12 @@ geometry_msgs::msg::TwistStamped toTwistStamped(const T &velocities,
   return twist;
 }
 
-template <typename T, typename S>
-geometry_msgs::msg::TwistStamped toTwistStamped(const T &velocities, const S &stamp, 
-                                                const std::string &frame) {
+template <typename T, typename S> auto
+toTwistStamped(const T &velocities, 
+               const S &stamp, 
+               const std::string &frame) 
+-> geometry_msgs::msg::TwistStamped 
+{
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = frame;
   twist.header.stamp = stamp;
@@ -43,8 +45,10 @@ geometry_msgs::msg::TwistStamped toTwistStamped(const T &velocities, const S &st
   return twist;
 }
 
-template <typename T, typename Tensor = xt::xarray<T>>
-Tensor toTensor(const nav_msgs::msg::Path &path) {
+template <typename T, typename Tensor = xt::xarray<T>> auto 
+toTensor(const nav_msgs::msg::Path &path) 
+-> Tensor 
+{
   size_t size = path.poses.size();
   static constexpr size_t last_dim_size = 3;
 
@@ -59,8 +63,9 @@ Tensor toTensor(const nav_msgs::msg::Path &path) {
   return points;
 }
 
-template <typename T>
-auto hypot(const T &p1, const T &p2) {
+template <typename T> auto 
+hypot(const T &p1, const T &p2) 
+{
   double dx = p1.x - p2.x;
   double dy = p1.y - p2.y;
   double dz = p1.z - p2.z;
@@ -69,14 +74,18 @@ auto hypot(const T &p1, const T &p2) {
 }
 
 template <>
-inline auto hypot(const geometry_msgs::msg::Pose &lhs,
-                  const geometry_msgs::msg::Pose &rhs) {
+inline auto 
+hypot(const geometry_msgs::msg::Pose &lhs,
+      const geometry_msgs::msg::Pose &rhs) 
+{
   return hypot(lhs.position, rhs.position);
 }
 
 template <>
-inline auto hypot(const geometry_msgs::msg::PoseStamped &lhs,
-                  const geometry_msgs::msg::PoseStamped &rhs) {
+inline auto 
+hypot(const geometry_msgs::msg::PoseStamped &lhs,
+      const geometry_msgs::msg::PoseStamped &rhs) 
+{
   return hypot(lhs.pose, rhs.pose);
 }
 
@@ -90,9 +99,10 @@ inline auto hypot(const geometry_msgs::msg::PoseStamped &lhs,
  *      4D data structre of shape [ points.shape[0], points.shape()[1] - 1,
  *      line_points.shape()[0], line_points.shape()[1] ]
  */
-template <typename P, typename L>
-auto closestPointsOnLinesSegment2D(P &&path_points,
-                                   L &&batch_of_lines) {
+template <typename P, typename L> auto 
+closestPointsOnLinesSegment2D(P &&path_points,
+                              L &&batch_of_lines) 
+{
   using namespace xt::placeholders;
   using T = typename std::decay_t<P>::value_type;
   using Tensor = xt::xarray<T>;
@@ -150,9 +160,9 @@ auto closestPointsOnLinesSegment2D(P &&path_points,
  *      3D data structre of shape [ batch_of_lines.shape[0], batch_of_lines.shape()[1] - 1,
  *      path_points.shape()[0] ]
  */
-template <typename P, typename L>
-auto distPointsToLineSegments2D(P &&path_tensor, L &&batches_of_trajectories) {
-
+template <typename P, typename L> auto 
+distPointsToLineSegments2D(P &&path_tensor, L &&batches_of_trajectories) 
+{
   auto path_points = xt::view(path_tensor, xt::all(), xt::range(0, 2));
   auto batch_of_lines =
       xt::view(batches_of_trajectories, xt::all(), xt::all(), xt::range(0, 2));
