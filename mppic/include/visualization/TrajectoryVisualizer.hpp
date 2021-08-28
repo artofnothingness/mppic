@@ -43,14 +43,14 @@ public:
       return;
 
     for (size_t i = 0; i < size; i++) {
-      double red_component = static_cast<double>(i) / size;
       double blue_component = 1 - static_cast<double>(i) / size;
+      double green_component = static_cast<double>(i) / size;
 
-      auto pose = createPose(trajectory(i, 0), trajectory(i, 1), 0.03);
-      auto scale = i != size - 1 ? createScale(0.04, 0.04, 0.05)
-                                 : createScale(0.1, 0.1, 0.1);
+      auto pose = createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
+      auto scale = i != size - 1 ? createScale(0.03, 0.03, 0.07)
+                                 : createScale(0.10, 0.10, 0.10);
 
-      auto color = createColor(red_component, 0, blue_component, 1);
+      auto color = createColor(0, green_component, blue_component, 1);
       auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
 
       points_.markers.push_back(marker);
