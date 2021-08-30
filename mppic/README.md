@@ -42,6 +42,55 @@ with path lenght = ~40, batch = 300, and time_step = 20.
 | approx_reference_cost            | bool   | False   | Use approximate point to segment distance calculation                                                       |
 | visualize                        | bool   | True    | Use visualization                                                                                           |
 
+Example fully-described XML with default parameter values:
+
+```
+controller_server:
+  ros__parameters:
+    use_sim_time: True
+    controller_frequency: 10.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 1.0
+    min_theta_velocity_threshold: 0.001
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugin: "goal_checker"
+    controller_plugins: ["FollowPath"]
+
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5
+      movement_time_allowance: 10.0
+
+    goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.25
+      stateful: True
+
+    FollowPath:
+      plugin: "mppi::Controller<float>"
+      time_steps: 20
+      model_dt: 0.1
+      batch_size: 300
+      v_std: 0.1
+      w_std: 0.3
+      v_limit: 0.5
+      w_limit: 1.3
+      iteration_count: 2
+      temperature: 0.25
+      reference_cost_power: 1
+      reference_cost_weight: 5
+      goal_cost_power: 1.0
+      goal_cost_weight: 20.0
+      goal_angle_cost_power: 1.0
+      goal_angle_cost_weight: 5.0
+      obstacle_cost_power: 2
+      obstacle_cost_weight: 10
+      inflation_cost_scaling_factor: 3
+      inflation_radius: 0.75
+      threshold_to_consider_goal_angle: 0.25
+      approx_reference_cost: false
+```
 
 ## Topics
 
