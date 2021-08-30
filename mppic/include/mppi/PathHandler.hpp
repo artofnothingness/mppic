@@ -42,11 +42,9 @@ private:
   auto getParams()
   -> void;
 
-  auto 
-  transformPose(
-      const std::string &frame,
-      const geometry_msgs::msg::PoseStamped &in_pose,
-      geometry_msgs::msg::PoseStamped &out_pose
+  auto transformPose(const std::string &frame,
+                     const geometry_msgs::msg::PoseStamped &in_pose,
+                     geometry_msgs::msg::PoseStamped &out_pose
   ) const
   -> bool;
 

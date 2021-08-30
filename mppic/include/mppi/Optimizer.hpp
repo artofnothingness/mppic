@@ -39,8 +39,6 @@ public:
 
   /**
    * @brief Evaluate current best control
-   *
-   * @return best control
    */
   auto evalNextControl(const geometry_msgs::msg::PoseStamped &robot_pose,
                        const geometry_msgs::msg::Twist &robot_speed,
@@ -58,10 +56,10 @@ private:
   void resetBatches();
 
   /**
-   * @brief Invoke generateNoisedControlBatches, assign result to batches controls 
+   * @brief Invoke generateNoisedControlBatches, assign result tensor to batches controls
    * and integrate recieved controls in trajectories
    *
-   * @return trajectories Tensor of shape [ batch_size_, time_steps_, 3]  where 3 stands for x, y, yaw
+   * @return trajectories Tensor of shape [ batch_size_, time_steps_, 3 ]  where 3 stands for x, y, yaw
    */
   auto generateNoisedTrajectories(const geometry_msgs::msg::PoseStamped &robot_pose,
                                   const geometry_msgs::msg::Twist &robot_speed)
@@ -71,7 +69,7 @@ private:
    * @brief Generate random controls by gaussian noise with mean in
    * control_sequence_
    *
-   * @return Control batches
+   * @return Control batches Tensor of shape [ batch_size_, time_steps_, 2] where 2 stands for v, w
    */
   auto generateNoisedControlBatches() 
   -> Tensor;
@@ -89,8 +87,7 @@ private:
 
   /**
    * @brief propagate velocities in batches_ using model
-   * for time_steps_ time horizont
-   *
+   * for time horizont equal to time_steps_
    */
   void propagateBatchesVelocitiesFromInitials();
 
@@ -108,7 +105,7 @@ private:
    * @param trajectory_batches batch of trajectories: 
    * Tensor of shape [batch_size_, time_steps_, 3] where 3 stands for x, y, yaw
    * @param path global path
-   * @return batches costs: Tensor of shape [batch_size]
+   * @return batches costs: Cost for each batch, Tensor of shape [batch_size] 
    */
   auto evalBatchesCosts(const Tensor &batches_of_trajectories,
                         const geometry_msgs::msg::PoseStamped &pose,
