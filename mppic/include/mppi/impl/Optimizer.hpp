@@ -237,21 +237,23 @@ evalBatchesCosts(const Tensor &batches_of_trajectories,
 
   auto &&path_tensor = geometry::toTensor<T>(path);
 
-  auto &&ref_cost = approx_reference_cost_ ? evalApproxReferenceCost(path_tensor, batches_of_trajectories)
-                                           : evalReferenceCost(path_tensor, batches_of_trajectories);
-  auto &&goal_cost = evalGoalCost(path_tensor, batches_of_trajectories); 
-  auto &&angle_cost = evalGoalAngleCost(path_tensor, batches_of_trajectories, pose); 
-  auto &&obstacle_cost = evalObstacleCost(batches_of_trajectories);
+  approx_reference_cost_ ? evalApproxReferenceCost(path_tensor, batches_of_trajectories, costs)
+                         : evalReferenceCost(path_tensor, batches_of_trajectories, costs);
 
-  return ref_cost + angle_cost + goal_cost + obstacle_cost ;
+  evalGoalCost(path_tensor, batches_of_trajectories, costs); 
+  evalGoalAngleCost(path_tensor, batches_of_trajectories, pose, costs); 
+  evalObstacleCost(batches_of_trajectories, costs);
+
+  return costs;
 }
 
 
 template <typename T, typename Tensor, typename Model>
-template <typename B, typename P> auto 
+template <typename B, typename P, typename C> auto 
 Optimizer<T, Tensor, Model>::
-evalGoalCost(const P &path_tensor, 
-             const B &batches_of_trajectories) const 
+evalGoalCost(const P &path_tensor,
+             const B &batches_of_trajectories,
+             C &costs) const 
 {
   auto goal_points = xt::view(path_tensor, -1, xt::range(0, 2));
   auto last_timestep_points = xt::view(batches_of_trajectories, 
@@ -259,49 +261,50 @@ evalGoalCost(const P &path_tensor,
 
   auto dim = last_timestep_points.dimension() - 1;
 
-  auto batches_goal_dists = xt::norm_l2(std::move(last_timestep_points) - std::move(goal_points),
-                                          {dim});
+  auto &&batches_goal_dists = xt::norm_l2(std::move(last_timestep_points) - std::move(goal_points), {dim});
 
-  return xt::pow(std::move(batches_goal_dists) * goal_cost_weight_, goal_cost_power_);
+  costs += xt::pow(std::move(batches_goal_dists) * goal_cost_weight_, goal_cost_power_);
 }
 
 template <typename T, typename Tensor, typename Model>
-template <typename P, typename B> auto 
+template <typename P, typename B, typename C> auto 
 Optimizer<T, Tensor, Model>::
 evalApproxReferenceCost(const P &path_tensor, 
-                        const B &batches_of_trajectories) const 
+                        const B &batches_of_trajectories,
+                        C &costs) const 
 {
   auto path_points = xt::view(path_tensor, xt::all(), xt::range(0, 2));
   auto batch_of_lines =
       xt::view(batches_of_trajectories, xt::all(), xt::all(), xt::newaxis(), xt::range(0, 2));
   auto dists = xt::norm_l2(path_points - batch_of_lines, {batch_of_lines.dimension() - 1});
   auto &&cost = xt::mean(xt::amin(std::move(dists), 1), 1);
-  return xt::eval(xt::pow(std::move(cost) * reference_cost_weight_, reference_cost_power_));
+  costs += xt::pow(std::move(cost) * reference_cost_weight_, reference_cost_power_);
 }
 
 template <typename T, typename Tensor, typename Model>
-template <typename P, typename B> auto 
+template <typename P, typename B, typename C> auto 
 Optimizer<T, Tensor, Model>::
 evalReferenceCost(const P &path_tensor, 
-                  const B &batches_of_trajectories) const 
+                  const B &batches_of_trajectories, 
+                  C &costs) const 
 {
   auto &&path_to_batches_dists = 
     geometry::distPointsToLineSegments2D(path_tensor, batches_of_trajectories);
 
-  auto &&cost = xt::mean(xt::amin(std::move(path_to_batches_dists), 1), 1);
+  auto &&cost = xt::mean(xt::amin(std::move(path_to_batches_dists), 1, xt::evaluation_strategy::immediate), 
+                                                                    1, xt::evaluation_strategy::immediate);
 
-  return xt::eval(xt::pow(std::move(cost) * reference_cost_weight_, reference_cost_power_));
+  costs += xt::pow(std::move(cost) * reference_cost_weight_, reference_cost_power_);
 }
 
 
 template <typename T, typename Tensor, typename Model>
-template <typename B> auto 
+template <typename B, typename C> auto 
 Optimizer<T, Tensor, Model>::
-evalObstacleCost(const B &batches_of_trajectories_points) const 
+evalObstacleCost(const B &batches_of_trajectories_points,
+                 C &costs) const 
 {
   constexpr T collision_cost_value = std::numeric_limits<T>::max();
-
-  Tensor costs = xt::zeros<T>({batch_size_});
 
   auto minDistToObstacle = [this] (const auto cost) {
     return  (-1.0 / inflation_cost_scaling_factor_) *
@@ -314,7 +317,7 @@ evalObstacleCost(const B &batches_of_trajectories_points) const
     size_t j = 0;
     for (; j < static_cast<size_t>(time_steps_); ++j) {
       double cost = costAtPose(batches_of_trajectories_points(i, j, 0), 
-          batches_of_trajectories_points(i, j, 1));
+                               batches_of_trajectories_points(i, j, 1));
       
       if (inCollision(cost)) {
         costs[i] = collision_cost_value;
@@ -335,30 +338,32 @@ evalObstacleCost(const B &batches_of_trajectories_points) const
       costs[i] += pow((1.01 * inflation_radius_ - min_dist) * obstacle_cost_weight_, obstacle_cost_power_);
     }
   }
-
-  return costs;
 }
 
 template <typename T, typename Tensor, typename Model>
-template <typename P, typename B> auto 
+template <typename P, typename B, typename C> auto 
 Optimizer<T, Tensor, Model>::
 evalGoalAngleCost(const P &path_tensor,
                   const B &batch_of_trajectories, 
-                  const geometry_msgs::msg::PoseStamped &pose) const 
+                  const geometry_msgs::msg::PoseStamped &pose,
+                  C &costs) const 
 {
-
-  Tensor costs = xt::zeros<T>({batch_size_});
   Tensor tensor_pose = { static_cast<T>(pose.pose.position.x), static_cast<T>(pose.pose.position.y) };
+
   auto last_path_point = xt::view(path_tensor, -1, xt::range(0, 2));
+
   T points_to_goal_dists = xt::norm_l2(tensor_pose - last_path_point, {0})();
 
   if (points_to_goal_dists < threshold_to_consider_goal_angle_) {
-    auto yaws = xt::view(batch_of_trajectories, xt::all(), -1, 2);
-    auto goal_yaw = xt::view(path_tensor, -1, 2);
-    costs = xt::pow(xt::abs(yaws - goal_yaw) * goal_angle_cost_weight_, goal_angle_cost_power_); 
-  }
+    auto last_yaws = xt::view(batch_of_trajectories, xt::all(), -1, 2);
+    auto first_yaws = xt::view(batch_of_trajectories, xt::all(), 0, 2);
 
-  return costs;
+    auto goal_yaw = xt::view(path_tensor, -1, 2);
+
+    costs += (xt::pow(xt::abs(first_yaws - goal_yaw) * goal_angle_cost_weight_, goal_angle_cost_power_) +
+              xt::pow(xt::abs(last_yaws - goal_yaw) * goal_angle_cost_weight_, goal_angle_cost_power_)) / 2.0; 
+
+  }
 }
 
 template <typename T, typename Tensor, typename Model> auto 

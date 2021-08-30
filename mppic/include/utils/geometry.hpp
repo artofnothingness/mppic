@@ -173,7 +173,7 @@ distPointsToLineSegments2D(P &&path_tensor, L &&batches_of_trajectories)
 
   auto &&diff = std::move(path_points) - std::move(closest_points);
   size_t dim = diff.dimension() - 1;
-  return xt::eval(xt::norm_l2(std::move(diff), {dim}));
+  return xt::norm_l2(std::move(diff), {dim}, xt::evaluation_strategy::immediate);
 }
 
 } // namespace mppi::geometry

@@ -122,12 +122,13 @@ private:
    * and reference trajectories: Tensor of shape [ batch_size_, time_steps_, point_size ]
    * @return batches costs: type of shape [ batch_size_ ]
    */
-  template <typename P, typename B>
+  template <typename P, typename B, typename C>
   auto evalReferenceCost(const P &path_tensor, 
-                        const B &batches_of_trajectories) const;
+                        const B &batches_of_trajectories,
+                        C &costs) const;
 
-  template <typename P, typename B>
-  auto evalApproxReferenceCost(const P &path_tensor, const B &batches_of_trajectories) const;
+  template <typename P, typename B, typename C>
+  auto evalApproxReferenceCost(const P &path_tensor, const B &batches_of_trajectories, C &costs) const;
 
     /**
     * @brief Evaluate cost related to distances between last path 
@@ -142,8 +143,8 @@ private:
     * @return batches costs: type of shape [ batch_size_ ]
     */
 
-  template <typename B, typename P>
-  auto evalGoalCost(const P &path_points, const B &batchs_of_trajectories_points) const;
+  template <typename B, typename P, typename C>
+  auto evalGoalCost(const P &path_points, const B &batchs_of_trajectories_points, C &costs) const;
 
   /**
    * @brief Evalutate cost related to the near obstacles. Must go last, coz can write inf to cost
@@ -153,15 +154,16 @@ private:
    * where 2 stands for x, y 
    * @return batches costs: type of shape [ batch_size_ ]
    */
-  template <typename B>
-  auto evalObstacleCost(const B &batchs_of_trajectories_points) const;
+  template <typename B, typename C>
+  auto evalObstacleCost(const B &batchs_of_trajectories_points, C &costs) const;
 
 
 
-  template <typename P, typename B>
+  template <typename P, typename B, typename C>
   auto evalGoalAngleCost(const P &path_tensor,
                          const B &batch_of_trajectories, 
-                         const geometry_msgs::msg::PoseStamped &pose) const;
+                         const geometry_msgs::msg::PoseStamped &pose,
+                         C &costs) const;
 
   auto costAtPose(const double & x, const double & y) const -> double;
   auto inCollision(unsigned char cost) const 
