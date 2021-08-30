@@ -254,15 +254,21 @@ evalGoalCost(const P &path_tensor,
              const B &batches_of_trajectories,
              C &costs) const 
 {
-  auto goal_points = xt::view(path_tensor, -1, xt::range(0, 2));
+  const auto goal_points = xt::view(path_tensor, -1, xt::range(0, 2));
+
   auto last_timestep_points = xt::view(batches_of_trajectories, 
       xt::all(), -1, xt::range(0 , 2));
 
+  auto first_timestep_points = xt::view(batches_of_trajectories, 
+      xt::all(), 0, xt::range(0 , 2));
+
   auto dim = last_timestep_points.dimension() - 1;
 
-  auto &&batches_goal_dists = xt::norm_l2(std::move(last_timestep_points) - std::move(goal_points), {dim});
+  auto &&batches_last_to_goal_dists = xt::norm_l2(std::move(last_timestep_points) - goal_points, {dim});
+  auto &&batches_first_to_goal_dists = xt::norm_l2(std::move(first_timestep_points) - goal_points, {dim});
 
-  costs += xt::pow(std::move(batches_goal_dists) * goal_cost_weight_, goal_cost_power_);
+  costs += xt::pow(std::move(batches_first_to_goal_dists) * goal_cost_weight_, goal_cost_power_)/2 + 
+           xt::pow(std::move(batches_last_to_goal_dists) * goal_cost_weight_, goal_cost_power_);
 }
 
 template <typename T, typename Model>
@@ -360,8 +366,8 @@ evalGoalAngleCost(const P &path_tensor,
 
     auto goal_yaw = xt::view(path_tensor, -1, 2);
 
-    costs += (xt::pow(xt::abs(first_yaws - goal_yaw) * goal_angle_cost_weight_, goal_angle_cost_power_) +
-              xt::pow(xt::abs(last_yaws - goal_yaw) * goal_angle_cost_weight_, goal_angle_cost_power_)) / 2.0; 
+    costs += (xt::pow(xt::abs(first_yaws - goal_yaw) * goal_angle_cost_weight_, goal_angle_cost_power_) / 2 +
+              xt::pow(xt::abs(last_yaws - goal_yaw) * goal_angle_cost_weight_, goal_angle_cost_power_)); 
 
   }
 }
