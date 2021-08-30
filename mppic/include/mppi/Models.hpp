@@ -4,7 +4,7 @@
 
 namespace mppi::models {
 
-template <typename T, typename Tensor = xt::xarray<T>> auto 
+template <typename T, typename Tensor = xt::xtensor<T, 2>> auto 
 NaiveModel(const Tensor &tensor) 
 -> Tensor
 {

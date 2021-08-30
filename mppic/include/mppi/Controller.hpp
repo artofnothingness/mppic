@@ -14,8 +14,7 @@
 namespace mppi {
 
 template <typename T,
-          typename Tensor = xt::xarray<T>,
-          typename Model = Tensor(const Tensor &)>
+          typename Model = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &)>
 class Controller : public nav2_core::Controller {
 
 public:
@@ -56,7 +55,7 @@ private:
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>>
       transformed_path_pub_;
 
-  optimization::Optimizer<T, Tensor, Model> optimizer_;
+  optimization::Optimizer<T, Model> optimizer_;
   handlers::PathHandler path_handler_;
   visualization::TrajectoryVisualizer trajectory_visualizer_;
 
