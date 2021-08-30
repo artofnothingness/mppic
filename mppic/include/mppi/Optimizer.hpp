@@ -16,8 +16,7 @@
 namespace mppi::optimization {
 
 template <typename T,
-          typename Tensor = xt::xarray<T>,
-          typename Model = Tensor(const Tensor &)>
+          typename Model = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &)>
 class Optimizer {
 public:
   Optimizer() = default;
@@ -46,10 +45,10 @@ public:
   -> geometry_msgs::msg::TwistStamped;
 
   auto getGeneratedTrajectories() 
-  -> Tensor { return generated_trajectories_; }
+  -> xt::xtensor<T, 3> { return generated_trajectories_; }
 
   auto evalTrajectoryFromControlSequence(const geometry_msgs::msg::PoseStamped &pose) 
-  -> Tensor { return integrateControlSequence(pose); }
+  -> xt::xtensor<T, 2> { return integrateControlSequence(pose); }
 
 private:
   void getParams();
@@ -63,7 +62,7 @@ private:
    */
   auto generateNoisedTrajectories(const geometry_msgs::msg::PoseStamped &robot_pose,
                                   const geometry_msgs::msg::Twist &robot_speed)
-  -> Tensor;
+  -> xt::xtensor<T, 3>;
 
   /**
    * @brief Generate random controls by gaussian noise with mean in
@@ -72,7 +71,7 @@ private:
    * @return Control batches Tensor of shape [ batch_size_, time_steps_, 2] where 2 stands for v, w
    */
   auto generateNoisedControlBatches() 
-  -> Tensor;
+  -> xt::xtensor<T, 3>;
 
   void applyControlConstraints();
 
@@ -92,10 +91,10 @@ private:
   void propagateBatchesVelocitiesFromInitials();
 
   auto integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped &pose) const 
-  -> Tensor;
+  -> xt::xtensor<T, 3>;
 
   auto integrateControlSequence(const geometry_msgs::msg::PoseStamped &pose) const 
-  -> Tensor;
+  -> xt::xtensor<T, 2>;
 
 
 
@@ -107,10 +106,10 @@ private:
    * @param path global path
    * @return batches costs: Cost for each batch, Tensor of shape [batch_size] 
    */
-  auto evalBatchesCosts(const Tensor &batches_of_trajectories,
+  auto evalBatchesCosts(const xt::xtensor<T, 3> &batches_of_trajectories,
                         const geometry_msgs::msg::PoseStamped &pose,
                         const nav_msgs::msg::Path &path) const 
-  -> Tensor;
+  -> xt::xtensor<T, 1>;
  
   /**
    * @brief Evaluate cost related to distances between generated 
@@ -124,8 +123,8 @@ private:
    */
   template <typename P, typename B, typename C>
   auto evalReferenceCost(const P &path_tensor, 
-                        const B &batches_of_trajectories,
-                        C &costs) const;
+                         const B &batches_of_trajectories,
+                         C &costs) const;
 
   template <typename P, typename B, typename C>
   auto evalApproxReferenceCost(const P &path_tensor, const B &batches_of_trajectories, C &costs) const;
@@ -174,7 +173,7 @@ private:
    *
    * @param costs batches costs
    */
-  auto updateControlSequence(const Tensor &costs)
+  auto updateControlSequence(const xt::xtensor<T, 1> &costs)
   -> void;
 
   /**
@@ -234,9 +233,9 @@ private:
   size_t goal_angle_cost_power_;
   size_t goal_angle_cost_weight_;
 
-  Tensor batches_;
-  Tensor control_sequence_;
-  Tensor generated_trajectories_;
+  xt::xtensor<T, 3> batches_;
+  xt::xtensor<T, 3> generated_trajectories_;
+  xt::xtensor<T, 2> control_sequence_;
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
 };
