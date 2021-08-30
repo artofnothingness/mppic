@@ -1,4 +1,6 @@
-# Local planners
+# Local planners 
 
-Репозиторий содержит различные реализации локальных планировщиков.
+## Overview
 
+Repository contains following local planners:
+  * [MPPI Local Planner](/mppic/README.md)

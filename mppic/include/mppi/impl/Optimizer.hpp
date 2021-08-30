@@ -70,8 +70,8 @@ getParams()
   goal_cost_power_ = getParam("goal_cost_power", 1.0);
   goal_cost_weight_ = getParam("goal_cost_weight", 20.0);
 
-  goal_angle_cost_power_ = getParam("goal_angle_cost_power_", 1.0);
-  goal_angle_cost_weight_ = getParam("goal_angle_cost_weight_", 5.0);
+  goal_angle_cost_power_ = getParam("goal_angle_cost_power", 1.0);
+  goal_angle_cost_weight_ = getParam("goal_angle_cost_weight", 5.0);
 
   obstacle_cost_power_ = getParam("obstacle_cost_power", 2);
   obstacle_cost_weight_ = getParam("obstacle_cost_weight", 10);
@@ -81,8 +81,6 @@ getParams()
   threshold_to_consider_goal_angle_ = getParam("threshold_to_consider_goal_angle", 0.25);
 
   approx_reference_cost_ = getParam("approx_reference_cost", false);
-
-
 }
 
 template <typename T, typename Tensor, typename Model> auto 
