@@ -8,7 +8,6 @@ https://ieeexplore.ieee.org/document/7487277
 
 This is a controller (local trajectory planner) that implements model predictive 
 path integral control to track a path with collision avoidance. 
-lookahead distances by current speed. 
 
 This plugin implements the nav2_core::Controller interface allowing it to be used across the navigation stack as a local trajectory planner in the controller server's action server (controller_server).
 
