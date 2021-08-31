@@ -356,18 +356,15 @@ evalGoalAngleCost(const P &path_tensor,
 {
   xt::xtensor<T, 1> tensor_pose = { static_cast<T>(pose.pose.position.x), static_cast<T>(pose.pose.position.y) };
 
-  auto last_path_point = xt::view(path_tensor, -1, xt::range(0, 2));
+  auto path_points = xt::view(path_tensor, -1, xt::range(0, 2));
 
-  T points_to_goal_dists = xt::norm_l2(tensor_pose - last_path_point, {0})();
+  T points_to_goal_dists = xt::norm_l2(tensor_pose - path_points, {0})();
 
   if (points_to_goal_dists < threshold_to_consider_goal_angle_) {
-    auto last_yaws = xt::view(batch_of_trajectories, xt::all(), -1, 2);
-    auto first_yaws = xt::view(batch_of_trajectories, xt::all(), 0, 2);
-
+    auto yaws = xt::view(batch_of_trajectories, xt::all(), xt::all(), 2);
     auto goal_yaw = xt::view(path_tensor, -1, 2);
 
-    costs += (xt::pow(xt::abs(first_yaws - goal_yaw) * goal_angle_cost_weight_, goal_angle_cost_power_) / 2 +
-              xt::pow(xt::abs(last_yaws - goal_yaw) * goal_angle_cost_weight_, goal_angle_cost_power_)); 
+    costs += xt::pow(xt::mean(xt::abs(yaws - goal_yaw), {1}) * goal_angle_cost_weight_, goal_angle_cost_power_); 
 
   }
 }
