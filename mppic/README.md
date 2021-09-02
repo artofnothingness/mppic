@@ -15,7 +15,7 @@ use model to predict real velocities (linear and angular) for each time_step by 
 then integrate these velocities to get trajectories, 
 evalueate cost for each trajectory, and take relative scale of original controls
 (mean of batches controls with overweight for those controls which propagated trajectories has lesser cost) 
-using softmax function calculated by costs.
+using softmax function calculated with costs.
 
 This implementation has reworked cost function, which for now has 4 components which are related to 
 obstacle avoidance, goal following, reference alignment, goal angle considerring near the goal. May be i'll "pluginize" this in future like in dwb
