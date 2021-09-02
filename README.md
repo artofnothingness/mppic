@@ -3,4 +3,4 @@
 ## Overview
 
 Repository contains following local planners:
-  * [MPPI Local Planner](/mppic/README.md)
+  * [MPPI Local Planner](/mppic/)
