@@ -26,8 +26,7 @@ which can opperate on whole batch in parrallel. (i'll probably implement this in
 This plugin implements the nav2_core::Controller interface allowing it to be used across the navigation stack as a local trajectory planner in the controller server's action server (controller_server).
 
 ## Dependecies 
-MPPIc package requires a modern C++ compiler supporting C++17. 
-Also Conan C++ package manager requred:
+MPPIc package requires a modern C++ compiler supporting C++17, and Conan C++ package manager:
 ```
 pip install conan
 ```
