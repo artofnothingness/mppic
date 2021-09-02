@@ -14,7 +14,7 @@ The main idea of the algorithm is to sample batch of consecutive controls (linea
 use model to predict real velocities (linear and angular) for each time_step by given controls and initial velocities (current Twist),
 this can be explained as follows V( t+1 ) = F( X(t) ), where 
   - V(t+1) - velocities (linear and angular) of all batches at times step t + 1, shape [batch size x 2]
-  - X(T) - batches of time step t, consist of current velocities (linear, angular), controls (linear, angular) and dt shape [batch size x 5]
+  - X(T) - batches of time step t, consisting current velocities (linear, angular), controls (linear, angular) and dt, shape [batch size x 5]
 
 then integrate these velocities to get trajectories, 
 evalueate cost for each trajectory, and take relative scale of original controls
