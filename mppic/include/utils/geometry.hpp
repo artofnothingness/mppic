@@ -93,26 +93,26 @@ auto hypot(const geometry_msgs::msg::PoseStamped &lhs,
 /**
  * @brief Calculate closest between path points and batch lines segments
  *
- * @param batch_of_lines batches of sequences of points. Sequences considering as lines
- * @param path_points 2D data structure with last dim size stands for x, y
+ * @param batch_of_segments_points batches of sequences of points. Sequences considering as lines
+ * @param path 2D data structure with last dim size stands for x, y
  * @return points on line segments closest to batches sequences points
- *      4D data structre of shape [ points.shape[0], points.shape()[1] - 1,
- *      line_points.shape()[0], line_points.shape()[1] ]
+ *      4D data structre of shape [ batch_of_segments_points.shape[0], batch_of_segments_points.shape()[1] - 1,
+ *                                  path.shape()[0], path.shape()[1] ]
  */
 template <typename P, typename L> 
-auto closestPointsOnLinesSegment2D(P &&path_points,
-                                   L &&batch_of_lines) 
+auto closestPointsOnLinesSegment2D(P &&path,
+                                   L &&batch_of_segments_points) 
 {
   using namespace xt::placeholders;
   using T = typename std::decay_t<P>::value_type;
 
-  auto closest_points = xt::xtensor<T, 4>::from_shape({batch_of_lines.shape()[0],
-                                                       batch_of_lines.shape()[1] - 1,
-                                                       path_points.shape()[0],
-                                                       path_points.shape()[1]});
+  auto closest_points = xt::xtensor<T, 4>::from_shape({batch_of_segments_points.shape()[0],
+                                                       batch_of_segments_points.shape()[1] - 1,
+                                                       path.shape()[0],
+                                                       path.shape()[1]});
 
-  auto start_line_points = xt::view(batch_of_lines, xt::all(), xt::range(_, -1));
-  auto end_line_points = xt::view(batch_of_lines, xt::all(), xt::range(1, _));
+  auto start_line_points = xt::view(batch_of_segments_points, xt::all(), xt::range(_, -1));
+  auto end_line_points = xt::view(batch_of_segments_points, xt::all(), xt::range(1, _));
 
   xt::xtensor<T, 3> diff = end_line_points - start_line_points;
   xt::xtensor<T, 2> sq_norm = xt::norm_sq(diff, 
@@ -128,8 +128,8 @@ auto closestPointsOnLinesSegment2D(P &&path_points,
       }
 
       for (size_t p = 0; p < closest_points.shape()[2]; ++p) {
-        T u = ((path_points(p, 0) - start_line_points(b, t, 0)) * diff(b, t, 0) +
-               (path_points(p, 1) - start_line_points(b, t, 1)) * diff(b, t, 1)) /
+        T u = ((path(p, 0) - start_line_points(b, t, 0)) * diff(b, t, 0) +
+               (path(p, 1) - start_line_points(b, t, 1)) * diff(b, t, 1)) /
               sq_norm(b, t);
 
         if (u <= 0) {
@@ -154,18 +154,18 @@ auto closestPointsOnLinesSegment2D(P &&path_points,
 /**
  * @brief Calculate distances from batches of point sequences to line segments
  *
- * @param batch_of_trajectories batches of line segments. last dim must have at least 2 dim
- * @param path_tensor 2D data structure with last dim must have at least 2 dim
+ * @param batch_of_segments_points batches of line segments. last dim must have at least 2 dim
+ * @param path 2D data structure with last dim must have at least 2 dim
  * @return distances from batches sequences points to line segments
- *      3D data structre of shape [ batch_of_lines.shape[0], batch_of_lines.shape()[1] - 1,
- *      path_points.shape()[0] ]
+ *      3D data structre of shape [ batch_of_segments_points.shape[0], batch_of_segments_points.shape()[1] - 1,
+ *                                  path.shape()[0] ]
  */
 template <typename P, typename L> auto 
-distPointsToLineSegments2D(P &&path_tensor, L &&batches_of_trajectories) 
+distPointsToLineSegments2D(P &&path, L &&batch_of_segments_points) 
 {
-  auto path_points = xt::view(path_tensor, xt::all(), xt::range(0, 2));
+  auto path_points = xt::view(path, xt::all(), xt::range(0, 2));
   auto batch_of_lines =
-      xt::view(batches_of_trajectories, xt::all(), xt::all(), xt::range(0, 2));
+      xt::view(batch_of_segments_points, xt::all(), xt::all(), xt::range(0, 2));
 
 
   auto &&closest_points = closestPointsOnLinesSegment2D(path_points, 
