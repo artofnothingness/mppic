@@ -16,7 +16,7 @@
 static auto toStr = [](auto &&container) {
   std::stringstream ss;
   ss << "[ ";
-  for (auto val : container) {
+  for (auto &val : container) {
     ss << val << ' ';
   }
   ss << "]";
@@ -51,7 +51,6 @@ TEST_CASE("Closest points on Line Segments 2D", "[geometry]") {
   auto bench_points = Array::from_shape({bench_i, 2});
   auto bench_lines = Array::from_shape({300, 20, 2});
   bench_lines.fill(20);
-  bench_lines.fill(10);
 
 
 #ifdef DO_BENCHMARKS

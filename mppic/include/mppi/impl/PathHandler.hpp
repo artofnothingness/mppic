@@ -4,8 +4,8 @@
 
 namespace mppi::handlers {
 
-template <typename Iter, typename Stamp> auto 
-PathHandler::
+template <typename Iter, typename Stamp> 
+auto PathHandler::
 transformGlobalPlan(Iter begin, Iter end, 
                     const Stamp &stamp, 
                     const std::string &frame)
