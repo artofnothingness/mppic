@@ -41,7 +41,8 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
 
     std::string frame = "odom";
     auto time = node->get_clock()->now();
-    auto setHeader = [&](auto msg) {
+
+    auto setHeader = [&](auto &&msg) {
       msg.header.frame_id = frame;
       msg.header.stamp = time;
     };
@@ -59,7 +60,7 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
 
     fillPath(poses_count);
 
-    CHECK_NOTHROW(optimizer.evalNextControl(ps, twist, path));
+    CHECK_NOTHROW(optimizer.evalNextBestControl(ps, twist, path));
 
 #ifdef DO_BENCHMARKS
     WARN("Path with " << poses_count);

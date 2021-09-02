@@ -14,38 +14,35 @@
 namespace mppi {
 
 template <typename T,
-          typename Tensor = xt::xarray<T>,
-          typename Model = Tensor(const Tensor &)>
+          typename Model = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &)>
 class Controller : public nav2_core::Controller {
 
 public:
   Controller() = default;
   ~Controller() override = default;
 
-  auto configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
+  void configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
                  std::string node_name,
                  const std::shared_ptr<tf2_ros::Buffer> &tf,
-                 const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros) 
-  -> void override;
+                 const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros) final;
 
-  auto cleanup() -> void override;
-  auto activate() -> void override;
-  auto deactivate() -> void override;
+  void cleanup() final;
+  void activate() final;
+  void deactivate() final;
 
   auto computeVelocityCommands(const geometry_msgs::msg::PoseStamped &pose,
                                const geometry_msgs::msg::Twist &velocity)
   -> geometry_msgs::msg::TwistStamped final;
 
-  auto setPlan(const nav_msgs::msg::Path &path) 
-  -> void final 
+  void setPlan(const nav_msgs::msg::Path &path) final 
   {
     path_handler_.setPath(path);
   }
 
 private:
-  auto getParams() -> void;
-  auto setPublishers() -> void;
-  auto createComponents() -> void;
+  void getParams();
+  void setPublishers();
+  void createComponents();
 
 private:
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
@@ -56,7 +53,7 @@ private:
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>>
       transformed_path_pub_;
 
-  optimization::Optimizer<T, Tensor, Model> optimizer_;
+  optimization::Optimizer<T, Model> optimizer_;
   handlers::PathHandler path_handler_;
   visualization::TrajectoryVisualizer trajectory_visualizer_;
 

@@ -39,14 +39,12 @@ public:
   -> nav_msgs::msg::Path;
 
 private:
-  auto getParams()
-  -> void;
+  void getParams();
 
-  auto transformPose(const std::string &frame,
+  bool transformPose(const std::string &frame,
                      const geometry_msgs::msg::PoseStamped &in_pose,
                      geometry_msgs::msg::PoseStamped &out_pose
-  ) const
-  -> bool;
+  ) const;
 
   double getMaxCostmapDist();
 
@@ -61,8 +59,7 @@ private:
   auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped &global_pose);
 
   template <typename T>
-  auto pruneGlobalPlan(const T &end) 
-  -> void 
+  void pruneGlobalPlan(const T &end)
   {
     global_plan_.poses.erase(global_plan_.poses.begin(), end);
   }
