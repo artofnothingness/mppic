@@ -18,9 +18,9 @@
 
 namespace mppi::geometry {
 
-template <typename T, typename H> auto
-toTwistStamped(const T &velocities,
-              const H &header) 
+template <typename T, typename H> 
+auto toTwistStamped(const T &velocities,
+                    const H &header) 
 -> geometry_msgs::msg::TwistStamped
 {
   geometry_msgs::msg::TwistStamped twist;
@@ -31,8 +31,8 @@ toTwistStamped(const T &velocities,
   return twist;
 }
 
-template <typename T, typename S> auto
-toTwistStamped(const T &velocities, 
+template <typename T, typename S> 
+auto toTwistStamped(const T &velocities, 
                const S &stamp, 
                const std::string &frame) 
 -> geometry_msgs::msg::TwistStamped 
@@ -45,16 +45,16 @@ toTwistStamped(const T &velocities,
   return twist;
 }
 
-template <typename T> auto 
-toTensor(const nav_msgs::msg::Path &path) 
+template <typename T> 
+auto toTensor(const nav_msgs::msg::Path &path) 
 -> xt::xtensor<T, 2> 
 {
-  size_t size = path.poses.size();
+  size_t path_size = path.poses.size();
   static constexpr size_t last_dim_size = 3;
 
-  xt::xtensor<T, 2> points = xt::empty<T>({size, last_dim_size});
+  xt::xtensor<T, 2> points = xt::empty<T>({path_size, last_dim_size});
 
-  for (size_t i = 0; i < size; ++i) {
+  for (size_t i = 0; i < path_size; ++i) {
     points(i, 0) = path.poses[i].pose.position.x;
     points(i, 1) = path.poses[i].pose.position.y;
     points(i, 2) = tf2::getYaw(path.poses[i].pose.orientation);
@@ -63,8 +63,8 @@ toTensor(const nav_msgs::msg::Path &path)
   return points;
 }
 
-template <typename T> auto 
-hypot(const T &p1, const T &p2) 
+template <typename T> 
+auto hypot(const T &p1, const T &p2) 
 {
   double dx = p1.x - p2.x;
   double dy = p1.y - p2.y;
@@ -74,16 +74,16 @@ hypot(const T &p1, const T &p2)
 }
 
 template <>
-inline auto 
-hypot(const geometry_msgs::msg::Pose &lhs,
+inline 
+auto hypot(const geometry_msgs::msg::Pose &lhs,
       const geometry_msgs::msg::Pose &rhs) 
 {
   return hypot(lhs.position, rhs.position);
 }
 
 template <>
-inline auto 
-hypot(const geometry_msgs::msg::PoseStamped &lhs,
+inline 
+auto hypot(const geometry_msgs::msg::PoseStamped &lhs,
       const geometry_msgs::msg::PoseStamped &rhs) 
 {
   return hypot(lhs.pose, rhs.pose);
@@ -99,9 +99,9 @@ hypot(const geometry_msgs::msg::PoseStamped &lhs,
  *      4D data structre of shape [ points.shape[0], points.shape()[1] - 1,
  *      line_points.shape()[0], line_points.shape()[1] ]
  */
-template <typename P, typename L> auto 
-closestPointsOnLinesSegment2D(P &&path_points,
-                              L &&batch_of_lines) 
+template <typename P, typename L> 
+auto closestPointsOnLinesSegment2D(P &&path_points,
+                                   L &&batch_of_lines) 
 {
   using namespace xt::placeholders;
   using T = typename std::decay_t<P>::value_type;
