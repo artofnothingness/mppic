@@ -8,8 +8,8 @@
 
 namespace mppi {
 
-template <typename T, typename Tensor, typename Model> auto
-Controller<T, Tensor, Model>::
+template <typename T, typename Model> 
+auto Controller<T, Model>::
 configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
           std::string node_name,
           const std::shared_ptr<tf2_ros::Buffer> &tf,
@@ -28,8 +28,8 @@ configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
   utils::configure(optimizer_, path_handler_, trajectory_visualizer_);
 }
 
-template <typename T, typename Tensor, typename Model> auto
-Controller<T, Tensor, Model>::
+template <typename T, typename Model> 
+auto Controller<T, Model>::
 cleanup() 
 -> void
 {
@@ -37,8 +37,8 @@ cleanup()
   utils::cleanup(optimizer_, path_handler_, trajectory_visualizer_);
 }
 
-template <typename T, typename Tensor, typename Model> auto
-Controller<T, Tensor, Model>::
+template <typename T, typename Model> 
+auto Controller<T, Model>::
 activate() 
 -> void
 {
@@ -46,8 +46,8 @@ activate()
   utils::activate(optimizer_, path_handler_, trajectory_visualizer_);
 }
 
-template <typename T, typename Tensor, typename Model> auto
-Controller<T, Tensor, Model>::
+template <typename T, typename Model> 
+auto Controller<T, Model>::
 deactivate() 
 -> void
 {
@@ -55,8 +55,8 @@ deactivate()
   utils::deactivate(optimizer_, path_handler_, trajectory_visualizer_);
 }
 
-template <typename T, typename Tensor, typename Model> auto
-Controller<T, Tensor, Model>::
+template <typename T, typename Model> 
+auto Controller<T, Model>::
 computeVelocityCommands(const geometry_msgs::msg::PoseStamped &pose, 
                         const geometry_msgs::msg::Twist &velocity)
 -> geometry_msgs::msg::TwistStamped 
@@ -64,7 +64,7 @@ computeVelocityCommands(const geometry_msgs::msg::PoseStamped &pose,
 
   std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
   auto &&transformed_plan = path_handler_.transformPath(pose);
-  auto &&cmd = optimizer_.evalNextControl(pose, velocity, transformed_plan);
+  auto &&cmd = optimizer_.evalNextBestControl(pose, velocity, transformed_plan);
   std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
   std::cout << "Control Loop time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
@@ -80,8 +80,8 @@ computeVelocityCommands(const geometry_msgs::msg::PoseStamped &pose,
   return cmd;
 }
 
-template <typename T, typename Tensor, typename Model> auto
-Controller<T, Tensor, Model>::
+template <typename T, typename Model> 
+auto Controller<T, Model>::
 getParams() 
 -> void
 {
@@ -92,8 +92,8 @@ getParams()
   visualize_ = getParam("visualize", true);
 }
 
-template <typename T, typename Tensor, typename Model> auto
-Controller<T, Tensor, Model>::
+template <typename T, typename Model> 
+auto Controller<T, Model>::
 setPublishers() 
 -> void
 {
@@ -101,8 +101,8 @@ setPublishers()
       "transformed_global_plan", 1);
 }
 
-template <typename T, typename Tensor, typename Model> auto
-Controller<T, Tensor, Model>::
+template <typename T, typename Model> 
+auto Controller<T, Model>::
 createComponents() 
 -> void
 {

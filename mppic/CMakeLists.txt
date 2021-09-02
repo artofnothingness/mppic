@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.5)
 project(mppic)
 
+set(CMAKE_BUILD_TYPE Release) # temporary hack coz conan rise error with colcon build without setting build type
+
 find_package(ament_cmake REQUIRED)
 find_package(nav2_common REQUIRED)
 
 include(cmake/conan.cmake)
 include(CTest)
 include(Catch)
-
 
 set(packages 
   rclcpp 
