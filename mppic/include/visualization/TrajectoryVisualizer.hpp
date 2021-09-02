@@ -1,7 +1,6 @@
 #pragma once
 
 #include "visualization/common.hpp"
-#include "xtensor/xarray.hpp"
 
 namespace mppi::visualization {
 
@@ -34,8 +33,8 @@ public:
   }
 
 
-  template <typename Container> auto
-  add(Container &&trajectory) 
+  template <typename Container> 
+  auto add(Container &&trajectory) 
   -> void 
   {
     auto &size = trajectory.shape()[0];
@@ -57,8 +56,8 @@ public:
     }
   }
 
-  template <typename Container> auto
-  add(Container &&trajectories, double batch_step, double time_step) 
+  template <typename Container> 
+  auto add(Container &&trajectories, double batch_step, double time_step) 
   -> void 
   {
     if (not trajectories.shape()[0])
