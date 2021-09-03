@@ -65,7 +65,7 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
 #ifdef DO_BENCHMARKS
     WARN("Path with " << poses_count);
     BENCHMARK("evalNextControl Benchmark") {
-      return optimizer.evalNextControl(ps, twist, path);
+      return optimizer.evalNextBestControl(ps, twist, path);
     };
 #endif
   }
