@@ -19,7 +19,7 @@ class Controller : public nav2_core::Controller {
 
 public:
   Controller() = default;
-  ~Controller() override = default;
+  virtual ~Controller() = default;
 
   void configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
                  std::string node_name,
@@ -43,6 +43,8 @@ private:
   void getParams();
   void setPublishers();
   void createComponents();
+  void handleVisualizations(const geometry_msgs::msg::PoseStamped &robot_pose, 
+                            const nav_msgs::msg::Path &transformed_plan);
 
 private:
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
