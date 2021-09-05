@@ -18,13 +18,13 @@ namespace mppi::optimization {
 template <typename T, typename Model> 
 auto Optimizer<T, Model>::
 evalNextBestControl(const geometry_msgs::msg::PoseStamped &robot_pose,
-                const geometry_msgs::msg::Twist &robot_speed,
-                const nav_msgs::msg::Path &plan) 
+                    const geometry_msgs::msg::Twist &robot_speed,
+                    const nav_msgs::msg::Path &plan) 
 -> geometry_msgs::msg::TwistStamped 
 {
   for (int i = 0; i < iteration_count_; ++i) {
     generated_trajectories_ = generateNoisedTrajectories(robot_pose, robot_speed);
-    auto costs = evalBatchesCosts(generated_trajectories_, robot_pose, plan);
+    auto costs = evalBatchesCosts(generated_trajectories_, plan, robot_pose);
     updateControlSequence(costs);
   }
   return getControlFromSequence(plan.header.stamp, costmap_ros_->getBaseFrameID());
@@ -106,7 +106,7 @@ generateNoisedTrajectories(const geometry_msgs::msg::PoseStamped &pose,
 
 template <typename T, typename Model> 
 auto Optimizer<T, Model>::
-generateNoisedControlBatches() 
+generateNoisedControlBatches() const
 -> xt::xtensor<T, 3>
 {
   auto v_noises =
@@ -222,8 +222,8 @@ integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped &pose) const
 template <typename T, typename Model> 
 auto Optimizer<T, Model>::
 evalBatchesCosts(const xt::xtensor<T, 3> &batches_of_trajectories, 
-                 const geometry_msgs::msg::PoseStamped &robot_pose,
-                 const nav_msgs::msg::Path &global_plan) const
+                 const nav_msgs::msg::Path &global_plan,
+                 const geometry_msgs::msg::PoseStamped &robot_pose) const
 -> xt::xtensor<T, 1>
 {
   using namespace xt::placeholders;
@@ -234,14 +234,11 @@ evalBatchesCosts(const xt::xtensor<T, 3> &batches_of_trajectories,
     return costs;
 
   auto &&path_tensor = geometry::toTensor<T>(global_plan);
-
-  approx_reference_cost_ ? evalApproxReferenceCost(path_tensor, batches_of_trajectories, costs)
-                         : evalReferenceCost(path_tensor, batches_of_trajectories, costs);
-
-  evalGoalCost(path_tensor, batches_of_trajectories, costs); 
-  evalGoalAngleCost(path_tensor, batches_of_trajectories, robot_pose, costs); 
+  approx_reference_cost_ ? evalApproxReferenceCost(batches_of_trajectories, path_tensor, costs)
+                         : evalReferenceCost(batches_of_trajectories, path_tensor, costs);
+  evalGoalCost(batches_of_trajectories, path_tensor, costs); 
+  evalGoalAngleCost(batches_of_trajectories, path_tensor, robot_pose, costs); 
   evalObstacleCost(batches_of_trajectories, costs);
-
   return costs;
 }
 
@@ -249,8 +246,8 @@ evalBatchesCosts(const xt::xtensor<T, 3> &batches_of_trajectories,
 template <typename T, typename Model>
 template <typename B, typename P, typename C> 
 void Optimizer<T, Model>::
-evalGoalCost(const P &global_plan,
-             const B &batches_of_trajectories,
+evalGoalCost(const B &batches_of_trajectories,
+             const P &global_plan,
              C &costs) const 
 {
   const auto goal_points = xt::view(global_plan, -1, xt::range(0, 2));
@@ -268,8 +265,8 @@ evalGoalCost(const P &global_plan,
 template <typename T, typename Model>
 template <typename P, typename B, typename C> 
 void Optimizer<T, Model>::
-evalApproxReferenceCost(const P &global_plan, 
-                        const B &batches_of_trajectories,
+evalApproxReferenceCost(const B &batches_of_trajectories,
+                        const P &global_plan,
                         C &costs) const 
 {
   auto path_points = xt::view(global_plan, xt::all(), xt::range(0, 2));
@@ -283,8 +280,8 @@ evalApproxReferenceCost(const P &global_plan,
 template <typename T, typename Model>
 template <typename P, typename B, typename C> 
 void Optimizer<T, Model>::
-evalReferenceCost(const P &global_plan, 
-                  const B &batches_of_trajectories, 
+evalReferenceCost(const B &batches_of_trajectories, 
+                  const P &global_plan,
                   C &costs) const 
 {
   xt::xtensor<T, 3> path_to_batches_dists = 
@@ -312,7 +309,7 @@ evalObstacleCost(const B &batches_of_trajectories_points,
   };
 
   for (size_t i = 0; i < static_cast<size_t>(batch_size_); ++i) {
-    double min_dist = std::numeric_limits<T>::max()/2;
+    double min_dist = std::numeric_limits<T>::max();
     bool is_closest_point_inflated = false;
     size_t j = 0;
     for (; j < static_cast<size_t>(time_steps_); ++j) {
@@ -343,8 +340,8 @@ evalObstacleCost(const B &batches_of_trajectories_points,
 template <typename T, typename Model>
 template <typename P, typename B, typename C> 
 void Optimizer<T, Model>::
-evalGoalAngleCost(const P &global_plan,
-                  const B &batch_of_trajectories, 
+evalGoalAngleCost(const B &batch_of_trajectories, 
+                  const P &global_plan,
                   const geometry_msgs::msg::PoseStamped &robot_pose,
                   C &costs) const 
 {
