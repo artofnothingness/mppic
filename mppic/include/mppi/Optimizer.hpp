@@ -41,10 +41,10 @@ public:
                        const nav_msgs::msg::Path &plan)
   -> geometry_msgs::msg::TwistStamped;
 
-  auto getGeneratedTrajectories() 
+  auto getGeneratedTrajectories() const
   -> xt::xtensor<T, 3> { return generated_trajectories_; }
 
-  auto evalTrajectoryFromControlSequence(const geometry_msgs::msg::PoseStamped &pose) 
+  auto evalTrajectoryFromControlSequence(const geometry_msgs::msg::PoseStamped &pose) const
   -> xt::xtensor<T, 2> { return integrateControlSequence(pose); }
 
 private:
@@ -67,7 +67,7 @@ private:
    *
    * @return Control batches tensor of shape [ batch_size_, time_steps_, 2] where 2 stands for v, w
    */
-  auto generateNoisedControlBatches()
+  auto generateNoisedControlBatches() const
   -> xt::xtensor<T, 3>;
 
   void applyControlConstraints();
@@ -101,8 +101,8 @@ private:
    * @return Cost for each batch, tensor of shape [ batch_size ]
    */
   auto evalBatchesCosts(const xt::xtensor<T, 3> &batches_of_trajectories,
-                        const geometry_msgs::msg::PoseStamped &robot_pose,
-                        const nav_msgs::msg::Path &global_plan) const 
+                        const nav_msgs::msg::Path &global_plan, 
+                        const geometry_msgs::msg::PoseStamped &robot_pose) const 
   -> xt::xtensor<T, 1>;
  
   /**
@@ -115,8 +115,8 @@ private:
    * @param costs [out] add reference cost values to this tensor 
    */
   template <typename P, typename B, typename C>
-  void evalReferenceCost(const P &global_plan, 
-                         const B &batches_of_trajectories,
+  void evalReferenceCost(const B &batches_of_trajectories,
+                         const P &global_plan, 
                          C &costs) const;
 
   /**
@@ -129,8 +129,8 @@ private:
    * @param costs [out] add reference cost values to this tensor 
    */
   template <typename P, typename B, typename C>
-  void evalApproxReferenceCost(const P &global_plan, 
-                               const B &batches_of_trajectories, 
+  void evalApproxReferenceCost(const B &batches_of_trajectories, 
+                               const P &global_plan, 
                                C &costs) const;
 
 
@@ -144,7 +144,9 @@ private:
    * @param costs [out] add reference cost values to this tensor 
    */
   template <typename B, typename P, typename C>
-  void evalGoalCost(const P &global_plan, const B &batch_of_trajectories, C &costs) const;
+  void evalGoalCost(const B &batch_of_trajectories,
+                    const P &global_plan, 
+                    C &costs) const;
 
   template <typename B, typename C>
   /**
@@ -165,8 +167,8 @@ private:
    * @param costs [out] add goal angle cost values to this tensor 
    */
   template <typename P, typename B, typename C>
-  void evalGoalAngleCost(const P &global_plan,
-                         const B &batch_of_trajectories, 
+  void evalGoalAngleCost(const B &batch_of_trajectories, 
+                         const P &global_plan,
                          const geometry_msgs::msg::PoseStamped &robot_pose,
                          C &costs) const;
 

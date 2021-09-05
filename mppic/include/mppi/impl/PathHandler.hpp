@@ -11,7 +11,7 @@ transformGlobalPlan(Iter begin, Iter end,
                     const std::string &frame)
 -> nav_msgs::msg::Path 
 {
-  auto transform_pose = [&](const auto &global_plan_pose) {
+  auto transformToFrame = [&](const auto &global_plan_pose) {
     geometry_msgs::msg::PoseStamped global_pose;
     geometry_msgs::msg::PoseStamped local_pose;
 
@@ -24,7 +24,8 @@ transformGlobalPlan(Iter begin, Iter end,
   };
 
   nav_msgs::msg::Path plan;
-  std::transform(begin, end, std::back_inserter(plan.poses), transform_pose);
+
+  std::transform(begin, end, std::back_inserter(plan.poses), transformToFrame);
   plan.header.frame_id = frame;
   plan.header.stamp = stamp;
 
