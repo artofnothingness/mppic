@@ -13,39 +13,54 @@
 #include "xtensor/xarray.hpp"
 #include <xtensor/xview.hpp>
 
-namespace mppi::optimization {
+namespace mppi::optimization
+{
 
-template <typename T,
-          typename Model = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &)>
-class Optimizer {
+template<typename T,
+  typename Model = xt::xtensor<T, 2>(const xt::xtensor<T, 2>&)>
+class Optimizer
+{
 public:
   Optimizer() = default;
   ~Optimizer() = default;
 
-  Optimizer(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
-            const std::string &node_name,
-            const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros,
-            Model &&model)
-      : parent_(parent),
-        node_name_(node_name),
-        costmap_ros_(costmap_ros),
-        model_(model) {}
+  Optimizer(
+    const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> & parent,
+    const std::string & node_name,
+    const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros,
+    Model && model)
+  : parent_(parent),
+    node_name_(node_name),
+    costmap_ros_(costmap_ros),
+    model_(model) {}
 
   void on_configure();
-  void on_cleanup() {};
-  void on_activate() {};
-  void on_deactivate() {};
+  void on_cleanup() {}
+  void on_activate() {}
+  void on_deactivate() {}
 
-  auto evalNextBestControl(const geometry_msgs::msg::PoseStamped &robot_pose,
-                       const geometry_msgs::msg::Twist &robot_speed,
-                       const nav_msgs::msg::Path &plan)
-  -> geometry_msgs::msg::TwistStamped;
+  auto evalNextBestControl(
+    const geometry_msgs::msg::PoseStamped & robot_pose,
+    const geometry_msgs::msg::Twist & robot_speed,
+    const nav_msgs::msg::Path & plan)
+  ->geometry_msgs::msg::TwistStamped;
 
   auto getGeneratedTrajectories() const
-  -> xt::xtensor<T, 3> { return generated_trajectories_; }
+  ->xt::xtensor<T, 3>
+  {
+    return generated_trajectories_;
+  }
 
-  auto evalTrajectoryFromControlSequence(const geometry_msgs::msg::PoseStamped &pose) const
-  -> xt::xtensor<T, 2> { return integrateControlSequence(pose); }
+  void propagateSequenceVelocities(
+    const auto & velocities_sequence,
+    const geometry_msgs::msg::Twist & initial_speed,
+    auto & batch) const;
+
+
+  auto evalTrajectoryFromControlSequence(
+    const geometry_msgs::msg::PoseStamped & robot_pose,
+    const geometry_msgs::msg::Twist & robot_speed) const
+  ->xt::xtensor<T, 2>;
 
 private:
   void getParams();
@@ -57,9 +72,10 @@ private:
    *
    * @return trajectories: tensor of shape [ batch_size_, time_steps_, 3 ]  where 3 stands for x, y, yaw
    */
-  auto generateNoisedTrajectories(const geometry_msgs::msg::PoseStamped &robot_pose,
-                                  const geometry_msgs::msg::Twist &robot_speed)
-  -> xt::xtensor<T, 3>;
+  auto generateNoisedTrajectories(
+    const geometry_msgs::msg::PoseStamped & robot_pose,
+    const geometry_msgs::msg::Twist & robot_speed)
+  ->xt::xtensor<T, 3>;
 
   /**
    * @brief Generate random controls by gaussian noise with mean in
@@ -68,7 +84,7 @@ private:
    * @return Control batches tensor of shape [ batch_size_, time_steps_, 2] where 2 stands for v, w
    */
   auto generateNoisedControlBatches() const
-  -> xt::xtensor<T, 3>;
+  ->xt::xtensor<T, 3>;
 
   void applyControlConstraints();
 
@@ -77,9 +93,9 @@ private:
    *
    * @param twist current robot speed
    */
-  void setBatchesVelocities(const geometry_msgs::msg::Twist &robot_speed);
+  void evalBatchesVelocities(const geometry_msgs::msg::Twist & robot_speed);
 
-  void setBatchesInitialVelocities(const geometry_msgs::msg::Twist &robot_speed);
+  void setBatchesInitialVelocities(const geometry_msgs::msg::Twist & robot_speed);
 
   /**
    * @brief predict and propagate velocities in batches_ using model
@@ -87,76 +103,68 @@ private:
    */
   void propagateBatchesVelocitiesFromInitials();
 
-  auto integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped &robot_pose) const 
-  -> xt::xtensor<T, 3>;
+  auto integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped & robot_pose) const
+  ->xt::xtensor<T, 3>;
 
-  auto integrateControlSequence(const geometry_msgs::msg::PoseStamped &robot_pose) const 
-  -> xt::xtensor<T, 2>;
+  auto integrateSequence(
+    const auto & velocities_sequence,
+    const geometry_msgs::msg::PoseStamped & robot_pose) const
+  ->xt::xtensor<T, 2>;
 
   /**
    * @brief Evaluate cost for each batch
    *
-   * @param batches_of_trajectories batch of trajectories: tensor of shape [ batch_size_, time_steps_, 3 ] 
+   * @param batches_of_trajectories batch of trajectories: tensor of shape [ batch_size_, time_steps_, 3 ]
    * where 3 stands for x, y, yaw
    * @return Cost for each batch, tensor of shape [ batch_size ]
    */
-  auto evalBatchesCosts(const xt::xtensor<T, 3> &batches_of_trajectories,
-                        const nav_msgs::msg::Path &global_plan, 
-                        const geometry_msgs::msg::PoseStamped &robot_pose) const 
-  -> xt::xtensor<T, 1>;
- 
+  auto evalBatchesCosts(
+    const xt::xtensor<T, 3> & batches_of_trajectories,
+    const nav_msgs::msg::Path & global_plan,
+    const geometry_msgs::msg::PoseStamped & robot_pose) const
+  ->xt::xtensor<T, 1>;
+
   /**
    * @brief Evaluate cost related to trajectories path alignment
    *
-   * @tparam P type of global plan (tensor like)
-   * @tparam B tensor type of batches trajectories
-   * @tparam C costs type
-   * @param batches_of_trajectories 
-   * @param costs [out] add reference cost values to this tensor 
+   * @param batches_of_trajectories
+   * @param costs [out] add reference cost values to this tensor
    */
-  template <typename P, typename B, typename C>
-  void evalReferenceCost(const B &batches_of_trajectories,
-                         const P &global_plan, 
-                         C &costs) const;
+  void evalReferenceCost(
+    const auto & batches_of_trajectories,
+    const auto & global_plan,
+    auto & costs) const;
 
   /**
    * @brief Evaluate cost related to trajectories path alignment using approximate path to segment function
    *
-   * @tparam P type of global plan (tensor like)
-   * @tparam B tensor type of batches trajectories
-   * @tparam C costs type
-   * @param batches_of_trajectories 
-   * @param costs [out] add reference cost values to this tensor 
+   * @param batches_of_trajectories
+   * @param costs [out] add reference cost values to this tensor
    */
-  template <typename P, typename B, typename C>
-  void evalApproxReferenceCost(const B &batches_of_trajectories, 
-                               const P &global_plan, 
-                               C &costs) const;
-
+  void evalApproxReferenceCost(
+    const auto & batches_of_trajectories,
+    const auto & global_plan,
+    auto & costs) const;
 
 
   /**
-   * @brief Evaluate cost related to goal following 
+   * @brief Evaluate cost related to goal following
    *
-   * @tparam P type of global plan (tensor like)
-   * @tparam B tensor type of batches trajectories
-   * @tparam C costs type
-   * @param costs [out] add reference cost values to this tensor 
+   * @param costs [out] add reference cost values to this tensor
    */
-  template <typename B, typename P, typename C>
-  void evalGoalCost(const B &batch_of_trajectories,
-                    const P &global_plan, 
-                    C &costs) const;
+  void evalGoalCost(
+    const auto & batch_of_trajectories,
+    const auto & global_plan,
+    auto & costs) const;
 
-  template <typename B, typename C>
   /**
-   * @brief Evaluate cost related to obstacle avoidance 
+   * @brief Evaluate cost related to obstacle avoidance
    *
    * @tparam B tensor type of batches trajectories
    * @tparam C costs type
-   * @param costs [out] add obstacle cost values to this tensor 
+   * @param costs [out] add obstacle cost values to this tensor
    */
-  void evalObstacleCost(const B &batch_of_trajectories, C &costs) const;
+  void evalObstacleCost(const auto & batch_of_trajectories, auto & costs) const;
 
   /**
    * @brief Evaluate cost related to robot orientation at goal pose (considered only if robot near last goal in current plan)
@@ -164,15 +172,15 @@ private:
    * @tparam P type of global plan (tensor like)
    * @tparam B tensor type of batches trajectories
    * @tparam C costs type
-   * @param costs [out] add goal angle cost values to this tensor 
+   * @param costs [out] add goal angle cost values to this tensor
    */
-  template <typename P, typename B, typename C>
-  void evalGoalAngleCost(const B &batch_of_trajectories, 
-                         const P &global_plan,
-                         const geometry_msgs::msg::PoseStamped &robot_pose,
-                         C &costs) const;
+  void evalGoalAngleCost(
+    const auto & batch_of_trajectories,
+    const auto & global_plan,
+    const geometry_msgs::msg::PoseStamped & robot_pose,
+    auto & costs) const;
 
-  auto costAtPose(const double & x, const double & y) const -> double;
+  auto costAtPose(const double & x, const double & y) const->double;
   bool inCollision(unsigned char cost) const;
 
   /**
@@ -180,15 +188,14 @@ private:
    *
    * @param costs batches costs, tensor of shape [ batch_size ]
    */
-  void updateControlSequence(const xt::xtensor<T, 1> &costs);
+  void updateControlSequence(const xt::xtensor<T, 1> & costs);
 
   /**
    * @brief Get first control from control_sequence_
    *
    */
-  template <typename S>
-  auto getControlFromSequence(const S &stamp, const std::string &frame)
-  -> geometry_msgs::msg::TwistStamped;
+  auto getControlFromSequence(const auto & stamp, const std::string & frame)
+  ->geometry_msgs::msg::TwistStamped;
 
   auto getBatchesControls() const;
   auto getBatchesControls();
@@ -243,7 +250,7 @@ private:
   size_t goal_angle_cost_weight_;
 
   /**
-   * @batches_ tensor of shape [ batch_size, time_steps, 5 ] where 5 stands for 
+   * @batches_ tensor of shape [ batch_size, time_steps, 5 ] where 5 stands for
    * robot linear, angluar velocities, linear control, angular control velocities, dt (time on which this control will be applied)
    */
   xt::xtensor<T, 3> batches_;
