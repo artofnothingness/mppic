@@ -11,30 +11,34 @@
 #include "utils/common.hpp"
 #include "utils/geometry.hpp"
 
-namespace mppi {
+namespace mppi
+{
 
-template <typename T,
-          typename Model = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &)>
-class Controller : public nav2_core::Controller {
+template<typename T,
+  typename Model = xt::xtensor<T, 2>(const xt::xtensor<T, 2>&)>
+class Controller : public nav2_core::Controller
+{
 
 public:
   Controller() = default;
   virtual ~Controller() = default;
 
-  void configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
-                 std::string node_name,
-                 const std::shared_ptr<tf2_ros::Buffer> &tf,
-                 const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros) final;
+  void configure(
+    const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> & parent,
+    std::string node_name,
+    const std::shared_ptr<tf2_ros::Buffer> & tf,
+    const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros) final;
 
   void cleanup() final;
   void activate() final;
   void deactivate() final;
 
-  auto computeVelocityCommands(const geometry_msgs::msg::PoseStamped &pose,
-                               const geometry_msgs::msg::Twist &velocity)
-  -> geometry_msgs::msg::TwistStamped final;
+  auto computeVelocityCommands(
+    const geometry_msgs::msg::PoseStamped & pose,
+    const geometry_msgs::msg::Twist & velocity)
+  ->geometry_msgs::msg::TwistStamped final;
 
-  void setPlan(const nav_msgs::msg::Path &path) final 
+  void setPlan(const nav_msgs::msg::Path & path) final
   {
     path_handler_.setPath(path);
   }
@@ -43,8 +47,10 @@ private:
   void getParams();
   void setPublishers();
   void createComponents();
-  void handleVisualizations(const geometry_msgs::msg::PoseStamped &robot_pose, 
-                            const nav_msgs::msg::Path &transformed_plan);
+  void handleVisualizations(
+    const geometry_msgs::msg::PoseStamped & robot_pose,
+    const geometry_msgs::msg::Twist & robot_speed,
+    const nav_msgs::msg::Path & transformed_plan);
 
 private:
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
@@ -53,7 +59,7 @@ private:
   std::string node_name_;
 
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>>
-      transformed_path_pub_;
+  transformed_path_pub_;
 
   optimization::Optimizer<T, Model> optimizer_;
   handlers::PathHandler path_handler_;
