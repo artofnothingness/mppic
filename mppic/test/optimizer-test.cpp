@@ -23,12 +23,12 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name);
 
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("cost_map_node");
-  auto st =  rclcpp_lifecycle::State{};
+  auto st = rclcpp_lifecycle::State{};
 
-  auto &model = mppi::models::NaiveModel<T>;
+  auto & model = mppi::models::NaiveModel<T>;
 
   auto optimizer =
-      mppi::optimization::Optimizer<T>(node, node_name, costmap_ros, model);
+    mppi::optimization::Optimizer<T>(node, node_name, costmap_ros, model);
 
   costmap_ros->on_configure(st);
   optimizer.on_configure();
@@ -42,10 +42,10 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
     std::string frame = "odom";
     auto time = node->get_clock()->now();
 
-    auto setHeader = [&](auto &&msg) {
-      msg.header.frame_id = frame;
-      msg.header.stamp = time;
-    };
+    auto setHeader = [&](auto && msg) {
+        msg.header.frame_id = frame;
+        msg.header.stamp = time;
+      };
 
     nav_msgs::msg::Path path;
     geometry_msgs::msg::PoseStamped ps;
@@ -53,10 +53,10 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
     setHeader(path);
 
     auto fillPath = [&](size_t count) {
-      for (size_t i = 0; i < count; i++) {
-        path.poses.push_back(ps);
-      }
-    };
+        for (size_t i = 0; i < count; i++) {
+          path.poses.push_back(ps);
+        }
+      };
 
     fillPath(poses_count);
 
@@ -72,12 +72,12 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
 
   optimizer.on_deactivate();
   optimizer.on_cleanup();
-
   costmap_ros->on_cleanup(st);
   costmap_ros.reset();
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[])
+{
   rclcpp::init(argc, argv);
   int result = Catch::Session().run(argc, argv);
 
