@@ -28,10 +28,10 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
   auto & model = mppi::models::NaiveModel<T>;
 
   auto optimizer =
-    mppi::optimization::Optimizer<T>(node, node_name, costmap_ros, model);
+    mppi::optimization::Optimizer<T>();
 
   costmap_ros->on_configure(st);
-  optimizer.on_configure();
+  optimizer.on_configure(node, node_name, costmap_ros, model);
   optimizer.on_activate();
 
   size_t poses_count = GENERATE(10, 30, 100);

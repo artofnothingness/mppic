@@ -36,7 +36,7 @@ public:
   auto computeVelocityCommands(
     const geometry_msgs::msg::PoseStamped & pose,
     const geometry_msgs::msg::Twist & velocity)
-  ->geometry_msgs::msg::TwistStamped final;
+  -> geometry_msgs::msg::TwistStamped final;
 
   void setPlan(const nav_msgs::msg::Path & path) final
   {
@@ -46,7 +46,7 @@ public:
 private:
   void getParams();
   void setPublishers();
-  void createComponents();
+  void configureComponents();
   void handleVisualizations(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed,

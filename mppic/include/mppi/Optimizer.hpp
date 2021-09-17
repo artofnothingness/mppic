@@ -24,17 +24,12 @@ public:
   Optimizer() = default;
   ~Optimizer() = default;
 
-  Optimizer(
+  void on_configure(
     const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> & parent,
     const std::string & node_name,
     const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros,
-    Model && model)
-  : parent_(parent),
-    node_name_(node_name),
-    costmap_ros_(costmap_ros),
-    model_(model) {}
+    Model && model);
 
-  void on_configure();
   void on_cleanup() {}
   void on_activate() {}
   void on_deactivate() {}

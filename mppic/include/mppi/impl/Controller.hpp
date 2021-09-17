@@ -23,30 +23,37 @@ void Controller<T, Model>::configure(
 
   getParams();
   setPublishers();
-  createComponents();
-
-  utils::configure(optimizer_, path_handler_, trajectory_visualizer_);
+  configureComponents();
 }
 
 template<typename T, typename Model>
 void Controller<T, Model>::cleanup()
 {
+  optimizer_.on_cleanup();
+  path_handler_.on_cleanup();
+  trajectory_visualizer_.on_cleanup();
+  
   transformed_path_pub_.reset();
-  utils::cleanup(optimizer_, path_handler_, trajectory_visualizer_);
 }
 
 template<typename T, typename Model>
 void Controller<T, Model>::activate()
 {
   transformed_path_pub_->on_activate();
-  utils::activate(optimizer_, path_handler_, trajectory_visualizer_);
+
+  optimizer_.on_activate();
+  path_handler_.on_activate();
+  trajectory_visualizer_.on_activate();
 }
 
 template<typename T, typename Model>
 void Controller<T, Model>::deactivate()
 {
   transformed_path_pub_->on_deactivate();
-  utils::deactivate(optimizer_, path_handler_, trajectory_visualizer_);
+  optimizer_.on_deactivate();
+  path_handler_.on_deactivate();
+  trajectory_visualizer_.on_deactivate();
+
 }
 
 template<typename T, typename Model>
@@ -97,16 +104,13 @@ void Controller<T, Model>::setPublishers()
 }
 
 template<typename T, typename Model>
-void Controller<T, Model>::createComponents()
+void Controller<T, Model>::configureComponents()
 {
   auto & model = models::NaiveModel<T>;
 
-  optimizer_ = optimization::Optimizer<T>(parent_, node_name_, costmap_ros_, model);
-  path_handler_ =
-    handlers::PathHandler(parent_, node_name_, costmap_ros_, tf_buffer_);
-
-  trajectory_visualizer_ = visualization::TrajectoryVisualizer(
-    parent_, costmap_ros_->getGlobalFrameID());
+  optimizer_.on_configure(parent_, node_name_, costmap_ros_, model);
+  path_handler_.on_configure(parent_, node_name_, costmap_ros_, tf_buffer_);
+  trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 }
 
 } // namespace mppi

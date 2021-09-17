@@ -17,14 +17,12 @@ public:
   PathHandler() = default;
   ~PathHandler() = default;
 
-  PathHandler(
+  void on_configure(
     const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> & parent,
     const std::string & node_name,
     const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap,
-    const std::shared_ptr<tf2_ros::Buffer> & buffer)
-  : parent_(parent), node_name_(node_name), costmap_(costmap), tf_buffer_(buffer) {}
+    const std::shared_ptr<tf2_ros::Buffer> & buffer);
 
-  void on_configure();
   void on_cleanup();
   void on_activate();
   void on_deactivate();
