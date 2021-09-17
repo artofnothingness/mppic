@@ -9,15 +9,14 @@ class TrajectoryVisualizer
 {
 public:
   TrajectoryVisualizer() = default;
-
-  TrajectoryVisualizer(
+  auto on_configure(
     const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> & parent,
     const std::string & frame_id)
-  : frame_id_(frame_id), parent_(parent) {}
-
-  auto on_configure()
   ->void
   {
+    frame_id_ = frame_id;
+    parent_ = parent;
+
     trajectories_publisher_ =
       parent_->create_publisher<visualization_msgs::msg::MarkerArray>("/trajectories", 1);
 
