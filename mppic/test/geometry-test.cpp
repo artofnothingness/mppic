@@ -1,9 +1,3 @@
-#define CATCH_CONFIG_RUNNER
-
-#ifdef DO_BENCHMARKS
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-#endif
-
 #include <catch2/catch.hpp>
 
 #include <cmath>
@@ -176,10 +170,4 @@ TEST_CASE("Distance Points To Line Segments 2D", "[geometry]") {
     CHECK(result.shape()[1] == result_2_dim);
     CHECK(result.shape()[2] == result_3_dim);
   }
-}
-
-int main(int argc, char * argv[])
-{
-  int result = Catch::Session().run(argc, argv);
-  return result;
 }

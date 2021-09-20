@@ -1,9 +1,3 @@
-#define CATCH_CONFIG_RUNNER
-
-#ifdef DO_BENCHMARKS
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-#endif
-
 #include <catch2/catch.hpp>
 
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
@@ -74,13 +68,4 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
   optimizer.on_cleanup();
   costmap_ros->on_cleanup(st);
   costmap_ros.reset();
-}
-
-int main(int argc, char * argv[])
-{
-  rclcpp::init(argc, argv);
-  int result = Catch::Session().run(argc, argv);
-
-  rclcpp::shutdown();
-  return result;
 }
