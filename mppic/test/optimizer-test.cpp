@@ -117,7 +117,7 @@ TEST_CASE("Optimizer with obstacles", "") {
   auto optimizer = mppi::optimization::Optimizer<T>();
 
   costmap_ros->on_configure(st);
-  *costmap_ros->getCostmap() = *std::make_shared<nav2_costmap_2d::Costmap2D>(10, 10, 0.1, 0, 0, 255);
+  *costmap_ros->getCostmap() = *std::make_shared<nav2_costmap_2d::Costmap2D>(10, 10, 0.1, 0, 0, 0);
   optimizer.on_configure(node, node_name, costmap_ros, model);
   optimizer.on_activate();
 
