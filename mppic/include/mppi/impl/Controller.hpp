@@ -6,14 +6,15 @@
 #include "utils/common.hpp"
 #include "utils/geometry.hpp"
 
-namespace mppi {
+namespace mppi
+{
 
-template <typename T, typename Model> 
-void Controller<T, Model>::
-configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
-          std::string node_name,
-          const std::shared_ptr<tf2_ros::Buffer> &tf,
-          const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros) 
+template<typename T, typename Model>
+void Controller<T, Model>::configure(
+  const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> & parent,
+  std::string node_name,
+  const std::shared_ptr<tf2_ros::Buffer> & tf,
+  const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros)
 {
   parent_ = parent;
   costmap_ros_ = costmap_ros;
@@ -22,93 +23,94 @@ configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
 
   getParams();
   setPublishers();
-  createComponents();
-
-  utils::configure(optimizer_, path_handler_, trajectory_visualizer_);
+  configureComponents();
 }
 
-template <typename T, typename Model> 
-void Controller<T, Model>::
-cleanup() 
+template<typename T, typename Model>
+void Controller<T, Model>::cleanup()
 {
+  optimizer_.on_cleanup();
+  path_handler_.on_cleanup();
+  trajectory_visualizer_.on_cleanup();
+  
   transformed_path_pub_.reset();
-  utils::cleanup(optimizer_, path_handler_, trajectory_visualizer_);
 }
 
-template <typename T, typename Model> 
-void Controller<T, Model>::
-activate() 
+template<typename T, typename Model>
+void Controller<T, Model>::activate()
 {
   transformed_path_pub_->on_activate();
-  utils::activate(optimizer_, path_handler_, trajectory_visualizer_);
+
+  optimizer_.on_activate();
+  path_handler_.on_activate();
+  trajectory_visualizer_.on_activate();
 }
 
-template <typename T, typename Model> 
-void Controller<T, Model>::
-deactivate() 
+template<typename T, typename Model>
+void Controller<T, Model>::deactivate()
 {
   transformed_path_pub_->on_deactivate();
-  utils::deactivate(optimizer_, path_handler_, trajectory_visualizer_);
+  optimizer_.on_deactivate();
+  path_handler_.on_deactivate();
+  trajectory_visualizer_.on_deactivate();
+
 }
 
-template <typename T, typename Model> 
-auto Controller<T, Model>::
-computeVelocityCommands(const geometry_msgs::msg::PoseStamped &pose, 
-                        const geometry_msgs::msg::Twist &velocity)
--> geometry_msgs::msg::TwistStamped 
+template<typename T, typename Model>
+auto Controller<T, Model>::computeVelocityCommands(
+  const geometry_msgs::msg::PoseStamped & robot_pose,
+  const geometry_msgs::msg::Twist & robot_speed)
+->geometry_msgs::msg::TwistStamped
 {
-  auto &&transformed_plan = path_handler_.transformPath(pose);
-  auto &&cmd = optimizer_.evalNextBestControl(pose, velocity, transformed_plan);
+  auto && transformed_plan = path_handler_.transformPath(robot_pose);
+  auto && cmd = optimizer_.evalNextBestControl(
+    robot_pose, robot_speed, transformed_plan);
 
-  if(visualize_) 
-    handleVisualizations(pose, transformed_plan);
-    
+  if (visualize_) {
+    handleVisualizations(robot_pose, robot_speed, transformed_plan);
+  }
+
   return cmd;
 }
 
-template <typename T, typename Model> 
-void Controller<T, Model>::
-handleVisualizations(const geometry_msgs::msg::PoseStamped &robot_pose, 
-                     const nav_msgs::msg::Path &transformed_plan) 
+template<typename T, typename Model>
+void Controller<T, Model>::handleVisualizations(
+  const geometry_msgs::msg::PoseStamped & robot_pose,
+  const geometry_msgs::msg::Twist & robot_speed,
+  const nav_msgs::msg::Path & transformed_plan)
 {
-    trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories(), 5, 2);
-    trajectory_visualizer_.add(optimizer_.evalTrajectoryFromControlSequence(robot_pose));
-    trajectory_visualizer_.visualize();
-    trajectory_visualizer_.reset();
-    transformed_path_pub_->publish(transformed_plan);
+  trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories(), 5, 2);
+  trajectory_visualizer_.add(optimizer_.evalTrajectoryFromControlSequence(robot_pose, robot_speed));
+  trajectory_visualizer_.visualize();
+  trajectory_visualizer_.reset();
+  transformed_path_pub_->publish(transformed_plan);
 }
 
-template <typename T, typename Model> 
-void Controller<T, Model>::
-getParams() 
+template<typename T, typename Model>
+void Controller<T, Model>::getParams()
 {
-  auto getParam = [&](const std::string &param_name, auto default_value) {
-    std::string name = node_name_ + '.' + param_name;
-    return utils::getParam(name, default_value, parent_);
-  };
+  auto getParam = [&](const std::string & param_name, auto default_value) {
+      std::string name = node_name_ + '.' + param_name;
+      return utils::getParam(name, default_value, parent_);
+    };
   visualize_ = getParam("visualize", true);
 }
 
-template <typename T, typename Model> 
-void Controller<T, Model>::
-setPublishers() 
+template<typename T, typename Model>
+void Controller<T, Model>::setPublishers()
 {
   transformed_path_pub_ = parent_->create_publisher<nav_msgs::msg::Path>(
-      "transformed_global_plan", 1);
+    "transformed_global_plan", 1);
 }
 
-template <typename T, typename Model> 
-void Controller<T, Model>::
-createComponents() 
+template<typename T, typename Model>
+void Controller<T, Model>::configureComponents()
 {
-  auto &model = models::NaiveModel<T>;
+  auto & model = models::NaiveModel<T>;
 
-  optimizer_ = optimization::Optimizer<T>(parent_, node_name_, costmap_ros_, model);
-  path_handler_ =
-      handlers::PathHandler(parent_, node_name_, costmap_ros_, tf_buffer_);
-
-  trajectory_visualizer_ = visualization::TrajectoryVisualizer(
-      parent_, costmap_ros_->getGlobalFrameID());
+  optimizer_.on_configure(parent_, node_name_, costmap_ros_, model);
+  path_handler_.on_configure(parent_, node_name_, costmap_ros_, tf_buffer_);
+  trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 }
 
 } // namespace mppi
