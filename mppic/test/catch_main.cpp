@@ -1,7 +1,10 @@
 #define CATCH_CONFIG_MAIN // This tells the catch header to generate a main
 
-#include <catch2/catch.hpp>
+#ifdef DO_BENCHMARKS
+#define CATCH_CONFIG_ENABLE_BENCHMARKING
+#endif
 
+#include <catch2/catch.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 class RosLockGuard 
