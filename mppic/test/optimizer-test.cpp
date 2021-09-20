@@ -1,3 +1,7 @@
+#ifdef DO_BENCHMARKS
+#define CATCH_CONFIG_ENABLE_BENCHMARKING
+#endif
+
 #include <catch2/catch.hpp>
 
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
@@ -9,6 +13,7 @@
 
 #include "mppi/Models.hpp"
 #include "mppi/impl/Optimizer.hpp"
+
 
 TEST_CASE("Optimizer evaluates Next Control", "") {
   using T = float;
