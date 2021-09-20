@@ -97,6 +97,84 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
   costmap_ros.reset();
 }
 
+
+
+TEST_CASE("Optimizer with obstacles", "") {
+
+  // check optimizer parameters 
+  // costAtPose
+
+  using T = float;
+
+  std::string node_name = "TestNode";
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name);
+
+  auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("cost_map_node");
+  auto st = rclcpp_lifecycle::State{};
+
+  auto & model = mppi::models::NaiveModel<T>;
+
+  auto optimizer = mppi::optimization::Optimizer<T>();
+
+  costmap_ros->on_configure(st);
+  *costmap_ros->getCostmap() = *std::make_shared<nav2_costmap_2d::Costmap2D>(10, 10, 0.1, 0, 0, 255);
+  optimizer.on_configure(node, node_name, costmap_ros, model);
+  optimizer.on_activate();
+
+  size_t poses_count = GENERATE(10, 30, 100);
+
+  SECTION("Running evalTrajectoryFromControlSequence") {
+    
+    std::string frame = "odom";
+    auto time = node->get_clock()->now();
+
+    nav_msgs::msg::Path path;                  // reference path
+    geometry_msgs::msg::PoseStamped ps;        // goal point in reference path
+    geometry_msgs::msg::Twist twist;           // initial robot velocity
+    geometry_msgs::msg::PoseStamped init_cond; // initial robot pose
+
+    // lambda expression for setting header
+    auto setHeader = [&](auto &&msg) {
+      msg.header.frame_id = frame;
+      msg.header.stamp = time;
+    };
+
+    // lambda expression for refernce path generation
+    auto fillRealPath = [&](size_t count) {
+      for (size_t i = 0; i < count; i++) {
+          ps.pose.position.x = i*0.02;
+          ps.pose.position.y = i*0.02;
+          path.poses.push_back(ps);
+      }
+    };  
+
+    setHeader(ps);
+    setHeader(init_cond);
+    setHeader(path);
+
+    fillRealPath(poses_count);
+
+    std::cout<< "REFERENCE PATH" << std::endl;
+    for (auto item:path.poses){
+       std::cout<< "x = "<< item.pose.position.x <<" y = "<< item.pose.position.y << std::endl;
+    }
+
+    CHECK_NOTHROW(optimizer.evalNextBestControl(init_cond, twist, path));
+    CHECK_NOTHROW(optimizer.evalTrajectoryFromControlSequence(init_cond, twist));
+
+    auto trajectory = optimizer.evalTrajectoryFromControlSequence(init_cond, twist);
+    std::cout<< "TRAJECTORY!" << std::endl;
+    std::cout << trajectory << std::endl;
+
+  }
+
+  optimizer.on_deactivate();
+  optimizer.on_cleanup();
+  costmap_ros->on_cleanup(st);
+  costmap_ros.reset();
+
+}
+
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
   int result = Catch::Session().run(argc, argv);
