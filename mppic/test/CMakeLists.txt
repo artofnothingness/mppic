@@ -5,6 +5,9 @@ if(BUILD_TESTING)
   add_library(catch_main STATIC catch_main.cpp)
   ament_target_dependencies(catch_main rclcpp)
   target_link_libraries(catch_main CONAN_PKG::catch2)
+  if (${DO_BENCHMARKS})
+    target_compile_definitions(catch_main PUBLIC -DDO_BENCHMARKS)
+  endif()
 
   add_executable(optimizer-test optimizer-test.cpp)
   ament_target_dependencies(optimizer-test ${packages})
@@ -29,12 +32,6 @@ if(BUILD_TESTING)
           CXX_STANDARD_REQUIRED YES
   )
 
-
-  
-  if (${DO_BENCHMARKS})
-    target_compile_definitions(optimizer-test PRIVATE -DDO_BENCHMARKS)
-    target_compile_definitions(geometry-test PRIVATE -DDO_BENCHMARKS)
-  endif()
 
   catch_discover_tests(optimizer-test)
   catch_discover_tests(geometry-test)
