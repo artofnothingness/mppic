@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(mppic)
-
+option(BUILD_TESTING "Build the testing tree." ON)
 set(CMAKE_BUILD_TYPE Release) # temporary hack coz conan rise error with colcon build without setting build type
 
 find_package(ament_cmake REQUIRED)
@@ -35,7 +35,11 @@ ament_export_dependencies(${packages})
 ament_export_include_directories(include)
 pluginlib_export_plugin_description_file(nav2_core mppic.xml)
 
+if(BUILD_TESTING)
+
 add_subdirectory(test)
+
+endif()
 
 install(TARGETS mppic
   ARCHIVE DESTINATION lib
