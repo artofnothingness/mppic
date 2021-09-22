@@ -35,7 +35,9 @@ ament_export_dependencies(${packages})
 ament_export_include_directories(include)
 pluginlib_export_plugin_description_file(nav2_core mppic.xml)
 
+if(BUILD_TESTING)
 add_subdirectory(test)
+endif()
 
 install(TARGETS mppic
   ARCHIVE DESTINATION lib
