@@ -1,11 +1,10 @@
-#include <cstddef>
-#include <nav2_costmap_2d/cost_values.hpp>
 #ifdef DO_BENCHMARKS
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #endif
 
 #include <catch2/catch.hpp>
 
+#include <nav2_costmap_2d/cost_values.hpp>
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav2_costmap_2d/costmap_2d.hpp"
 
@@ -140,7 +139,7 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
   optimizer.on_configure(node, node_name, costmap_ros, model);
   optimizer.on_activate();
 
-  SECTION("Running evalTrajectoryFromControlSequence") {
+  SECTION("evalNextBestControl doesn't produce path crossing the obstacles") {
     
     std::string frame = "odom";                // frame for header in path
     auto time = node->get_clock()->now();      // time for header in path
@@ -177,8 +176,8 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
     auto trajectory = optimizer.evalTrajectoryFromControlSequence(init_cond, twist);
     // check trajectory for collision
     bool result = checkTrajectoryCollision(trajectory, *costmap_ros->getCostmap());
-#ifdef PRINT_COSTMAP
-printMapWthGoalAndTrajectory(*costmap_ros->getCostmap(), trajectory, ps);
+#ifdef TEST_DEBUG_INFO
+    printMapWithGoalAndTrajectory(*costmap_ros->getCostmap(), trajectory, ps);
 #endif
     REQUIRE(result == 0 );
   }
