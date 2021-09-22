@@ -31,7 +31,7 @@ void printMap(const nav2_costmap_2d::Costmap2D & costmap){
 */
 void printMapWithGoalAndTrajectory(nav2_costmap_2d::Costmap2D & costmap, const auto & trajectory, 
     const geometry_msgs::msg::PoseStamped & goal_point){
-  printf("map with trajectory: \ntrajectory point = 1 \ngoal point = 8 \nobsctacle = 255\n");
+  printf("map with trajectory: \ntrajectory point = 1 \ngoal point = 100 \nobsctacle = 255\n");
 
   // create new costmap
   nav2_costmap_2d::Costmap2D costmap2d(
@@ -47,7 +47,7 @@ void printMapWithGoalAndTrajectory(nav2_costmap_2d::Costmap2D & costmap, const a
   costmap2d = costmap;
   unsigned int point_mx, point_my;
   unsigned char trajectory_point = 1;
-  unsigned char goal_point_cost = 8;
+  unsigned char goal_point_cost = 100;
 
   // add trajectory on map
   for (size_t i = 0; i < trajectory.shape()[0]; ++i){
