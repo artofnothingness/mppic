@@ -67,18 +67,6 @@ void printMapWithGoalAndTrajectory(nav2_costmap_2d::Costmap2D & costmap, const a
 }
 
 /**
- * Adds some parameters for the optimizer to a special container.
- *
- * @param params_ container for optimizer's parameters.
-*/
-void setUpOptimizerParams(std::vector<rclcpp::Parameter> &params_){
-  params_.push_back(rclcpp::Parameter("TestNode.iteration_count", 50));
-  params_.push_back(rclcpp::Parameter("TestNode.lookahead_dist", 5));
-  params_.push_back(rclcpp::Parameter("TestNode.time_steps", 30));
-}
-
-
-/**
  * Adds a square obstacle to the costmap.
  *
  * @param costmap map to be modified.
