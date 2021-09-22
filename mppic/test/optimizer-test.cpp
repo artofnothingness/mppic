@@ -31,7 +31,7 @@
  * @param params_ container for optimizer's parameters.
 */
 void setUpOptimizerParams(std::vector<rclcpp::Parameter> &params_){
-  params_.push_back(rclcpp::Parameter("TestNode.iteration_count", 50));
+  params_.push_back(rclcpp::Parameter("TestNode.iteration_count", 5));
   params_.push_back(rclcpp::Parameter("TestNode.lookahead_dist", 5));
   params_.push_back(rclcpp::Parameter("TestNode.time_steps", 30));
 }
@@ -118,8 +118,8 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
   unsigned char default_value = 0;
   
   // args for obstacle on costmap2d
-  const unsigned int upper_left_corner_x = 5;  
-  const unsigned int upper_left_corner_y = 5;  
+  const unsigned int upper_left_corner_x = 2;  
+  const unsigned int upper_left_corner_y = 2;  
   const unsigned int obstacle_side_size_cells = 18;  
   unsigned char obstacle_cost = 255;                                     
   
