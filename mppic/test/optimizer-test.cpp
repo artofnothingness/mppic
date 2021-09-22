@@ -22,45 +22,7 @@
 #include <xtensor/xview.hpp>
 #include <xtensor/xio.hpp>
 #include <iostream>
-
-
-void printMap(nav2_costmap_2d::Costmap2D & costmap){
-  printf("map:\n");
-  for (unsigned int i = 0; i < costmap.getSizeInCellsY(); i++) {
-    for (unsigned int j = 0; j < costmap.getSizeInCellsX(); j++) {
-      printf("%4d", static_cast<int>(costmap.getCost(j, i)));
-    }
-    printf("\n\n");
-  }
-}
-
-void setUpOptimizerParams(std::vector<rclcpp::Parameter> &params_){
-  params_.push_back(rclcpp::Parameter("TestNode.iteration_count", 300));
-}
-
-void addObstacle(nav2_costmap_2d::Costmap2D & costmap, unsigned int mx, 
-  unsigned int my, unsigned int size, unsigned char cost){
-
-  for (unsigned int i = mx; i < mx+size; i++) {
-    for (unsigned int j = my; j < my+size; j++) {
-      costmap.setCost(i, j, cost);
-    }
-  }
-}
-
-bool checkTrajectoryCollision(auto & trajectory, nav2_costmap_2d::Costmap2D & costmap){
-  
-  unsigned int point_mx, point_my;
-  for (auto i = trajectory.begin(); i < trajectory.end(); i+=3){
-    costmap.worldToMap(*i, *(i+1), point_mx, point_my);
-    auto cost_ = costmap.getCost(point_mx, point_my);
-    if (cost_ > nav2_costmap_2d::FREE_SPACE ||
-        cost_ == nav2_costmap_2d::NO_INFORMATION){
-      return true;    
-    }
-  }
-  return false;
-}
+#include "tests_utils.hpp"
 
 
 TEST_CASE("Optimizer evaluates Next Control", "") {
@@ -130,7 +92,6 @@ TEST_CASE("Optimizer with obstacles", "") {
   using T = float;
 
   std::string node_name = "TestNode";
-
   std::vector<rclcpp::Parameter> params_;
   rclcpp::NodeOptions options;
   setUpOptimizerParams(params_);
@@ -147,12 +108,11 @@ TEST_CASE("Optimizer with obstacles", "") {
 
   costmap_ros->on_configure(st);
   *costmap_ros->getCostmap() = *std::make_shared<nav2_costmap_2d::Costmap2D>(30, 30, 0.1, 0, 0, 0);
-  addObstacle(*costmap_ros->getCostmap(), 5, 5, 20, 255);
-  // printMap(*costmap_ros->getCostmap());
+  addObstacle(*costmap_ros->getCostmap(), 5, 5, 18, 255);
   optimizer.on_configure(node, node_name, costmap_ros, model);
   optimizer.on_activate();
 
-  size_t poses_count = GENERATE(10, 30, 100);
+  size_t poses_count = 100;
 
   SECTION("Running evalTrajectoryFromControlSequence") {
     
@@ -173,8 +133,8 @@ TEST_CASE("Optimizer with obstacles", "") {
     // lambda expression for refernce path generation
     auto fillRealPath = [&](size_t count) {
       for (size_t i = 0; i < count; i++) {
-          ps.pose.position.x = i*0.02;
-          ps.pose.position.y = i*0.02;
+          ps.pose.position.x = i*0.025;
+          ps.pose.position.y = i*0.01;
           path.poses.push_back(ps);
       }
     };  
@@ -185,18 +145,13 @@ TEST_CASE("Optimizer with obstacles", "") {
 
     fillRealPath(poses_count);
 
-    // std::cout<< "REFERENCE PATH" << std::endl;
-    // for (auto item:path.poses){
-    //    std::cout<< "x = "<< item.pose.position.x <<" y = "<< item.pose.position.y << std::endl;
-    // }
-
     CHECK_NOTHROW(optimizer.evalNextBestControl(init_cond, twist, path));
-    CHECK_NOTHROW(optimizer.evalTrajectoryFromControlSequence(init_cond, twist));
-
+    
     auto trajectory = optimizer.evalTrajectoryFromControlSequence(init_cond, twist);
-    // std::cout<< "TRAJECTORY!" << std::endl;
-    // std::cout << trajectory << std::endl;
     bool result = checkTrajectoryCollision(trajectory, *costmap_ros->getCostmap());
+#ifdef PRINT_COSTMAP
+printMapWthGoalAndTrajectory(*costmap_ros->getCostmap(), trajectory, ps);
+#endif
     REQUIRE(result == 0 );
   }
 
