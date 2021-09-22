@@ -24,6 +24,19 @@
 #include "tests_utils.hpp"
 
 
+
+/**
+ * Adds some parameters for the optimizer to a special container.
+ *
+ * @param params_ container for optimizer's parameters.
+*/
+void setUpOptimizerParams(std::vector<rclcpp::Parameter> &params_){
+  params_.push_back(rclcpp::Parameter("TestNode.iteration_count", 50));
+  params_.push_back(rclcpp::Parameter("TestNode.lookahead_dist", 5));
+  params_.push_back(rclcpp::Parameter("TestNode.time_steps", 30));
+}
+
+
 TEST_CASE("Optimizer evaluates Next Control", "") {
   using T = float;
 
@@ -85,7 +98,6 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
 }
 
 
-
 TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
 
   using T = float;
@@ -106,10 +118,10 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
   unsigned char default_value = 0;
   
   // args for obstacle on costmap2d
-  const unsigned int upper_left_corner_x = 5;  // x coord of the upper left corner of the obstacle on costmap
-  const unsigned int upper_left_corner_y = 5;  // upper left corner of the obstacle on costmap
-  const unsigned int obstacle_side_size = 18;  // in cells
-  unsigned char cost = 255;                    // value of the obstacle on costmap                  
+  const unsigned int upper_left_corner_x = 5;  
+  const unsigned int upper_left_corner_y = 5;  
+  const unsigned int obstacle_side_size_cells = 18;  
+  unsigned char obstacle_cost = 255;                                     
   
   // create parameters for reference path generation
   size_t poses_count = 100; // it can be GENERATE(100)
@@ -134,20 +146,20 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
 
   // creating a square obstacle
   addObstacle(*costmap_ros->getCostmap(), upper_left_corner_x, 
-              upper_left_corner_y, obstacle_side_size, cost);
+              upper_left_corner_y, obstacle_side_size_cells, obstacle_cost);
 
   optimizer.on_configure(node, node_name, costmap_ros, model);
   optimizer.on_activate();
 
   SECTION("evalNextBestControl doesn't produce path crossing the obstacles") {
     
-    std::string frame = "odom";                // frame for header in path
-    auto time = node->get_clock()->now();      // time for header in path
+    std::string frame = "odom";              // frame for header in path and points
+    auto time = node->get_clock()->now();    // time for header in path
 
-    nav_msgs::msg::Path path;                  // reference path
-    geometry_msgs::msg::PoseStamped ps;        // goal point in reference path
-    geometry_msgs::msg::Twist twist;           // initial robot velocity
-    geometry_msgs::msg::PoseStamped init_cond; // initial robot pose
+    nav_msgs::msg::Path reference_path;
+    geometry_msgs::msg::PoseStamped reference_goal_pose;
+    geometry_msgs::msg::PoseStamped init_robot_pose;         
+    geometry_msgs::msg::Twist init_robot_vel;           
 
     // lambda expression for setting header
     auto setHeader = [&](auto &&msg) {
@@ -158,26 +170,26 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
     // lambda expression for refernce path generation
     auto fillRealPath = [&](size_t count) {
       for (size_t i = 0; i < count; i++) {
-          ps.pose.position.x = i*x_step;
-          ps.pose.position.y = i*y_step;
-          path.poses.push_back(ps);
+          reference_goal_pose.pose.position.x = i*x_step;
+          reference_goal_pose.pose.position.y = i*y_step;
+          reference_path.poses.push_back(reference_goal_pose);
       }
     };  
 
-    setHeader(ps);
-    setHeader(init_cond);
-    setHeader(path);
+    setHeader(reference_goal_pose);
+    setHeader(init_robot_pose);
+    setHeader(reference_path);
 
     fillRealPath(poses_count);
 
     // update controal sequence in optimizer
-    CHECK_NOTHROW(optimizer.evalNextBestControl(init_cond, twist, path));
+    CHECK_NOTHROW(optimizer.evalNextBestControl(init_robot_pose, init_robot_vel, reference_path));
     // get best trajectory from optimizer
-    auto trajectory = optimizer.evalTrajectoryFromControlSequence(init_cond, twist);
+    auto trajectory = optimizer.evalTrajectoryFromControlSequence(init_robot_pose, init_robot_vel);
     // check trajectory for collision
     bool result = checkTrajectoryCollision(trajectory, *costmap_ros->getCostmap());
 #ifdef TEST_DEBUG_INFO
-    printMapWithGoalAndTrajectory(*costmap_ros->getCostmap(), trajectory, ps);
+    printMapWithGoalAndTrajectory(*costmap_ros->getCostmap(), trajectory, reference_goal_pose);
 #endif
     REQUIRE(result == 0 );
   }
