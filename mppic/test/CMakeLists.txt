@@ -19,7 +19,12 @@ if(BUILD_TESTING)
           CXX_STANDARD 17
           CXX_STANDARD_REQUIRED YES
   )
+  
+  if(&{PRINT_COSTMAP})
 
+  target_compile_definitions(optimizer-test PUBLIC -DPRINT_COSTMAP)
+
+  endif()
 
   add_executable(geometry-test geometry-test.cpp)
   ament_target_dependencies(geometry-test ${packages})
