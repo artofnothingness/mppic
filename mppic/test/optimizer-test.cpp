@@ -118,15 +118,15 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
   unsigned char default_value = 0;
   
   // args for obstacle on costmap2d
-  const unsigned int upper_left_corner_x = 2;  
-  const unsigned int upper_left_corner_y = 2;  
+  const unsigned int upper_left_corner_x = 5;  
+  const unsigned int upper_left_corner_y = 7;  
   const unsigned int obstacle_side_size_cells = 18;  
   unsigned char obstacle_cost = 255;                                     
   
   // create parameters for reference path generation
-  size_t poses_count = 100; // it can be GENERATE(100)
-  float x_step = 0.025;
-  float y_step = 0.01;
+  size_t poses_count = 75;
+  float x_step = 0.015;
+  float y_step = 0.03;
 
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name, options);
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("cost_map_node");
@@ -151,6 +151,9 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
   optimizer.on_configure(node, node_name, costmap_ros, model);
   optimizer.on_activate();
 
+  float start_point_x = GENERATE(1.0, 0.4);
+  float start_point_y = 0.4;
+
   SECTION("evalNextBestControl doesn't produce path crossing the obstacles") {
     
     std::string frame = "odom";              // frame for header in path and points
@@ -158,7 +161,9 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
 
     nav_msgs::msg::Path reference_path;
     geometry_msgs::msg::PoseStamped reference_goal_pose;
-    geometry_msgs::msg::PoseStamped init_robot_pose;         
+    geometry_msgs::msg::PoseStamped init_robot_pose;   
+    init_robot_pose.pose.position.x = start_point_x;
+    init_robot_pose.pose.position.y = start_point_y;          
     geometry_msgs::msg::Twist init_robot_vel;           
 
     // lambda expression for setting header
@@ -170,8 +175,8 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
     // lambda expression for refernce path generation
     auto fillRealPath = [&](size_t count) {
       for (size_t i = 0; i < count; i++) {
-          reference_goal_pose.pose.position.x = i*x_step;
-          reference_goal_pose.pose.position.y = i*y_step;
+          reference_goal_pose.pose.position.x = i*x_step + start_point_x;
+          reference_goal_pose.pose.position.y = i*y_step + start_point_y;
           reference_path.poses.push_back(reference_goal_pose);
       }
     };  
@@ -190,7 +195,7 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
     bool result = checkTrajectoryCollision(trajectory, *costmap_ros->getCostmap());
 #ifdef TEST_DEBUG_INFO
     printMapWithGoalAndTrajectory(*costmap_ros->getCostmap(), trajectory, reference_goal_pose);
-#endif
+#endif   
     REQUIRE(result == 0 );
   }
 
