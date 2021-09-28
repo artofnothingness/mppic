@@ -110,8 +110,8 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
   options.parameter_overrides(params_);
 
   // args for costmap2d
-  unsigned int cells_size_x = 30;
-  unsigned int cells_size_y = 30;
+  unsigned int cells_size_x = 20;
+  unsigned int cells_size_y = 20;
   double resolution = 0.1;
   double origin_x = 0.0;
   double origin_y = 0.0;
@@ -120,13 +120,13 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
   // args for obstacle on costmap2d
   const unsigned int upper_left_corner_x = 5;  
   const unsigned int upper_left_corner_y = 7;  
-  const unsigned int obstacle_side_size_cells = 18;  
+  const unsigned int obstacle_side_size_cells = 9;  
   unsigned char obstacle_cost = 255;                                     
   
   // create parameters for reference path generation
-  size_t poses_count = 75;
+  size_t poses_count = 40;
   float x_step = 0.015;
-  float y_step = 0.03;
+  float y_step = 0.035;
 
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name, options);
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("cost_map_node");
