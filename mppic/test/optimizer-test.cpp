@@ -103,7 +103,7 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
   using T = float;
 
   std::string node_name = "TestNode";
-  auto st = rclcpp_lifecycle::State{};
+  auto state = rclcpp_lifecycle::State{};
   std::vector<rclcpp::Parameter> params_;
   rclcpp::NodeOptions options;
   setUpOptimizerParams(params_);
@@ -134,7 +134,7 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
   auto & model = mppi::models::NaiveModel<T>;
   auto optimizer = mppi::optimization::Optimizer<T>();
 
-  costmap_ros->on_configure(st);
+  costmap_ros->on_configure(state);
   *costmap_ros->getCostmap() = *std::make_shared<nav2_costmap_2d::Costmap2D>(
     cells_size_x, 
     cells_size_y,
@@ -191,17 +191,15 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
     CHECK_NOTHROW(optimizer.evalNextBestControl(init_robot_pose, init_robot_vel, reference_path));
     // get best trajectory from optimizer
     auto trajectory = optimizer.evalTrajectoryFromControlSequence(init_robot_pose, init_robot_vel);
-    // check trajectory for collision
-    bool result = checkTrajectoryCollision(trajectory, *costmap_ros->getCostmap());
 #ifdef TEST_DEBUG_INFO
     printMapWithGoalAndTrajectory(*costmap_ros->getCostmap(), trajectory, reference_goal_pose);
 #endif   
-    REQUIRE(result == 0 );
+    CHECK(!inCollision(trajectory, *costmap_ros->getCostmap()));
   }
 
   optimizer.on_deactivate();
   optimizer.on_cleanup();
-  costmap_ros->on_cleanup(st);
+  costmap_ros->on_cleanup(state);
   costmap_ros.reset();
 
 }
