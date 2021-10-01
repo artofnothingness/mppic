@@ -10,7 +10,6 @@
 
 /**
  * Print costmap to stdout.
- *
  * @param costmap map to be printed.
 */
 void printMap(const nav2_costmap_2d::Costmap2D & costmap){
@@ -24,14 +23,13 @@ void printMap(const nav2_costmap_2d::Costmap2D & costmap){
 
 /**
  * Print costmap with trajectory and goal point to stdout.
- *
  * @param costmap map to be printed.
  * @param trajectory trajectory container (xt::tensor) to be printed.
  * @param goal_point goal point to be printed.
 */
 void printMapWithGoalAndTrajectory(nav2_costmap_2d::Costmap2D & costmap, const auto & trajectory, 
     const geometry_msgs::msg::PoseStamped & goal_point){
-  printf("map with trajectory: \ntrajectory point = 1 \ngoal point = 100 \nobsctacle = 255\n");
+  std::cout<<"map with trajectory: \ntrajectory point = 1 \ngoal point = 100 \nobsctacle = 255\n"<<std::endl;
 
   // create new costmap
   nav2_costmap_2d::Costmap2D costmap2d(
@@ -67,32 +65,29 @@ void printMapWithGoalAndTrajectory(nav2_costmap_2d::Costmap2D & costmap, const a
 }
 
 /**
- * Adds a square obstacle to the costmap.
- *
+ * Add a square obstacle to the costmap.
  * @param costmap map to be modified.
- * @param mx obstacle upper left corner X coord (on the costmap).
- * @param my obstacle upper left corner Y coord (on the costmap).
+ * @param upper_left_corner_x obstacle upper left corner X coord (on the costmap).
+ * @param upper_left_corner_y obstacle upper left corner Y coord (on the costmap).
  * @param size obstacle side size.
  * @param cost obstacle value on costmap.
 */
-void addObstacle(nav2_costmap_2d::Costmap2D & costmap, const unsigned int & mx, 
-  const unsigned int & my, const unsigned int & size, const unsigned char & cost){
-  for (unsigned int i = mx; i < mx+size; i++) {
-    for (unsigned int j = my; j < my+size; j++) {
+void addObstacle(nav2_costmap_2d::Costmap2D & costmap, unsigned int upper_left_corner_x, 
+  unsigned int upper_left_corner_y, unsigned int size, unsigned char cost){
+  for (unsigned int i = upper_left_corner_x; i < upper_left_corner_x+size; i++) {
+    for (unsigned int j = upper_left_corner_y; j < upper_left_corner_y+size; j++) {
       costmap.setCost(i, j, cost);
     }
   }
 }
 
 /**
- * Checks the trajectory for collisions with obstacles on the map.
- *
+ * Check the trajectory for collisions with obstacles on the map.
  * @param trajectory trajectory container (xt::tensor) to be checked.
  * @param costmap costmap with obstacles
- * 
  * @return true - if the trajectory crosses an obstacle on the map, false - if not
 */
-bool checkTrajectoryCollision(const auto & trajectory, const nav2_costmap_2d::Costmap2D & costmap){
+bool inCollision(const auto & trajectory, const nav2_costmap_2d::Costmap2D & costmap){
   unsigned int point_mx, point_my;
   for (size_t i = 0; i < trajectory.shape()[0]; ++i){
     costmap.worldToMap(trajectory(i, 0), trajectory(i, 1), point_mx, point_my);
