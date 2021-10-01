@@ -43,7 +43,8 @@ void printMapWithGoalAndTrajectory(nav2_costmap_2d::Costmap2D & costmap, const a
 
   // copy obstacles from original costmap
   costmap2d = costmap;
-  unsigned int point_mx, point_my;
+  unsigned int point_mx = 0;
+  unsigned int point_my = 0;
   unsigned char trajectory_point = 1;
   unsigned char goal_point_cost = 100;
 
@@ -88,7 +89,9 @@ void addObstacle(nav2_costmap_2d::Costmap2D & costmap, unsigned int upper_left_c
  * @return true - if the trajectory crosses an obstacle on the map, false - if not
 */
 bool inCollision(const auto & trajectory, const nav2_costmap_2d::Costmap2D & costmap){
-  unsigned int point_mx, point_my;
+  unsigned int point_mx = 0;
+  unsigned int point_my = 0; 
+
   for (size_t i = 0; i < trajectory.shape()[0]; ++i){
     costmap.worldToMap(trajectory(i, 0), trajectory(i, 1), point_mx, point_my);
     auto cost_ = costmap.getCost(point_mx, point_my);
