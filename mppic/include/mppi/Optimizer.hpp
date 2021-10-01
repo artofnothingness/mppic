@@ -11,51 +11,50 @@
 #include "nav_msgs/msg/path.hpp"
 
 #include "xtensor/xarray.hpp"
-#include <xtensor/xview.hpp>
+#include "xtensor/xview.hpp"
 
-namespace mppi::optimization
-{
+
+namespace mppi::optimization {
 
 template<typename T,
-  typename Model = xt::xtensor<T, 2>(const xt::xtensor<T, 2>&)>
+  typename Model = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &)>
 class Optimizer
 {
 public:
   Optimizer() = default;
-  ~Optimizer() = default;
 
   void on_configure(
-    const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> & parent,
-    const std::string & node_name,
-    const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros,
-    Model && model);
+    const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
+    const std::string &node_name,
+    const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros,
+    Model &&model);
 
   void on_cleanup() {}
   void on_activate() {}
   void on_deactivate() {}
 
   auto evalNextBestControl(
-    const geometry_msgs::msg::PoseStamped & robot_pose,
-    const geometry_msgs::msg::Twist & robot_speed,
-    const nav_msgs::msg::Path & plan)
-  ->geometry_msgs::msg::TwistStamped;
+    const geometry_msgs::msg::PoseStamped &robot_pose,
+    const geometry_msgs::msg::Twist &robot_speed,
+    const nav_msgs::msg::Path &plan)
+    -> geometry_msgs::msg::TwistStamped;
 
   auto getGeneratedTrajectories() const
-  ->xt::xtensor<T, 3>
+    -> xt::xtensor<T, 3>
   {
     return generated_trajectories_;
   }
 
   void propagateSequenceVelocities(
-    const auto & velocities_sequence,
-    const geometry_msgs::msg::Twist & initial_speed,
-    auto & batch) const;
+    const auto &velocities_sequence,
+    const geometry_msgs::msg::Twist &initial_speed,
+    auto &batch) const;
 
 
   auto evalTrajectoryFromControlSequence(
-    const geometry_msgs::msg::PoseStamped & robot_pose,
-    const geometry_msgs::msg::Twist & robot_speed) const
-  ->xt::xtensor<T, 2>;
+    const geometry_msgs::msg::PoseStamped &robot_pose,
+    const geometry_msgs::msg::Twist &robot_speed) const
+    -> xt::xtensor<T, 2>;
 
 private:
   void getParams();
@@ -68,9 +67,9 @@ private:
    * @return trajectories: tensor of shape [ batch_size_, time_steps_, 3 ]  where 3 stands for x, y, yaw
    */
   auto generateNoisedTrajectories(
-    const geometry_msgs::msg::PoseStamped & robot_pose,
-    const geometry_msgs::msg::Twist & robot_speed)
-  ->xt::xtensor<T, 3>;
+    const geometry_msgs::msg::PoseStamped &robot_pose,
+    const geometry_msgs::msg::Twist &robot_speed)
+    -> xt::xtensor<T, 3>;
 
   /**
    * @brief Generate random controls by gaussian noise with mean in
@@ -79,7 +78,7 @@ private:
    * @return Control batches tensor of shape [ batch_size_, time_steps_, 2] where 2 stands for v, w
    */
   auto generateNoisedControlBatches() const
-  ->xt::xtensor<T, 3>;
+    -> xt::xtensor<T, 3>;
 
   void applyControlConstraints();
 
@@ -88,9 +87,9 @@ private:
    *
    * @param twist current robot speed
    */
-  void evalBatchesVelocities(const geometry_msgs::msg::Twist & robot_speed);
+  void evalBatchesVelocities(const geometry_msgs::msg::Twist &robot_speed);
 
-  void setBatchesInitialVelocities(const geometry_msgs::msg::Twist & robot_speed);
+  void setBatchesInitialVelocities(const geometry_msgs::msg::Twist &robot_speed);
 
   /**
    * @brief predict and propagate velocities in batches_ using model
@@ -98,13 +97,13 @@ private:
    */
   void propagateBatchesVelocitiesFromInitials();
 
-  auto integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped & robot_pose) const
-  ->xt::xtensor<T, 3>;
+  auto integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped &robot_pose) const
+    -> xt::xtensor<T, 3>;
 
   auto integrateSequence(
-    const auto & velocities_sequence,
-    const geometry_msgs::msg::PoseStamped & robot_pose) const
-  ->xt::xtensor<T, 2>;
+    const auto &velocities_sequence,
+    const geometry_msgs::msg::PoseStamped &robot_pose) const
+    -> xt::xtensor<T, 2>;
 
   /**
    * @brief Evaluate cost for each batch
@@ -114,10 +113,10 @@ private:
    * @return Cost for each batch, tensor of shape [ batch_size ]
    */
   auto evalBatchesCosts(
-    const xt::xtensor<T, 3> & batches_of_trajectories,
-    const nav_msgs::msg::Path & global_plan,
-    const geometry_msgs::msg::PoseStamped & robot_pose) const
-  ->xt::xtensor<T, 1>;
+    const xt::xtensor<T, 3> &batches_of_trajectories,
+    const nav_msgs::msg::Path &global_plan,
+    const geometry_msgs::msg::PoseStamped &robot_pose) const
+    -> xt::xtensor<T, 1>;
 
   /**
    * @brief Evaluate cost related to trajectories path alignment
@@ -126,9 +125,9 @@ private:
    * @param costs [out] add reference cost values to this tensor
    */
   void evalReferenceCost(
-    const auto & batches_of_trajectories,
-    const auto & global_plan,
-    auto & costs) const;
+    const auto &batches_of_trajectories,
+    const auto &global_plan,
+    auto &costs) const;
 
   /**
    * @brief Evaluate cost related to trajectories path alignment using approximate path to segment function
@@ -137,9 +136,9 @@ private:
    * @param costs [out] add reference cost values to this tensor
    */
   void evalApproxReferenceCost(
-    const auto & batches_of_trajectories,
-    const auto & global_plan,
-    auto & costs) const;
+    const auto &batches_of_trajectories,
+    const auto &global_plan,
+    auto &costs) const;
 
 
   /**
@@ -148,9 +147,9 @@ private:
    * @param costs [out] add reference cost values to this tensor
    */
   void evalGoalCost(
-    const auto & batch_of_trajectories,
-    const auto & global_plan,
-    auto & costs) const;
+    const auto &batch_of_trajectories,
+    const auto &global_plan,
+    auto &costs) const;
 
   /**
    * @brief Evaluate cost related to obstacle avoidance
@@ -159,7 +158,7 @@ private:
    * @tparam C costs type
    * @param costs [out] add obstacle cost values to this tensor
    */
-  void evalObstacleCost(const auto & batch_of_trajectories, auto & costs) const;
+  void evalObstacleCost(const auto &batch_of_trajectories, auto &costs) const;
 
   /**
    * @brief Evaluate cost related to robot orientation at goal pose (considered only if robot near last goal in current plan)
@@ -170,12 +169,12 @@ private:
    * @param costs [out] add goal angle cost values to this tensor
    */
   void evalGoalAngleCost(
-    const auto & batch_of_trajectories,
-    const auto & global_plan,
-    const geometry_msgs::msg::PoseStamped & robot_pose,
-    auto & costs) const;
+    const auto &batch_of_trajectories,
+    const auto &global_plan,
+    const geometry_msgs::msg::PoseStamped &robot_pose,
+    auto &costs) const;
 
-  auto costAtPose(const double & x, const double & y) const->double;
+  double costAtPose(const double &x, const double &y) const;
   bool inCollision(unsigned char cost) const;
 
   /**
@@ -183,14 +182,14 @@ private:
    *
    * @param costs batches costs, tensor of shape [ batch_size ]
    */
-  void updateControlSequence(const xt::xtensor<T, 1> & costs);
+  void updateControlSequence(const xt::xtensor<T, 1> &costs);
 
   /**
    * @brief Get first control from control_sequence_
    *
    */
-  auto getControlFromSequence(const auto & stamp, const std::string & frame)
-  ->geometry_msgs::msg::TwistStamped;
+  auto getControlFromSequence(const auto &stamp, const std::string &frame)
+    -> geometry_msgs::msg::TwistStamped;
 
   auto getBatchesControls() const;
   auto getBatchesControls();
@@ -207,11 +206,10 @@ private:
   auto getBatchesAngularVelocities() const;
   auto getBatchesAngularVelocities();
 
-private:
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
   std::string node_name_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
-  nav2_costmap_2d::Costmap2D * costmap_;
+  nav2_costmap_2d::Costmap2D *costmap_;
   std::function<Model> model_;
 
   double inflation_cost_scaling_factor_;
@@ -252,7 +250,7 @@ private:
   xt::xtensor<T, 3> generated_trajectories_;
   xt::xtensor<T, 2> control_sequence_;
 
-  rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
+  rclcpp::Logger logger_{ rclcpp::get_logger("MPPI Optimizer") };
 };
 
-} // namespace mppi::optimization
+}// namespace mppi::optimization
