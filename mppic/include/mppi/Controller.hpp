@@ -13,7 +13,8 @@
 
 namespace mppi {
 
-template<typename T,
+template<
+  typename T,
   typename Model = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &)>
 class Controller : public nav2_core::Controller
 {

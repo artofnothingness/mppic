@@ -42,11 +42,11 @@ auto Optimizer<T, Model>::on_configure(
   node_name_ = node_name;
   costmap_ros_ = costmap_ros;
   model_ = model;
-
   costmap_ = costmap_ros_->getCostmap();
   inscribed_radius_ = costmap_ros_->getLayeredCostmap()->getInscribedRadius();
+
   getParams();
-  resetBatches();
+  reset();
   RCLCPP_INFO(logger_, "Configured");
 }
 
@@ -90,7 +90,7 @@ auto Optimizer<T, Model>::getParams()
 }
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::resetBatches()
+auto Optimizer<T, Model>::reset()
   -> void
 {
   batches_ = xt::zeros<T>({ batch_size_, time_steps_, last_dim_size_ });
@@ -269,7 +269,10 @@ auto Optimizer<T, Model>::evalBatchesCosts(
   }
 
   auto &&path_tensor = geometry::toTensor<T>(global_plan);
-  approx_reference_cost_ ? evalApproxReferenceCost(batches_of_trajectories, path_tensor, costs) : evalReferenceCost(batches_of_trajectories, path_tensor, costs);
+
+  approx_reference_cost_ ? evalApproxReferenceCost(batches_of_trajectories, path_tensor, costs)
+                         : evalReferenceCost(batches_of_trajectories, path_tensor, costs);
+
   evalGoalCost(batches_of_trajectories, path_tensor, costs);
   evalGoalAngleCost(batches_of_trajectories, path_tensor, robot_pose, costs);
   evalObstacleCost(batches_of_trajectories, costs);
@@ -322,16 +325,12 @@ void Optimizer<T, Model>::evalReferenceCost(
   const auto &global_plan,
   auto &costs) const
 {
+  using xt::evaluation_strategy::immediate;
+
   xt::xtensor<T, 3> path_to_batches_dists =
     geometry::distPointsToLineSegments2D(global_plan, batches_of_trajectories);
 
-  xt::xtensor<T, 1> cost = xt::mean(
-    xt::amin(
-      std::move(path_to_batches_dists),
-      1,
-      xt::evaluation_strategy::immediate),
-    1,
-    xt::evaluation_strategy::immediate);
+  xt::xtensor<T, 1> cost = xt::mean(xt::amin(std::move(path_to_batches_dists), 1, immediate), 1, immediate);
 
   costs += xt::pow(std::move(cost) * reference_cost_weight_, reference_cost_power_);
 }
@@ -408,13 +407,15 @@ template<typename T, typename Model>
 auto Optimizer<T, Model>::updateControlSequence(const xt::xtensor<T, 1> &costs)
   -> void
 {
+  using xt::evaluation_strategy::immediate;
+
   auto &&costs_normalized =
-    costs - xt::amin(costs, xt::evaluation_strategy::immediate);
+    costs - xt::amin(costs, immediate);
 
   auto exponents = xt::eval(xt::exp(-1 / temperature_ * costs_normalized));
 
   auto softmaxes =
-    exponents / xt::sum(exponents, xt::evaluation_strategy::immediate);
+    exponents / xt::sum(exponents, immediate);
 
   auto softmaxes_expanded =
     xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
