@@ -2,12 +2,11 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-namespace mppi::utils
-{
+namespace mppi::utils {
 
 template<typename N, typename T>
-auto getParam(std::string const & param_name, T default_value, const std::shared_ptr<N> & node)
-->T
+auto getParam(std::string const &param_name, T default_value, const std::shared_ptr<N> &node)
+  -> T
 {
   T param;
   node->declare_parameter(param_name, rclcpp::ParameterValue(default_value));
@@ -16,4 +15,4 @@ auto getParam(std::string const & param_name, T default_value, const std::shared
   return param;
 }
 
-} // namespace mppi::utils
+}// namespace mppi::utils
