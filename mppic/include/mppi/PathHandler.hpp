@@ -26,8 +26,15 @@ public:
   void on_activate();
   void on_deactivate();
 
-  void setPath(const nav_msgs::msg::Path &plan) { global_plan_ = plan; }
-  auto getPath() -> nav_msgs::msg::Path & { return global_plan_; }
+  void setPath(const nav_msgs::msg::Path &plan)
+  {
+    global_plan_ = plan;
+  }
+
+  auto getPath() -> nav_msgs::msg::Path &
+  {
+    return global_plan_;
+  }
 
   /**
    * @brief transform global plan to local applying constraints,

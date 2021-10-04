@@ -158,7 +158,9 @@ private:
    * @tparam C costs type
    * @param costs [out] add obstacle cost values to this tensor
    */
-  void evalObstacleCost(const auto &batch_of_trajectories, auto &costs) const;
+  void evalObstacleCost(
+    const auto &batch_of_trajectories,
+    auto &costs) const;
 
   /**
    * @brief Evaluate cost related to robot orientation at goal pose (considered only if robot near last goal in current plan)
