@@ -96,7 +96,7 @@ auto hypot(
 
 // http://paulbourke.net/geometry/pointlineplane/
 /**
- * @brief Calculate closest between path points and batch lines segments
+ * @brief Calculate closest points on batches segments to path points
  *
  * @param batch_of_segments_points batches of sequences of points. Sequences considering as lines
  * @param path 2D data structure with last dim size stands for x, y
@@ -159,7 +159,7 @@ auto closestPointsOnLinesSegment2D(
 }
 
 /**
- * @brief Calculate distances from batches of point sequences to line segments
+ * @brief Calculate nearest distances between path points and batches segments
  *
  * @param batch_of_segments_points batches of line segments. last dim must have at least 2 dim
  * @param path 2D data structure with last dim must have at least 2 dim
