@@ -2,8 +2,7 @@
 
 #include <xtensor/xview.hpp>
 
-namespace mppi::models
-{
+namespace mppi::models {
 
 /**
  * @brief Predict velocities for the next time step from current time step batches of robot state
@@ -16,10 +15,10 @@ namespace mppi::models
 
  */
 template<typename T, typename Tensor = xt::xtensor<T, 2>>
-auto NaiveModel(const Tensor & batches)
-->Tensor
+auto NaiveModel(const Tensor &batches)
+  -> Tensor
 {
   return xt::view(batches, xt::all(), xt::range(2, 4));
 }
 
-} // namespace mppi::models
+}// namespace mppi::models
