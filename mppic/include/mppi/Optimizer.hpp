@@ -45,12 +45,6 @@ public:
     return generated_trajectories_;
   }
 
-  void propagateSequenceVelocities(
-    const auto &velocities_sequence,
-    const geometry_msgs::msg::Twist &initial_speed,
-    auto &batch) const;
-
-
   auto evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::PoseStamped &robot_pose,
     const geometry_msgs::msg::Twist &robot_speed) const
@@ -58,7 +52,7 @@ public:
 
 private:
   void getParams();
-  void resetBatches();
+  void reset();
 
   /**
    * @brief Invoke generateNoisedControlBatches, assign result tensor to batches_ controls dimensions
@@ -87,15 +81,19 @@ private:
    *
    * @param twist current robot speed
    */
-  void evalBatchesVelocities(const geometry_msgs::msg::Twist &robot_speed);
+  void evalBatchesVelocities(
+    const geometry_msgs::msg::Twist &robot_speed,
+    auto &batches) const;
 
-  void setBatchesInitialVelocities(const geometry_msgs::msg::Twist &robot_speed);
+  void setBatchesInitialVelocities(
+    const geometry_msgs::msg::Twist &robot_speed,
+    auto &batches) const;
 
   /**
    * @brief predict and propagate velocities in batches_ using model
    * for time horizont equal to time_steps_
    */
-  void propagateBatchesVelocitiesFromInitials();
+  void propagateBatchesVelocitiesFromInitials(auto &batches) const;
 
   auto integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped &robot_pose) const
     -> xt::xtensor<T, 3>;
@@ -221,7 +219,7 @@ private:
   double threshold_to_consider_goal_angle_;
   bool approx_reference_cost_;
 
-  static constexpr int last_dim_size_ = 5;
+  static constexpr int batches_last_dim_size_ = 5;
   static constexpr int control_dim_size_ = 2;
 
   int batch_size_;
@@ -246,10 +244,14 @@ private:
 
   /**
    * @batches_ tensor of shape [ batch_size, time_steps, 5 ] where 5 stands for
-   * robot linear, angluar velocities, linear control, angular control velocities, dt (time on which this control will be applied)
+   * robot linear, robot angluar velocities, linear control, angular control, dt (time on which this control will be applied)
    */
   xt::xtensor<T, 3> batches_;
   xt::xtensor<T, 3> generated_trajectories_;
+
+  /**
+   * @control_sequence_ current best control sequence: tensor of shape [ time_steps, 2 ] where 2 stands for linear control, angular control
+   */
   xt::xtensor<T, 2> control_sequence_;
 
   rclcpp::Logger logger_{ rclcpp::get_logger("MPPI Optimizer") };
