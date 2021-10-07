@@ -1,6 +1,6 @@
 # MPPI Local Planner 
 
-![](./resources/demo.gif)
+![](.resources/demo.gif)
 
 ## Overview
 
