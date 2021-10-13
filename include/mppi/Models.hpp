@@ -15,8 +15,7 @@ namespace mppi::models {
 
  */
 template<typename T, typename Tensor = xt::xtensor<T, 2>>
-auto NaiveModel(const Tensor &batches)
-  -> Tensor
+Tensor NaiveModel(const Tensor &batches)
 {
   return xt::view(batches, xt::all(), xt::range(2, 4));
 }

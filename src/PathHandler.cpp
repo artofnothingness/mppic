@@ -59,9 +59,9 @@ void PathHandler::getParams()
   transform_tolerance_ = getParam("transform_tolerance", 1);
 }
 
-auto PathHandler::transformToGlobalFrame(
-  const geometry_msgs::msg::PoseStamped &pose)
-  -> geometry_msgs::msg::PoseStamped
+geometry_msgs::msg::PoseStamped
+  PathHandler::transformToGlobalFrame(
+    const geometry_msgs::msg::PoseStamped &pose)
 {
 
   if (global_plan_.poses.empty()) {

@@ -19,10 +19,10 @@
 namespace mppi::geometry {
 
 template<typename T, typename H>
-auto toTwistStamped(
-  const T &velocities,
-  const H &header)
-  -> geometry_msgs::msg::TwistStamped
+geometry_msgs::msg::TwistStamped
+  toTwistStamped(
+    const T &velocities,
+    const H &header)
 {
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = header.frame_id;
@@ -33,11 +33,11 @@ auto toTwistStamped(
 }
 
 template<typename T, typename S>
-auto toTwistStamped(
-  const T &velocities,
-  const S &stamp,
-  const std::string &frame)
-  -> geometry_msgs::msg::TwistStamped
+geometry_msgs::msg::TwistStamped
+  toTwistStamped(
+    const T &velocities,
+    const S &stamp,
+    const std::string &frame)
 {
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = frame;
@@ -48,8 +48,8 @@ auto toTwistStamped(
 }
 
 template<typename T>
-auto toTensor(const nav_msgs::msg::Path &path)
-  -> xt::xtensor<T, 2>
+xt::xtensor<T, 2>
+  toTensor(const nav_msgs::msg::Path &path)
 {
   size_t path_size = path.poses.size();
   static constexpr size_t last_dim_size = 3;
@@ -148,8 +148,6 @@ auto closestPointsOnLinesSegment2D(
       }
     }
   }
-
-
   return closest_points;
 }
 

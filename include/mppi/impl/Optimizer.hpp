@@ -16,11 +16,11 @@
 namespace mppi::optimization {
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::evalNextBestControl(
-  const geometry_msgs::msg::PoseStamped &robot_pose,
-  const geometry_msgs::msg::Twist &robot_speed,
-  const nav_msgs::msg::Path &plan)
-  -> geometry_msgs::msg::TwistStamped
+geometry_msgs::msg::TwistStamped
+  Optimizer<T, Model>::evalNextBestControl(
+    const geometry_msgs::msg::PoseStamped &robot_pose,
+    const geometry_msgs::msg::Twist &robot_speed,
+    const nav_msgs::msg::Path &plan)
 {
   for (int i = 0; i < iteration_count_; ++i) {
     generated_trajectories_ = generateNoisedTrajectories(robot_pose, robot_speed);
@@ -31,12 +31,11 @@ auto Optimizer<T, Model>::evalNextBestControl(
 }
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::on_configure(
+void Optimizer<T, Model>::on_configure(
   const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
   const std::string &node_name,
   const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros,
   Model &&model)
-  -> void
 {
   parent_ = parent;
   node_name_ = node_name;
@@ -51,8 +50,7 @@ auto Optimizer<T, Model>::on_configure(
 }
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::getParams()
-  -> void
+void Optimizer<T, Model>::getParams()
 {
 
   auto getParam = [&](const std::string &param_name, auto default_value) {
@@ -90,8 +88,7 @@ auto Optimizer<T, Model>::getParams()
 }
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::reset()
-  -> void
+void Optimizer<T, Model>::reset()
 {
   batches_ = xt::zeros<T>({ batch_size_, time_steps_, batches_last_dim_size_ });
   control_sequence_ = xt::zeros<T>({ time_steps_, control_dim_size_ });
@@ -99,10 +96,10 @@ auto Optimizer<T, Model>::reset()
 }
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::generateNoisedTrajectories(
-  const geometry_msgs::msg::PoseStamped &robot_pose,
-  const geometry_msgs::msg::Twist &robot_speed)
-  -> xt::xtensor<T, 3>
+xt::xtensor<T, 3>
+  Optimizer<T, Model>::generateNoisedTrajectories(
+    const geometry_msgs::msg::PoseStamped &robot_pose,
+    const geometry_msgs::msg::Twist &robot_speed)
 {
   getBatchesControls() = generateNoisedControlBatches();
   applyControlConstraints();
@@ -111,8 +108,8 @@ auto Optimizer<T, Model>::generateNoisedTrajectories(
 }
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::generateNoisedControlBatches() const
-  -> xt::xtensor<T, 3>
+xt::xtensor<T, 3>
+  Optimizer<T, Model>::generateNoisedControlBatches() const
 {
   auto v_noises =
     xt::random::randn<T>({ batch_size_, time_steps_, 1 }, 0.0, v_std_);
@@ -122,8 +119,7 @@ auto Optimizer<T, Model>::generateNoisedControlBatches() const
 }
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::applyControlConstraints()
-  -> void
+void Optimizer<T, Model>::applyControlConstraints()
 {
   auto v = getBatchesControlLinearVelocities();
   auto w = getBatchesControlAngularVelocities();
@@ -166,10 +162,10 @@ void Optimizer<T, Model>::propagateBatchesVelocitiesFromInitials(
 
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::evalTrajectoryFromControlSequence(
-  const geometry_msgs::msg::PoseStamped &robot_pose,
-  const geometry_msgs::msg::Twist &robot_speed) const
-  -> xt::xtensor<T, 2>
+xt::xtensor<T, 2>
+  Optimizer<T, Model>::evalTrajectoryFromControlSequence(
+    const geometry_msgs::msg::PoseStamped &robot_pose,
+    const geometry_msgs::msg::Twist &robot_speed) const
 {
   auto batch = xt::xtensor<T, 3>::from_shape(
     { 1,
@@ -187,10 +183,10 @@ auto Optimizer<T, Model>::evalTrajectoryFromControlSequence(
 
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::integrateSequence(
-  const auto &sequence,
-  const geometry_msgs::msg::PoseStamped &pose) const
-  -> xt::xtensor<T, 2>
+xt::xtensor<T, 2>
+  Optimizer<T, Model>::integrateSequence(
+    const auto &sequence,
+    const geometry_msgs::msg::PoseStamped &pose) const
 {
   using namespace xt::placeholders;
 
@@ -217,9 +213,9 @@ auto Optimizer<T, Model>::integrateSequence(
 }
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::integrateBatchesVelocities(
-  const geometry_msgs::msg::PoseStamped &pose) const
-  -> xt::xtensor<T, 3>
+xt::xtensor<T, 3>
+  Optimizer<T, Model>::integrateBatchesVelocities(
+    const geometry_msgs::msg::PoseStamped &pose) const
 {
   using namespace xt::placeholders;
 
@@ -246,11 +242,11 @@ auto Optimizer<T, Model>::integrateBatchesVelocities(
 }
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::evalBatchesCosts(
-  const xt::xtensor<T, 3> &batches_of_trajectories,
-  const nav_msgs::msg::Path &global_plan,
-  const geometry_msgs::msg::PoseStamped &robot_pose) const
-  -> xt::xtensor<T, 1>
+xt::xtensor<T, 1>
+  Optimizer<T, Model>::evalBatchesCosts(
+    const xt::xtensor<T, 3> &batches_of_trajectories,
+    const nav_msgs::msg::Path &global_plan,
+    const geometry_msgs::msg::PoseStamped &robot_pose) const
 {
   using namespace xt::placeholders;
 
@@ -392,8 +388,7 @@ void Optimizer<T, Model>::evalGoalAngleCost(
 }
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::updateControlSequence(const xt::xtensor<T, 1> &costs)
-  -> void
+void Optimizer<T, Model>::updateControlSequence(const xt::xtensor<T, 1> &costs)
 {
   using xt::evaluation_strategy::immediate;
 
@@ -423,8 +418,8 @@ bool Optimizer<T, Model>::inCollision(unsigned char cost) const
 }
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::costAtPose(const double &x, const double &y) const
-  -> double
+double
+  Optimizer<T, Model>::costAtPose(const double &x, const double &y) const
 {
   unsigned int mx = 0;
   unsigned int my = 0;
@@ -436,8 +431,8 @@ auto Optimizer<T, Model>::costAtPose(const double &x, const double &y) const
 }
 
 template<typename T, typename Model>
-auto Optimizer<T, Model>::getControlFromSequence(const auto &stamp, const std::string &frame)
-  -> geometry_msgs::msg::TwistStamped
+geometry_msgs::msg::TwistStamped
+  Optimizer<T, Model>::getControlFromSequence(const auto &stamp, const std::string &frame)
 {
 
   return geometry::toTwistStamped(xt::view(control_sequence_, 0), stamp, frame);
