@@ -31,7 +31,8 @@ public:
     global_plan_ = plan;
   }
 
-  auto getPath() -> nav_msgs::msg::Path &
+  nav_msgs::msg::Path &
+    getPath()
   {
     return global_plan_;
   }
@@ -42,8 +43,7 @@ public:
    *
    * @return global plan in local frame
    */
-  auto transformPath(const geometry_msgs::msg::PoseStamped &robot_pose)
-    -> nav_msgs::msg::Path;
+  nav_msgs::msg::Path transformPath(const geometry_msgs::msg::PoseStamped &robot_pose);
 
 private:
   void getParams();
@@ -55,16 +55,16 @@ private:
 
   double getMaxCostmapDist();
 
-  auto transformToGlobalFrame(const geometry_msgs::msg::PoseStamped &pose)
-    -> geometry_msgs::msg::PoseStamped;
+  geometry_msgs::msg::PoseStamped
+    transformToGlobalFrame(const geometry_msgs::msg::PoseStamped &pose);
 
   template<typename Iter, typename Stamp>
-  auto transformGlobalPlan(
-    Iter begin,
-    Iter end,
-    const Stamp &stamp,
-    const std::string &frame)
-    -> nav_msgs::msg::Path;
+  nav_msgs::msg::Path
+    transformGlobalPlan(
+      Iter begin,
+      Iter end,
+      const Stamp &stamp,
+      const std::string &frame);
 
   auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped &global_pose);
 

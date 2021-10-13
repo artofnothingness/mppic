@@ -8,10 +8,9 @@ class TrajectoryVisualizer
 {
 public:
   TrajectoryVisualizer() = default;
-  auto on_configure(
+  void on_configure(
     const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
     const std::string &frame_id)
-    -> void
   {
     frame_id_ = frame_id;
     parent_ = parent;
@@ -22,12 +21,12 @@ public:
     RCLCPP_INFO(logger_, "Configured");
   }
 
-  auto on_cleanup() -> void { trajectories_publisher_.reset(); }
-  auto on_activate() -> void { trajectories_publisher_->on_activate(); }
-  auto on_deactivate() -> void { trajectories_publisher_->on_deactivate(); }
+  void on_cleanup() { trajectories_publisher_.reset(); }
+  void on_activate() { trajectories_publisher_->on_activate(); }
+  void on_deactivate() { trajectories_publisher_->on_deactivate(); }
 
 
-  auto reset() -> void
+  void reset()
   {
     marker_id_ = 0;
     points_.markers.clear();
@@ -35,8 +34,7 @@ public:
 
 
   template<typename Container>
-  auto add(Container &&trajectory)
-    -> void
+  void add(Container &&trajectory)
   {
     auto &size = trajectory.shape()[0];
     if (not size) {
@@ -58,8 +56,7 @@ public:
   }
 
   template<typename Container>
-  auto add(Container &&trajectories, double batch_step, double time_step)
-    -> void
+  void add(Container &&trajectories, double batch_step, double time_step)
   {
     if (not trajectories.shape()[0]) {
       return;
@@ -83,7 +80,7 @@ public:
     }
   }
 
-  auto visualize() -> void
+  void visualize()
   {
     trajectories_publisher_->publish(points_);
   }

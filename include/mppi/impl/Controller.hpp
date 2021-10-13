@@ -31,7 +31,6 @@ void Controller<T, Model>::cleanup()
   optimizer_.on_cleanup();
   path_handler_.on_cleanup();
   trajectory_visualizer_.on_cleanup();
-
   transformed_path_pub_.reset();
 }
 
@@ -39,7 +38,6 @@ template<typename T, typename Model>
 void Controller<T, Model>::activate()
 {
   transformed_path_pub_->on_activate();
-
   optimizer_.on_activate();
   path_handler_.on_activate();
   trajectory_visualizer_.on_activate();
@@ -55,10 +53,10 @@ void Controller<T, Model>::deactivate()
 }
 
 template<typename T, typename Model>
-auto Controller<T, Model>::computeVelocityCommands(
-  const geometry_msgs::msg::PoseStamped &robot_pose,
-  const geometry_msgs::msg::Twist &robot_speed)
-  -> geometry_msgs::msg::TwistStamped
+geometry_msgs::msg::TwistStamped
+  Controller<T, Model>::computeVelocityCommands(
+    const geometry_msgs::msg::PoseStamped &robot_pose,
+    const geometry_msgs::msg::Twist &robot_speed)
 {
   auto &&transformed_plan = path_handler_.transformPath(robot_pose);
   auto &&cmd = optimizer_.evalNextBestControl(
