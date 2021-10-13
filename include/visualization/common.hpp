@@ -6,13 +6,13 @@
 
 namespace mppi::visualization {
 
-inline auto createMarker(
-  int id,
-  const geometry_msgs::msg::Pose &pose,
-  const geometry_msgs::msg::Vector3 &scale,
-  const std_msgs::msg::ColorRGBA &color,
-  const std::string &frame_id)
-  -> visualization_msgs::msg::Marker
+inline visualization_msgs::msg::Marker
+  createMarker(
+    int id,
+    const geometry_msgs::msg::Pose &pose,
+    const geometry_msgs::msg::Vector3 &scale,
+    const std_msgs::msg::ColorRGBA &color,
+    const std::string &frame_id)
 {
 
   using visualization_msgs::msg::Marker;
@@ -31,8 +31,8 @@ inline auto createMarker(
   return marker;
 }
 
-inline auto createPose(double x, double y, double z)
-  -> geometry_msgs::msg::Pose
+inline geometry_msgs::msg::Pose
+  createPose(double x, double y, double z)
 {
   geometry_msgs::msg::Pose pose;
   pose.position.x = x;
@@ -47,8 +47,8 @@ inline auto createPose(double x, double y, double z)
   return pose;
 }
 
-inline auto createScale(double x, double y, double z)
-  -> geometry_msgs::msg::Vector3
+inline geometry_msgs::msg::Vector3
+  createScale(double x, double y, double z)
 {
   geometry_msgs::msg::Vector3 scale;
   scale.x = x;
@@ -58,8 +58,8 @@ inline auto createScale(double x, double y, double z)
   return scale;
 }
 
-inline auto createColor(double r, double g, double b, double a)
-  -> std_msgs::msg::ColorRGBA
+inline std_msgs::msg::ColorRGBA
+  createColor(double r, double g, double b, double a)
 {
   std_msgs::msg::ColorRGBA color;
   color.r = r;

@@ -16,7 +16,8 @@
 
 namespace mppi::optimization {
 
-template<typename T,
+template<
+  typename T,
   typename Model = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &)>
 class Optimizer
 {
@@ -33,22 +34,22 @@ public:
   void on_activate() {}
   void on_deactivate() {}
 
-  auto evalNextBestControl(
-    const geometry_msgs::msg::PoseStamped &robot_pose,
-    const geometry_msgs::msg::Twist &robot_speed,
-    const nav_msgs::msg::Path &plan)
-    -> geometry_msgs::msg::TwistStamped;
+  geometry_msgs::msg::TwistStamped
+    evalNextBestControl(
+      const geometry_msgs::msg::PoseStamped &robot_pose,
+      const geometry_msgs::msg::Twist &robot_speed,
+      const nav_msgs::msg::Path &plan);
 
-  auto getGeneratedTrajectories() const
-    -> xt::xtensor<T, 3>
+  xt::xtensor<T, 3>
+    getGeneratedTrajectories() const
   {
     return generated_trajectories_;
   }
 
-  auto evalTrajectoryFromControlSequence(
-    const geometry_msgs::msg::PoseStamped &robot_pose,
-    const geometry_msgs::msg::Twist &robot_speed) const
-    -> xt::xtensor<T, 2>;
+  xt::xtensor<T, 2>
+    evalTrajectoryFromControlSequence(
+      const geometry_msgs::msg::PoseStamped &robot_pose,
+      const geometry_msgs::msg::Twist &robot_speed) const;
 
 private:
   void getParams();
@@ -60,10 +61,10 @@ private:
    *
    * @return trajectories: tensor of shape [ batch_size_, time_steps_, 3 ]  where 3 stands for x, y, yaw
    */
-  auto generateNoisedTrajectories(
-    const geometry_msgs::msg::PoseStamped &robot_pose,
-    const geometry_msgs::msg::Twist &robot_speed)
-    -> xt::xtensor<T, 3>;
+  xt::xtensor<T, 3>
+    generateNoisedTrajectories(
+      const geometry_msgs::msg::PoseStamped &robot_pose,
+      const geometry_msgs::msg::Twist &robot_speed);
 
   /**
    * @brief Generate random controls by gaussian noise with mean in
@@ -71,8 +72,8 @@ private:
    *
    * @return Control batches tensor of shape [ batch_size_, time_steps_, 2] where 2 stands for v, w
    */
-  auto generateNoisedControlBatches() const
-    -> xt::xtensor<T, 3>;
+  xt::xtensor<T, 3>
+    generateNoisedControlBatches() const;
 
   void applyControlConstraints();
 
@@ -95,13 +96,13 @@ private:
    */
   void propagateBatchesVelocitiesFromInitials(auto &batches) const;
 
-  auto integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped &robot_pose) const
-    -> xt::xtensor<T, 3>;
+  xt::xtensor<T, 3>
+    integrateBatchesVelocities(const geometry_msgs::msg::PoseStamped &robot_pose) const;
 
-  auto integrateSequence(
-    const auto &velocities_sequence,
-    const geometry_msgs::msg::PoseStamped &robot_pose) const
-    -> xt::xtensor<T, 2>;
+  xt::xtensor<T, 2>
+    integrateSequence(
+      const auto &velocities_sequence,
+      const geometry_msgs::msg::PoseStamped &robot_pose) const;
 
   /**
    * @brief Evaluate cost for each batch
@@ -110,11 +111,11 @@ private:
    * where 3 stands for x, y, yaw
    * @return Cost for each batch, tensor of shape [ batch_size ]
    */
-  auto evalBatchesCosts(
-    const xt::xtensor<T, 3> &batches_of_trajectories,
-    const nav_msgs::msg::Path &global_plan,
-    const geometry_msgs::msg::PoseStamped &robot_pose) const
-    -> xt::xtensor<T, 1>;
+  xt::xtensor<T, 1>
+    evalBatchesCosts(
+      const xt::xtensor<T, 3> &batches_of_trajectories,
+      const nav_msgs::msg::Path &global_plan,
+      const geometry_msgs::msg::PoseStamped &robot_pose) const;
 
   /**
    * @brief Evaluate cost related to trajectories path alignment
@@ -188,8 +189,8 @@ private:
    * @brief Get first control from control_sequence_
    *
    */
-  auto getControlFromSequence(const auto &stamp, const std::string &frame)
-    -> geometry_msgs::msg::TwistStamped;
+  geometry_msgs::msg::TwistStamped
+    getControlFromSequence(const auto &stamp, const std::string &frame);
 
   auto getBatchesControls() const;
   auto getBatchesControls();

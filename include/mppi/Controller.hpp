@@ -32,10 +32,10 @@ public:
   void activate() final;
   void deactivate() final;
 
-  auto computeVelocityCommands(
-    const geometry_msgs::msg::PoseStamped &robot_pose,
-    const geometry_msgs::msg::Twist &robot_speed)
-    -> geometry_msgs::msg::TwistStamped final;
+  geometry_msgs::msg::TwistStamped
+    computeVelocityCommands(
+      const geometry_msgs::msg::PoseStamped &robot_pose,
+      const geometry_msgs::msg::Twist &robot_speed) final;
 
   void setPlan(const nav_msgs::msg::Path &path) final
   {
@@ -46,6 +46,7 @@ private:
   void getParams();
   void setPublishers();
   void configureComponents();
+
   void handleVisualizations(
     const geometry_msgs::msg::PoseStamped &robot_pose,
     const geometry_msgs::msg::Twist &robot_speed,

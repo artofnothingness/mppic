@@ -5,8 +5,7 @@
 namespace mppi::utils {
 
 template<typename N, typename T>
-auto getParam(std::string const &param_name, T default_value, const std::shared_ptr<N> &node)
-  -> T
+T getParam(std::string const &param_name, T default_value, const std::shared_ptr<N> &node)
 {
   T param;
   node->declare_parameter(param_name, rclcpp::ParameterValue(default_value));
