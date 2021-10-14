@@ -331,7 +331,7 @@ void Optimizer<T, Model>::evalObstacleCost(
 
   for (size_t i = 0; i < batch_size_; ++i) {
     double min_dist = std::numeric_limits<T>::max();
-    bool is_closest_point_inflated = false;
+    bool inflated = false;
     for (size_t j = 0; j < time_steps_; ++j) {
       double cost = costAtPose(
         batches_of_trajectories_points(i, j, 0),
@@ -339,24 +339,20 @@ void Optimizer<T, Model>::evalObstacleCost(
 
       if (inCollision(cost)) {
         costs[i] = collision_cost_value;
-        is_closest_point_inflated = false;
+        inflated = false;
         break;
-      } else {
-        if (cost != nav2_costmap_2d::FREE_SPACE) {
-          double dist = minDistToObstacle(cost);
-          if (dist < min_dist) {
-            is_closest_point_inflated = true;
-            min_dist = dist;
-          }
-        }
+      }
+
+      if (cost != nav2_costmap_2d::FREE_SPACE) {
+        min_dist = std::min(minDistToObstacle(cost), min_dist);
+        inflated = true;
       }
     }
 
-    if (is_closest_point_inflated) {
-      costs[i] += pow(
-        (1.01 * inflation_radius_ - min_dist) * obstacle_cost_weight_,
+
+    if (inflated)
+      costs[i] += pow((1.01 * inflation_radius_ - min_dist) * obstacle_cost_weight_,
         obstacle_cost_power_);
-    }
   }
 }
 
