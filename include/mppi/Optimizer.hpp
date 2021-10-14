@@ -234,14 +234,14 @@ private:
   double w_limit_;
   double temperature_;
 
-  size_t reference_cost_power_;
-  size_t reference_cost_weight_;
-  size_t obstacle_cost_power_;
-  size_t obstacle_cost_weight_;
-  size_t goal_cost_power_;
-  size_t goal_cost_weight_;
-  size_t goal_angle_cost_power_;
-  size_t goal_angle_cost_weight_;
+  unsigned int reference_cost_power_;
+  unsigned int reference_cost_weight_;
+  unsigned int obstacle_cost_power_;
+  unsigned int obstacle_cost_weight_;
+  unsigned int goal_cost_power_;
+  unsigned int goal_cost_weight_;
+  unsigned int goal_angle_cost_power_;
+  unsigned int goal_angle_cost_weight_;
 
   /**
    * @batches_ tensor of shape [ batch_size, time_steps, 5 ] where 5 stands for
