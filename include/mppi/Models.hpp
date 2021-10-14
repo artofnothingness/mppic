@@ -12,7 +12,6 @@ namespace mppi::models {
   * robot linear, angluar velocities, linear control, angular control velocities, dt (time on which this control will be applied)
  * @return predicted velocities of the robot: tensor of shape [batch_size, 2] where 2 stands for
   * robot linear, angluar velocities for the next time step
-
  */
 template<typename T, typename Tensor = xt::xtensor<T, 2>>
 Tensor NaiveModel(const Tensor &batches)
