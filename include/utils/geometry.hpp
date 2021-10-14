@@ -119,10 +119,8 @@ auto closestPointsOnLinesSegment2D(
   auto end_line_points = xt::view(batch_of_segments_points, xt::all(), xt::range(1, _));
 
   xt::xtensor<T, 3> diff = end_line_points - start_line_points;
-  xt::xtensor<T, 2> sq_norm = xt::norm_sq(
-    diff,
-    { diff.dimension() - 1 },
-    xt::evaluation_strategy::immediate);
+  xt::xtensor<T, 2> sq_norm =
+    xt::norm_sq(diff, { diff.dimension() - 1 }, xt::evaluation_strategy::immediate);
 
   static constexpr double eps = 1e-3;
   for (size_t b = 0; b < closest_points.shape()[0]; ++b) {
@@ -131,10 +129,8 @@ auto closestPointsOnLinesSegment2D(
         xt::view(closest_points, b, t) = xt::view(start_line_points, b, t);
         continue;
       }
-
       for (size_t p = 0; p < closest_points.shape()[2]; ++p) {
         T u = ((path(p, 0) - start_line_points(b, t, 0)) * diff(b, t, 0) + (path(p, 1) - start_line_points(b, t, 1)) * diff(b, t, 1)) / sq_norm(b, t);
-
         if (u <= 0) {
           closest_points(b, t, p, 0) = start_line_points(b, t, 0);
           closest_points(b, t, p, 1) = start_line_points(b, t, 1);
@@ -164,17 +160,11 @@ template<typename P, typename L>
 auto distPointsToLineSegments2D(P &&path, L &&batch_of_segments_points)
 {
   auto path_points = xt::view(path, xt::all(), xt::range(0, 2));
-  auto batch_of_lines =
-    xt::view(batch_of_segments_points, xt::all(), xt::all(), xt::range(0, 2));
+  auto batch_of_lines = xt::view(batch_of_segments_points, xt::all(), xt::all(), xt::range(0, 2));
+  auto &&closest_points = closestPointsOnLinesSegment2D(path_points, batch_of_lines);
 
-
-  auto &&closest_points = closestPointsOnLinesSegment2D(
-    path_points,
-    batch_of_lines);
-
-  auto &&diff = std::move(path_points) - std::move(closest_points);
-  size_t dim = diff.dimension() - 1;
-  return xt::norm_l2(std::move(diff), { dim }, xt::evaluation_strategy::immediate);
+  auto diff = path_points - closest_points;
+  return xt::norm_l2(diff, { diff.dimension() - 1 }, xt::evaluation_strategy::immediate);
 }
 
 }// namespace mppi::geometry
