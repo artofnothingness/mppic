@@ -112,9 +112,9 @@ xt::xtensor<T, 3>
   Optimizer<T, Model>::generateNoisedControlBatches() const
 {
   auto v_noises =
-    xt::random::randn<T>({ batch_size_, time_steps_, 1 }, 0.0, v_std_);
+    xt::random::randn<T>({ batch_size_, time_steps_, 1U }, 0.0, v_std_);
   auto w_noises =
-    xt::random::randn<T>({ batch_size_, time_steps_, 1 }, 0.0, w_std_);
+    xt::random::randn<T>({ batch_size_, time_steps_, 1U }, 0.0, w_std_);
   return control_sequence_ + xt::concatenate(xt::xtuple(v_noises, w_noises), 2);
 }
 
@@ -168,9 +168,7 @@ xt::xtensor<T, 2>
     const geometry_msgs::msg::Twist &robot_speed) const
 {
   auto batch = xt::xtensor<T, 3>::from_shape(
-    { 1,
-      static_cast<size_t>(time_steps_),
-      static_cast<size_t>(batches_last_dim_size_) });
+    { 1U, time_steps_, batches_last_dim_size_ });
 
   xt::view(batch, 0, xt::all(), xt::range(2, 4)) = control_sequence_;
   xt::view(batch, 0, xt::all(), 4) = model_dt_;
@@ -331,11 +329,10 @@ void Optimizer<T, Model>::evalObstacleCost(
     return (-1.0 / inflation_cost_scaling_factor_) * std::log(cost / (nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE - 1)) + inscribed_radius_;
   };
 
-  for (size_t i = 0; i < static_cast<size_t>(batch_size_); ++i) {
+  for (size_t i = 0; i < batch_size_; ++i) {
     double min_dist = std::numeric_limits<T>::max();
     bool is_closest_point_inflated = false;
-    size_t j = 0;
-    for (; j < static_cast<size_t>(time_steps_); ++j) {
+    for (size_t j = 0; j < time_steps_; ++j) {
       double cost = costAtPose(
         batches_of_trajectories_points(i, j, 0),
         batches_of_trajectories_points(i, j, 1));
@@ -370,8 +367,10 @@ void Optimizer<T, Model>::evalGoalAngleCost(
   const geometry_msgs::msg::PoseStamped &robot_pose,
   auto &costs) const
 {
-  xt::xtensor<T, 1> tensor_pose = { static_cast<T>(robot_pose.pose.position.x),
-    static_cast<T>(robot_pose.pose.position.y) };
+  xt::xtensor<T, 1> tensor_pose = {
+    static_cast<T>(robot_pose.pose.position.x),
+    static_cast<T>(robot_pose.pose.position.y)
+  };
 
   auto path_points = xt::view(global_plan, -1, xt::range(0, 2));
 

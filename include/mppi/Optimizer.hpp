@@ -220,12 +220,12 @@ private:
   double threshold_to_consider_goal_angle_;
   bool approx_reference_cost_;
 
-  static constexpr int batches_last_dim_size_ = 5;
-  static constexpr int control_dim_size_ = 2;
+  static constexpr unsigned int batches_last_dim_size_ = 5;
+  static constexpr unsigned int control_dim_size_ = 2;
 
-  int batch_size_;
-  int time_steps_;
-  int iteration_count_;
+  unsigned int batch_size_;
+  unsigned int time_steps_;
+  unsigned int iteration_count_;
 
   double model_dt_;
   double v_std_;
