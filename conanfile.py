@@ -3,7 +3,7 @@ from conans import ConanFile
 
 class MPPIC(ConanFile):
     name = "MPPIC"
-    version = "0.1"
+    version = "0.2.1"
     requires = (
         "xtensor/0.23.9",
         "catch2/2.13.4",
