@@ -3,7 +3,7 @@ project(mppic CXX)
 
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
 option(ENABLE_TESTING "Enable Test Builds" ON)
-option(ENABLE_CONAN "Use Conan for dependency management" ON)
+option(ENABLE_CONAN "Use Conan for dependency management" OFF)
 
 include(cmake/StandardProjectSettings.cmake)
 include(cmake/PreventInSourceBuilds.cmake)
@@ -18,6 +18,10 @@ if(ENABLE_CONAN)
   run_conan()
 endif()
 
+find_package(ament_cmake REQUIRED)
+find_package(nav2_common REQUIRED)
+find_package(xtensor REQUIRED)
+
 add_library(project_options INTERFACE)
 target_include_directories(project_options INTERFACE include)
 target_compile_features(project_options INTERFACE cxx_std_17)
@@ -28,8 +32,6 @@ configure_linker(project_options)
 enable_sanitizers(project_options)
 
 
-find_package(ament_cmake REQUIRED)
-find_package(nav2_common REQUIRED)
 set(packages 
   rclcpp 
   pluginlib 
@@ -42,13 +44,17 @@ set(packages
   nav2_util
 )
 
-find_package(xtensor REQUIRED)
 
 foreach(pkg IN LISTS packages)
   find_package(${pkg} REQUIRED)
 endforeach()
 
-add_subdirectory(src)
+add_library(mppic SHARED src/Controller.cpp src/PathHandler.cpp)
+ament_target_dependencies(mppic
+  ${packages}
+)
+
+target_link_libraries(mppic project_options)
 ament_export_libraries(mppic)
 ament_export_dependencies(${packages})
 ament_export_include_directories(include)
