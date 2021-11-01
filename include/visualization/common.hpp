@@ -59,7 +59,7 @@ inline geometry_msgs::msg::Vector3
 }
 
 inline std_msgs::msg::ColorRGBA
-  createColor(double r, double g, double b, double a)
+  createColor(float r, float g, float b, float a)
 {
   std_msgs::msg::ColorRGBA color;
   color.r = r;

@@ -6,9 +6,7 @@ option(ENABLE_TESTING "Enable Test Builds" ON)
 option(ENABLE_CONAN "Use Conan for dependency management" OFF)
 
 include(cmake/StandardProjectSettings.cmake)
-include(cmake/PreventInSourceBuilds.cmake)
 include(cmake/CompilerWarnings.cmake)
-include(cmake/Linker.cmake)
 include(cmake/Sanitizers.cmake)
 include(cmake/Doxygen.cmake)
 include(cmake/StaticAnalyzers.cmake)
@@ -26,10 +24,10 @@ add_library(project_options INTERFACE)
 target_include_directories(project_options INTERFACE include)
 target_compile_features(project_options INTERFACE cxx_std_17)
 target_compile_options(project_options INTERFACE -fconcepts)
-
 target_link_libraries(project_options INTERFACE xtensor)
-configure_linker(project_options)
+
 enable_sanitizers(project_options)
+set_project_warnings(project_options)
 
 
 set(packages 
@@ -55,15 +53,16 @@ ament_target_dependencies(mppic
 )
 
 target_link_libraries(mppic project_options)
-ament_export_libraries(mppic)
-ament_export_dependencies(${packages})
-ament_export_include_directories(include)
-pluginlib_export_plugin_description_file(nav2_core mppic.xml)
 
 if(ENABLE_TESTING)
   enable_testing()
   add_subdirectory(test)
 endif()
+
+ament_export_libraries(mppic)
+ament_export_dependencies(${packages})
+ament_export_include_directories(include)
+pluginlib_export_plugin_description_file(nav2_core mppic.xml)
 
 install(TARGETS mppic
   ARCHIVE DESTINATION lib

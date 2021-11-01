@@ -7,8 +7,7 @@
 #include <catch2/catch.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-class RosLockGuard 
-{
+class RosLockGuard {
 public:
   RosLockGuard() { rclcpp::init(0, nullptr); }
   ~RosLockGuard() { rclcpp::shutdown(); }
