@@ -78,7 +78,10 @@ public:
     }
   }
 
-  void visualize() { trajectories_publisher_->publish(points_); }
+  void visualize() {
+    trajectories_publisher_->publish(points_);
+    reset();
+  }
 
 private:
   std::string frame_id_;

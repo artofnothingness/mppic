@@ -71,14 +71,14 @@ template <typename T, typename Model> void Optimizer<T, Model>::getParams() {
       static_cast<unsigned int>(getParam("reference_cost_weight", 5));
 
   goal_cost_power_ =
-      static_cast<unsigned int>(getParam("goal_cost_power", 1.0));
+      static_cast<unsigned int>(getParam("goal_cost_power", 1));
   goal_cost_weight_ =
-      static_cast<unsigned int>(getParam("goal_cost_weight", 20.0));
+      static_cast<unsigned int>(getParam("goal_cost_weight", 20));
 
   goal_angle_cost_power_ =
-      static_cast<unsigned int>(getParam("goal_angle_cost_power", 1.0));
+      static_cast<unsigned int>(getParam("goal_angle_cost_power", 1));
   goal_angle_cost_weight_ =
-      static_cast<unsigned int>(getParam("goal_angle_cost_weight", 10.0));
+      static_cast<unsigned int>(getParam("goal_angle_cost_weight", 10));
 
   obstacle_cost_power_ =
       static_cast<unsigned int>(getParam("obstacle_cost_power", 2));

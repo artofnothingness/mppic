@@ -51,7 +51,8 @@ geometry_msgs::msg::TwistStamped Controller<T, Model>::computeVelocityCommands(
       optimizer_.evalNextBestControl(robot_pose, robot_speed, transformed_plan);
 
   if (visualize_) {
-    handleVisualizations(robot_pose, robot_speed, transformed_plan);
+    auto &&plan_ptr = std::make_unique<nav_msgs::msg::Path>(std::move(transformed_plan));
+    handleVisualizations(robot_pose, robot_speed, std::move(plan_ptr));
   }
 
   return cmd;
@@ -61,13 +62,14 @@ template <typename T, typename Model>
 void Controller<T, Model>::handleVisualizations(
     const geometry_msgs::msg::PoseStamped &robot_pose,
     const geometry_msgs::msg::Twist &robot_speed,
-    const nav_msgs::msg::Path &transformed_plan) {
+    std::unique_ptr<nav_msgs::msg::Path> &&transformed_plan) {
+
   trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories(), 5, 2);
   trajectory_visualizer_.add(
       optimizer_.evalTrajectoryFromControlSequence(robot_pose, robot_speed));
   trajectory_visualizer_.visualize();
-  trajectory_visualizer_.reset();
-  transformed_path_pub_->publish(transformed_plan);
+
+  transformed_path_pub_->publish(std::move(transformed_plan));
 }
 
 template <typename T, typename Model> void Controller<T, Model>::getParams() {
