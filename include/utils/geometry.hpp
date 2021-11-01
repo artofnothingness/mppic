@@ -57,9 +57,9 @@ xt::xtensor<T, 2>
   xt::xtensor<T, 2> points = xt::empty<T>({ path_size, last_dim_size });
 
   for (size_t i = 0; i < path_size; ++i) {
-    points(i, 0) = path.poses[i].pose.position.x;
-    points(i, 1) = path.poses[i].pose.position.y;
-    points(i, 2) = tf2::getYaw(path.poses[i].pose.orientation);
+    points(i, 0) = static_cast<T>(path.poses[i].pose.position.x);
+    points(i, 1) = static_cast<T>(path.poses[i].pose.position.y);
+    points(i, 2) = static_cast<T>(tf2::getYaw(path.poses[i].pose.orientation));
   }
 
   return points;
@@ -122,7 +122,7 @@ auto closestPointsOnLinesSegment2D(
   xt::xtensor<T, 2> sq_norm =
     xt::norm_sq(diff, { diff.dimension() - 1 }, xt::evaluation_strategy::immediate);
 
-  static constexpr double eps = 1e-3;
+  static constexpr T eps = static_cast<T>(1e-3);
   for (size_t b = 0; b < closest_points.shape()[0]; ++b) {
     for (size_t t = 0; t < closest_points.shape()[1]; ++t) {
       if (abs(sq_norm(b, t)) < eps) {
