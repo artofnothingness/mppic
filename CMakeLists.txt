@@ -3,7 +3,7 @@ project(mppic CXX)
 
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
 option(ENABLE_TESTING "Enable Test Builds" ON)
-option(ENABLE_CONAN "Use Conan for dependency management" OFF)
+option(ENABLE_CONAN "Use Conan for dependency management" ON)
 
 include(cmake/StandardProjectSettings.cmake)
 include(cmake/CompilerWarnings.cmake)

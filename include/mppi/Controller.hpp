@@ -41,10 +41,10 @@ private:
   void getParams();
   void setPublishers();
   void configureComponents();
-
-  void handleVisualizations(const geometry_msgs::msg::PoseStamped &robot_pose,
-                            const geometry_msgs::msg::Twist &robot_speed,
-                            const nav_msgs::msg::Path &transformed_plan);
+  void
+  handleVisualizations(const geometry_msgs::msg::PoseStamped &robot_pose,
+                       const geometry_msgs::msg::Twist &robot_speed,
+                       std::unique_ptr<nav_msgs::msg::Path> &&transformed_plan);
 
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
