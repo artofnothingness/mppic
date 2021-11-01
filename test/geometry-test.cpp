@@ -11,16 +11,16 @@
 
 #include "utils/geometry.hpp"
 
-static auto toStr = [](auto && container) {
-    std::stringstream ss;
-    ss << "[ ";
-    for (auto & val : container) {
-      ss << val << ' ';
-    }
-    ss << "]";
+static auto toStr = [](auto &&container) {
+  std::stringstream ss;
+  ss << "[ ";
+  for (auto &val : container) {
+    ss << val << ' ';
+  }
+  ss << "]";
 
-    return ss.str();
-  };
+  return ss.str();
+};
 
 TEST_CASE("Closest points on Line Segments 2D", "[geometry]") {
   using T = float;
@@ -42,24 +42,20 @@ TEST_CASE("Closest points on Line Segments 2D", "[geometry]") {
   Array result;
   // clang-format on
 
-  REQUIRE_NOTHROW(
-    result = mppi::geometry::closestPointsOnLinesSegment2D(
-      points, line_points));
+  REQUIRE_NOTHROW(result = mppi::geometry::closestPointsOnLinesSegment2D(
+                      points, line_points));
 
-  size_t bench_i = GENERATE(10, 100);
-  auto bench_points = Array::from_shape({bench_i, 2});
+  size_t bench_points_size = GENERATE(10U, 100U);
+  auto bench_points = Array::from_shape({bench_points_size, 2});
   auto bench_lines = Array::from_shape({300, 20, 2});
   bench_lines.fill(20);
 
-
 #ifdef DO_BENCHMARKS
-  WARN(
-    "Points in bench: [ " << bench_i << " ]" << '\n' <<
-      "Lines shape: " << toStr(bench_lines.shape()));
+  WARN("Points in bench: [ " << bench_points_size << " ]" << '\n'
+                             << "Lines shape: " << toStr(bench_lines.shape()));
   BENCHMARK("Closest Points on Segments Benchmark") {
-    return mppi::geometry::closestPointsOnLinesSegment2D(
-      bench_points,
-      bench_lines);
+    return mppi::geometry::closestPointsOnLinesSegment2D(bench_points,
+                                                         bench_lines);
   };
 #endif
 
@@ -88,10 +84,9 @@ TEST_CASE("Closest points on Line Segments 2D", "[geometry]") {
     CHECK(result(1, 1, 0, 1) == line_points(1, 1, 1));
 
     // Middle of the line check
-    CHECK(
-      result(0, 2, 0, 0) ==
-      (line_points(0, 3, 0) - line_points(0, 2, 0)) / 2 +
-      line_points(0, 2, 0));
+    CHECK(result(0, 2, 0, 0) ==
+          (line_points(0, 3, 0) - line_points(0, 2, 0)) / 2 +
+              line_points(0, 2, 0));
 
     CHECK(result(0, 2, 0, 1) == line_points(0, 3, 1));
     CHECK(result(0, 2, 0, 1) == line_points(0, 2, 1));
@@ -135,20 +130,19 @@ TEST_CASE("Distance Points To Line Segments 2D", "[geometry]") {
   // clang-format on
 
   REQUIRE_NOTHROW(
-    result = mppi::geometry::distPointsToLineSegments2D(points, line_points));
+      result = mppi::geometry::distPointsToLineSegments2D(points, line_points));
 
-  size_t bench_i = GENERATE(10, 30, 100);
-  auto bench_points = Array::from_shape({bench_i, 2});
+  size_t bench_points_size = GENERATE(10U, 30U, 100U);
+  auto bench_points = Array::from_shape({bench_points_size, 2});
   auto bench_lines = Array::from_shape({300, 20, 2});
 
 #ifdef DO_BENCHMARKS
-  WARN(
-    "Points in benchmark: [ " << bench_i << " ]" << '\n' <<
-      "Lines shape: " << toStr(bench_lines.shape()));
+  WARN("Points in benchmark: [ "
+       << bench_points_size << " ]" << '\n'
+       << "Lines shape: " << toStr(bench_lines.shape()));
   BENCHMARK("Distance from Lines to Points Benchmark") {
-    return mppi::geometry::distPointsToLineSegments2D(
-      bench_points,
-      bench_lines);
+    return mppi::geometry::distPointsToLineSegments2D(bench_points,
+                                                      bench_lines);
   };
 #endif
 
