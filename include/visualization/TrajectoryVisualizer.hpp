@@ -1,12 +1,14 @@
 #pragma once
 
 #include "visualization/common.hpp"
+#include "memory"
 
 namespace mppi::visualization {
 
 class TrajectoryVisualizer {
 public:
   TrajectoryVisualizer() = default;
+
   void
   on_configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
                const std::string &frame_id) {
@@ -17,6 +19,7 @@ public:
         parent_->create_publisher<visualization_msgs::msg::MarkerArray>(
             "/trajectories", 1);
 
+    reset();
     RCLCPP_INFO(logger_, "Configured");
   }
 
@@ -26,7 +29,7 @@ public:
 
   void reset() {
     marker_id_ = 0;
-    points_.markers.clear();
+    points_ = std::make_unique<visualization_msgs::msg::MarkerArray>();
   }
 
   template <typename Container> void add(Container &&trajectory) {
@@ -47,7 +50,7 @@ public:
       auto color = createColor(0, green_component, blue_component, 1);
       auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
 
-      points_.markers.push_back(marker);
+      points_->markers.push_back(std::move(marker));
     }
   }
 
@@ -73,13 +76,13 @@ public:
         auto color = createColor(0, green_component, blue_component, 1);
         auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
 
-        points_.markers.push_back(marker);
+        points_->markers.push_back(std::move(marker));
       }
     }
   }
 
   void visualize() {
-    trajectories_publisher_->publish(points_);
+    trajectories_publisher_->publish(std::move(points_));
     reset();
   }
 
@@ -90,7 +93,7 @@ private:
       visualization_msgs::msg::MarkerArray>>
       trajectories_publisher_;
 
-  visualization_msgs::msg::MarkerArray points_;
+  std::unique_ptr<visualization_msgs::msg::MarkerArray> points_;
   int marker_id_ = 0;
 
   rclcpp::Logger logger_{rclcpp::get_logger("Trajectory Visualizer")};
