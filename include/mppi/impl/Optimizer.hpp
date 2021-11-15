@@ -211,6 +211,7 @@ xt::xtensor<T, dims::batches> Optimizer<T, Model>::integrateBatchesVelocities(
 
   xt::view(yaw, xt::all(), xt::range(1, _)) =
       xt::view(yaw, xt::all(), xt::range(_, -1));
+  xt::view(yaw, xt::all(), 0) = 0;
   xt::view(yaw, xt::all(), xt::all()) += tf2::getYaw(pose.pose.orientation);
 
   auto v_x = v * xt::cos(yaw);
