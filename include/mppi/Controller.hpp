@@ -41,6 +41,7 @@ private:
   void getParams();
   void setPublishers();
   void configureComponents();
+
   void
   handleVisualizations(const geometry_msgs::msg::PoseStamped &robot_pose,
                        const geometry_msgs::msg::Twist &robot_speed,
