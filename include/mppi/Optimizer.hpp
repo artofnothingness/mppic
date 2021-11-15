@@ -13,6 +13,8 @@
 #include "xtensor/xarray.hpp"
 #include "xtensor/xview.hpp"
 
+#include "mppi/Indexes.hpp"
+
 namespace mppi::optimization {
 
 template <typename T,
@@ -232,14 +234,14 @@ private:
    * robot linear, robot angluar velocities, linear control, angular control, dt
    * (time on which this control will be applied)
    */
-  xt::xtensor<T, 3> batches_;
-  xt::xtensor<T, 3> generated_trajectories_;
+  xt::xtensor<T, dims::batches> batches_;
+  xt::xtensor<T, dims::batches> generated_trajectories_;
 
   /**
    * @control_sequence_ current best control sequence: tensor of shape [
    * time_steps, 2 ] where 2 stands for linear control, angular control
    */
-  xt::xtensor<T, 2> control_sequence_;
+  xt::xtensor<T, dims::control_sequence> control_sequence_;
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
 };
