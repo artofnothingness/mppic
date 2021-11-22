@@ -182,14 +182,16 @@ xt::xtensor<T, dims::control_sequence> Optimizer<T, Model>::integrateSequence(
 
   auto v = xt::view(sequence, xt::all(), idxes::linear_velocities);
   auto w = xt::view(sequence, xt::all(), idxes::angular_velocities);
-
   auto yaw = xt::cumsum(w * model_dt_, 0);
 
-  xt::view(yaw, xt::range(1, _)) = xt::view(yaw, xt::range(_, -1));
-  xt::view(yaw, xt::all()) += tf2::getYaw(pose.pose.orientation);
+  auto yaw_offseted = yaw;
+  xt::view(yaw_offseted, xt::range(1, _)) = 
+      xt::eval(xt::view(yaw, xt::range(_, -1)));
 
-  auto v_x = v * xt::cos(yaw);
-  auto v_y = v * xt::sin(yaw);
+  xt::view(yaw_offseted, xt::all()) += tf2::getYaw(pose.pose.orientation);
+
+  auto v_x = v * xt::cos(yaw_offseted);
+  auto v_y = v * xt::sin(yaw_offseted);
 
   auto x = pose.pose.position.x + xt::cumsum(v_x * model_dt_, 0);
   auto y = pose.pose.position.y + xt::cumsum(v_y * model_dt_, 0);
@@ -209,13 +211,14 @@ xt::xtensor<T, dims::batches> Optimizer<T, Model>::integrateBatchesVelocities(
   auto w = getBatchesAngularVelocities();
   auto yaw = xt::cumsum(w * model_dt_, 1);
 
-  xt::view(yaw, xt::all(), xt::range(1, _)) =
-      xt::view(yaw, xt::all(), xt::range(_, -1));
-  xt::view(yaw, xt::all(), 0) = 0;
-  xt::view(yaw, xt::all(), xt::all()) += tf2::getYaw(pose.pose.orientation);
+  auto yaw_offseted = yaw;
+  xt::view(yaw_offseted, xt::all(), xt::range(1, _)) = xt::eval(xt::view(yaw, xt::all(), xt::range(_, -1)));
+  xt::view(yaw_offseted, xt::all(), 0) = 0;
+  xt::view(yaw_offseted, xt::all(), xt::all()) +=
+      tf2::getYaw(pose.pose.orientation);
 
-  auto v_x = v * xt::cos(yaw);
-  auto v_y = v * xt::sin(yaw);
+  auto v_x = v * xt::cos(yaw_offseted);
+  auto v_y = v * xt::sin(yaw_offseted);
 
   auto x = pose.pose.position.x + xt::cumsum(v_x * model_dt_, 1);
   auto y = pose.pose.position.y + xt::cumsum(v_y * model_dt_, 1);
