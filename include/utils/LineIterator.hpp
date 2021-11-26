@@ -1,4 +1,3 @@
-
 namespace mppi::optimization {
 
 /** An iterator implementing Bresenham Ray-Tracing. */
