@@ -4,6 +4,7 @@
 #include "nav2_costmap_2d/cost_values.hpp"
 
 #include "mppi/Optimizer.hpp"
+#include "utils/LineIterator.hpp"
 
 #include "xtensor/xmath.hpp"
 #include "xtensor/xrandom.hpp"
@@ -67,22 +68,23 @@ template <typename T, typename Model> void Optimizer<T, Model>::getParams() {
 
   reference_cost_power_ =
       static_cast<unsigned int>(getParam("reference_cost_power", 1));
-  reference_cost_weight_ =
-      static_cast<unsigned int>(getParam("reference_cost_weight", 5));
 
   goal_cost_power_ = static_cast<unsigned int>(getParam("goal_cost_power", 1));
-  goal_cost_weight_ =
-      static_cast<unsigned int>(getParam("goal_cost_weight", 20));
-
   goal_angle_cost_power_ =
       static_cast<unsigned int>(getParam("goal_angle_cost_power", 1));
-  goal_angle_cost_weight_ =
-      static_cast<unsigned int>(getParam("goal_angle_cost_weight", 10));
-
   obstacle_cost_power_ =
       static_cast<unsigned int>(getParam("obstacle_cost_power", 2));
+
+  goal_cost_weight_ = static_cast<double>(getParam("goal_cost_weight", 20));
+
+  goal_angle_cost_weight_ =
+      static_cast<double>(getParam("goal_angle_cost_weight", 10));
+
   obstacle_cost_weight_ =
-      static_cast<unsigned int>(getParam("obstacle_cost_weight", 10));
+      static_cast<double>(getParam("obstacle_cost_weight", 10));
+
+  reference_cost_weight_ =
+      static_cast<double>(getParam("reference_cost_weight", 5));
 
   inflation_cost_scaling_factor_ =
       getParam("inflation_cost_scaling_factor", 3.0);
@@ -185,7 +187,7 @@ xt::xtensor<T, dims::control_sequence> Optimizer<T, Model>::integrateSequence(
   auto yaw = xt::cumsum(w * model_dt_, 0);
 
   auto yaw_offseted = yaw;
-  xt::view(yaw_offseted, xt::range(1, _)) = 
+  xt::view(yaw_offseted, xt::range(1, _)) =
       xt::eval(xt::view(yaw, xt::range(_, -1)));
 
   xt::view(yaw_offseted, xt::all()) += tf2::getYaw(pose.pose.orientation);
@@ -212,7 +214,8 @@ xt::xtensor<T, dims::batches> Optimizer<T, Model>::integrateBatchesVelocities(
   auto yaw = xt::cumsum(w * model_dt_, 1);
 
   auto yaw_offseted = yaw;
-  xt::view(yaw_offseted, xt::all(), xt::range(1, _)) = xt::eval(xt::view(yaw, xt::all(), xt::range(_, -1)));
+  xt::view(yaw_offseted, xt::all(), xt::range(1, _)) =
+      xt::eval(xt::view(yaw, xt::all(), xt::range(_, -1)));
   xt::view(yaw_offseted, xt::all(), 0) = 0;
   xt::view(yaw_offseted, xt::all(), xt::all()) +=
       tf2::getYaw(pose.pose.orientation);
@@ -322,8 +325,21 @@ void Optimizer<T, Model>::evalObstacleCost(
     double min_dist = std::numeric_limits<double>::max();
     bool inflated = false;
     for (size_t j = 0; j < time_steps_; ++j) {
-      unsigned char cost = costAtPose(batches_of_trajectories_points(i, j, 0),
-                                      batches_of_trajectories_points(i, j, 1));
+      std::array<double, 3> pose = {batches_of_trajectories_points(i, j, 0),
+                                    batches_of_trajectories_points(i, j, 1),
+                                    batches_of_trajectories_points(i, j, 2)};
+
+      auto footprint =
+          getOrientedFootprint(pose, costmap_ros_->getRobotFootprint());
+
+      unsigned char cost =
+          static_cast<unsigned char>(scoreFootprint(footprint));
+      /* unsigned char cost = costAtPose(batches_of_trajectories_points(i, j,
+       * 0),
+       */
+      /*                                 batches_of_trajectories_points(i, j,
+       * 1));
+       */
 
       if (inCollision(cost)) {
         costs[i] = collision_cost_value;
@@ -342,6 +358,27 @@ void Optimizer<T, Model>::evalObstacleCost(
           pow((1.01 * inflation_radius_ - min_dist) * obstacle_cost_weight_,
               obstacle_cost_power_));
   }
+} // namespace mppi::optimization
+
+template <typename T, typename Model>
+std::vector<geometry_msgs::msg::Point>
+Optimizer<T, Model>::getOrientedFootprint(
+    const std::array<double, 3> &robot_pose,
+    const std::vector<geometry_msgs::msg::Point> &footprint_spec) const {
+  std::vector<geometry_msgs::msg::Point> oriented_footprint;
+  oriented_footprint.resize(footprint_spec.size());
+
+  double cost_yaw = cos(robot_pose[2]);
+  double sin_yaw = sin(robot_pose[2]);
+
+  for (size_t i = 0; i < footprint_spec.size(); ++i) {
+    oriented_footprint[i].x = robot_pose[0] + footprint_spec[i].x * cost_yaw -
+                              footprint_spec[i].y * sin_yaw;
+    oriented_footprint[i].y = robot_pose[1] + footprint_spec[i].x * sin_yaw +
+                              footprint_spec[i].y * cost_yaw;
+  }
+
+  return oriented_footprint;
 }
 
 template <typename T, typename Model>
@@ -393,8 +430,8 @@ bool Optimizer<T, Model>::inCollision(unsigned char cost) const {
 }
 
 template <typename T, typename Model>
-unsigned char Optimizer<T, Model>::costAtPose(const double &x,
-                                              const double &y) const {
+unsigned char Optimizer<T, Model>::costAtPose(const double x,
+                                              const double y) const {
   unsigned int mx = 0;
   unsigned int my = 0;
   if (not costmap_->worldToMap(x, y, mx, my)) {
@@ -405,10 +442,63 @@ unsigned char Optimizer<T, Model>::costAtPose(const double &x,
 }
 
 template <typename T, typename Model>
+double Optimizer<T, Model>::lineCost(int x0, int x1, int y0, int y1) const {
+  double line_cost = 0.0;
+  double point_cost = -1.0;
+
+  for (LineIterator line(x0, y0, x1, y1); line.isValid(); line.advance()) {
+
+    point_cost = static_cast<double>(
+        costmap_->getCost(static_cast<unsigned int>(line.getX()), 
+                          static_cast<unsigned int>(line.getY())));
+
+    if (line_cost < point_cost) {
+      line_cost = point_cost;
+    }
+  }
+
+  return line_cost;
+}
+
+template <typename T, typename Model>
+double Optimizer<T, Model>::scoreFootprint(
+    const std::vector<geometry_msgs::msg::Point> &footprint) const {
+  unsigned int x0, x1, y0, y1;
+  double line_cost = 0.0;
+  double footprint_cost = 0.0;
+
+  for (unsigned int i = 0; i < footprint.size() - 1; ++i) {
+
+    if (!costmap_->worldToMap(footprint[i].x, footprint[i].y, x0, y0))
+      throw std::runtime_error("Footprint Goes Off Grid.");
+
+    if (!costmap_->worldToMap(footprint[i + 1].x, footprint[i + 1].y, x1, y1))
+      throw std::runtime_error("Footprint Goes Off Grid.");
+
+    line_cost = lineCost(static_cast<int>(x0), static_cast<int>(x1),
+                         static_cast<int>(y0), static_cast<int>(y1));
+
+    footprint_cost = std::max(line_cost, footprint_cost);
+  }
+
+  if (!costmap_->worldToMap(footprint.back().x, footprint.back().y, x0, y0))
+    throw std::runtime_error("Footprint Goes Off Grid.");
+
+  if (!costmap_->worldToMap(footprint.front().x, footprint.front().y, x1, y1))
+    throw std::runtime_error("Footprint Goes Off Grid.");
+
+  line_cost = lineCost(static_cast<int>(x0), static_cast<int>(x1),
+                       static_cast<int>(y0), static_cast<int>(y1));
+
+  footprint_cost = std::max(line_cost, footprint_cost);
+
+  return footprint_cost;
+}
+
+template <typename T, typename Model>
 geometry_msgs::msg::TwistStamped
 Optimizer<T, Model>::getControlFromSequence(const auto &stamp,
                                             const std::string &frame) {
-
   return geometry::toTwistStamped(xt::view(control_sequence_, 0), stamp, frame);
 }
 
