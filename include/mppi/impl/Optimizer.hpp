@@ -4,7 +4,7 @@
 #include "nav2_costmap_2d/cost_values.hpp"
 
 #include "mppi/Optimizer.hpp"
-#include "mppi/impl/LineIterator.hpp"
+#include "utils/LineIterator.hpp"
 
 #include "xtensor/xmath.hpp"
 #include "xtensor/xrandom.hpp"
@@ -325,35 +325,39 @@ void Optimizer<T, Model>::evalObstacleCost(
     double min_dist = std::numeric_limits<double>::max();
     bool inflated = false;
     for (size_t j = 0; j < time_steps_; ++j) {
-      std::array<double, 3> pose = { batches_of_trajectories_points(i, j, 0),
-                                     batches_of_trajectories_points(i, j, 1),
-                                     batches_of_trajectories_points(i, j, 2) };
-    auto footprint =
-        getOrientedFootprint(pose, costmap_ros_->getRobotFootprint());
+      std::array<double, 3> pose = {batches_of_trajectories_points(i, j, 0),
+                                    batches_of_trajectories_points(i, j, 1),
+                                    batches_of_trajectories_points(i, j, 2)};
 
-    unsigned char cost = static_cast<unsigned char>(scoreFootprint(footprint));
-    /* unsigned char cost = costAtPose(batches_of_trajectories_points(i, j, 0),
-     */
-    /*                                 batches_of_trajectories_points(i, j, 1));
-     */
+      auto footprint =
+          getOrientedFootprint(pose, costmap_ros_->getRobotFootprint());
 
-    if (inCollision(cost)) {
-      costs[i] = collision_cost_value;
-      inflated = false;
-      break;
+      unsigned char cost =
+          static_cast<unsigned char>(scoreFootprint(footprint));
+      /* unsigned char cost = costAtPose(batches_of_trajectories_points(i, j,
+       * 0),
+       */
+      /*                                 batches_of_trajectories_points(i, j,
+       * 1));
+       */
+
+      if (inCollision(cost)) {
+        costs[i] = collision_cost_value;
+        inflated = false;
+        break;
+      }
+
+      if (cost != nav2_costmap_2d::FREE_SPACE) {
+        min_dist = std::min(minDistToObstacle(cost), min_dist);
+        inflated = true;
+      }
     }
 
-    if (cost != nav2_costmap_2d::FREE_SPACE) {
-      min_dist = std::min(minDistToObstacle(cost), min_dist);
-      inflated = true;
-    }
+    if (inflated)
+      costs[i] += static_cast<T>(
+          pow((1.01 * inflation_radius_ - min_dist) * obstacle_cost_weight_,
+              obstacle_cost_power_));
   }
-
-  if (inflated)
-    costs[i] += static_cast<T>(
-        pow((1.01 * inflation_radius_ - min_dist) * obstacle_cost_weight_,
-            obstacle_cost_power_));
-}
 } // namespace mppi::optimization
 
 template <typename T, typename Model>
@@ -443,7 +447,10 @@ double Optimizer<T, Model>::lineCost(int x0, int x1, int y0, int y1) const {
   double point_cost = -1.0;
 
   for (LineIterator line(x0, y0, x1, y1); line.isValid(); line.advance()) {
-    point_cost = costAtPose(line.getX(), line.getY());
+
+    point_cost = static_cast<double>(
+        costmap_->getCost(static_cast<unsigned int>(line.getX()), 
+                          static_cast<unsigned int>(line.getY())));
 
     if (line_cost < point_cost) {
       line_cost = point_cost;
