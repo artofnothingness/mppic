@@ -46,6 +46,11 @@ public:
       const geometry_msgs::msg::PoseStamped &robot_pose,
       const geometry_msgs::msg::Twist &robot_speed) const;
 
+  double lineCost(int x0, int x1, int y0, int y1) const;
+
+  double scoreFootprint(
+    const std::vector<geometry_msgs::msg::Point> & footprint) const;
+
 private:
   void getParams();
   void reset();
@@ -144,7 +149,8 @@ private:
    * @tparam C costs type
    * @param costs [out] add obstacle cost values to this tensor
    */
-  void evalObstacleCost(const auto &batch_of_trajectories, auto &costs) const;
+  void evalObstacleCost(const auto &batch_of_trajectories, 
+      auto &costs) const;
 
   /**
    * @brief Evaluate cost related to robot orientation at goal pose (considered
@@ -160,7 +166,7 @@ private:
                          const geometry_msgs::msg::PoseStamped &robot_pose,
                          auto &costs) const;
 
-  unsigned char costAtPose(const double &x, const double &y) const;
+  unsigned char costAtPose(const double x, const double y) const;
   bool inCollision(unsigned char cost) const;
 
   /**
@@ -170,6 +176,11 @@ private:
    * @param costs batches costs, tensor of shape [ batch_size ]
    */
   void updateControlSequence(const xt::xtensor<T, 1> &costs);
+
+  std::vector<geometry_msgs::msg::Point>
+  getOrientedFootprint(
+    const std::array<double, 3> &robot_pose,
+    const std::vector<geometry_msgs::msg::Point> &footprint_spec) const;
 
   /**
    * @brief Get first control from control_sequence_
@@ -221,13 +232,13 @@ private:
   double temperature_;
 
   unsigned int reference_cost_power_;
-  unsigned int reference_cost_weight_;
   unsigned int obstacle_cost_power_;
-  unsigned int obstacle_cost_weight_;
   unsigned int goal_cost_power_;
-  unsigned int goal_cost_weight_;
   unsigned int goal_angle_cost_power_;
-  unsigned int goal_angle_cost_weight_;
+  double reference_cost_weight_;
+  double obstacle_cost_weight_;
+  double goal_cost_weight_;
+  double goal_angle_cost_weight_;
 
   /**
    * @batches_ tensor of shape [ batch_size, time_steps, 5 ] where 5 stands for
