@@ -334,12 +334,6 @@ void Optimizer<T, Model>::evalObstacleCost(
 
       unsigned char cost =
           static_cast<unsigned char>(scoreFootprint(footprint));
-      /* unsigned char cost = costAtPose(batches_of_trajectories_points(i, j,
-       * 0),
-       */
-      /*                                 batches_of_trajectories_points(i, j,
-       * 1));
-       */
 
       if (inCollision(cost)) {
         costs[i] = collision_cost_value;
