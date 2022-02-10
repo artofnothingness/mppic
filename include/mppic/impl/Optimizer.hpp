@@ -26,8 +26,9 @@ geometry_msgs::msg::TwistStamped Optimizer<T>::evalNextBestControl(
     auto costs = evalBatchesCosts(generated_trajectories_, plan, robot_pose);
     updateControlSequence(costs);
   }
-  return getControlFromSequence(plan.header.stamp,
-                                costmap_ros_->getBaseFrameID());
+
+  return geometry::toTwistStamped(getControlFromSequence(0), plan.header.stamp,
+                                  costmap_ros_->getBaseFrameID());
 }
 
 template <typename T>
@@ -466,10 +467,8 @@ double Optimizer<T>::scoreFootprint(
 }
 
 template <typename T>
-geometry_msgs::msg::TwistStamped
-Optimizer<T>::getControlFromSequence(const auto &stamp,
-                                     const std::string &frame) {
-  return geometry::toTwistStamped(xt::view(control_sequence_, 0), stamp, frame);
+auto Optimizer<T>::getControlFromSequence(unsigned int offset) {
+  return xt::view(control_sequence_, offset);
 }
 
 template <typename T> auto Optimizer<T>::getBatchesLinearVelocities() const {
