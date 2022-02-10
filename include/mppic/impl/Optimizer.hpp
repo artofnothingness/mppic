@@ -50,48 +50,32 @@ void Optimizer<T, Model>::on_configure(
 
 template <typename T, typename Model> void Optimizer<T, Model>::getParams() {
 
-  auto getParam = [&](const std::string &param_name, auto default_value) {
-    std::string name = node_name_ + '.' + param_name;
-    return utils::getParam(name, default_value, parent_);
-  };
+  auto setParam = utils::getParamSetter(parent_.get(), node_name_);
 
-  model_dt_ = getParam("model_dt", 0.1);
-  time_steps_ = static_cast<unsigned int>(getParam("time_steps", 15));
-  batch_size_ = static_cast<unsigned int>(getParam("batch_size", 200));
-  v_std_ = static_cast<T>(getParam("v_std", 0.1));
-  w_std_ = static_cast<T>(getParam("w_std", 0.3));
-  v_limit_ = getParam("v_limit", 0.5);
-  w_limit_ = getParam("w_limit", 1.3);
-  iteration_count_ = static_cast<unsigned int>(getParam("iteration_count", 2));
-  temperature_ = getParam("temperature", 0.25);
+  setParam(model_dt_, "model_dt", 0.1);
+  setParam(time_steps_, "time_steps", 15);
+  setParam(batch_size_, "batch_size", 200);
+  setParam(v_std_, "v_std", 0.1);
+  setParam(w_std_, "w_std", 0.3);
+  setParam(v_limit_, "v_limit", 0.5);
+  setParam(w_limit_, "w_limit", 1.3);
+  setParam(iteration_count_, "iteration_count", 2);
+  setParam(temperature_, "temperature", 0.25);
+  setParam(reference_cost_power_, "reference_cost_power", 1);
+  setParam(goal_cost_power_, "goal_cost_power", 1);
+  setParam(goal_angle_cost_power_, "goal_angle_cost_power", 1);
+  setParam(obstacle_cost_power_, "obstacle_cost_power", 2);
+  setParam(goal_cost_weight_, "goal_cost_weight", 20);
+  setParam(goal_angle_cost_weight_, "goal_angle_cost_weight", 10);
+  setParam(obstacle_cost_weight_, "obstacle_cost_weight", 10);
+  setParam(reference_cost_weight_, "reference_cost_weight", 5);
+  setParam(inflation_cost_scaling_factor_, "inflation_cost_scaling_factor",
+           3.0);
+  setParam(inflation_radius_, "inflation_radius", 0.75);
+  setParam(threshold_to_consider_goal_angle_,
+           "threshold_to_consider_goal_angle", 0.30);
 
-  reference_cost_power_ =
-      static_cast<unsigned int>(getParam("reference_cost_power", 1));
-
-  goal_cost_power_ = static_cast<unsigned int>(getParam("goal_cost_power", 1));
-  goal_angle_cost_power_ =
-      static_cast<unsigned int>(getParam("goal_angle_cost_power", 1));
-  obstacle_cost_power_ =
-      static_cast<unsigned int>(getParam("obstacle_cost_power", 2));
-
-  goal_cost_weight_ = static_cast<double>(getParam("goal_cost_weight", 20));
-
-  goal_angle_cost_weight_ =
-      static_cast<double>(getParam("goal_angle_cost_weight", 10));
-
-  obstacle_cost_weight_ =
-      static_cast<double>(getParam("obstacle_cost_weight", 10));
-
-  reference_cost_weight_ =
-      static_cast<double>(getParam("reference_cost_weight", 5));
-
-  inflation_cost_scaling_factor_ =
-      getParam("inflation_cost_scaling_factor", 3.0);
-  inflation_radius_ = getParam("inflation_radius", 0.75);
-  threshold_to_consider_goal_angle_ =
-      getParam("threshold_to_consider_goal_angle", 0.30);
-
-  approx_reference_cost_ = getParam("approx_reference_cost", false);
+  setParam(approx_reference_cost_, "approx_reference_cost", false);
 }
 
 template <typename T, typename Model> void Optimizer<T, Model>::reset() {

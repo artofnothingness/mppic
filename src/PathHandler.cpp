@@ -50,13 +50,10 @@ auto PathHandler::getGlobalPlanConsideringBounds(
 }
 
 void PathHandler::getParams() {
-  auto getParam = [&](const std::string &param_name, auto default_value) {
-    std::string name = node_name_ + '.' + param_name;
-    return utils::getParam(name, default_value, parent_);
-  };
+  auto setParam = utils::getParamSetter(parent_.get(), node_name_);
 
-  lookahead_dist_ = getParam("lookahead_dist", 1.0);
-  transform_tolerance_ = getParam("transform_tolerance", 1);
+  setParam(lookahead_dist_, "lookahead_dist", 1.0);
+  setParam(transform_tolerance_, "transform_tolerance", 1);
 }
 
 geometry_msgs::msg::PoseStamped PathHandler::transformToGlobalFrame(
