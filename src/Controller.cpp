@@ -1,8 +1,7 @@
-#include "mppi/Controller.hpp"
-#include "mppi/Models.hpp"
-
-#include "utils/common.hpp"
-#include "utils/geometry.hpp"
+#include "mppic/Controller.hpp"
+#include "mppic/Models.hpp"
+#include "mppic/utils/common.hpp"
+#include "mppic/utils/geometry.hpp"
 
 namespace mppi {
 
@@ -51,7 +50,8 @@ geometry_msgs::msg::TwistStamped Controller<T, Model>::computeVelocityCommands(
       optimizer_.evalNextBestControl(robot_pose, robot_speed, transformed_plan);
 
   if (visualize_) {
-    auto &&plan_ptr = std::make_unique<nav_msgs::msg::Path>(std::move(transformed_plan));
+    auto &&plan_ptr =
+        std::make_unique<nav_msgs::msg::Path>(std::move(transformed_plan));
     handleVisualizations(robot_pose, robot_speed, std::move(plan_ptr));
   }
 

@@ -3,14 +3,13 @@
 #include "nav2_core/exceptions.hpp"
 #include "nav2_costmap_2d/cost_values.hpp"
 
-#include "mppi/Optimizer.hpp"
-#include "utils/LineIterator.hpp"
+#include "mppic/Optimizer.hpp"
+#include "mppic/utils/LineIterator.hpp"
+#include "mppic/utils/common.hpp"
+#include "mppic/utils/geometry.hpp"
 
 #include "xtensor/xmath.hpp"
 #include "xtensor/xrandom.hpp"
-
-#include "utils/common.hpp"
-#include "utils/geometry.hpp"
 
 #include <limits>
 
@@ -443,7 +442,7 @@ double Optimizer<T, Model>::lineCost(int x0, int x1, int y0, int y1) const {
   for (LineIterator line(x0, y0, x1, y1); line.isValid(); line.advance()) {
 
     point_cost = static_cast<double>(
-        costmap_->getCost(static_cast<unsigned int>(line.getX()), 
+        costmap_->getCost(static_cast<unsigned int>(line.getX()),
                           static_cast<unsigned int>(line.getY())));
 
     if (line_cost < point_cost) {

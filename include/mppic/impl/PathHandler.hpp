@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mppi/PathHandler.hpp"
+#include "mppic/PathHandler.hpp"
 
 namespace mppi::handlers {
 

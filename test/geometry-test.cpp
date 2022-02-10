@@ -9,7 +9,7 @@
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
 
-#include "utils/geometry.hpp"
+#include "mppic/utils/geometry.hpp"
 
 static auto toStr = [](auto &&container) {
   std::stringstream ss;
