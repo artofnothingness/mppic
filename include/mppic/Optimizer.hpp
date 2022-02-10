@@ -14,11 +14,11 @@
 #include "xtensor/xview.hpp"
 
 #include "mppic/Indexes.hpp"
+#include "mppic/impl/State.hpp"
 
 namespace mppi::optimization {
 
-template <typename T>
-class Optimizer {
+template <typename T> class Optimizer {
 public:
   using model_t = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &);
 
@@ -85,24 +85,22 @@ private:
    *
    * @param twist current robot speed
    */
-  void evalBatchesVelocities(const geometry_msgs::msg::Twist &robot_speed,
-                             auto &batches) const;
+  void
+  evalBatchesVelocities(auto &state,
+                        const geometry_msgs::msg::Twist &robot_speed) const;
 
-  void setBatchesInitialVelocities(const geometry_msgs::msg::Twist &robot_speed,
-                                   auto &batches) const;
+  void setBatchesInitialVelocities(
+      auto &state, const geometry_msgs::msg::Twist &robot_speed) const;
 
   /**
    * @brief predict and propagate velocities in batches_ using model
    * for time horizont equal to time_steps_
    */
-  void propagateBatchesVelocitiesFromInitials(auto &batches) const;
+  void propagateBatchesVelocitiesFromInitials(auto &state) const;
 
-  xt::xtensor<T, 3> integrateBatchesVelocities(
+  xt::xtensor<T, 3> integrateBatchesVelocities(const auto &state,
       const geometry_msgs::msg::PoseStamped &robot_pose) const;
 
-  xt::xtensor<T, 2>
-  integrateSequence(const auto &velocities_sequence,
-                    const geometry_msgs::msg::PoseStamped &robot_pose) const;
 
   /**
    * @brief Evaluate cost for each batch
@@ -146,8 +144,6 @@ private:
   /**
    * @brief Evaluate cost related to obstacle avoidance
    *
-   * @tparam B tensor type of batches trajectories
-   * @tparam C costs type
    * @param costs [out] add obstacle cost values to this tensor
    */
   void evalObstacleCost(const auto &batch_of_trajectories, auto &costs) const;
@@ -156,9 +152,6 @@ private:
    * @brief Evaluate cost related to robot orientation at goal pose (considered
    * only if robot near last goal in current plan)
    *
-   * @tparam P type of global plan (tensor like)
-   * @tparam B tensor type of batches trajectories
-   * @tparam C costs type
    * @param costs [out] add goal angle cost values to this tensor
    */
   void evalGoalAngleCost(const auto &batch_of_trajectories,
@@ -186,21 +179,6 @@ private:
    *
    */
   auto getControlFromSequence(unsigned int);
-
-  auto getBatchesControls() const;
-  auto getBatchesControls();
-
-  auto getBatchesControlLinearVelocities() const;
-  auto getBatchesControlLinearVelocities();
-
-  auto getBatchesControlAngularVelocities() const;
-  auto getBatchesControlAngularVelocities();
-
-  auto getBatchesLinearVelocities() const;
-  auto getBatchesLinearVelocities();
-
-  auto getBatchesAngularVelocities() const;
-  auto getBatchesAngularVelocities();
 
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
   std::string node_name_;
@@ -238,12 +216,7 @@ private:
   static constexpr unsigned int batches_last_dim_size_ = 5;
   static constexpr unsigned int control_dim_size_ = 2;
 
-  /**
-   * @batches_ tensor of shape [ batch_size, time_steps, 5 ] where 5 stands for
-   * robot linear, robot angluar velocities, linear control, angular control, dt
-   * (time on which this control will be applied)
-   */
-  xt::xtensor<T, dims::batches> batches_;
+  State<T, dims::batches> state_;
   xt::xtensor<T, dims::batches> generated_trajectories_;
 
   /**
