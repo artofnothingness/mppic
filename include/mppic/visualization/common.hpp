@@ -1,20 +1,15 @@
 #pragma once
 
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
-#include "visualization_msgs/msg/marker_array.hpp"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 namespace mppi::visualization {
 
 inline visualization_msgs::msg::Marker
-  createMarker(
-    int id,
-    const geometry_msgs::msg::Pose &pose,
-    const geometry_msgs::msg::Vector3 &scale,
-    const std_msgs::msg::ColorRGBA &color,
-    const std::string &frame_id)
-{
-
+createMarker(int id, const geometry_msgs::msg::Pose &pose, const geometry_msgs::msg::Vector3 &scale,
+             const std_msgs::msg::ColorRGBA &color, const std::string &frame_id) {
   using visualization_msgs::msg::Marker;
   Marker marker;
   marker.header.frame_id = frame_id;
@@ -32,8 +27,7 @@ inline visualization_msgs::msg::Marker
 }
 
 inline geometry_msgs::msg::Pose
-  createPose(double x, double y, double z)
-{
+createPose(double x, double y, double z) {
   geometry_msgs::msg::Pose pose;
   pose.position.x = x;
   pose.position.y = y;
@@ -48,8 +42,7 @@ inline geometry_msgs::msg::Pose
 }
 
 inline geometry_msgs::msg::Vector3
-  createScale(double x, double y, double z)
-{
+createScale(double x, double y, double z) {
   geometry_msgs::msg::Vector3 scale;
   scale.x = x;
   scale.y = y;
@@ -59,8 +52,7 @@ inline geometry_msgs::msg::Vector3
 }
 
 inline std_msgs::msg::ColorRGBA
-  createColor(float r, float g, float b, float a)
-{
+createColor(float r, float g, float b, float a) {
   std_msgs::msg::ColorRGBA color;
   color.r = r;
   color.g = g;
@@ -70,4 +62,4 @@ inline std_msgs::msg::ColorRGBA
   return color;
 }
 
-}// namespace mppi::visualization
+}  // namespace mppi::visualization

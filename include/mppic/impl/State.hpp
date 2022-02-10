@@ -4,71 +4,92 @@
 
 namespace mppi::optimization {
 
-template <typename T, size_t dim>
-auto State<T, dim>::getLinearVelocities() const {
-
+template <typename T>
+auto
+State<T>::getLinearVelocities() const {
   return xt::view(data, xt::all(), xt::all(), idx::v);
 }
 
-template <typename T, size_t dim> auto State<T, dim>::getLinearVelocities() {
+template <typename T>
+auto
+State<T>::getLinearVelocities() {
   return xt::view(data, xt::all(), xt::all(), idx::v);
 }
 
-template <typename T, size_t dim>
-auto State<T, dim>::getAngularVelocities() const {
+template <typename T>
+auto
+State<T>::getAngularVelocities() const {
   return xt::view(data, xt::all(), xt::all(), idx::w);
 }
 
-template <typename T, size_t dim> auto State<T, dim>::getAngularVelocities() {
+template <typename T>
+auto
+State<T>::getAngularVelocities() {
   return xt::view(data, xt::all(), xt::all(), idx::w);
 }
 
-template <typename T, size_t dim>
-auto State<T, dim>::getControlLinearVelocities() const {
+template <typename T>
+auto
+State<T>::getControlLinearVelocities() const {
   return xt::view(data, xt::all(), xt::all(), idx::cv);
 }
 
-template <typename T, size_t dim>
-auto State<T, dim>::getControlLinearVelocities() {
+template <typename T>
+auto
+State<T>::getControlLinearVelocities() {
   return xt::view(data, xt::all(), xt::all(), idx::cv);
 }
 
-template <typename T, size_t dim>
-auto State<T, dim>::getControlAngularVelocities() const {
+template <typename T>
+auto
+State<T>::getControlAngularVelocities() const {
   return xt::view(data, xt::all(), xt::all(), idx::cw);
 }
 
-template <typename T, size_t dim>
-auto State<T, dim>::getControlAngularVelocities() {
+template <typename T>
+auto
+State<T>::getControlAngularVelocities() {
   return xt::view(data, xt::all(), xt::all(), idx::cw);
 }
 
-template <typename T, size_t dim> auto State<T, dim>::getTimeIntervals() {
+template <typename T>
+auto
+State<T>::getTimeIntervals() {
   return xt::view(data, xt::all(), xt::all(), idx::dt);
 }
 
-template <typename T, size_t dim> auto State<T, dim>::getTimeIntervals() const {
+template <typename T>
+auto
+State<T>::getTimeIntervals() const {
   return xt::view(data, xt::all(), xt::all(), idx::dt);
 }
 
-template <typename T, size_t dim> auto State<T, dim>::getControls() const {
+template <typename T>
+auto
+State<T>::getControls() const {
   return xt::view(data, xt::all(), xt::all(),
                   xt::range(idx::controls_range[0], idx::controls_range[1]));
 }
 
-template <typename T, size_t dim> auto State<T, dim>::getControls() {
+template <typename T>
+auto
+State<T>::getControls() {
   return xt::view(data, xt::all(), xt::all(),
                   xt::range(idx::controls_range[0], idx::controls_range[1]));
 }
 
-template <typename T, size_t dim> auto State<T, dim>::getVelocities() const {
+template <typename T>
+auto
+State<T>::getVelocities() const {
   return xt::view(data, xt::all(), xt::all(),
                   xt::range(idx::velocities_range[0], idx::velocities_range[1]));
 }
 
-template <typename T, size_t dim> auto State<T, dim>::getVelocities() {
+template <typename T>
+auto
+State<T>::getVelocities() {
   return xt::view(data, xt::all(), xt::all(),
                   xt::range(idx::velocities_range[0], idx::velocities_range[1]));
 }
 
-} // namespace mppi::optimization
+}  // namespace mppi::optimization
