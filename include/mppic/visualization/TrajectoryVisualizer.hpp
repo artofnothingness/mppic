@@ -1,6 +1,6 @@
 #pragma once
 
-#include "visualization/common.hpp"
+#include "mppic/visualization/common.hpp"
 #include "memory"
 
 namespace mppi::visualization {
