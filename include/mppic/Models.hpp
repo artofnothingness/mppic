@@ -17,8 +17,9 @@ namespace mppi::models {
  * where 2 stands for robot linear, angluar velocities for the next time step
  */
 template <typename T, typename Tensor = xt::xtensor<T, 2>>
-Tensor NaiveModel(const Tensor &batches) {
+Tensor
+NaiveModel(const Tensor &batches) {
   return xt::view(batches, xt::all(), xt::range(2, 4));
 }
 
-} // namespace mppi::models
+}  // namespace mppi::models

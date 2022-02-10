@@ -1,13 +1,14 @@
 #pragma once
 
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
 
 namespace mppi::utils {
 
 namespace details {
 
 template <typename T>
-T getParam(std::string const &param_name, T default_value, auto *const node) {
+T
+getParam(std::string const &param_name, T default_value, auto *const node) {
   T param;
 
   if (!node->has_parameter(param_name)) {
@@ -17,14 +18,15 @@ T getParam(std::string const &param_name, T default_value, auto *const node) {
 
   return param;
 }
-} // namespace details
+}  // namespace details
 
-auto getParamSetter(auto *const node, const std::string &node_name_) {
+auto
+getParamSetter(auto *const node, const std::string &node_name_) {
   return [=](auto &param, const std::string &param_name, auto default_value) {
     std::string name = node_name_ + '.' + param_name;
-    param = static_cast<std::decay_t<decltype(param)>>(
-        details::getParam(name, default_value, node));
+    param =
+        static_cast<std::decay_t<decltype(param)>>(details::getParam(name, default_value, node));
   };
 }
 
-} // namespace mppi::utils
+}  // namespace mppi::utils

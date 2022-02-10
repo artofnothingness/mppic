@@ -78,14 +78,12 @@ template <typename T> void Controller<T>::getParams() {
   setParam(visualize_, "visualize", true);
 }
 
-template <typename T>
-void Controller<T>::setPublishers() {
+template <typename T> void Controller<T>::setPublishers() {
   transformed_path_pub_ = parent_->create_publisher<nav_msgs::msg::Path>(
       "transformed_global_plan", 1);
 }
 
-template <typename T>
-void Controller<T>::configureComponents() {
+template <typename T> void Controller<T>::configureComponents() {
   auto &model = models::NaiveModel<T>;
 
   optimizer_.on_configure(parent_, node_name_, costmap_ros_, model);
