@@ -4,12 +4,11 @@
 
 #include "nav2_core/controller.hpp"
 
-#include "mppi/impl/Optimizer.hpp"
-#include "mppi/impl/PathHandler.hpp"
-#include "visualization/TrajectoryVisualizer.hpp"
-
-#include "utils/common.hpp"
-#include "utils/geometry.hpp"
+#include "mppic/impl/Optimizer.hpp"
+#include "mppic/impl/PathHandler.hpp"
+#include "mppic/utils/common.hpp"
+#include "mppic/utils/geometry.hpp"
+#include "mppic/visualization/TrajectoryVisualizer.hpp"
 
 namespace mppi {
 

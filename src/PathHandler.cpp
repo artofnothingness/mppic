@@ -1,9 +1,8 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
-#include "utils/common.hpp"
-#include "utils/geometry.hpp"
-
-#include "mppi/impl/PathHandler.hpp"
+#include "mppic/impl/PathHandler.hpp"
+#include "mppic/utils/common.hpp"
+#include "mppic/utils/geometry.hpp"
 
 namespace mppi::handlers {
 

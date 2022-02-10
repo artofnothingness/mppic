@@ -13,7 +13,7 @@
 #include "xtensor/xarray.hpp"
 #include "xtensor/xview.hpp"
 
-#include "mppi/Indexes.hpp"
+#include "mppic/Indexes.hpp"
 
 namespace mppi::optimization {
 
@@ -48,8 +48,8 @@ public:
 
   double lineCost(int x0, int x1, int y0, int y1) const;
 
-  double scoreFootprint(
-    const std::vector<geometry_msgs::msg::Point> & footprint) const;
+  double
+  scoreFootprint(const std::vector<geometry_msgs::msg::Point> &footprint) const;
 
 private:
   void getParams();
@@ -149,8 +149,7 @@ private:
    * @tparam C costs type
    * @param costs [out] add obstacle cost values to this tensor
    */
-  void evalObstacleCost(const auto &batch_of_trajectories, 
-      auto &costs) const;
+  void evalObstacleCost(const auto &batch_of_trajectories, auto &costs) const;
 
   /**
    * @brief Evaluate cost related to robot orientation at goal pose (considered
@@ -177,10 +176,9 @@ private:
    */
   void updateControlSequence(const xt::xtensor<T, 1> &costs);
 
-  std::vector<geometry_msgs::msg::Point>
-  getOrientedFootprint(
-    const std::array<double, 3> &robot_pose,
-    const std::vector<geometry_msgs::msg::Point> &footprint_spec) const;
+  std::vector<geometry_msgs::msg::Point> getOrientedFootprint(
+      const std::array<double, 3> &robot_pose,
+      const std::vector<geometry_msgs::msg::Point> &footprint_spec) const;
 
   /**
    * @brief Get first control from control_sequence_

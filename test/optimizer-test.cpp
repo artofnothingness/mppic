@@ -4,24 +4,23 @@
 
 #include <catch2/catch.hpp>
 
+#include <xtensor/xarray.hpp>
+#include <xtensor/xio.hpp>
+#include <xtensor/xview.hpp>
+
+#include <rclcpp/executors.hpp>
+
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <nav_msgs/msg/path.hpp>
+
 #include "nav2_costmap_2d/costmap_2d.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include <nav2_costmap_2d/cost_values.hpp>
 
-#include <rclcpp/executors.hpp>
-
-#include "geometry_msgs/msg/twist.hpp"
-#include "nav_msgs/msg/path.hpp"
-#include <geometry_msgs/msg/pose_stamped.hpp>
-
-#include "mppi/Models.hpp"
-#include "mppi/impl/Optimizer.hpp"
-
+#include "mppic/Models.hpp"
+#include "mppic/impl/Optimizer.hpp"
 #include "tests_utils.hpp"
-#include "xtensor/xarray.hpp"
-#include <iostream>
-#include <xtensor/xio.hpp>
-#include <xtensor/xview.hpp>
 
 /**
  * Adds some parameters for the optimizer to a special container.
