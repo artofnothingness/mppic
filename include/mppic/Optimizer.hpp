@@ -215,19 +215,16 @@ private:
   double threshold_to_consider_goal_angle_;
   bool approx_reference_cost_;
 
-  static constexpr unsigned int batches_last_dim_size_ = 5;
-  static constexpr unsigned int control_dim_size_ = 2;
-
   unsigned int batch_size_;
   unsigned int time_steps_;
   unsigned int iteration_count_;
 
   double model_dt_;
-  T v_std_;
-  T w_std_;
   double v_limit_;
   double w_limit_;
   double temperature_;
+  T v_std_;
+  T w_std_;
 
   unsigned int reference_cost_power_;
   unsigned int obstacle_cost_power_;
@@ -237,6 +234,9 @@ private:
   double obstacle_cost_weight_;
   double goal_cost_weight_;
   double goal_angle_cost_weight_;
+
+  static constexpr unsigned int batches_last_dim_size_ = 5;
+  static constexpr unsigned int control_dim_size_ = 2;
 
   /**
    * @batches_ tensor of shape [ batch_size, time_steps, 5 ] where 5 stands for
