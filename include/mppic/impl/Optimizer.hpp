@@ -15,8 +15,8 @@
 
 namespace mppi::optimization {
 
-template <typename T, typename Model>
-geometry_msgs::msg::TwistStamped Optimizer<T, Model>::evalNextBestControl(
+template <typename T>
+geometry_msgs::msg::TwistStamped Optimizer<T>::evalNextBestControl(
     const geometry_msgs::msg::PoseStamped &robot_pose,
     const geometry_msgs::msg::Twist &robot_speed,
     const nav_msgs::msg::Path &plan) {
@@ -30,12 +30,12 @@ geometry_msgs::msg::TwistStamped Optimizer<T, Model>::evalNextBestControl(
                                 costmap_ros_->getBaseFrameID());
 }
 
-template <typename T, typename Model>
-void Optimizer<T, Model>::on_configure(
+template <typename T>
+void Optimizer<T>::on_configure(
     const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
     const std::string &node_name,
     const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros,
-    Model &&model) {
+    model_t &&model) {
   parent_ = parent;
   node_name_ = node_name;
   costmap_ros_ = costmap_ros;
@@ -48,7 +48,7 @@ void Optimizer<T, Model>::on_configure(
   RCLCPP_INFO(logger_, "Configured");
 }
 
-template <typename T, typename Model> void Optimizer<T, Model>::getParams() {
+template <typename T> void Optimizer<T>::getParams() {
 
   auto setParam = utils::getParamSetter(parent_.get(), node_name_);
 
@@ -78,14 +78,14 @@ template <typename T, typename Model> void Optimizer<T, Model>::getParams() {
   setParam(approx_reference_cost_, "approx_reference_cost", false);
 }
 
-template <typename T, typename Model> void Optimizer<T, Model>::reset() {
+template <typename T> void Optimizer<T>::reset() {
   batches_ = xt::zeros<T>({batch_size_, time_steps_, batches_last_dim_size_});
   control_sequence_ = xt::zeros<T>({time_steps_, control_dim_size_});
   xt::view(batches_, xt::all(), xt::all(), idxes::dt) = model_dt_;
 }
 
-template <typename T, typename Model>
-xt::xtensor<T, 3> Optimizer<T, Model>::generateNoisedTrajectories(
+template <typename T>
+xt::xtensor<T, 3> Optimizer<T>::generateNoisedTrajectories(
     const geometry_msgs::msg::PoseStamped &robot_pose,
     const geometry_msgs::msg::Twist &robot_speed) {
   getBatchesControls() = generateNoisedControlBatches();
@@ -94,8 +94,8 @@ xt::xtensor<T, 3> Optimizer<T, Model>::generateNoisedTrajectories(
   return integrateBatchesVelocities(robot_pose);
 }
 
-template <typename T, typename Model>
-xt::xtensor<T, 3> Optimizer<T, Model>::generateNoisedControlBatches() const {
+template <typename T>
+xt::xtensor<T, 3> Optimizer<T>::generateNoisedControlBatches() const {
   auto v_noises =
       xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, v_std_);
   auto w_noises =
@@ -103,8 +103,7 @@ xt::xtensor<T, 3> Optimizer<T, Model>::generateNoisedControlBatches() const {
   return control_sequence_ + xt::concatenate(xt::xtuple(v_noises, w_noises), 2);
 }
 
-template <typename T, typename Model>
-void Optimizer<T, Model>::applyControlConstraints() {
+template <typename T> void Optimizer<T>::applyControlConstraints() {
   auto v = getBatchesControlLinearVelocities();
   auto w = getBatchesControlAngularVelocities();
 
@@ -112,15 +111,15 @@ void Optimizer<T, Model>::applyControlConstraints() {
   w = xt::clip(w, -w_limit_, w_limit_);
 }
 
-template <typename T, typename Model>
-void Optimizer<T, Model>::evalBatchesVelocities(
+template <typename T>
+void Optimizer<T>::evalBatchesVelocities(
     const geometry_msgs::msg::Twist &robot_speed, auto &batches) const {
   setBatchesInitialVelocities(robot_speed, batches);
   propagateBatchesVelocitiesFromInitials(batches);
 }
 
-template <typename T, typename Model>
-void Optimizer<T, Model>::setBatchesInitialVelocities(
+template <typename T>
+void Optimizer<T>::setBatchesInitialVelocities(
     const geometry_msgs::msg::Twist &robot_speed, auto &batches) const {
   xt::view(batches, xt::all(), 0, idxes::linear_velocities) =
       robot_speed.linear.x;
@@ -129,9 +128,8 @@ void Optimizer<T, Model>::setBatchesInitialVelocities(
       robot_speed.angular.z;
 }
 
-template <typename T, typename Model>
-void Optimizer<T, Model>::propagateBatchesVelocitiesFromInitials(
-    auto &batches) const {
+template <typename T>
+void Optimizer<T>::propagateBatchesVelocitiesFromInitials(auto &batches) const {
   using namespace xt::placeholders;
 
   for (size_t t = 0; t < time_steps_ - 1; t++) {
@@ -142,9 +140,9 @@ void Optimizer<T, Model>::propagateBatchesVelocitiesFromInitials(
   }
 }
 
-template <typename T, typename Model>
+template <typename T>
 xt::xtensor<T, dims::control_sequence>
-Optimizer<T, Model>::evalTrajectoryFromControlSequence(
+Optimizer<T>::evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::PoseStamped &robot_pose,
     const geometry_msgs::msg::Twist &robot_speed) const {
 
@@ -160,8 +158,8 @@ Optimizer<T, Model>::evalTrajectoryFromControlSequence(
   return integrateSequence(velocities, robot_pose);
 }
 
-template <typename T, typename Model>
-xt::xtensor<T, dims::control_sequence> Optimizer<T, Model>::integrateSequence(
+template <typename T>
+xt::xtensor<T, dims::control_sequence> Optimizer<T>::integrateSequence(
     const auto &sequence, const geometry_msgs::msg::PoseStamped &pose) const {
   using namespace xt::placeholders;
 
@@ -187,8 +185,8 @@ xt::xtensor<T, dims::control_sequence> Optimizer<T, Model>::integrateSequence(
                          1);
 }
 
-template <typename T, typename Model>
-xt::xtensor<T, dims::batches> Optimizer<T, Model>::integrateBatchesVelocities(
+template <typename T>
+xt::xtensor<T, dims::batches> Optimizer<T>::integrateBatchesVelocities(
     const geometry_msgs::msg::PoseStamped &pose) const {
   using namespace xt::placeholders;
 
@@ -216,8 +214,8 @@ xt::xtensor<T, dims::batches> Optimizer<T, Model>::integrateBatchesVelocities(
       2);
 }
 
-template <typename T, typename Model>
-xt::xtensor<T, 1> Optimizer<T, Model>::evalBatchesCosts(
+template <typename T>
+xt::xtensor<T, 1> Optimizer<T>::evalBatchesCosts(
     const xt::xtensor<T, dims::batches> &batches_of_trajectories,
     const nav_msgs::msg::Path &global_plan,
     const geometry_msgs::msg::PoseStamped &robot_pose) const {
@@ -241,10 +239,9 @@ xt::xtensor<T, 1> Optimizer<T, Model>::evalBatchesCosts(
   return costs;
 }
 
-template <typename T, typename Model>
-void Optimizer<T, Model>::evalGoalCost(const auto &batches_of_trajectories,
-                                       const auto &global_plan,
-                                       auto &costs) const {
+template <typename T>
+void Optimizer<T>::evalGoalCost(const auto &batches_of_trajectories,
+                                const auto &global_plan, auto &costs) const {
   const auto goal_points = xt::view(global_plan, -1, xt::range(0, 2));
 
   auto last_timestep_points =
@@ -259,10 +256,10 @@ void Optimizer<T, Model>::evalGoalCost(const auto &batches_of_trajectories,
                    goal_cost_power_);
 }
 
-template <typename T, typename Model>
-void Optimizer<T, Model>::evalApproxReferenceCost(
-    const auto &batches_of_trajectories, const auto &global_plan,
-    auto &costs) const {
+template <typename T>
+void Optimizer<T>::evalApproxReferenceCost(const auto &batches_of_trajectories,
+                                           const auto &global_plan,
+                                           auto &costs) const {
   auto path_points = xt::view(global_plan, xt::all(), xt::range(0, 2));
   auto batch_of_lines = xt::view(batches_of_trajectories, xt::all(), xt::all(),
                                  xt::newaxis(), xt::range(0, 2));
@@ -273,10 +270,10 @@ void Optimizer<T, Model>::evalApproxReferenceCost(
       xt::pow(std::move(cost) * reference_cost_weight_, reference_cost_power_);
 }
 
-template <typename T, typename Model>
-void Optimizer<T, Model>::evalReferenceCost(const auto &batches_of_trajectories,
-                                            const auto &global_plan,
-                                            auto &costs) const {
+template <typename T>
+void Optimizer<T>::evalReferenceCost(const auto &batches_of_trajectories,
+                                     const auto &global_plan,
+                                     auto &costs) const {
   using xt::evaluation_strategy::immediate;
 
   xt::xtensor<T, 3> path_to_batches_dists =
@@ -290,9 +287,9 @@ void Optimizer<T, Model>::evalReferenceCost(const auto &batches_of_trajectories,
       xt::pow(std::move(cost) * reference_cost_weight_, reference_cost_power_);
 }
 
-template <typename T, typename Model>
-void Optimizer<T, Model>::evalObstacleCost(
-    const auto &batches_of_trajectories_points, auto &costs) const {
+template <typename T>
+void Optimizer<T>::evalObstacleCost(const auto &batches_of_trajectories_points,
+                                    auto &costs) const {
   constexpr T collision_cost_value = std::numeric_limits<T>::max() / 2;
 
   auto minDistToObstacle = [this](const auto cost) {
@@ -337,9 +334,8 @@ void Optimizer<T, Model>::evalObstacleCost(
   }
 } // namespace mppi::optimization
 
-template <typename T, typename Model>
-std::vector<geometry_msgs::msg::Point>
-Optimizer<T, Model>::getOrientedFootprint(
+template <typename T>
+std::vector<geometry_msgs::msg::Point> Optimizer<T>::getOrientedFootprint(
     const std::array<double, 3> &robot_pose,
     const std::vector<geometry_msgs::msg::Point> &footprint_spec) const {
   std::vector<geometry_msgs::msg::Point> oriented_footprint;
@@ -358,8 +354,8 @@ Optimizer<T, Model>::getOrientedFootprint(
   return oriented_footprint;
 }
 
-template <typename T, typename Model>
-void Optimizer<T, Model>::evalGoalAngleCost(
+template <typename T>
+void Optimizer<T>::evalGoalAngleCost(
     const auto &batch_of_trajectories, const auto &global_plan,
     const geometry_msgs::msg::PoseStamped &robot_pose, auto &costs) const {
   xt::xtensor<T, 1> tensor_pose = {static_cast<T>(robot_pose.pose.position.x),
@@ -379,9 +375,8 @@ void Optimizer<T, Model>::evalGoalAngleCost(
   }
 }
 
-template <typename T, typename Model>
-void Optimizer<T, Model>::updateControlSequence(
-    const xt::xtensor<T, 1> &costs) {
+template <typename T>
+void Optimizer<T>::updateControlSequence(const xt::xtensor<T, 1> &costs) {
   using xt::evaluation_strategy::immediate;
 
   auto &&costs_normalized = costs - xt::amin(costs, immediate);
@@ -396,8 +391,7 @@ void Optimizer<T, Model>::updateControlSequence(
   control_sequence_ = xt::sum(getBatchesControls() * softmaxes_expanded, 0);
 }
 
-template <typename T, typename Model>
-bool Optimizer<T, Model>::inCollision(unsigned char cost) const {
+template <typename T> bool Optimizer<T>::inCollision(unsigned char cost) const {
   if (costmap_ros_->getLayeredCostmap()->isTrackingUnknown()) {
     return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE &&
            cost != nav2_costmap_2d::NO_INFORMATION;
@@ -406,9 +400,8 @@ bool Optimizer<T, Model>::inCollision(unsigned char cost) const {
   }
 }
 
-template <typename T, typename Model>
-unsigned char Optimizer<T, Model>::costAtPose(const double x,
-                                              const double y) const {
+template <typename T>
+unsigned char Optimizer<T>::costAtPose(const double x, const double y) const {
   unsigned int mx = 0;
   unsigned int my = 0;
   if (not costmap_->worldToMap(x, y, mx, my)) {
@@ -418,8 +411,8 @@ unsigned char Optimizer<T, Model>::costAtPose(const double x,
   return costmap_->getCost(mx, my);
 }
 
-template <typename T, typename Model>
-double Optimizer<T, Model>::lineCost(int x0, int x1, int y0, int y1) const {
+template <typename T>
+double Optimizer<T>::lineCost(int x0, int x1, int y0, int y1) const {
   double line_cost = 0.0;
   double point_cost = -1.0;
 
@@ -437,8 +430,8 @@ double Optimizer<T, Model>::lineCost(int x0, int x1, int y0, int y1) const {
   return line_cost;
 }
 
-template <typename T, typename Model>
-double Optimizer<T, Model>::scoreFootprint(
+template <typename T>
+double Optimizer<T>::scoreFootprint(
     const std::vector<geometry_msgs::msg::Point> &footprint) const {
   unsigned int x0, x1, y0, y1;
   double line_cost = 0.0;
@@ -472,66 +465,58 @@ double Optimizer<T, Model>::scoreFootprint(
   return footprint_cost;
 }
 
-template <typename T, typename Model>
+template <typename T>
 geometry_msgs::msg::TwistStamped
-Optimizer<T, Model>::getControlFromSequence(const auto &stamp,
-                                            const std::string &frame) {
+Optimizer<T>::getControlFromSequence(const auto &stamp,
+                                     const std::string &frame) {
   return geometry::toTwistStamped(xt::view(control_sequence_, 0), stamp, frame);
 }
 
-template <typename T, typename Model>
-auto Optimizer<T, Model>::getBatchesLinearVelocities() const {
+template <typename T> auto Optimizer<T>::getBatchesLinearVelocities() const {
   return xt::view(batches_, xt::all(), xt::all(), idxes::linear_velocities);
 }
 
-template <typename T, typename Model>
-auto Optimizer<T, Model>::getBatchesAngularVelocities() const {
+template <typename T> auto Optimizer<T>::getBatchesAngularVelocities() const {
   return xt::view(batches_, xt::all(), xt::all(), idxes::angular_velocities);
 }
 
-template <typename T, typename Model>
-auto Optimizer<T, Model>::getBatchesControlLinearVelocities() const {
+template <typename T>
+auto Optimizer<T>::getBatchesControlLinearVelocities() const {
   return xt::view(batches_, xt::all(), xt::all(),
                   idxes::control_linear_velocities);
 }
 
-template <typename T, typename Model>
-auto Optimizer<T, Model>::getBatchesControlAngularVelocities() const {
+template <typename T>
+auto Optimizer<T>::getBatchesControlAngularVelocities() const {
   return xt::view(batches_, xt::all(), xt::all(),
                   idxes::control_angular_velocities);
 }
 
-template <typename T, typename Model>
-auto Optimizer<T, Model>::getBatchesControls() const {
+template <typename T> auto Optimizer<T>::getBatchesControls() const {
   return xt::view(batches_, xt::all(), xt::all(),
                   xt::range(std::get<0>(idxes::control_range),
                             std::get<1>(idxes::control_range)));
 }
 
-template <typename T, typename Model>
-auto Optimizer<T, Model>::getBatchesLinearVelocities() {
+template <typename T> auto Optimizer<T>::getBatchesLinearVelocities() {
   return xt::view(batches_, xt::all(), xt::all(), idxes::linear_velocities);
 }
 
-template <typename T, typename Model>
-auto Optimizer<T, Model>::getBatchesAngularVelocities() {
+template <typename T> auto Optimizer<T>::getBatchesAngularVelocities() {
   return xt::view(batches_, xt::all(), xt::all(), idxes::angular_velocities);
 }
 
-template <typename T, typename Model>
-auto Optimizer<T, Model>::getBatchesControlLinearVelocities() {
+template <typename T> auto Optimizer<T>::getBatchesControlLinearVelocities() {
   return xt::view(batches_, xt::all(), xt::all(),
                   idxes::control_linear_velocities);
 }
 
-template <typename T, typename Model>
-auto Optimizer<T, Model>::getBatchesControlAngularVelocities() {
+template <typename T> auto Optimizer<T>::getBatchesControlAngularVelocities() {
   return xt::view(batches_, xt::all(), xt::all(),
                   idxes::control_angular_velocities);
 }
 
-template <typename T, typename Model>
-auto Optimizer<T, Model>::getBatchesControls() {
+template <typename T> auto Optimizer<T>::getBatchesControls() {
   return xt::view(batches_, xt::all(), xt::all(),
                   xt::range(std::get<0>(idxes::control_range),
                             std::get<1>(idxes::control_range)));

@@ -17,17 +17,18 @@
 
 namespace mppi::optimization {
 
-template <typename T,
-          typename Model = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &)>
+template <typename T>
 class Optimizer {
 public:
+  using model_t = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &);
+
   Optimizer() = default;
 
   void on_configure(
       const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
       const std::string &node_name,
       const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros,
-      Model &&model);
+      model_t &&model);
 
   void on_cleanup() {}
   void on_activate() {}
@@ -206,7 +207,7 @@ private:
   std::string node_name_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D *costmap_;
-  std::function<Model> model_;
+  std::function<model_t> model_;
 
   double inflation_cost_scaling_factor_;
   double inscribed_radius_;
