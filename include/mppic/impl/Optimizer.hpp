@@ -80,19 +80,22 @@ template <typename T> void Optimizer<T>::getParams() {
 }
 
 template <typename T> void Optimizer<T>::reset() {
-  batches_ = xt::zeros<T>({batch_size_, time_steps_, batches_last_dim_size_});
+  state_.data =
+      xt::zeros<T>({batch_size_, time_steps_, batches_last_dim_size_});
+  state_.getTimeIntervals() = model_dt_;
+
   control_sequence_ = xt::zeros<T>({time_steps_, control_dim_size_});
-  xt::view(batches_, xt::all(), xt::all(), idxes::dt) = model_dt_;
 }
 
 template <typename T>
 xt::xtensor<T, 3> Optimizer<T>::generateNoisedTrajectories(
     const geometry_msgs::msg::PoseStamped &robot_pose,
     const geometry_msgs::msg::Twist &robot_speed) {
-  getBatchesControls() = generateNoisedControlBatches();
+
+  state_.getControls() = generateNoisedControlBatches();
   applyControlConstraints();
-  evalBatchesVelocities(robot_speed, batches_);
-  return integrateBatchesVelocities(robot_pose);
+  evalBatchesVelocities(state_, robot_speed);
+  return integrateBatchesVelocities(state_, robot_pose);
 }
 
 template <typename T>
@@ -105,8 +108,8 @@ xt::xtensor<T, 3> Optimizer<T>::generateNoisedControlBatches() const {
 }
 
 template <typename T> void Optimizer<T>::applyControlConstraints() {
-  auto v = getBatchesControlLinearVelocities();
-  auto w = getBatchesControlAngularVelocities();
+  auto v = state_.getControlLinearVelocities();
+  auto w = state_.getControlAngularVelocities();
 
   v = xt::clip(v, -v_limit_, v_limit_);
   w = xt::clip(w, -w_limit_, w_limit_);
@@ -114,30 +117,28 @@ template <typename T> void Optimizer<T>::applyControlConstraints() {
 
 template <typename T>
 void Optimizer<T>::evalBatchesVelocities(
-    const geometry_msgs::msg::Twist &robot_speed, auto &batches) const {
-  setBatchesInitialVelocities(robot_speed, batches);
-  propagateBatchesVelocitiesFromInitials(batches);
+    auto &state, const geometry_msgs::msg::Twist &robot_speed) const {
+  setBatchesInitialVelocities(state, robot_speed);
+  propagateBatchesVelocitiesFromInitials(state);
 }
 
 template <typename T>
 void Optimizer<T>::setBatchesInitialVelocities(
-    const geometry_msgs::msg::Twist &robot_speed, auto &batches) const {
-  xt::view(batches, xt::all(), 0, idxes::linear_velocities) =
-      robot_speed.linear.x;
-
-  xt::view(batches, xt::all(), 0, idxes::angular_velocities) =
-      robot_speed.angular.z;
+    auto &state, const geometry_msgs::msg::Twist &robot_speed) const {
+  xt::view(state.getLinearVelocities(), xt::all(), 0) = robot_speed.linear.x;
+  xt::view(state.getAngularVelocities(), xt::all(), 0) = robot_speed.angular.z;
 }
 
 template <typename T>
-void Optimizer<T>::propagateBatchesVelocitiesFromInitials(auto &batches) const {
+void Optimizer<T>::propagateBatchesVelocitiesFromInitials(auto &state) const {
   using namespace xt::placeholders;
 
   for (size_t t = 0; t < time_steps_ - 1; t++) {
-    auto curr_batch = xt::view(batches, xt::all(), t); // -> batch x 5
-    auto next_batch_velocities =
-        xt::view(batches, xt::all(), t + 1, xt::range(0, 2)); // batch x 2
-    next_batch_velocities = model_(curr_batch);
+    auto curr_state = xt::view(state.data, xt::all(), t); // -> batch x 5
+    auto next_vels =
+        xt::view(state.getVelocities(), xt::all(), t + 1); // batch x 2
+
+    next_vels = model_(curr_state);
   }
 }
 
@@ -147,52 +148,22 @@ Optimizer<T>::evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::PoseStamped &robot_pose,
     const geometry_msgs::msg::Twist &robot_speed) const {
 
-  auto batch =
-      xt::xtensor<T, 3>::from_shape({1U, time_steps_, batches_last_dim_size_});
+  State<T, dims::batches> state;
+  state.data = xt::zeros<T>({1U, time_steps_, batches_last_dim_size_});
+  state.getControls() = control_sequence_;
+  state.getTimeIntervals() = model_dt_;
 
-  xt::view(batch, 0, xt::all(), xt::range(2, 4)) = control_sequence_;
-  xt::view(batch, 0, xt::all(), 4) = model_dt_;
-
-  evalBatchesVelocities(robot_speed, batch);
-  auto &&velocities = xt::view(batch, 0, xt::all(), xt::range(0, 2));
-
-  return integrateSequence(velocities, robot_pose);
-}
-
-template <typename T>
-xt::xtensor<T, dims::control_sequence> Optimizer<T>::integrateSequence(
-    const auto &sequence, const geometry_msgs::msg::PoseStamped &pose) const {
-  using namespace xt::placeholders;
-
-  auto v = xt::view(sequence, xt::all(), idxes::linear_velocities);
-  auto w = xt::view(sequence, xt::all(), idxes::angular_velocities);
-  auto yaw = xt::cumsum(w * model_dt_, 0);
-
-  auto yaw_offseted = yaw;
-  xt::view(yaw_offseted, xt::range(1, _)) =
-      xt::eval(xt::view(yaw, xt::range(_, -1)));
-
-  xt::view(yaw_offseted, xt::all()) += tf2::getYaw(pose.pose.orientation);
-
-  auto v_x = v * xt::cos(yaw_offseted);
-  auto v_y = v * xt::sin(yaw_offseted);
-
-  auto x = pose.pose.position.x + xt::cumsum(v_x * model_dt_, 0);
-  auto y = pose.pose.position.y + xt::cumsum(v_y * model_dt_, 0);
-
-  return xt::concatenate(xt::xtuple(xt::view(x, xt::all(), xt::newaxis()),
-                                    xt::view(y, xt::all(), xt::newaxis()),
-                                    xt::view(yaw, xt::all(), xt::newaxis())),
-                         1);
+  evalBatchesVelocities(state, robot_speed);
+  return xt::squeeze(integrateBatchesVelocities(state, robot_pose));
 }
 
 template <typename T>
 xt::xtensor<T, dims::batches> Optimizer<T>::integrateBatchesVelocities(
-    const geometry_msgs::msg::PoseStamped &pose) const {
+    const auto &state, const geometry_msgs::msg::PoseStamped &pose) const {
   using namespace xt::placeholders;
 
-  auto v = getBatchesLinearVelocities();
-  auto w = getBatchesAngularVelocities();
+  auto v = state.getLinearVelocities();
+  auto w = state.getAngularVelocities();
   auto yaw = xt::cumsum(w * model_dt_, 1);
 
   auto yaw_offseted = yaw;
@@ -389,7 +360,7 @@ void Optimizer<T>::updateControlSequence(const xt::xtensor<T, 1> &costs) {
   auto softmaxes_expanded =
       xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
 
-  control_sequence_ = xt::sum(getBatchesControls() * softmaxes_expanded, 0);
+  control_sequence_ = xt::sum(state_.getControls() * softmaxes_expanded, 0);
 }
 
 template <typename T> bool Optimizer<T>::inCollision(unsigned char cost) const {
@@ -469,56 +440,6 @@ double Optimizer<T>::scoreFootprint(
 template <typename T>
 auto Optimizer<T>::getControlFromSequence(unsigned int offset) {
   return xt::view(control_sequence_, offset);
-}
-
-template <typename T> auto Optimizer<T>::getBatchesLinearVelocities() const {
-  return xt::view(batches_, xt::all(), xt::all(), idxes::linear_velocities);
-}
-
-template <typename T> auto Optimizer<T>::getBatchesAngularVelocities() const {
-  return xt::view(batches_, xt::all(), xt::all(), idxes::angular_velocities);
-}
-
-template <typename T>
-auto Optimizer<T>::getBatchesControlLinearVelocities() const {
-  return xt::view(batches_, xt::all(), xt::all(),
-                  idxes::control_linear_velocities);
-}
-
-template <typename T>
-auto Optimizer<T>::getBatchesControlAngularVelocities() const {
-  return xt::view(batches_, xt::all(), xt::all(),
-                  idxes::control_angular_velocities);
-}
-
-template <typename T> auto Optimizer<T>::getBatchesControls() const {
-  return xt::view(batches_, xt::all(), xt::all(),
-                  xt::range(std::get<0>(idxes::control_range),
-                            std::get<1>(idxes::control_range)));
-}
-
-template <typename T> auto Optimizer<T>::getBatchesLinearVelocities() {
-  return xt::view(batches_, xt::all(), xt::all(), idxes::linear_velocities);
-}
-
-template <typename T> auto Optimizer<T>::getBatchesAngularVelocities() {
-  return xt::view(batches_, xt::all(), xt::all(), idxes::angular_velocities);
-}
-
-template <typename T> auto Optimizer<T>::getBatchesControlLinearVelocities() {
-  return xt::view(batches_, xt::all(), xt::all(),
-                  idxes::control_linear_velocities);
-}
-
-template <typename T> auto Optimizer<T>::getBatchesControlAngularVelocities() {
-  return xt::view(batches_, xt::all(), xt::all(),
-                  idxes::control_angular_velocities);
-}
-
-template <typename T> auto Optimizer<T>::getBatchesControls() {
-  return xt::view(batches_, xt::all(), xt::all(),
-                  xt::range(std::get<0>(idxes::control_range),
-                            std::get<1>(idxes::control_range)));
 }
 
 } // namespace mppi::optimization
