@@ -182,11 +182,10 @@ private:
       const std::vector<geometry_msgs::msg::Point> &footprint_spec) const;
 
   /**
-   * @brief Get first control from control_sequence_
+   * @brief Get offseted control from control_sequence_
    *
    */
-  geometry_msgs::msg::TwistStamped
-  getControlFromSequence(const auto &stamp, const std::string &frame);
+  auto getControlFromSequence(unsigned int);
 
   auto getBatchesControls() const;
   auto getBatchesControls();
