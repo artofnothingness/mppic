@@ -73,11 +73,9 @@ void Controller<T, Model>::handleVisualizations(
 }
 
 template <typename T, typename Model> void Controller<T, Model>::getParams() {
-  auto getParam = [&](const std::string &param_name, auto default_value) {
-    std::string name = node_name_ + '.' + param_name;
-    return utils::getParam(name, default_value, parent_);
-  };
-  visualize_ = getParam("visualize", true);
+  auto setParam = utils::getParamSetter(parent_.get(), node_name_);
+
+  setParam(visualize_, "visualize", true);
 }
 
 template <typename T, typename Model>
