@@ -1,15 +1,13 @@
 #pragma once
 
-#include "xtensor/xarray.hpp"
-#include "xtensor/xstrided_view.hpp"
-#include "xtensor/xview.hpp"
-
-#include "mppic/Indexes.hpp"
+#include <xtensor/xarray.hpp>
+#include <xtensor/xstrided_view.hpp>
+#include <xtensor/xview.hpp>
 
 namespace mppi::optimization {
 
-template <typename T, size_t dim> struct State {
-
+template <typename T>
+struct State {
   struct idx {
     constexpr static uint8_t v = 0;
     constexpr static uint8_t w = 1;
@@ -22,26 +20,20 @@ template <typename T, size_t dim> struct State {
 
   auto getControls() const;
   auto getControls();
-
   auto getVelocities();
   auto getVelocities() const;
-
   auto getControlLinearVelocities() const;
   auto getControlLinearVelocities();
-
   auto getControlAngularVelocities() const;
   auto getControlAngularVelocities();
-
   auto getLinearVelocities() const;
   auto getLinearVelocities();
-
   auto getAngularVelocities() const;
   auto getAngularVelocities();
-
   auto getTimeIntervals();
   auto getTimeIntervals() const;
 
-  xt::xtensor<T, dim> data;
+  xt::xtensor<T, 3> data;
 };
 
-} // namespace mppi::optimization
+}  // namespace mppi::optimization
