@@ -48,7 +48,7 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
   auto optimizer = mppi::optimization::Optimizer<T>();
 
   costmap_ros->on_configure(st);
-  optimizer.on_configure(node, node_name, costmap_ros, model);
+  optimizer.on_configure(node.get(), node_name, costmap_ros.get(), model);
   optimizer.on_activate();
 
   unsigned int poses_count = GENERATE(10U, 30U, 100U);
@@ -140,7 +140,7 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
   addObstacle(*costmap_ros->getCostmap(), upper_left_corner_x,
               upper_left_corner_y, obstacle_side_size_cells, obstacle_cost);
 
-  optimizer.on_configure(node, node_name, costmap_ros, model);
+  optimizer.on_configure(node.get(), node_name, costmap_ros.get(), model);
   optimizer.on_activate();
 
   float start_point_x = GENERATE(1.0f, 0.4f);
