@@ -14,10 +14,8 @@ public:
   PathHandler() = default;
   ~PathHandler() = default;
 
-  void on_configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
-                    const std::string &node_name,
-                    const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap,
-                    const std::shared_ptr<tf2_ros::Buffer> &buffer);
+  void on_configure(rclcpp_lifecycle::LifecycleNode *const parent, const std::string &node_name,
+                    nav2_costmap_2d::Costmap2DROS *const costmap, tf2_ros::Buffer *const buffer);
 
   void on_cleanup();
   void on_activate();
@@ -64,16 +62,16 @@ private:
     global_plan_.poses.erase(global_plan_.poses.begin(), end);
   }
 
-  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
+  rclcpp_lifecycle::LifecycleNode *parent_;
   std::string node_name_;
-  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_;
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  nav2_costmap_2d::Costmap2DROS *costmap_;
+  tf2_ros::Buffer *tf_buffer_;
+
+  nav_msgs::msg::Path global_plan_;
+  rclcpp::Logger logger_{rclcpp::get_logger("MPPI PathHandler")};
 
   double lookahead_dist_;
   double transform_tolerance_;
-  rclcpp::Logger logger_{rclcpp::get_logger("MPPI PathHandler")};
-
-  nav_msgs::msg::Path global_plan_;
 };
 
 }  // namespace mppi::handlers

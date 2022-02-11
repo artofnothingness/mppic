@@ -30,10 +30,9 @@ Optimizer<T>::evalNextBestControl(const geometry_msgs::msg::PoseStamped &robot_p
 
 template <typename T>
 void
-Optimizer<T>::on_configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
+Optimizer<T>::on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
                            const std::string &node_name,
-                           const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros,
-                           model_t &&model) {
+                           nav2_costmap_2d::Costmap2DROS *const costmap_ros, model_t &&model) {
   parent_ = parent;
   node_name_ = node_name;
   costmap_ros_ = costmap_ros;
@@ -49,7 +48,7 @@ Optimizer<T>::on_configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode
 template <typename T>
 void
 Optimizer<T>::getParams() {
-  auto setParam = utils::getParamSetter(parent_.get(), node_name_);
+  auto setParam = utils::getParamSetter(parent_, node_name_);
 
   setParam(model_dt_, "model_dt", 0.1);
   setParam(time_steps_, "time_steps", 15);

@@ -11,8 +11,7 @@ public:
   TrajectoryVisualizer() = default;
 
   void
-  on_configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
-               const std::string &frame_id) {
+  on_configure(rclcpp_lifecycle::LifecycleNode *const parent, const std::string &frame_id) {
     frame_id_ = frame_id;
     parent_ = parent;
 
@@ -46,7 +45,7 @@ public:
   void
   add(Container &&trajectory) {
     auto &size = trajectory.shape()[0];
-    if (not size) {
+    if (!size) {
       return;
     }
 
@@ -67,7 +66,7 @@ public:
   template <typename Container>
   void
   add(Container &&trajectories, size_t batch_step, size_t time_step) {
-    if (not trajectories.shape()[0]) {
+    if (!trajectories.shape()[0]) {
       return;
     }
 
@@ -96,7 +95,8 @@ public:
 
 private:
   std::string frame_id_;
-  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
+  rclcpp_lifecycle::LifecycleNode *parent_;
+
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<visualization_msgs::msg::MarkerArray>>
       trajectories_publisher_;
 
