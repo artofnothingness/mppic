@@ -11,6 +11,7 @@
 #include <xtensor/xarray.hpp>
 #include <xtensor/xview.hpp>
 
+#include "mppic/impl/CriticScorer.hpp"
 #include "mppic/impl/State.hpp"
 
 namespace mppi::optimization {
@@ -19,12 +20,15 @@ template <typename T>
 class Optimizer {
 public:
   static constexpr int state_dims = 2;
-  using model_t = xt::xtensor<T, state_dims>(const xt::xtensor<T, state_dims> &);
+  using model_t =
+      xt::xtensor<T, state_dims>(const xt::xtensor<T, state_dims> &);
 
   Optimizer() = default;
 
-  void on_configure(rclcpp_lifecycle::LifecycleNode *parent, const std::string &node_name,
-                    nav2_costmap_2d::Costmap2DROS *costmap_ros, model_t &&model);
+  void on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
+                    const std::string &node_name,
+                    nav2_costmap_2d::Costmap2DROS *const costmap_ros,
+                    model_t &&model);
 
   void
   on_cleanup() {}
@@ -35,7 +39,8 @@ public:
 
   geometry_msgs::msg::TwistStamped evalNextBestControl(
       const geometry_msgs::msg::PoseStamped &robot_pose,
-      const geometry_msgs::msg::Twist &robot_speed, const nav_msgs::msg::Path &plan);
+      const geometry_msgs::msg::Twist &robot_speed,
+      const nav_msgs::msg::Path &plan);
 
   xt::xtensor<T, 3>
   getGeneratedTrajectories() const {
@@ -46,24 +51,22 @@ public:
       const geometry_msgs::msg::PoseStamped &robot_pose,
       const geometry_msgs::msg::Twist &robot_speed) const;
 
-  double lineCost(int x0, int x1, int y0, int y1) const;
-
-  double scoreFootprint(const std::vector<geometry_msgs::msg::Point> &footprint) const;
-
 private:
   void getParams();
   void reset();
+  void configureComponents();
 
   /**
    * @brief Invoke generateNoisedControlBatches, assign result tensor to
    * batches_ controls dimensions and integrate recieved controls in
    * trajectories
    *
-   * @return trajectories: tensor of shape [ batch_size_, time_steps_, 3 ] where
-   * 3 stands for x, y, yaw
+   * @return trajectories: tensor of shape [ batch_size_, time_steps_, 3 ]
+   * where 3 stands for x, y, yaw
    */
-  xt::xtensor<T, 3> generateNoisedTrajectories(const geometry_msgs::msg::PoseStamped &robot_pose,
-                                               const geometry_msgs::msg::Twist &robot_speed);
+  xt::xtensor<T, 3> generateNoisedTrajectories(
+      const geometry_msgs::msg::PoseStamped &robot_pose,
+      const geometry_msgs::msg::Twist &robot_speed);
 
   /**
    * @brief Generate random controls by gaussian noise with mean in
@@ -82,9 +85,11 @@ private:
    *
    * @param twist current robot speed
    */
-  void evalBatchesVelocities(auto &state, const geometry_msgs::msg::Twist &robot_speed) const;
+  void evalBatchesVelocities(
+      auto &state, const geometry_msgs::msg::Twist &robot_speed) const;
 
-  void setBatchesInitialVelocities(auto &state, const geometry_msgs::msg::Twist &robot_speed) const;
+  void setBatchesInitialVelocities(
+      auto &state, const geometry_msgs::msg::Twist &robot_speed) const;
 
   /**
    * @brief predict and propagate velocities in batches_ using model
@@ -93,67 +98,12 @@ private:
   void propagateBatchesVelocitiesFromInitials(auto &state) const;
 
   xt::xtensor<T, 3> integrateBatchesVelocities(
-      const auto &state, const geometry_msgs::msg::PoseStamped &robot_pose) const;
+      const auto &state,
+      const geometry_msgs::msg::PoseStamped &robot_pose) const;
 
   /**
-   * @brief Evaluate cost for each batch
-   *
-   * @param batches_of_trajectories batch of trajectories: tensor of shape [
-   * batch_size_, time_steps_, 3 ] where 3 stands for x, y, yaw
-   * @return Cost for each batch, tensor of shape [ batch_size ]
-   */
-  xt::xtensor<T, 1> evalBatchesCosts(const xt::xtensor<T, 3> &batches_of_trajectories,
-                                     const nav_msgs::msg::Path &global_plan,
-                                     const geometry_msgs::msg::PoseStamped &robot_pose) const;
-
-  /**
-   * @brief Evaluate cost related to trajectories path alignment
-   *
-   * @param batches_of_trajectories
-   * @param costs [out] add reference cost values to this tensor
-   */
-  void evalReferenceCost(const auto &batches_of_trajectories, const auto &global_plan,
-                         auto &costs) const;
-
-  /**
-   * @brief Evaluate cost related to trajectories path alignment using
-   * approximate path to segment function
-   *
-   * @param batches_of_trajectories
-   * @param costs [out] add reference cost values to this tensor
-   */
-  void evalApproxReferenceCost(const auto &batches_of_trajectories, const auto &global_plan,
-                               auto &costs) const;
-
-  /**
-   * @brief Evaluate cost related to goal following
-   *
-   * @param costs [out] add reference cost values to this tensor
-   */
-  void evalGoalCost(const auto &batch_of_trajectories, const auto &global_plan, auto &costs) const;
-
-  /**
-   * @brief Evaluate cost related to obstacle avoidance
-   *
-   * @param costs [out] add obstacle cost values to this tensor
-   */
-  void evalObstacleCost(const auto &batch_of_trajectories, auto &costs) const;
-
-  /**
-   * @brief Evaluate cost related to robot orientation at goal pose (considered
-   * only if robot near last goal in current plan)
-   *
-   * @param costs [out] add goal angle cost values to this tensor
-   */
-  void evalGoalAngleCost(const auto &batch_of_trajectories, const auto &global_plan,
-                         const geometry_msgs::msg::PoseStamped &robot_pose, auto &costs) const;
-
-  unsigned char costAtPose(const double x, const double y) const;
-  bool inCollision(unsigned char cost) const;
-
-  /**
-   * @brief Update control_sequence_ with weighted by costs batch controls using
-   * softmax function
+   * @brief Update control_sequence_ with batch controls weighted by costs
+   * using softmax function
    *
    * @param costs batches costs, tensor of shape [ batch_size ]
    */
@@ -206,6 +156,7 @@ private:
   static constexpr unsigned int control_dim_size_ = 2;
 
   State<T> state_;
+  CriticScorer<T> critic_scorer_;
   xt::xtensor<T, 3> generated_trajectories_;
 
   /**

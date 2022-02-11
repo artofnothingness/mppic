@@ -1,3 +1,5 @@
+#pragma once
+
 namespace mppi::optimization {
 
 /** An iterator implementing Bresenham Ray-Tracing. */
@@ -29,9 +31,10 @@ public:
       yinc2_ = -1;
     }
 
-    if (deltax_ >= deltay_) {  // There is at least one x-value for every y-value
-      xinc1_ = 0;              // Don't change the x when numerator >= denominator
-      yinc2_ = 0;              // Don't change the y for every iteration
+    if (deltax_ >=
+        deltay_) {  // There is at least one x-value for every y-value
+      xinc1_ = 0;   // Don't change the x when numerator >= denominator
+      yinc2_ = 0;   // Don't change the y for every iteration
       den_ = deltax_;
       num_ = deltax_ / 2;
       numadd_ = deltay_;
