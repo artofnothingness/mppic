@@ -23,10 +23,8 @@ public:
 
   Optimizer() = default;
 
-  void on_configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
-                    const std::string &node_name,
-                    const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros,
-                    model_t &&model);
+  void on_configure(rclcpp_lifecycle::LifecycleNode *parent, const std::string &node_name,
+                    nav2_costmap_2d::Costmap2DROS *costmap_ros, model_t &&model);
 
   void
   on_cleanup() {}
@@ -171,9 +169,9 @@ private:
    */
   auto getControlFromSequence(unsigned int);
 
-  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
+  rclcpp_lifecycle::LifecycleNode *parent_;
   std::string node_name_;
-  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
+  nav2_costmap_2d::Costmap2DROS *costmap_ros_;
   nav2_costmap_2d::Costmap2D *costmap_;
   std::function<model_t> model_;
 

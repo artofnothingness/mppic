@@ -42,9 +42,9 @@ private:
                             const geometry_msgs::msg::Twist &robot_speed,
                             std::unique_ptr<nav_msgs::msg::Path> &&transformed_plan);
 
-  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> parent_;
-  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  rclcpp_lifecycle::LifecycleNode *parent_;
+  nav2_costmap_2d::Costmap2DROS *costmap_ros_;
+  tf2_ros::Buffer *tf_buffer_;
   std::string node_name_;
 
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>> transformed_path_pub_;
