@@ -53,7 +53,7 @@ geometry_msgs::msg::TwistStamped
 Controller<T>::computeVelocityCommands(const geometry_msgs::msg::PoseStamped &robot_pose,
                                        const geometry_msgs::msg::Twist &robot_speed) {
   auto &&transformed_plan = path_handler_.transformPath(robot_pose);
-  auto &&cmd = optimizer_.evalNextBestControl(robot_pose, robot_speed, transformed_plan);
+  auto &&cmd = optimizer_.evalControl(robot_pose, robot_speed, transformed_plan);
 
   if (visualize_) {
     auto &&plan_ptr = std::make_unique<nav_msgs::msg::Path>(std::move(transformed_plan));
