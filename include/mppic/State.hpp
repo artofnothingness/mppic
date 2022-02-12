@@ -1,10 +1,11 @@
 #pragma once
 
 #include <array>
-#include <mppic/MotionModel.hpp>
 #include <xtensor/xarray.hpp>
 #include <xtensor/xstrided_view.hpp>
 #include <xtensor/xview.hpp>
+
+#include "mppic/MotionModel.hpp"
 
 namespace mppi::optimization {
 
@@ -13,7 +14,8 @@ class State {
 public:
   xt::xtensor<T, 3> data;
 
-  void reset(unsigned int batch_size, unsigned int time_steps) {
+  void
+  reset(unsigned int batch_size, unsigned int time_steps) {
     data = xt::zeros<T>({batch_size, time_steps, vec_dim_});
   }
   unsigned int
@@ -23,9 +25,7 @@ public:
 
   void
   setMotionModel(MotionModel motion_model) {
-    motion_model_t_ = motion_model;
-
-    if (isHolonomic(motion_model_t_)) {
+    if (isHolonomic(motion_model)) {
       idx.vx = 0;
       idx.vy = 1;
       idx.wz = 2;
@@ -51,11 +51,6 @@ public:
     idx.controls_range[1] = idx.dt;
   }
 
-  MotionModel
-  getMotionModel() const {
-    return motion_model_t_;
-  }
-
   struct Idx {
     uint8_t vx{0};
     uint8_t vy{0};
@@ -72,19 +67,22 @@ public:
   auto getControls();
   auto getVelocities();
   auto getVelocities() const;
-  auto getControlVelocitiesVX() const;
-  auto getControlVelocitiesVX();
-  auto getControlVelocitiesWZ() const;
-  auto getControlVelocitiesWZ();
   auto getVelocitiesVX() const;
   auto getVelocitiesVX();
-  auto getVelicitiesWZ() const;
-  auto getVelicitiesWZ();
+  auto getVelocitiesVY() const;
+  auto getVelocitiesVY();
+  auto getVelocitiesWZ() const;
+  auto getVelocitiesWZ();
+  auto getControlVelocitiesVX() const;
+  auto getControlVelocitiesVX();
+  auto getControlVelocitiesVY() const;
+  auto getControlVelocitiesVY();
+  auto getControlVelocitiesWZ() const;
+  auto getControlVelocitiesWZ();
   auto getTimeIntervals();
   auto getTimeIntervals() const;
 
 private:
-  MotionModel motion_model_t_{MotionModel::DiffDrive};
   unsigned int vec_dim_{0};
 };
 

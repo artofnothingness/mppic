@@ -18,13 +18,25 @@ State<T>::getVelocitiesVX() {
 
 template <typename T>
 auto
-State<T>::getVelicitiesWZ() const {
+State<T>::getVelocitiesVY() {
+  return xt::view(data, xt::all(), xt::all(), idx.vy);
+}
+
+template <typename T>
+auto
+State<T>::getVelocitiesVY() const {
+  return xt::view(data, xt::all(), xt::all(), idx.vy);
+}
+
+template <typename T>
+auto
+State<T>::getVelocitiesWZ() const {
   return xt::view(data, xt::all(), xt::all(), idx.wz);
 }
 
 template <typename T>
 auto
-State<T>::getVelicitiesWZ() {
+State<T>::getVelocitiesWZ() {
   return xt::view(data, xt::all(), xt::all(), idx.wz);
 }
 
@@ -39,6 +51,19 @@ auto
 State<T>::getControlVelocitiesVX() {
   return xt::view(data, xt::all(), xt::all(), idx.cvx);
 }
+
+template <typename T>
+auto
+State<T>::getControlVelocitiesVY() {
+  return xt::view(data, xt::all(), xt::all(), idx.cvy);
+}
+
+template <typename T>
+auto
+State<T>::getControlVelocitiesVY() const {
+  return xt::view(data, xt::all(), xt::all(), idx.cvy);
+}
+
 
 template <typename T>
 auto
