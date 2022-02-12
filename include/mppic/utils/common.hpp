@@ -21,7 +21,7 @@ getParam(std::string const &param_name, T default_value, auto *const node) {
 }  // namespace details
 
 auto
-getParamSetter(auto *const node, const std::string &node_name_) {
+getParamGetter(auto *const node, const std::string &node_name_) {
   return [=](auto &param, const std::string &param_name, auto default_value) {
     std::string name = node_name_ + '.' + param_name;
     param =

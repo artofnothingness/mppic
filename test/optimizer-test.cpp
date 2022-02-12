@@ -14,7 +14,7 @@
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/Models.hpp"
+#include "mppic/StateModels.hpp"
 #include "nav2_costmap_2d/costmap_2d.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "tests_utils.hpp"
@@ -183,6 +183,7 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
     // get best trajectory from optimizer
     auto trajectory = optimizer.evalTrajectoryFromControlSequence(
         init_robot_pose, init_robot_vel);
+
 #ifdef TEST_DEBUG_INFO
     printMapWithGoalAndTrajectory(*costmap_ros->getCostmap(), trajectory,
                                   reference_goal_pose);
