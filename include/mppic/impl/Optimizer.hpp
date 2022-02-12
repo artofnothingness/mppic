@@ -20,10 +20,9 @@ Optimizer<T>::evalNextBestControl(
     const geometry_msgs::msg::Twist &robot_speed,
     const nav_msgs::msg::Path &plan) {
   for (size_t i = 0; i < iteration_count_; ++i) {
-    generated_trajectories_ =
-        generateNoisedTrajectories(robot_pose, robot_speed);
-    auto costs = critic_scorer_.evalBatchesCosts(generated_trajectories_,
-                                                 plan, robot_pose);
+    generated_trajectories_ = generateNoisedTrajectories(robot_pose, robot_speed);
+    auto costs =
+        critic_scorer_.evalTrajectoriesScores(generated_trajectories_, plan, robot_pose);
     updateControlSequence(costs);
   }
 
@@ -42,7 +41,6 @@ Optimizer<T>::on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
   costmap_ros_ = costmap_ros;
   model_ = model;
   costmap_ = costmap_ros_->getCostmap();
-  inscribed_radius_ = costmap_ros_->getLayeredCostmap()->getInscribedRadius();
 
   getParams();
   configureComponents();
@@ -64,19 +62,6 @@ Optimizer<T>::getParams() {
   setParam(w_limit_, "w_limit", 1.3);
   setParam(iteration_count_, "iteration_count", 2);
   setParam(temperature_, "temperature", 0.25);
-  setParam(reference_cost_power_, "reference_cost_power", 1);
-  setParam(goal_cost_power_, "goal_cost_power", 1);
-  setParam(goal_angle_cost_power_, "goal_angle_cost_power", 1);
-  setParam(obstacle_cost_power_, "obstacle_cost_power", 2);
-  setParam(goal_cost_weight_, "goal_cost_weight", 20);
-  setParam(goal_angle_cost_weight_, "goal_angle_cost_weight", 10);
-  setParam(obstacle_cost_weight_, "obstacle_cost_weight", 10);
-  setParam(reference_cost_weight_, "reference_cost_weight", 5);
-  setParam(inflation_cost_scaling_factor_, "inflation_cost_scaling_factor",
-           3.0);
-  setParam(inflation_radius_, "inflation_radius", 0.75);
-  setParam(threshold_to_consider_goal_angle_,
-           "threshold_to_consider_goal_angle", 0.30);
   setParam(approx_reference_cost_, "approx_reference_cost", false);
 }
 
@@ -87,32 +72,21 @@ Optimizer<T>::configureComponents() {
 
   std::vector<std::unique_ptr<optimization::CriticFunction<T>>> critics;
 
-  critics.push_back(std::make_unique<optimization::GoalCritic<T>>(
-      goal_cost_power_, goal_cost_weight_));
+  critics.push_back(std::make_unique<optimization::GoalCritic<T>>());
+  critics.push_back(std::make_unique<optimization::GoalAngleCritic<T>>());
+  critics.push_back(std::make_unique<optimization::ObstaclesCritic<T>>());
 
   if (approx_reference_cost_) {
     critics.push_back(
-        std::make_unique<optimization::approxReferenceTrajectoryCritic<T>>(
-            reference_cost_power_, reference_cost_weight_));
+        std::make_unique<optimization::approxReferenceTrajectoryCritic<T>>());
   } else {
     critics.push_back(
-        std::make_unique<optimization::referenceTrajectoryCritic<T>>(
-            reference_cost_power_, reference_cost_weight_));
+        std::make_unique<optimization::referenceTrajectoryCritic<T>>());
   }
 
-  critics.push_back(std::make_unique<optimization::ObstaclesCritic<T>>(
-      inflation_cost_scaling_factor_, inscribed_radius_, inflation_radius_,
-      costmap_ros_, obstacle_cost_power_, obstacle_cost_weight_));
-
-  critics.push_back(std::make_unique<optimization::GoalAngleCritic<T>>(
-      threshold_to_consider_goal_angle_, obstacle_cost_power_,
-      obstacle_cost_weight_));
-
-  for (size_t q = 0; q < critics.size(); q++) {
-    critics[q]->on_configure();
-  }
 
   critic_scorer_ = optimization::CriticScorer<T>(std::move(critics));
+  critic_scorer_.on_configure(parent_, node_name_, costmap_ros_);
 }
 
 template <typename T>
@@ -121,8 +95,7 @@ Optimizer<T>::reset() {
   state_.data =
       xt::zeros<T>({batch_size_, time_steps_, batches_last_dim_size_});
   state_.getTimeIntervals() = model_dt_;
-
-  control_sequence_ = xt::zeros<T>({time_steps_, control_dim_size_});
+  control_sequence_.reset({time_steps_, control_dim_size_});
 }
 
 template <typename T>
@@ -143,7 +116,8 @@ Optimizer<T>::generateNoisedControlBatches() const {
       xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, v_std_);
   auto w_noises =
       xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, w_std_);
-  return control_sequence_ + xt::concatenate(xt::xtuple(v_noises, w_noises), 2);
+  return control_sequence_.data +
+         xt::concatenate(xt::xtuple(v_noises, w_noises), 2);
 }
 
 template <typename T>
@@ -193,7 +167,7 @@ Optimizer<T>::evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::Twist &robot_speed) const {
   State<T> state;
   state.data = xt::zeros<T>({1U, time_steps_, batches_last_dim_size_});
-  state.getControls() = control_sequence_;
+  state.getControls() = control_sequence_.data;
   state.getTimeIntervals() = model_dt_;
 
   evalBatchesVelocities(state, robot_speed);
@@ -230,30 +204,25 @@ Optimizer<T>::integrateBatchesVelocities(
       2);
 }
 
-
 template <typename T>
 void
 Optimizer<T>::updateControlSequence(const xt::xtensor<T, 1> &costs) {
   using xt::evaluation_strategy::immediate;
 
   auto &&costs_normalized = costs - xt::amin(costs, immediate);
-
   auto exponents = xt::eval(xt::exp(-1 / temperature_ * costs_normalized));
-
   auto softmaxes = exponents / xt::sum(exponents, immediate);
-
   auto softmaxes_expanded =
       xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
 
-  control_sequence_ = xt::sum(state_.getControls() * softmaxes_expanded, 0);
+  control_sequence_.data =
+      xt::sum(state_.getControls() * softmaxes_expanded, 0);
 }
-
-
 
 template <typename T>
 auto
 Optimizer<T>::getControlFromSequence(unsigned int offset) {
-  return xt::view(control_sequence_, offset);
+  return xt::view(control_sequence_.data, offset);
 }
 
 }  // namespace mppi::optimization
