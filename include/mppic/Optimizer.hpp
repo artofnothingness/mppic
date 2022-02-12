@@ -54,7 +54,9 @@ private:
   void getParams();
   void reset();
   void configureComponents();
-  bool isHolonomic();
+
+  MotionModel getMotionModel() const;
+  void setMotionModel(MotionModel);
 
   /**
    *
@@ -120,7 +122,6 @@ private:
   std::string node_name_;
   nav2_costmap_2d::Costmap2DROS *costmap_ros_;
   nav2_costmap_2d::Costmap2D *costmap_;
-  std::function<model_t> model_;
 
   unsigned int batch_size_{0};
   unsigned int time_steps_{0};
@@ -137,6 +138,9 @@ private:
 
   State<T> state_;
   CriticScorer<T> critic_scorer_;
+  MotionModel motion_model_t_{MotionModel::DiffDrive};
+  std::function<model_t> model_;
+
   xt::xtensor<T, 2> control_sequence_;
   xt::xtensor<T, 3> generated_trajectories_;
 
