@@ -15,7 +15,7 @@ namespace mppi::optimization {
 
 template <typename T>
 geometry_msgs::msg::TwistStamped
-Optimizer<T>::evalNextBestControl(
+Optimizer<T>::evalControl(
     const geometry_msgs::msg::PoseStamped &robot_pose,
     const geometry_msgs::msg::Twist &robot_speed,
     const nav_msgs::msg::Path &plan) {
@@ -103,15 +103,15 @@ xt::xtensor<T, 3>
 Optimizer<T>::generateNoisedTrajectories(
     const geometry_msgs::msg::PoseStamped &robot_pose,
     const geometry_msgs::msg::Twist &robot_speed) {
-  state_.getControls() = generateNoisedControlBatches();
+  state_.getControls() = generateNoisedControls();
   applyControlConstraints();
-  evalBatchesVelocities(state_, robot_speed);
-  return integrateBatchesVelocities(state_, robot_pose);
+  updateStateVelocities(state_, robot_speed);
+  return integrateStateVelocities(state_, robot_pose);
 }
 
 template <typename T>
 xt::xtensor<T, 3>
-Optimizer<T>::generateNoisedControlBatches() const {
+Optimizer<T>::generateNoisedControls() const {
   auto v_noises =
       xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, v_std_);
   auto w_noises =
@@ -132,15 +132,15 @@ Optimizer<T>::applyControlConstraints() {
 
 template <typename T>
 void
-Optimizer<T>::evalBatchesVelocities(
+Optimizer<T>::updateStateVelocities(
     auto &state, const geometry_msgs::msg::Twist &robot_speed) const {
-  setBatchesInitialVelocities(state, robot_speed);
-  propagateBatchesVelocitiesFromInitials(state);
+  updateInitialStateVelocities(state, robot_speed);
+  propagateStateVelocitiesFromInitials(state);
 }
 
 template <typename T>
 void
-Optimizer<T>::setBatchesInitialVelocities(
+Optimizer<T>::updateInitialStateVelocities(
     auto &state, const geometry_msgs::msg::Twist &robot_speed) const {
   xt::view(state.getLinearVelocities(), xt::all(), 0) = robot_speed.linear.x;
   xt::view(state.getAngularVelocities(), xt::all(), 0) = robot_speed.angular.z;
@@ -148,7 +148,7 @@ Optimizer<T>::setBatchesInitialVelocities(
 
 template <typename T>
 void
-Optimizer<T>::propagateBatchesVelocitiesFromInitials(auto &state) const {
+Optimizer<T>::propagateStateVelocitiesFromInitials(auto &state) const {
   using namespace xt::placeholders;
 
   for (size_t t = 0; t < time_steps_ - 1; t++) {
@@ -170,13 +170,13 @@ Optimizer<T>::evalTrajectoryFromControlSequence(
   state.getControls() = control_sequence_.data;
   state.getTimeIntervals() = model_dt_;
 
-  evalBatchesVelocities(state, robot_speed);
-  return xt::squeeze(integrateBatchesVelocities(state, robot_pose));
+  updateStateVelocities(state, robot_speed);
+  return xt::squeeze(integrateStateVelocities(state, robot_pose));
 }
 
 template <typename T>
 xt::xtensor<T, 3>
-Optimizer<T>::integrateBatchesVelocities(
+Optimizer<T>::integrateStateVelocities(
     const auto &state, const geometry_msgs::msg::PoseStamped &pose) const {
   using namespace xt::placeholders;
 
