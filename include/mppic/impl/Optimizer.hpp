@@ -6,6 +6,7 @@
 #include <xtensor/xmath.hpp>
 #include <xtensor/xrandom.hpp>
 
+#include "mppic/MotionModel.hpp"
 #include "mppic/Optimizer.hpp"
 #include "mppic/utils/LineIterator.hpp"
 #include "mppic/utils/common.hpp"
@@ -71,12 +72,12 @@ Optimizer<T>::getParams() {
   auto &cmap = motion_model_control_dim_map_;
 
   if (auto it = nmap.find(name); it != nmap.end()) {
-    state_.setMotionModel(it->second);
+    setMotionModel(it->second);
   } else {
     RCLCPP_INFO(logger_, "Motion model is unknown, use defaulted/previous");
   }
 
-  if (auto it = cmap.find(state_.getMotionModel()); it != cmap.end()) {
+  if (auto it = cmap.find(getMotionModel()); it != cmap.end()) {
     control_vec_dim_ = it->second;
   }
 }
@@ -127,25 +128,38 @@ Optimizer<T>::generateNoisedTrajectories(
 template <typename T>
 xt::xtensor<T, 3>
 Optimizer<T>::generateNoisedControls() const {
-  auto v_noises =
+  auto vx_noises =
       xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, v_std_);
-  auto w_noises =
+  auto wz_noises =
       xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, w_std_);
-  return control_sequence_ + xt::concatenate(xt::xtuple(v_noises, w_noises), 2);
+
+  if (isHolonomic(getMotionModel())) {
+    auto vy_noises =
+        xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, v_std_);
+    return control_sequence_ +
+           xt::concatenate(xt::xtuple(vx_noises, wz_noises, vy_noises), 2);
+  }
+
+  return control_sequence_ +
+         xt::concatenate(xt::xtuple(vx_noises, wz_noises), 2);
 }
 
 // Imple dependce on Y
 template <typename T>
 void
 Optimizer<T>::applyControlConstraints() {
-  auto v = state_.getControlVelocitiesVX();
-  auto w = state_.getControlVelocitiesWZ();
+  auto vx = state_.getControlVelocitiesVX();
+  auto wz = state_.getControlVelocitiesWZ();
 
-  v = xt::clip(v, -v_limit_, v_limit_);
-  w = xt::clip(w, -w_limit_, w_limit_);
+  if (isHolonomic(getMotionModel())) {
+    auto vy = state_.getControlVelocitiesVY();
+    vy = xt::clip(vy, -v_limit_, v_limit_);
+  }
+
+  vx = xt::clip(vx, -v_limit_, v_limit_);
+  wz = xt::clip(wz, -w_limit_, w_limit_);
 }
 
-// Imple dependce on Y
 template <typename T>
 void
 Optimizer<T>::updateStateVelocities(
@@ -159,7 +173,11 @@ void
 Optimizer<T>::updateInitialStateVelocities(
     auto &state, const geometry_msgs::msg::Twist &robot_speed) const {
   xt::view(state.getVelocitiesVX(), xt::all(), 0) = robot_speed.linear.x;
-  xt::view(state.getVelicitiesWZ(), xt::all(), 0) = robot_speed.angular.z;
+  xt::view(state.getVelocitiesWZ(), xt::all(), 0) = robot_speed.angular.z;
+
+  if (isHolonomic(getMotionModel())) {
+    xt::view(state.getVelocitiesVY(), xt::all(), 0) = robot_speed.linear.y;
+  }
 }
 
 // Imple dependce on Y
@@ -169,9 +187,9 @@ Optimizer<T>::propagateStateVelocitiesFromInitials(auto &state) const {
   using namespace xt::placeholders;
 
   for (size_t t = 0; t < time_steps_ - 1; t++) {
-    auto curr_state = xt::view(state.data, xt::all(), t);  // -> batch x 5
+    auto curr_state = xt::view(state.data, xt::all(), t);
     auto next_vels =
-        xt::view(state.getVelocities(), xt::all(), t + 1);  // batch x 2
+        xt::view(state.getVelocities(), xt::all(), t + 1);
 
     next_vels = model_(curr_state);
   }
@@ -184,7 +202,7 @@ Optimizer<T>::evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::PoseStamped &robot_pose,
     const geometry_msgs::msg::Twist &robot_speed) const {
   State<T> state;
-  state.setMotionModel(state_.getMotionModel());
+  state.setMotionModel(getMotionModel());
   state.reset(1U, time_steps_);
   state.getControls() = control_sequence_;
   state.getTimeIntervals() = model_dt_;
@@ -201,7 +219,7 @@ Optimizer<T>::integrateStateVelocities(
   using namespace xt::placeholders;
 
   auto v = state.getVelocitiesVX();
-  auto w = state.getVelicitiesWZ();
+  auto w = state.getVelocitiesWZ();
   auto yaw = xt::cumsum(w * model_dt_, 1);
 
   auto yaw_offseted = yaw;
@@ -242,6 +260,19 @@ template <typename T>
 auto
 Optimizer<T>::getControlFromSequence(unsigned int offset) {
   return xt::view(control_sequence_, offset);
+}
+
+template <typename T>
+MotionModel
+Optimizer<T>::getMotionModel() const {
+  return motion_model_t_;
+}
+
+template <typename T>
+void
+Optimizer<T>::setMotionModel(MotionModel motion_model) {
+  motion_model_t_ = motion_model;
+  state_.setMotionModel(motion_model);
 }
 
 }  // namespace mppi::optimization
