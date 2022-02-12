@@ -5,11 +5,9 @@
 namespace mppi::models {
 
 /**
- * @brief Predict velocities for the next time step from current time step
- * batches of robot state
+ * @brief Predict velocities for given trajectories the next time step
  *
- * @tparam T underlying tensor type
- * @param batches batches of robot state for concrete time_step, tensor of shape
+ * @param state for given time_step, tensor of shape
  * [batch_size, 5] where 5 stands for robot linear, angluar velocities, linear
  * control, angular control velocities, dt (time on which this control will be
  * applied)
@@ -18,8 +16,8 @@ namespace mppi::models {
  */
 template <typename T, typename Tensor = xt::xtensor<T, 2>>
 Tensor
-NaiveModel(const Tensor &batches) {
-  return xt::view(batches, xt::all(), xt::range(2, 4));
+NaiveModel(const Tensor &state) {
+  return xt::view(state, xt::all(), xt::range(2, 4));
 }
 
 }  // namespace mppi::models

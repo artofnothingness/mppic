@@ -17,7 +17,6 @@
 namespace mppi::optimization {
 
 // TODO pluginize
-
 template <typename T>
 class CriticFunction {
 public:
@@ -104,9 +103,9 @@ class GoalCritic : public CriticFunction<T> {
 public:
   void
   getParams() final {
-    auto setParam = utils::getParamSetter(this->parent_, this->node_name_);
-    setParam(power_, "goal_cost_power", 1);
-    setParam(weight_, "goal_cost_weight", 20);
+    auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
+    getParam(power_, "goal_cost_power", 1);
+    getParam(weight_, "goal_cost_weight", 20);
   }
 
   /**
@@ -145,9 +144,9 @@ class approxReferenceTrajectoryCritic : public CriticFunction<T> {
 public:
   void
   getParams() final {
-    auto setParam = utils::getParamSetter(this->parent_, this->node_name_);
-    setParam(power_, "reference_cost_power", 1);
-    setParam(weight_, "reference_cost_weight", 20);
+    auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
+    getParam(power_, "reference_cost_power", 1);
+    getParam(weight_, "reference_cost_weight", 20);
   }
 
   /**
@@ -183,9 +182,9 @@ class referenceTrajectoryCritic : public CriticFunction<T> {
 public:
   void
   getParams() final {
-    auto setParam = utils::getParamSetter(this->parent_, this->node_name_);
-    setParam(power_, "reference_cost_power", 1);
-    setParam(weight_, "reference_cost_weight", 20);
+    auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
+    getParam(power_, "reference_cost_power", 1);
+    getParam(weight_, "reference_cost_weight", 20);
   }
 
   /**
@@ -222,12 +221,12 @@ class ObstaclesCritic : public CriticFunction<T> {
 public:
   void
   getParams() final {
-    auto setParam = utils::getParamSetter(this->parent_, this->node_name_);
-    setParam(power_, "obstacle_cost_power", 2);
-    setParam(weight_, "obstacle_cost_weight", 10);
-    setParam(inflation_cost_scaling_factor_, "inflation_cost_scaling_factor",
+    auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
+    getParam(power_, "obstacle_cost_power", 2);
+    getParam(weight_, "obstacle_cost_weight", 10);
+    getParam(inflation_cost_scaling_factor_, "inflation_cost_scaling_factor",
              3.0);
-    setParam(inflation_radius_, "inflation_radius", 0.75);
+    getParam(inflation_radius_, "inflation_radius", 0.75);
 
     inscribed_radius_ =
         this->costmap_ros_->getLayeredCostmap()->getInscribedRadius();
@@ -398,10 +397,10 @@ class GoalAngleCritic : public CriticFunction<T> {
 public:
   void
   getParams() final {
-    auto setParam = utils::getParamSetter(this->parent_, this->node_name_);
-    setParam(power_, "goal_angle_cost_power", 1);
-    setParam(weight_, "goal_angle_cost_weight", 10);
-    setParam(threshold_to_consider_goal_angle_,
+    auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
+    getParam(power_, "goal_angle_cost_power", 1);
+    getParam(weight_, "goal_angle_cost_weight", 10);
+    getParam(threshold_to_consider_goal_angle_,
              "threshold_to_consider_goal_angle", 0.30);
   }
 

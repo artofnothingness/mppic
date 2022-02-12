@@ -1,6 +1,6 @@
 #include "mppic/Controller.hpp"
 
-#include "mppic/Models.hpp"
+#include "mppic/StateModels.hpp"
 #include "mppic/utils/common.hpp"
 #include "mppic/utils/geometry.hpp"
 
@@ -78,9 +78,9 @@ Controller<T>::handleVisualizations(const geometry_msgs::msg::PoseStamped &robot
 template <typename T>
 void
 Controller<T>::getParams() {
-  auto setParam = utils::getParamSetter(parent_, node_name_);
+  auto getParam = utils::getParamGetter(parent_, node_name_);
 
-  setParam(visualize_, "visualize", true);
+  getParam(visualize_, "visualize", true);
 }
 
 template <typename T>

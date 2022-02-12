@@ -11,7 +11,7 @@
 #include <xtensor/xarray.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/impl/ControlSequence.hpp"
+#include "mppic/MotionModel.hpp"
 #include "mppic/impl/CriticScorer.hpp"
 #include "mppic/impl/State.hpp"
 
@@ -54,6 +54,7 @@ private:
   void getParams();
   void reset();
   void configureComponents();
+  bool isHolonomic();
 
   /**
    *
@@ -77,7 +78,7 @@ private:
 
   /**
    * @brief  Update velocities in state_
-   * 
+   *
    * @param twist current robot speed
    * @param state[out] fill state with velocities on each step
    */
@@ -121,17 +122,16 @@ private:
   nav2_costmap_2d::Costmap2D *costmap_;
   std::function<model_t> model_;
 
-  unsigned int batch_size_;
-  unsigned int time_steps_;
-  unsigned int iteration_count_;
-  double model_dt_;
-  double v_limit_;
-  double w_limit_;
-  double temperature_;
-  T v_std_;
-  T w_std_;
-  static constexpr unsigned int batches_last_dim_size_ = 5;
-  static constexpr unsigned int control_dim_size_ = 2;
+  unsigned int batch_size_{0};
+  unsigned int time_steps_{0};
+  unsigned int iteration_count_{0};
+  double model_dt_{0};
+  double v_limit_{0};
+  double w_limit_{0};
+  double temperature_{0};
+  T v_std_{0};
+  T w_std_{0};
+  unsigned int control_vec_dim_{0};
 
   bool approx_reference_cost_;
 

@@ -6,90 +6,90 @@ namespace mppi::optimization {
 
 template <typename T>
 auto
-State<T>::getLinearVelocities() const {
-  return xt::view(data, xt::all(), xt::all(), idx::v);
+State<T>::getVelocitiesVX() const {
+  return xt::view(data, xt::all(), xt::all(), idx.vx);
 }
 
 template <typename T>
 auto
-State<T>::getLinearVelocities() {
-  return xt::view(data, xt::all(), xt::all(), idx::v);
+State<T>::getVelocitiesVX() {
+  return xt::view(data, xt::all(), xt::all(), idx.vx);
 }
 
 template <typename T>
 auto
-State<T>::getAngularVelocities() const {
-  return xt::view(data, xt::all(), xt::all(), idx::w);
+State<T>::getVelicitiesWZ() const {
+  return xt::view(data, xt::all(), xt::all(), idx.wz);
 }
 
 template <typename T>
 auto
-State<T>::getAngularVelocities() {
-  return xt::view(data, xt::all(), xt::all(), idx::w);
+State<T>::getVelicitiesWZ() {
+  return xt::view(data, xt::all(), xt::all(), idx.wz);
 }
 
 template <typename T>
 auto
-State<T>::getControlLinearVelocities() const {
-  return xt::view(data, xt::all(), xt::all(), idx::cv);
+State<T>::getControlVelocitiesVX() const {
+  return xt::view(data, xt::all(), xt::all(), idx.cvx);
 }
 
 template <typename T>
 auto
-State<T>::getControlLinearVelocities() {
-  return xt::view(data, xt::all(), xt::all(), idx::cv);
+State<T>::getControlVelocitiesVX() {
+  return xt::view(data, xt::all(), xt::all(), idx.cvx);
 }
 
 template <typename T>
 auto
-State<T>::getControlAngularVelocities() const {
-  return xt::view(data, xt::all(), xt::all(), idx::cw);
+State<T>::getControlVelocitiesWZ() const {
+  return xt::view(data, xt::all(), xt::all(), idx.cwz);
 }
 
 template <typename T>
 auto
-State<T>::getControlAngularVelocities() {
-  return xt::view(data, xt::all(), xt::all(), idx::cw);
+State<T>::getControlVelocitiesWZ() {
+  return xt::view(data, xt::all(), xt::all(), idx.cwz);
 }
 
 template <typename T>
 auto
 State<T>::getTimeIntervals() {
-  return xt::view(data, xt::all(), xt::all(), idx::dt);
+  return xt::view(data, xt::all(), xt::all(), idx.dt);
 }
 
 template <typename T>
 auto
 State<T>::getTimeIntervals() const {
-  return xt::view(data, xt::all(), xt::all(), idx::dt);
+  return xt::view(data, xt::all(), xt::all(), idx.dt);
 }
 
 template <typename T>
 auto
 State<T>::getControls() const {
   return xt::view(data, xt::all(), xt::all(),
-                  xt::range(idx::controls_range[0], idx::controls_range[1]));
+                  xt::range(idx.controls_range[0], idx.controls_range[1]));
 }
 
 template <typename T>
 auto
 State<T>::getControls() {
   return xt::view(data, xt::all(), xt::all(),
-                  xt::range(idx::controls_range[0], idx::controls_range[1]));
+                  xt::range(idx.controls_range[0], idx.controls_range[1]));
 }
 
 template <typename T>
 auto
 State<T>::getVelocities() const {
   return xt::view(data, xt::all(), xt::all(),
-                  xt::range(idx::velocities_range[0], idx::velocities_range[1]));
+                  xt::range(idx.velocities_range[0], idx.velocities_range[1]));
 }
 
 template <typename T>
 auto
 State<T>::getVelocities() {
   return xt::view(data, xt::all(), xt::all(),
-                  xt::range(idx::velocities_range[0], idx::velocities_range[1]));
+                  xt::range(idx.velocities_range[0], idx.velocities_range[1]));
 }
 
 }  // namespace mppi::optimization
