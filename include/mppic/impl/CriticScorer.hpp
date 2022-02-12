@@ -11,71 +11,103 @@
 #include <xtensor/xview.hpp>
 
 #include "mppic/utils/LineIterator.hpp"
+#include "mppic/utils/common.hpp"
 #include "mppic/utils/geometry.hpp"
 
 namespace mppi::optimization {
 
 // TODO configure from parent node
 // TODO pluginize
+
 template <typename T>
 class CriticFunction {
 public:
   CriticFunction() = default;
   virtual ~CriticFunction() = default;
 
-  virtual void on_configure() = 0;
+  void
+  on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
+               const std::string &node_name,
+               nav2_costmap_2d::Costmap2DROS *const costmap_ros) {
+    parent_ = parent;
+    node_name_ = node_name;
+    costmap_ros_ = costmap_ros;
+    costmap_ = costmap_ros_->getCostmap();
+
+    getParams();
+  }
+
+  virtual void getParams() = 0;
+
   virtual void score(const geometry_msgs::msg::PoseStamped &robot_pose,
                      const xt::xtensor<T, 3> &trajectories,
                      const xt::xtensor<T, 2> &path,
                      xt::xtensor<T, 1> &costs) = 0;
+
+protected:
+  rclcpp_lifecycle::LifecycleNode *parent_;
+  std::string node_name_;
+  nav2_costmap_2d::Costmap2DROS *costmap_ros_;
+  nav2_costmap_2d::Costmap2D *costmap_;
 };
 
 template <typename T>
 class CriticScorer {
 public:
   CriticScorer() = default;
-  CriticScorer(std::vector<std::unique_ptr<CriticFunction<T>>> &&critics) {
-    critics_ = std::move(critics);
-  }
+  explicit CriticScorer(
+      std::vector<std::unique_ptr<CriticFunction<T>>> &&critics)
+      : critics_(std::move(critics)) {}
 
-  std::vector<std::unique_ptr<CriticFunction<T>>> critics_;
+  void
+  on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
+               const std::string &node_name,
+               nav2_costmap_2d::Costmap2DROS *const costmap_ros) {
+    for (size_t q = 0; q < critics_.size(); q++) {
+      critics_[q]->on_configure(parent, node_name, costmap_ros);
+    }
+  }
 
   /**
    * @brief Evaluate cost for each batch
    *
-   * @param batches_of_trajectories batch of trajectories: tensor of shape [
-   * batch_size_, time_steps_, 3 ] where 3 stands for x, y, yaw
-   * @return Cost for each batch, tensor of shape [ batch_size ]
+   * @param trajectories: tensor of shape [ ..., ..., 3 ]
+   * where 3 stands for x, y, yaw
+   * @return Cost for each trajectory
    */
   xt::xtensor<T, 1>
-  evalBatchesCosts(const xt::xtensor<T, 3> &trajectories,
-                   const nav_msgs::msg::Path &global_plan,
-                   const geometry_msgs::msg::PoseStamped &robot_pose) const {
-    size_t batch_size = trajectories.shape()[0];
-    xt::xtensor<T, 1> costs = xt::zeros<T>({batch_size});
+  evalTrajectoriesScores(
+      const xt::xtensor<T, 3> &trajectories,
+      const nav_msgs::msg::Path &global_plan,
+      const geometry_msgs::msg::PoseStamped &robot_pose) const {
+    size_t trajectories_count = trajectories.shape()[0];
+    xt::xtensor<T, 1> costs = xt::zeros<T>({trajectories_count});
 
     if (global_plan.poses.empty()) {
       return costs;
     }
 
     xt::xtensor<T, 2> path = std::move(geometry::toTensor<T>(global_plan));
+
     for (size_t q = 0; q < critics_.size(); q++) {
       critics_[q]->score(robot_pose, trajectories, path, costs);
     }
 
     return costs;
   }
+
+private:
+  std::vector<std::unique_ptr<CriticFunction<T>>> critics_;
 };
 
 template <typename T>
 class GoalCritic : public CriticFunction<T> {
 public:
   void
-  on_configure() final {}
-
-  GoalCritic(unsigned int power, double weight) {
-    power_ = power;
-    weight_ = weight;
+  getParams() final {
+    auto setParam = utils::getParamSetter(this->parent_, this->node_name_);
+    setParam(power_, "goal_cost_power", 1);
+    setParam(weight_, "goal_cost_weight", 20);
   }
 
   /**
@@ -104,19 +136,18 @@ public:
   }
 
 private:
-  unsigned int power_{1};
-  double weight_{1};
+  unsigned int power_{0};
+  double weight_{0};
 };
 
 template <typename T>
 class approxReferenceTrajectoryCritic : public CriticFunction<T> {
 public:
   void
-  on_configure() final {}
-
-  approxReferenceTrajectoryCritic(unsigned int power, double weight) {
-    power_ = power;
-    weight_ = weight;
+  getParams() final {
+    auto setParam = utils::getParamSetter(this->parent_, this->node_name_);
+    setParam(power_, "reference_cost_power", 1);
+    setParam(weight_, "reference_cost_weight", 20);
   }
 
   /**
@@ -144,19 +175,18 @@ public:
   }
 
 private:
-  unsigned int power_{1};
-  double weight_{1};
+  unsigned int power_{0};
+  double weight_{0};
 };
 
 template <typename T>
 class referenceTrajectoryCritic : public CriticFunction<T> {
 public:
   void
-  on_configure() final {}
-
-  referenceTrajectoryCritic(unsigned int power, double weight) {
-    power_ = power;
-    weight_ = weight;
+  getParams() final {
+    auto setParam = utils::getParamSetter(this->parent_, this->node_name_);
+    setParam(power_, "reference_cost_power", 1);
+    setParam(weight_, "reference_cost_weight", 20);
   }
 
   /**
@@ -183,29 +213,24 @@ public:
   }
 
 private:
-  unsigned int power_{1};
-  double weight_{1};
+  unsigned int power_{0};
+  double weight_{0};
 };
 
 template <typename T>
 class ObstaclesCritic : public CriticFunction<T> {
 public:
   void
-  on_configure() final {}
+  getParams() final {
+    auto setParam = utils::getParamSetter(this->parent_, this->node_name_);
+    setParam(power_, "obstacle_cost_power", 2);
+    setParam(weight_, "obstacle_cost_weight", 10);
+    setParam(inflation_cost_scaling_factor_, "inflation_cost_scaling_factor",
+             3.0);
+    setParam(inflation_radius_, "inflation_radius", 0.75);
 
-  ObstaclesCritic(double inflation_cost_scaling_factor,
-                  double inscribed_radius,
-                  double inflation_radius,
-                  nav2_costmap_2d::Costmap2DROS *const costmap_ros,
-                  unsigned int power,
-                  double weight) {
-    power_ = power;
-    weight_ = weight;
-    inflation_cost_scaling_factor_ = inflation_cost_scaling_factor;
-    inscribed_radius_ = inscribed_radius;
-    inflation_radius_ = inflation_radius;
-    costmap_ros_ = costmap_ros;
-    costmap_ = costmap_ros_->getCostmap();
+    inscribed_radius_ =
+        this->costmap_ros_->getLayeredCostmap()->getInscribedRadius();
   }
 
   /**
@@ -244,10 +269,9 @@ public:
                                       trajectories(i, j, 2)};
 
         auto footprint =
-            getOrientedFootprint(pose, costmap_ros_->getRobotFootprint());
+            getOrientedFootprint(pose, this->costmap_ros_->getRobotFootprint());
 
-        unsigned char cost =
-            static_cast<unsigned char>(scoreFootprint(footprint));
+        auto cost = static_cast<unsigned char>(scoreFootprint(footprint));
 
         if (inCollision(cost)) {
           costs[i] = collision_cost_value;
@@ -261,21 +285,22 @@ public:
         }
       }
 
-      if (inflated)
+      if (inflated) {
         costs[i] += static_cast<T>(
             pow((1.01 * inflation_radius_ - min_dist) * weight_, power_));
+      }
     }
   }
 
 private:
   bool
   inCollision(unsigned char cost) const {
-    if (costmap_ros_->getLayeredCostmap()->isTrackingUnknown()) {
+    if (this->costmap_ros_->getLayeredCostmap()->isTrackingUnknown()) {
       return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE &&
              cost != nav2_costmap_2d::NO_INFORMATION;
-    } else {
-      return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
     }
+
+    return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
   }
 
   std::vector<geometry_msgs::msg::Point>
@@ -305,8 +330,8 @@ private:
 
     for (LineIterator line(x0, y0, x1, y1); line.isValid(); line.advance()) {
       point_cost = static_cast<double>(
-          costmap_->getCost(static_cast<unsigned int>(line.getX()),
-                            static_cast<unsigned int>(line.getY())));
+          this->costmap_->getCost(static_cast<unsigned int>(line.getX()),
+                                  static_cast<unsigned int>(line.getY())));
 
       if (line_cost < point_cost) {
         line_cost = point_cost;
@@ -319,16 +344,23 @@ private:
   double
   scoreFootprint(
       const std::vector<geometry_msgs::msg::Point> &footprint) const {
-    unsigned int x0, x1, y0, y1;
+    unsigned int x0{0};
+    unsigned int x1{0};
+    unsigned int y0{0};
+    unsigned int y1{0};
+
     double line_cost = 0.0;
     double footprint_cost = 0.0;
 
     for (unsigned int i = 0; i < footprint.size() - 1; ++i) {
-      if (!costmap_->worldToMap(footprint[i].x, footprint[i].y, x0, y0))
+      if (!this->costmap_->worldToMap(footprint[i].x, footprint[i].y, x0, y0)) {
         throw std::runtime_error("Footprint Goes Off Grid.");
+      }
 
-      if (!costmap_->worldToMap(footprint[i + 1].x, footprint[i + 1].y, x1, y1))
+      if (!this->costmap_->worldToMap(footprint[i + 1].x, footprint[i + 1].y,
+                                      x1, y1)) {
         throw std::runtime_error("Footprint Goes Off Grid.");
+      }
 
       line_cost = lineCost(static_cast<int>(x0), static_cast<int>(x1),
                            static_cast<int>(y0), static_cast<int>(y1));
@@ -336,11 +368,15 @@ private:
       footprint_cost = std::max(line_cost, footprint_cost);
     }
 
-    if (!costmap_->worldToMap(footprint.back().x, footprint.back().y, x0, y0))
+    if (!this->costmap_->worldToMap(footprint.back().x, footprint.back().y, x0,
+                                    y0)) {
       throw std::runtime_error("Footprint Goes Off Grid.");
+    }
 
-    if (!costmap_->worldToMap(footprint.front().x, footprint.front().y, x1, y1))
+    if (!this->costmap_->worldToMap(footprint.front().x, footprint.front().y,
+                                    x1, y1)) {
       throw std::runtime_error("Footprint Goes Off Grid.");
+    }
 
     line_cost = lineCost(static_cast<int>(x0), static_cast<int>(x1),
                          static_cast<int>(y0), static_cast<int>(y1));
@@ -350,27 +386,23 @@ private:
     return footprint_cost;
   }
 
-  double inflation_cost_scaling_factor_{1};
-  double inscribed_radius_{1};
-  double inflation_radius_{1};
-  unsigned int power_{1};
-  double weight_{1};
-  nav2_costmap_2d::Costmap2DROS *costmap_ros_;
-  nav2_costmap_2d::Costmap2D *costmap_;
+  double inflation_cost_scaling_factor_{0};
+  double inscribed_radius_{0};
+  double inflation_radius_{0};
+  unsigned int power_{0};
+  double weight_{0};
 };
 
 template <typename T>
 class GoalAngleCritic : public CriticFunction<T> {
 public:
   void
-  on_configure() final {}
-
-  GoalAngleCritic(double threshold_to_consider_goal_angle,
-                  unsigned int power,
-                  double weight) {
-    threshold_to_consider_goal_angle_ = threshold_to_consider_goal_angle;
-    power_ = power;
-    weight_ = weight;
+  getParams() final {
+    auto setParam = utils::getParamSetter(this->parent_, this->node_name_);
+    setParam(power_, "goal_angle_cost_power", 1);
+    setParam(weight_, "goal_angle_cost_weight", 10);
+    setParam(threshold_to_consider_goal_angle_,
+             "threshold_to_consider_goal_angle", 0.30);
   }
 
   /**
@@ -402,9 +434,9 @@ public:
   }
 
 private:
-  double threshold_to_consider_goal_angle_;
-  unsigned int power_{1};
-  double weight_{1};
+  double threshold_to_consider_goal_angle_{0};
+  unsigned int power_{0};
+  double weight_{0};
 };
 
 }  // namespace mppi::optimization

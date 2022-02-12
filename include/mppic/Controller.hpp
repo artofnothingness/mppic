@@ -16,9 +16,11 @@ class Controller : public nav2_core::Controller {
 public:
   Controller() = default;
 
-  void configure(const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
-                 std::string node_name, const std::shared_ptr<tf2_ros::Buffer> &tf,
-                 const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros) final;
+  void configure(
+      const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> &parent,
+      std::string node_name,
+      const std::shared_ptr<tf2_ros::Buffer> &tf,
+      const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> &costmap_ros) final;
 
   void cleanup() final;
   void activate() final;
@@ -38,16 +40,18 @@ private:
   void setPublishers();
   void configureComponents();
 
-  void handleVisualizations(const geometry_msgs::msg::PoseStamped &robot_pose,
-                            const geometry_msgs::msg::Twist &robot_speed,
-                            std::unique_ptr<nav_msgs::msg::Path> &&transformed_plan);
+  void handleVisualizations(
+      const geometry_msgs::msg::PoseStamped &robot_pose,
+      const geometry_msgs::msg::Twist &robot_speed,
+      std::unique_ptr<nav_msgs::msg::Path> &&transformed_plan);
 
   rclcpp_lifecycle::LifecycleNode *parent_;
   nav2_costmap_2d::Costmap2DROS *costmap_ros_;
   tf2_ros::Buffer *tf_buffer_;
   std::string node_name_;
 
-  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>> transformed_path_pub_;
+  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>>
+      transformed_path_pub_;
 
   optimization::Optimizer<T> optimizer_;
   handlers::PathHandler path_handler_;
