@@ -11,6 +11,7 @@
 #include <xtensor/xarray.hpp>
 #include <xtensor/xview.hpp>
 
+#include "mppic/impl/ControlSequence.hpp"
 #include "mppic/impl/CriticScorer.hpp"
 #include "mppic/impl/State.hpp"
 
@@ -19,9 +20,8 @@ namespace mppi::optimization {
 template <typename T>
 class Optimizer {
 public:
-  static constexpr int state_dims = 2;
   using model_t =
-      xt::xtensor<T, state_dims>(const xt::xtensor<T, state_dims> &);
+      xt::xtensor<T, 2>(const xt::xtensor<T, 2> &);
 
   Optimizer() = default;
 
@@ -125,45 +125,24 @@ private:
   nav2_costmap_2d::Costmap2D *costmap_;
   std::function<model_t> model_;
 
-  double inflation_cost_scaling_factor_;
-  double inscribed_radius_;
-  double inflation_radius_;
-
-  double threshold_to_consider_goal_angle_;
-  bool approx_reference_cost_;
-
   unsigned int batch_size_;
   unsigned int time_steps_;
   unsigned int iteration_count_;
-
   double model_dt_;
   double v_limit_;
   double w_limit_;
   double temperature_;
   T v_std_;
   T w_std_;
-
-  unsigned int reference_cost_power_;
-  unsigned int obstacle_cost_power_;
-  unsigned int goal_cost_power_;
-  unsigned int goal_angle_cost_power_;
-  double reference_cost_weight_;
-  double obstacle_cost_weight_;
-  double goal_cost_weight_;
-  double goal_angle_cost_weight_;
-
   static constexpr unsigned int batches_last_dim_size_ = 5;
   static constexpr unsigned int control_dim_size_ = 2;
 
+  bool approx_reference_cost_;
+
   State<T> state_;
+  ControlSequence<T> control_sequence_;
   CriticScorer<T> critic_scorer_;
   xt::xtensor<T, 3> generated_trajectories_;
-
-  /**
-   * @control_sequence_ current best control sequence: tensor of shape [
-   * time_steps, 2 ] where 2 stands for linear control, angular control
-   */
-  xt::xtensor<T, 2> control_sequence_;
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
 };
