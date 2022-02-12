@@ -16,7 +16,6 @@
 
 namespace mppi::optimization {
 
-// TODO configure from parent node
 // TODO pluginize
 
 template <typename T>
@@ -69,7 +68,7 @@ public:
   }
 
   /**
-   * @brief Evaluate cost for each batch
+   * @brief Evaluate cost for each trajectory
    *
    * @param trajectories: tensor of shape [ ..., ..., 3 ]
    * where 3 stands for x, y, yaw
@@ -124,15 +123,16 @@ public:
 
     const auto goal_points = xt::view(path, -1, xt::range(0, 2));
 
-    auto last_timestep_points =
+    auto trajectories_end =
         xt::view(trajectories, xt::all(), -1, xt::range(0, 2));
 
-    auto dim = last_timestep_points.dimension() - 1;
+    auto dim = trajectories_end.dimension() - 1;
 
-    auto &&batches_last_to_goal_dists =
-        xt::norm_l2(std::move(last_timestep_points) - goal_points, {dim});
+    auto &&dists_trajectories_end_to_goal =
+        xt::norm_l2(std::move(trajectories_end) - goal_points, {dim});
 
-    costs += xt::pow(std::move(batches_last_to_goal_dists) * weight_, power_);
+    costs +=
+        xt::pow(std::move(dists_trajectories_end_to_goal) * weight_, power_);
   }
 
 private:
@@ -154,7 +154,6 @@ public:
    * @brief Evaluate cost related to trajectories path alignment using
    * approximate path to segment function
    *
-   * @param batches_of_trajectories
    * @param costs [out] add reference cost values to this tensor
    */
   virtual void
@@ -165,11 +164,11 @@ public:
     (void)robot_pose;
 
     auto path_points = xt::view(path, xt::all(), xt::range(0, 2));
-    auto batch_of_lines = xt::view(trajectories, xt::all(), xt::all(),
-                                   xt::newaxis(), xt::range(0, 2));
+    auto trajectories_points_extended = xt::view(
+        trajectories, xt::all(), xt::all(), xt::newaxis(), xt::range(0, 2));
 
-    auto dists = xt::norm_l2(path_points - batch_of_lines,
-                             {batch_of_lines.dimension() - 1});
+    auto dists = xt::norm_l2(path_points - trajectories_points_extended,
+                             {trajectories_points_extended.dimension() - 1});
     auto &&cost = xt::mean(xt::amin(std::move(dists), 1), 1);
     costs += xt::pow(std::move(cost) * weight_, power_);
   }
@@ -203,11 +202,12 @@ public:
 
     using xt::evaluation_strategy::immediate;
 
-    xt::xtensor<T, 3> path_to_batches_dists =
+    xt::xtensor<T, 3> dists_path_to_trajectories =
         geometry::distPointsToLineSegments2D(path, trajectories);
 
-    xt::xtensor<T, 1> cost = xt::mean(
-        xt::amin(std::move(path_to_batches_dists), 1, immediate), 1, immediate);
+    xt::xtensor<T, 1> cost =
+        xt::mean(xt::amin(std::move(dists_path_to_trajectories), 1, immediate),
+                 1, immediate);
 
     costs += xt::pow(std::move(cost) * weight_, power_);
   }
@@ -246,7 +246,7 @@ public:
     (void)robot_pose;
     (void)path;
 
-    size_t batch_size = trajectories.shape()[0];
+    size_t trajectories_count = trajectories.shape()[0];
     size_t time_steps = trajectories.shape()[1];
 
     constexpr T collision_cost_value = std::numeric_limits<T>::max() / 2;
@@ -260,7 +260,7 @@ public:
              inscribed_radius_;
     };
 
-    for (size_t i = 0; i < batch_size; ++i) {
+    for (size_t i = 0; i < trajectories_count; ++i) {
       double min_dist = std::numeric_limits<double>::max();
       bool inflated = false;
       for (size_t j = 0; j < time_steps; ++j) {

@@ -20,8 +20,7 @@ namespace mppi::optimization {
 template <typename T>
 class Optimizer {
 public:
-  using model_t =
-      xt::xtensor<T, 2>(const xt::xtensor<T, 2> &);
+  using model_t = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &);
 
   Optimizer() = default;
 
@@ -37,7 +36,7 @@ public:
   void
   on_deactivate() {}
 
-  geometry_msgs::msg::TwistStamped evalNextBestControl(
+  geometry_msgs::msg::TwistStamped evalControl(
       const geometry_msgs::msg::PoseStamped &robot_pose,
       const geometry_msgs::msg::Twist &robot_speed,
       const nav_msgs::msg::Path &plan);
@@ -57,9 +56,6 @@ private:
   void configureComponents();
 
   /**
-   * @brief Invoke generateNoisedControlBatches, assign result tensor to
-   * batches_ controls dimensions and integrate recieved controls in
-   * trajectories
    *
    * @return trajectories: tensor of shape [ batch_size_, time_steps_, 3 ]
    * where 3 stands for x, y, yaw
@@ -72,40 +68,40 @@ private:
    * @brief Generate random controls by gaussian noise with mean in
    * control_sequence_
    *
-   * @return Control batches tensor of shape [ batch_size_, time_steps_, 2]
+   * @return tensor of shape [ batch_size_, time_steps_, 2]
    * where 2 stands for v, w
    */
-  xt::xtensor<T, 3> generateNoisedControlBatches() const;
+  xt::xtensor<T, 3> generateNoisedControls() const;
 
   void applyControlConstraints();
 
   /**
-   * @brief Invoke setBatchesInitialVelocities and
-   * propagateBatchesVelocitiesFromInitials
-   *
+   * @brief  Update velocities in state_
+   * 
    * @param twist current robot speed
+   * @param state[out] fill state with velocities on each step
    */
-  void evalBatchesVelocities(
+  void updateStateVelocities(
       auto &state, const geometry_msgs::msg::Twist &robot_speed) const;
 
-  void setBatchesInitialVelocities(
+  void updateInitialStateVelocities(
       auto &state, const geometry_msgs::msg::Twist &robot_speed) const;
 
   /**
-   * @brief predict and propagate velocities in batches_ using model
+   * @brief predict velocities in state_ using model
    * for time horizont equal to time_steps_
    */
-  void propagateBatchesVelocitiesFromInitials(auto &state) const;
+  void propagateStateVelocitiesFromInitials(auto &state) const;
 
-  xt::xtensor<T, 3> integrateBatchesVelocities(
+  xt::xtensor<T, 3> integrateStateVelocities(
       const auto &state,
       const geometry_msgs::msg::PoseStamped &robot_pose) const;
 
   /**
-   * @brief Update control_sequence_ with batch controls weighted by costs
+   * @brief Update control_sequence_ with state controls weighted by costs
    * using softmax function
    *
-   * @param costs batches costs, tensor of shape [ batch_size ]
+   * @param trajectories costs, tensor of shape [ batch_size ]
    */
   void updateControlSequence(const xt::xtensor<T, 1> &costs);
 

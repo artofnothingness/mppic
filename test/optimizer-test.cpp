@@ -2,24 +2,21 @@
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #endif
 
-#include <catch2/catch.hpp>
+#include "mppic/impl/Optimizer.hpp"
 
+#include <catch2/catch.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <nav2_costmap_2d/cost_values.hpp>
+#include <nav_msgs/msg/path.hpp>
+#include <rclcpp/executors.hpp>
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
-#include <rclcpp/executors.hpp>
-
-#include <geometry_msgs/msg/pose_stamped.hpp>
-#include <geometry_msgs/msg/twist.hpp>
-#include <nav_msgs/msg/path.hpp>
-
+#include "mppic/Models.hpp"
 #include "nav2_costmap_2d/costmap_2d.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
-#include <nav2_costmap_2d/cost_values.hpp>
-
-#include "mppic/Models.hpp"
-#include "mppic/impl/Optimizer.hpp"
 #include "tests_utils.hpp"
 
 /**
@@ -27,7 +24,8 @@
  *
  * @param params_ container for optimizer's parameters.
  */
-void setUpOptimizerParams(std::vector<rclcpp::Parameter> &params_) {
+void
+setUpOptimizerParams(std::vector<rclcpp::Parameter> &params_) {
   params_.push_back(rclcpp::Parameter("TestNode.iteration_count", 5));
   params_.push_back(rclcpp::Parameter("TestNode.lookahead_dist", 5));
   params_.push_back(rclcpp::Parameter("TestNode.time_steps", 30));
@@ -53,7 +51,7 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
 
   unsigned int poses_count = GENERATE(10U, 30U, 100U);
 
-  SECTION("Running evalNextControl") {
+  SECTION("Running evalControl") {
     geometry_msgs::msg::Twist twist;
 
     std::string frame = "odom";
@@ -77,12 +75,12 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
 
     fillPath(poses_count);
 
-    CHECK_NOTHROW(optimizer.evalNextBestControl(ps, twist, path));
+    CHECK_NOTHROW(optimizer.evalControl(ps, twist, path));
 
 #ifdef DO_BENCHMARKS
     WARN("Path with " << poses_count);
-    BENCHMARK("evalNextControl Benchmark") {
-      return optimizer.evalNextBestControl(ps, twist, path);
+    BENCHMARK("evalControl Benchmark") {
+      return optimizer.evalControl(ps, twist, path);
     };
 #endif
   }
@@ -94,7 +92,6 @@ TEST_CASE("Optimizer evaluates Next Control", "") {
 }
 
 TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
-
   using T = float;
 
   std::string node_name = "TestNode";
@@ -146,10 +143,9 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
   float start_point_x = GENERATE(1.0f, 0.4f);
   float start_point_y = 0.4f;
 
-  SECTION("evalNextBestControl doesn't produce path crossing the obstacles") {
-
-    std::string frame = "odom";           // frame for header in path and points
-    auto time = node->get_clock()->now(); // time for header in path
+  SECTION("evalControl doesn't produce path crossing the obstacles") {
+    std::string frame = "odom";  // frame for header in path and points
+    auto time = node->get_clock()->now();  // time for header in path
 
     nav_msgs::msg::Path reference_path;
     geometry_msgs::msg::PoseStamped reference_goal_pose;
@@ -182,8 +178,8 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
     fillRealPath(poses_count);
 
     // update controal sequence in optimizer
-    CHECK_NOTHROW(optimizer.evalNextBestControl(init_robot_pose, init_robot_vel,
-                                                reference_path));
+    CHECK_NOTHROW(
+        optimizer.evalControl(init_robot_pose, init_robot_vel, reference_path));
     // get best trajectory from optimizer
     auto trajectory = optimizer.evalTrajectoryFromControlSequence(
         init_robot_pose, init_robot_vel);
