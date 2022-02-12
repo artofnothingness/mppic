@@ -136,8 +136,8 @@ private:
   bool approx_reference_cost_;
 
   State<T> state_;
-  ControlSequence<T> control_sequence_;
   CriticScorer<T> critic_scorer_;
+  xt::xtensor<T, 2> control_sequence_;
   xt::xtensor<T, 3> generated_trajectories_;
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
