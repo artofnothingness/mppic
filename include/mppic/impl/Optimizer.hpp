@@ -15,14 +15,14 @@ namespace mppi::optimization {
 
 template <typename T>
 geometry_msgs::msg::TwistStamped
-Optimizer<T>::evalControl(
-    const geometry_msgs::msg::PoseStamped &robot_pose,
-    const geometry_msgs::msg::Twist &robot_speed,
-    const nav_msgs::msg::Path &plan) {
+Optimizer<T>::evalControl(const geometry_msgs::msg::PoseStamped &robot_pose,
+                          const geometry_msgs::msg::Twist &robot_speed,
+                          const nav_msgs::msg::Path &plan) {
   for (size_t i = 0; i < iteration_count_; ++i) {
-    generated_trajectories_ = generateNoisedTrajectories(robot_pose, robot_speed);
-    auto costs =
-        critic_scorer_.evalTrajectoriesScores(generated_trajectories_, plan, robot_pose);
+    generated_trajectories_ =
+        generateNoisedTrajectories(robot_pose, robot_speed);
+    auto costs = critic_scorer_.evalTrajectoriesScores(generated_trajectories_,
+                                                       plan, robot_pose);
     updateControlSequence(costs);
   }
 
@@ -84,7 +84,6 @@ Optimizer<T>::configureComponents() {
         std::make_unique<optimization::referenceTrajectoryCritic<T>>());
   }
 
-
   critic_scorer_ = optimization::CriticScorer<T>(std::move(critics));
   critic_scorer_.on_configure(parent_, node_name_, costmap_ros_);
 }
@@ -95,7 +94,7 @@ Optimizer<T>::reset() {
   state_.data =
       xt::zeros<T>({batch_size_, time_steps_, batches_last_dim_size_});
   state_.getTimeIntervals() = model_dt_;
-  control_sequence_.reset({time_steps_, control_dim_size_});
+  control_sequence_ = xt::zeros<T>({time_steps_, control_dim_size_});
 }
 
 template <typename T>
@@ -116,8 +115,7 @@ Optimizer<T>::generateNoisedControls() const {
       xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, v_std_);
   auto w_noises =
       xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, w_std_);
-  return control_sequence_.data +
-         xt::concatenate(xt::xtuple(v_noises, w_noises), 2);
+  return control_sequence_ + xt::concatenate(xt::xtuple(v_noises, w_noises), 2);
 }
 
 template <typename T>
@@ -167,7 +165,7 @@ Optimizer<T>::evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::Twist &robot_speed) const {
   State<T> state;
   state.data = xt::zeros<T>({1U, time_steps_, batches_last_dim_size_});
-  state.getControls() = control_sequence_.data;
+  state.getControls() = control_sequence_;
   state.getTimeIntervals() = model_dt_;
 
   updateStateVelocities(state, robot_speed);
@@ -215,14 +213,13 @@ Optimizer<T>::updateControlSequence(const xt::xtensor<T, 1> &costs) {
   auto softmaxes_expanded =
       xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
 
-  control_sequence_.data =
-      xt::sum(state_.getControls() * softmaxes_expanded, 0);
+  control_sequence_ = xt::sum(state_.getControls() * softmaxes_expanded, 0);
 }
 
 template <typename T>
 auto
 Optimizer<T>::getControlFromSequence(unsigned int offset) {
-  return xt::view(control_sequence_.data, offset);
+  return xt::view(control_sequence_, offset);
 }
 
 }  // namespace mppi::optimization
