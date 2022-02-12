@@ -51,25 +51,40 @@ Optimizer<T>::on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
 template <typename T>
 void
 Optimizer<T>::getParams() {
-  auto setParam = utils::getParamSetter(parent_, node_name_);
+  auto getParam = utils::getParamGetter(parent_, node_name_);
 
-  setParam(model_dt_, "model_dt", 0.1);
-  setParam(time_steps_, "time_steps", 15);
-  setParam(batch_size_, "batch_size", 200);
-  setParam(v_std_, "v_std", 0.1);
-  setParam(w_std_, "w_std", 0.3);
-  setParam(v_limit_, "v_limit", 0.5);
-  setParam(w_limit_, "w_limit", 1.3);
-  setParam(iteration_count_, "iteration_count", 2);
-  setParam(temperature_, "temperature", 0.25);
-  setParam(approx_reference_cost_, "approx_reference_cost", false);
+  getParam(model_dt_, "model_dt", 0.1);
+  getParam(time_steps_, "time_steps", 15);
+  getParam(batch_size_, "batch_size", 200);
+  getParam(v_std_, "v_std", 0.1);
+  getParam(w_std_, "w_std", 0.3);
+  getParam(v_limit_, "v_limit", 0.5);
+  getParam(w_limit_, "w_limit", 1.3);
+  getParam(iteration_count_, "iteration_count", 2);
+  getParam(temperature_, "temperature", 0.25);
+  getParam(approx_reference_cost_, "approx_reference_cost", false);
+
+  std::string name;
+  getParam(name, "motion_model", std::string("diff"));
+
+  auto &nmap = motion_model_name_map_;
+  auto &cmap = motion_model_control_dim_map_;
+
+  if (auto it = nmap.find(name); it != nmap.end()) {
+    state_.setMotionModel(it->second);
+  } else {
+    RCLCPP_INFO(logger_, "Motion model is unknown, use defaulted/previous");
+  }
+
+  if (auto it = cmap.find(state_.getMotionModel()); it != cmap.end()) {
+    control_vec_dim_ = it->second;
+  }
 }
 
+// TODO pluginize
 template <typename T>
 void
 Optimizer<T>::configureComponents() {
-  // TODO pluginize
-
   std::vector<std::unique_ptr<optimization::CriticFunction<T>>> critics;
 
   critics.push_back(std::make_unique<optimization::GoalCritic<T>>());
@@ -88,15 +103,16 @@ Optimizer<T>::configureComponents() {
   critic_scorer_.on_configure(parent_, node_name_, costmap_ros_);
 }
 
+// Imple dependce on Y
 template <typename T>
 void
 Optimizer<T>::reset() {
-  state_.data =
-      xt::zeros<T>({batch_size_, time_steps_, batches_last_dim_size_});
+  state_.reset(batch_size_, time_steps_);
   state_.getTimeIntervals() = model_dt_;
-  control_sequence_ = xt::zeros<T>({time_steps_, control_dim_size_});
+  control_sequence_ = xt::zeros<T>({time_steps_, control_vec_dim_});
 }
 
+// Imple dependce on Y
 template <typename T>
 xt::xtensor<T, 3>
 Optimizer<T>::generateNoisedTrajectories(
@@ -118,16 +134,18 @@ Optimizer<T>::generateNoisedControls() const {
   return control_sequence_ + xt::concatenate(xt::xtuple(v_noises, w_noises), 2);
 }
 
+// Imple dependce on Y
 template <typename T>
 void
 Optimizer<T>::applyControlConstraints() {
-  auto v = state_.getControlLinearVelocities();
-  auto w = state_.getControlAngularVelocities();
+  auto v = state_.getControlVelocitiesVX();
+  auto w = state_.getControlVelocitiesWZ();
 
   v = xt::clip(v, -v_limit_, v_limit_);
   w = xt::clip(w, -w_limit_, w_limit_);
 }
 
+// Imple dependce on Y
 template <typename T>
 void
 Optimizer<T>::updateStateVelocities(
@@ -140,10 +158,11 @@ template <typename T>
 void
 Optimizer<T>::updateInitialStateVelocities(
     auto &state, const geometry_msgs::msg::Twist &robot_speed) const {
-  xt::view(state.getLinearVelocities(), xt::all(), 0) = robot_speed.linear.x;
-  xt::view(state.getAngularVelocities(), xt::all(), 0) = robot_speed.angular.z;
+  xt::view(state.getVelocitiesVX(), xt::all(), 0) = robot_speed.linear.x;
+  xt::view(state.getVelicitiesWZ(), xt::all(), 0) = robot_speed.angular.z;
 }
 
+// Imple dependce on Y
 template <typename T>
 void
 Optimizer<T>::propagateStateVelocitiesFromInitials(auto &state) const {
@@ -158,13 +177,15 @@ Optimizer<T>::propagateStateVelocitiesFromInitials(auto &state) const {
   }
 }
 
+// Imple dependce on Y
 template <typename T>
 xt::xtensor<T, 2>
 Optimizer<T>::evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::PoseStamped &robot_pose,
     const geometry_msgs::msg::Twist &robot_speed) const {
   State<T> state;
-  state.data = xt::zeros<T>({1U, time_steps_, batches_last_dim_size_});
+  state.setMotionModel(state_.getMotionModel());
+  state.reset(1U, time_steps_);
   state.getControls() = control_sequence_;
   state.getTimeIntervals() = model_dt_;
 
@@ -172,14 +193,15 @@ Optimizer<T>::evalTrajectoryFromControlSequence(
   return xt::squeeze(integrateStateVelocities(state, robot_pose));
 }
 
+// Imple dependce on Y
 template <typename T>
 xt::xtensor<T, 3>
 Optimizer<T>::integrateStateVelocities(
     const auto &state, const geometry_msgs::msg::PoseStamped &pose) const {
   using namespace xt::placeholders;
 
-  auto v = state.getLinearVelocities();
-  auto w = state.getAngularVelocities();
+  auto v = state.getVelocitiesVX();
+  auto w = state.getVelicitiesWZ();
   auto yaw = xt::cumsum(w * model_dt_, 1);
 
   auto yaw_offseted = yaw;

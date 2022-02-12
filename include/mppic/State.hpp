@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+#include <mppic/MotionModel.hpp>
 #include <xtensor/xarray.hpp>
 #include <xtensor/xstrided_view.hpp>
 #include <xtensor/xview.hpp>
@@ -7,33 +9,83 @@
 namespace mppi::optimization {
 
 template <typename T>
-struct State {
-  struct idx {
-    constexpr static uint8_t v = 0;
-    constexpr static uint8_t w = 1;
-    constexpr static uint8_t cv = 2;
-    constexpr static uint8_t cw = 3;
-    constexpr static uint8_t dt = 4;
-    constexpr static std::array<uint8_t, 2> velocities_range{v, w + 1};
-    constexpr static std::array<uint8_t, 2> controls_range{cv, cw + 1};
-  };
+class State {
+public:
+  xt::xtensor<T, 3> data;
+
+  void reset(unsigned int batch_size, unsigned int time_steps) {
+    data = xt::zeros<T>({batch_size, time_steps, vec_dim_});
+  }
+  unsigned int
+  getVectorDimension() const {
+    return vec_dim_;
+  }
+
+  void
+  setMotionModel(MotionModel motion_model) {
+    motion_model_t_ = motion_model;
+
+    if (isHolonomic(motion_model_t_)) {
+      idx.vx = 0;
+      idx.vy = 1;
+      idx.wz = 2;
+      idx.cvx = 3;
+      idx.cvy = 4;
+      idx.cwz = 5;
+      idx.dt = 6;
+      vec_dim_ = 7;
+    } else {
+      idx.vx = 0;
+      idx.wz = 1;
+      idx.cvx = 2;
+      idx.cwz = 3;
+      idx.dt = 4;
+      idx.vy = 0;
+      idx.cvy = 0;
+      vec_dim_ = 5;
+    }
+
+    idx.velocities_range[0] = idx.vx;
+    idx.velocities_range[1] = idx.cvx;
+    idx.controls_range[0] = idx.cvx;
+    idx.controls_range[1] = idx.dt;
+  }
+
+  MotionModel
+  getMotionModel() const {
+    return motion_model_t_;
+  }
+
+  struct Idx {
+    uint8_t vx{0};
+    uint8_t vy{0};
+    uint8_t wz{0};
+    uint8_t cvx{0};
+    uint8_t cvy{0};
+    uint8_t cwz{0};
+    uint8_t dt{0};
+    std::array<uint8_t, 2> velocities_range{0, 0};
+    std::array<uint8_t, 2> controls_range{0, 0};
+  } idx;
 
   auto getControls() const;
   auto getControls();
   auto getVelocities();
   auto getVelocities() const;
-  auto getControlLinearVelocities() const;
-  auto getControlLinearVelocities();
-  auto getControlAngularVelocities() const;
-  auto getControlAngularVelocities();
-  auto getLinearVelocities() const;
-  auto getLinearVelocities();
-  auto getAngularVelocities() const;
-  auto getAngularVelocities();
+  auto getControlVelocitiesVX() const;
+  auto getControlVelocitiesVX();
+  auto getControlVelocitiesWZ() const;
+  auto getControlVelocitiesWZ();
+  auto getVelocitiesVX() const;
+  auto getVelocitiesVX();
+  auto getVelicitiesWZ() const;
+  auto getVelicitiesWZ();
   auto getTimeIntervals();
   auto getTimeIntervals() const;
 
-  xt::xtensor<T, 3> data;
+private:
+  MotionModel motion_model_t_{MotionModel::DiffDrive};
+  unsigned int vec_dim_{0};
 };
 
 }  // namespace mppi::optimization
