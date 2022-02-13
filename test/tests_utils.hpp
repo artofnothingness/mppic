@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <iostream>
-
 #include <rclcpp/executors.hpp>
 
 #include "nav2_costmap_2d/costmap_2d.hpp"
@@ -13,7 +12,8 @@
  * Print costmap to stdout.
  * @param costmap map to be printed.
  */
-void printMap(const nav2_costmap_2d::Costmap2D &costmap) {
+void
+printMap(const nav2_costmap_2d::Costmap2D &costmap) {
   for (unsigned int i = 0; i < costmap.getSizeInCellsY(); i++) {
     for (unsigned int j = 0; j < costmap.getSizeInCellsX(); j++) {
       printf("%4d", static_cast<int>(costmap.getCost(j, i)));
@@ -28,9 +28,10 @@ void printMap(const nav2_costmap_2d::Costmap2D &costmap) {
  * @param trajectory trajectory container (xt::tensor) to be printed.
  * @param goal_point goal point to be printed.
  */
-void printMapWithGoalAndTrajectory(
-    nav2_costmap_2d::Costmap2D &costmap, const auto &trajectory,
-    const geometry_msgs::msg::PoseStamped &goal_point) {
+void
+printMapWithTrajectory(
+    nav2_costmap_2d::Costmap2D &costmap,
+    const auto &trajectory) {
   std::cout << "map with trajectory: \ntrajectory point = 1 \ngoal point = 100 "
                "\nobsctacle = 255\n"
             << std::endl;
@@ -46,7 +47,6 @@ void printMapWithGoalAndTrajectory(
   unsigned int point_mx = 0;
   unsigned int point_my = 0;
   unsigned char trajectory_point = 1;
-  unsigned char goal_point_cost = 100;
 
   // add trajectory on map
   for (size_t i = 0; i < trajectory.shape()[0]; ++i) {
@@ -54,11 +54,6 @@ void printMapWithGoalAndTrajectory(
                          point_my);
     costmap2d.setCost(point_mx, point_my, trajectory_point);
   }
-  // add goal point on map
-  costmap2d.worldToMap(goal_point.pose.position.x, goal_point.pose.position.y,
-                       point_mx, point_my);
-
-  costmap2d.setCost(point_mx, point_my, goal_point_cost);
 
   printMap(costmap2d);
 }
@@ -73,10 +68,12 @@ void printMapWithGoalAndTrajectory(
  * @param size obstacle side size.
  * @param cost obstacle value on costmap.
  */
-void addObstacle(nav2_costmap_2d::Costmap2D &costmap,
-                 unsigned int upper_left_corner_x,
-                 unsigned int upper_left_corner_y, unsigned int size,
-                 unsigned char cost) {
+void
+addObstacle(nav2_costmap_2d::Costmap2D &costmap,
+            unsigned int upper_left_corner_x,
+            unsigned int upper_left_corner_y,
+            unsigned int size,
+            unsigned char cost) {
   for (unsigned int i = upper_left_corner_x; i < upper_left_corner_x + size;
        i++) {
     for (unsigned int j = upper_left_corner_y; j < upper_left_corner_y + size;
@@ -93,8 +90,8 @@ void addObstacle(nav2_costmap_2d::Costmap2D &costmap,
  * @return true - if the trajectory crosses an obstacle on the map, false - if
  * not
  */
-bool inCollision(const auto &trajectory,
-                 const nav2_costmap_2d::Costmap2D &costmap) {
+bool
+inCollision(const auto &trajectory, const nav2_costmap_2d::Costmap2D &costmap) {
   unsigned int point_mx = 0;
   unsigned int point_my = 0;
 
