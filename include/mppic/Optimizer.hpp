@@ -27,7 +27,7 @@ public:
   void on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
                     const std::string &node_name,
                     nav2_costmap_2d::Costmap2DROS *const costmap_ros,
-                    model_t &&model);
+                    model_t model);
 
   void
   on_cleanup() {}
