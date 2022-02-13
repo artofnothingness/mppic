@@ -57,13 +57,16 @@ Optimizer<T>::getParams() {
   getParam(model_dt_, "model_dt", 0.1);
   getParam(time_steps_, "time_steps", 15);
   getParam(batch_size_, "batch_size", 200);
-  getParam(v_std_, "v_std", 0.1);
-  getParam(w_std_, "w_std", 0.3);
-  getParam(v_limit_, "v_limit", 0.5);
-  getParam(w_limit_, "w_limit", 1.3);
   getParam(iteration_count_, "iteration_count", 2);
   getParam(temperature_, "temperature", 0.25);
   getParam(approx_reference_cost_, "approx_reference_cost", false);
+
+  getParam(vx_max_, "vx_max", 0.5);
+  getParam(vy_max_, "vy_max", 1.3);
+  getParam(wz_max_, "wz_max", 1.3);
+  getParam(vx_std_, "vx_std", 0.1);
+  getParam(vy_std_, "vy_std", 0.1);
+  getParam(wz_std_, "wz_std", 0.3);
 
   std::string name;
   getParam(name, "motion_model", std::string("diff"));
@@ -74,7 +77,7 @@ Optimizer<T>::getParams() {
   if (auto it = nmap.find(name); it != nmap.end()) {
     setMotionModel(it->second);
   } else {
-    RCLCPP_INFO(logger_, "Motion model is unknown, use defaulted/previous");
+    RCLCPP_INFO(logger_, "Motion model is unknown, use default/previous");
   }
 
   if (auto it = cmap.find(getMotionModel()); it != cmap.end()) {
@@ -101,7 +104,9 @@ Optimizer<T>::configureComponents() {
   }
 
   critic_scorer_ = optimization::CriticScorer<T>(std::move(critics));
-  critic_scorer_.on_configure(parent_, node_name_, costmap_ros_);
+
+  std::string component_name = "CriticScorer";
+  critic_scorer_.on_configure(parent_, node_name_, component_name, costmap_ros_);
 }
 
 // Imple dependce on Y
@@ -129,13 +134,13 @@ template <typename T>
 xt::xtensor<T, 3>
 Optimizer<T>::generateNoisedControls() const {
   auto vx_noises =
-      xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, v_std_);
+      xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, vx_std_);
   auto wz_noises =
-      xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, w_std_);
+      xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, wz_std_);
 
   if (isHolonomic(getMotionModel())) {
     auto vy_noises =
-        xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, v_std_);
+        xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, vy_std_);
     return control_sequence_ +
            xt::concatenate(xt::xtuple(vx_noises, wz_noises, vy_noises), 2);
   }
@@ -153,11 +158,11 @@ Optimizer<T>::applyControlConstraints() {
 
   if (isHolonomic(getMotionModel())) {
     auto vy = state_.getControlVelocitiesVY();
-    vy = xt::clip(vy, -v_limit_, v_limit_);
+    vy = xt::clip(vy, -vy_max_, vy_max_);
   }
 
-  vx = xt::clip(vx, -v_limit_, v_limit_);
-  wz = xt::clip(wz, -w_limit_, w_limit_);
+  vx = xt::clip(vx, -vx_max_, vx_max_);
+  wz = xt::clip(wz, -wz_max_, wz_max_);
 }
 
 template <typename T>
@@ -188,8 +193,7 @@ Optimizer<T>::propagateStateVelocitiesFromInitials(auto &state) const {
 
   for (size_t t = 0; t < time_steps_ - 1; t++) {
     auto curr_state = xt::view(state.data, xt::all(), t);
-    auto next_vels =
-        xt::view(state.getVelocities(), xt::all(), t + 1);
+    auto next_vels = xt::view(state.getVelocities(), xt::all(), t + 1);
 
     next_vels = model_(curr_state);
   }
