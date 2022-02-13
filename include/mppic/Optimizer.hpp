@@ -127,11 +127,13 @@ private:
   unsigned int time_steps_{0};
   unsigned int iteration_count_{0};
   double model_dt_{0};
-  double v_limit_{0};
-  double w_limit_{0};
   double temperature_{0};
-  T v_std_{0};
-  T w_std_{0};
+  double vx_max_{0};
+  double vy_max_{0};
+  double wz_max_{0};
+  T vx_std_{0};
+  T vy_std_{0};
+  T wz_std_{0};
   unsigned int control_vec_dim_{0};
 
   bool approx_reference_cost_;
