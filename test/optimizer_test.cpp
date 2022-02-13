@@ -38,16 +38,20 @@ namespace config {
  * @param params_ container for optimizer's parameters.
  */
 void
-setUpOptimizerParams(std::vector<rclcpp::Parameter> &params_) {
-  params_.push_back(rclcpp::Parameter(NODE_NAME + ".iteration_count", 5));
-  params_.push_back(rclcpp::Parameter(NODE_NAME + ".lookahead_dist", 5));
-  params_.push_back(rclcpp::Parameter(NODE_NAME + ".time_steps", 30));
+setUpOptimizerParams(auto iter,
+                     auto time_steps,
+                     auto lookahead,
+                     std::vector<rclcpp::Parameter> &params_) {
+  params_.push_back(rclcpp::Parameter(NODE_NAME + ".iteration_count", iter));
+  params_.push_back(
+      rclcpp::Parameter(NODE_NAME + ".lookahead_dist", time_steps));
+  params_.push_back(rclcpp::Parameter(NODE_NAME + ".time_steps", lookahead));
 }
 }  // namespace config
 
 namespace factory {
 auto
-getDummyCostmap() {
+getDummyCostmapRos() {
   auto costmap_ros =
       std::make_shared<nav2_costmap_2d::Costmap2DROS>("cost_map_node");
 
@@ -57,14 +61,28 @@ getDummyCostmap() {
 }
 
 auto
+getDummyCostmap(auto size_x,
+                auto size_y,
+                auto origin_x,
+                auto origin_y,
+                auto resolution,
+                auto default_value) {
+  auto costmap = std::make_shared<nav2_costmap_2d::Costmap2D>(
+      size_x, size_y, origin_x, origin_y, resolution, default_value);
+
+  return costmap;
+}
+
+auto
 getDummyModel() {
   auto model = mppi::models::NaiveModel<T>;
   return model;
 }
 
 auto
-getDummyNode() {
-  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>(NODE_NAME);
+getDummyNode(rclcpp::NodeOptions options) {
+  auto node =
+      std::make_shared<rclcpp_lifecycle::LifecycleNode>(NODE_NAME, options);
   return node;
 }
 
@@ -92,21 +110,55 @@ getDummyPoint(auto node) {
 }
 
 auto
-getDummyPath(auto points_count, auto node) {
-  nav_msgs::msg::Path path;
+getDummyPoint(auto node, auto x, auto y) {
   auto point = getDummyPoint(node);
+  point.pose.position.x = x;
+  point.pose.position.y = y;
+
+  return point;
+}
+
+auto
+getDummyPath(auto node) {
+  nav_msgs::msg::Path path;
+  detail::setHeader(path, node, "dummy");
+  return path;
+}
+
+auto
+getDummyPath(auto points_count, auto node) {
+  auto path = getDummyPath(node);
 
   for (size_t i = 0; i < points_count; i++) {
-    path.poses.push_back(point);
+    path.poses.push_back(getDummyPoint(node));
   }
 
   return path;
 }
+
+auto
+getIncrementalDummyPath(auto start_x,
+                        auto start_y,
+                        auto step_x,
+                        auto step_y,
+                        auto points_count,
+                        auto node) {
+  auto path = getDummyPath(node);
+
+  for (size_t i = 0; i < points_count; i++) {
+    auto x = start_x + static_cast<float>(i) * step_x;
+    auto y = start_y + static_cast<float>(i) * step_y;
+    path.poses.push_back(getDummyPoint(node, x, y));
+  }
+
+  return path;
+}
+
 }  // namespace factory
 
 TEST_CASE("Next Control", "[nothrow]") {
-  auto node = factory::getDummyNode();
-  auto costmap_ros = factory::getDummyCostmap();
+  auto node = factory::getDummyNode(rclcpp::NodeOptions{});
+  auto costmap_ros = factory::getDummyCostmapRos();
   auto model = factory::getDummyModel();
   auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
 
@@ -128,105 +180,40 @@ TEST_CASE("Next Control", "[nothrow]") {
 }
 
 TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]") {
-  std::string node_name = "TestNode";
-  auto state = rclcpp_lifecycle::State{};
+  // Node Params
   std::vector<rclcpp::Parameter> params_;
   rclcpp::NodeOptions options;
-  config::setUpOptimizerParams(params_);
+  config::setUpOptimizerParams(5, 30, 5, params_);
   options.parameter_overrides(params_);
 
-  // args for costmap2d
-  unsigned int cells_size_x = 20;
-  unsigned int cells_size_y = 20;
-  double resolution = 0.1;
-  double origin_x = 0.0;
-  double origin_y = 0.0;
-  unsigned char default_value = 0;
-
-  // args for obstacle on costmap2d
-  const unsigned int upper_left_corner_x = 5;
-  const unsigned int upper_left_corner_y = 7;
-  const unsigned int obstacle_side_size_cells = 9;
-  unsigned char obstacle_cost = 255;
-
-  // create parameters for reference path generation
-  size_t poses_count = 40;
-  float x_step = 0.015f;
-  float y_step = 0.035f;
-
-  auto node =
-      std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name, options);
-  auto costmap_ros =
-      std::make_shared<nav2_costmap_2d::Costmap2DROS>("cost_map_node");
-
-  auto &model = mppi::models::NaiveModel<T>;
-  auto optimizer = mppi::optimization::Optimizer<T>();
-
-  costmap_ros->on_configure(state);
-  *costmap_ros->getCostmap() = *std::make_shared<nav2_costmap_2d::Costmap2D>(
-      cells_size_x, cells_size_y, resolution, origin_x, origin_y,
-      default_value);
-
-  // creating a square obstacle
-  addObstacle(*costmap_ros->getCostmap(), upper_left_corner_x,
-              upper_left_corner_y, obstacle_side_size_cells, obstacle_cost);
-
-  optimizer.on_configure(node.get(), node_name, costmap_ros.get(), model);
-  optimizer.on_activate();
-
-  float start_point_x = GENERATE(1.0f, 0.4f);
-  float start_point_y = 0.4f;
+  auto node = factory::getDummyNode(options);
+  auto model = factory::getDummyModel();
+  auto costmap_ros = factory::getDummyCostmapRos();
+  auto costmap = costmap_ros->getCostmap();
+  *(costmap) = *factory::getDummyCostmap(40, 40, 0, 0, 0.1, 0);
+  auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
+  addObstacle(*costmap, 5, 7, 9, 255);
 
   SECTION("evalControl doesn't produce path crossing the obstacles") {
-    std::string frame = "odom";  // frame for header in path and points
-    auto time = node->get_clock()->now();  // time for header in path
+    size_t points_count = 40;
+    float start_x = GENERATE(1.0f, 0.4f);
+    float start_y = 0.4f;
+    float step_x = 0.015f;
+    float step_y = 0.035f;
+    auto velocity = factory::getDummyTwist();
+    auto pose = factory::getDummyPoint(node, start_x, start_y);
+    auto path = factory::getIncrementalDummyPath(start_x, start_y, step_x, step_y,
+                                        points_count, node);
 
-    nav_msgs::msg::Path reference_path;
-    geometry_msgs::msg::PoseStamped reference_goal_pose;
-    geometry_msgs::msg::PoseStamped init_robot_pose;
-    init_robot_pose.pose.position.x = start_point_x;
-    init_robot_pose.pose.position.y = start_point_y;
-    geometry_msgs::msg::Twist init_robot_vel;
-
-    // lambda expression for setting header
-    auto setHeader = [&](auto &&msg) {
-      msg.header.frame_id = frame;
-      msg.header.stamp = time;
-    };
-
-    // lambda expression for refernce path generation
-    auto fillRealPath = [&](size_t count) {
-      for (size_t i = 0; i < count; i++) {
-        reference_goal_pose.pose.position.x =
-            static_cast<float>(i) * x_step + start_point_x;
-        reference_goal_pose.pose.position.y =
-            static_cast<float>(i) * y_step + start_point_y;
-        reference_path.poses.push_back(reference_goal_pose);
-      }
-    };
-
-    setHeader(reference_goal_pose);
-    setHeader(init_robot_pose);
-    setHeader(reference_path);
-
-    fillRealPath(poses_count);
-
-    // update controal sequence in optimizer
     CHECK_NOTHROW(
-        optimizer.evalControl(init_robot_pose, init_robot_vel, reference_path));
-    // get best trajectory from optimizer
+        optimizer.evalControl(pose, velocity, path));
+
     auto trajectory = optimizer.evalTrajectoryFromControlSequence(
-        init_robot_pose, init_robot_vel);
+        pose, velocity);
 
 #ifdef TEST_DEBUG_INFO
-    printMapWithGoalAndTrajectory(*costmap_ros->getCostmap(), trajectory,
-                                  reference_goal_pose);
+    printMapWithTrajectory(*costmap, trajectory);
 #endif
-    CHECK(!inCollision(trajectory, *costmap_ros->getCostmap()));
+    CHECK(!inCollision(trajectory, *costmap));
   }
-
-  optimizer.on_deactivate();
-  optimizer.on_cleanup();
-  costmap_ros->on_cleanup(state);
-  costmap_ros.reset();
 }
