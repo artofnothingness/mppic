@@ -25,10 +25,11 @@ public:
 
   void
   on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
-               const std::string &node_name,
+               const std::string &parent_name,
+               const std::string &component_name,
                nav2_costmap_2d::Costmap2DROS *const costmap_ros) {
     parent_ = parent;
-    node_name_ = node_name;
+    node_name_ = parent_name + "." + component_name;
     costmap_ros_ = costmap_ros;
     costmap_ = costmap_ros_->getCostmap();
 
@@ -59,10 +60,11 @@ public:
 
   void
   on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
-               const std::string &node_name,
+               const std::string &parent_name,
+               const std::string &component_name,
                nav2_costmap_2d::Costmap2DROS *const costmap_ros) {
     for (size_t q = 0; q < critics_.size(); q++) {
-      critics_[q]->on_configure(parent, node_name, costmap_ros);
+      critics_[q]->on_configure(parent, parent_name, component_name, costmap_ros);
     }
   }
 
