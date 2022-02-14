@@ -8,30 +8,24 @@
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 namespace mppi::handlers {
-
-class PathHandler {
+class PathHandler
+{
 public:
   PathHandler() = default;
   ~PathHandler() = default;
 
   void on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
-                    const std::string &node_name,
-                    nav2_costmap_2d::Costmap2DROS *const costmap,
-                    tf2_ros::Buffer *const buffer);
+    const std::string &node_name,
+    nav2_costmap_2d::Costmap2DROS *const costmap,
+    tf2_ros::Buffer *const buffer);
 
   void on_cleanup();
   void on_activate();
   void on_deactivate();
 
-  void
-  setPath(const nav_msgs::msg::Path &plan) {
-    global_plan_ = plan;
-  }
+  void setPath(const nav_msgs::msg::Path &plan) { global_plan_ = plan; }
 
-  nav_msgs::msg::Path &
-  getPath() {
-    return global_plan_;
-  }
+  nav_msgs::msg::Path &getPath() { return global_plan_; }
 
   /**
    * @brief transform global plan to local applying constraints,
@@ -39,33 +33,29 @@ public:
    *
    * @return global plan in local frame
    */
-  nav_msgs::msg::Path transformPath(
-      const geometry_msgs::msg::PoseStamped &robot_pose);
+  nav_msgs::msg::Path transformPath(const geometry_msgs::msg::PoseStamped &robot_pose);
 
 private:
   void getParams();
 
   bool transformPose(const std::string &frame,
-                     const geometry_msgs::msg::PoseStamped &in_pose,
-                     geometry_msgs::msg::PoseStamped &out_pose) const;
+    const geometry_msgs::msg::PoseStamped &in_pose,
+    geometry_msgs::msg::PoseStamped &out_pose) const;
 
   double getMaxCostmapDist();
 
   geometry_msgs::msg::PoseStamped transformToGlobalFrame(
-      const geometry_msgs::msg::PoseStamped &pose);
+    const geometry_msgs::msg::PoseStamped &pose);
 
-  template <typename Iter, typename Stamp>
-  nav_msgs::msg::Path transformGlobalPlan(Iter begin,
-                                          Iter end,
-                                          const Stamp &stamp,
-                                          const std::string &frame);
+  template<typename Iter, typename Stamp>
+  nav_msgs::msg::Path
+    transformGlobalPlan(Iter begin, Iter end, const Stamp &stamp, const std::string &frame);
 
-  auto getGlobalPlanConsideringBounds(
-      const geometry_msgs::msg::PoseStamped &global_pose);
+  auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped &global_pose);
 
-  template <typename T>
-  void
-  pruneGlobalPlan(const T &end) {
+  template<typename T>
+  void pruneGlobalPlan(const T &end)
+  {
     global_plan_.poses.erase(global_plan_.poses.begin(), end);
   }
 
@@ -75,10 +65,10 @@ private:
   tf2_ros::Buffer *tf_buffer_;
 
   nav_msgs::msg::Path global_plan_;
-  rclcpp::Logger logger_{rclcpp::get_logger("MPPI PathHandler")};
+  rclcpp::Logger logger_{ rclcpp::get_logger("MPPI PathHandler") };
 
   double lookahead_dist_;
   double transform_tolerance_;
 };
 
-}  // namespace mppi::handlers
+}// namespace mppi::handlers

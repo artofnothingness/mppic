@@ -56,6 +56,8 @@ target_link_libraries(mppic project_options)
 
 if(ENABLE_TESTING)
   enable_testing()
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
   add_subdirectory(test)
 endif()
 

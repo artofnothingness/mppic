@@ -3,7 +3,6 @@
 #include <xtensor/xview.hpp>
 
 namespace mppi::models {
-
 /**
  * @brief Predict velocities for given trajectories the next time step
  *
@@ -14,10 +13,10 @@ namespace mppi::models {
  * @return predicted velocities of the robot: tensor of shape [batch_size, 2]
  * where 2 stands for robot linear, angluar velocities for the next time step
  */
-template <typename T, typename Tensor = xt::xtensor<T, 2>>
-Tensor
-NaiveModel(const Tensor &state) {
+template<typename T, typename Tensor = xt::xtensor<T, 2>>
+Tensor NaiveModel(const Tensor &state)
+{
   return xt::view(state, xt::all(), xt::range(2, 4));
 }
 
-}  // namespace mppi::models
+}// namespace mppi::models
