@@ -8,23 +8,20 @@
 #include "mppic/MotionModel.hpp"
 
 namespace mppi::optimization {
-
-template <typename T>
-class State {
+template<typename T>
+class State
+{
 public:
   xt::xtensor<T, 3> data;
 
-  void
-  reset(unsigned int batch_size, unsigned int time_steps) {
-    data = xt::zeros<T>({batch_size, time_steps, vec_dim_});
+  void reset(unsigned int batch_size, unsigned int time_steps)
+  {
+    data = xt::zeros<T>({ batch_size, time_steps, vec_dim_ });
   }
-  unsigned int
-  getVectorDimension() const {
-    return vec_dim_;
-  }
+  unsigned int getVectorDimension() const { return vec_dim_; }
 
-  void
-  setMotionModel(MotionModel motion_model) {
+  void setMotionModel(MotionModel motion_model)
+  {
     if (isHolonomic(motion_model)) {
       idx.vx = 0;
       idx.vy = 1;
@@ -51,16 +48,17 @@ public:
     idx.controls_range[1] = idx.dt;
   }
 
-  struct Idx {
-    uint8_t vx{0};
-    uint8_t vy{0};
-    uint8_t wz{0};
-    uint8_t cvx{0};
-    uint8_t cvy{0};
-    uint8_t cwz{0};
-    uint8_t dt{0};
-    std::array<uint8_t, 2> velocities_range{0, 0};
-    std::array<uint8_t, 2> controls_range{0, 0};
+  struct Idx
+  {
+    uint8_t vx{ 0 };
+    uint8_t vy{ 0 };
+    uint8_t wz{ 0 };
+    uint8_t cvx{ 0 };
+    uint8_t cvy{ 0 };
+    uint8_t cwz{ 0 };
+    uint8_t dt{ 0 };
+    std::array<uint8_t, 2> velocities_range{ 0, 0 };
+    std::array<uint8_t, 2> controls_range{ 0, 0 };
   } idx;
 
   auto getControls() const;
@@ -83,7 +81,7 @@ public:
   auto getTimeIntervals() const;
 
 private:
-  unsigned int vec_dim_{0};
+  unsigned int vec_dim_{ 0 };
 };
 
-}  // namespace mppi::optimization
+}// namespace mppi::optimization

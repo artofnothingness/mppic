@@ -5,12 +5,11 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 namespace mppi::handlers {
-
-void
-PathHandler::on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
-                          const std::string &node_name,
-                          nav2_costmap_2d::Costmap2DROS *const costmap,
-                          tf2_ros::Buffer *const buffer) {
+void PathHandler::on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
+  const std::string &node_name,
+  nav2_costmap_2d::Costmap2DROS *const costmap,
+  tf2_ros::Buffer *const buffer)
+{
   parent_ = parent;
   node_name_ = node_name;
   costmap_ = costmap;
@@ -19,48 +18,44 @@ PathHandler::on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
   getParams();
   RCLCPP_INFO(logger_, "Configured");
 }
-void
-PathHandler::on_cleanup() {}
-void
-PathHandler::on_activate() {}
-void
-PathHandler::on_deactivate() {}
+void PathHandler::on_cleanup() {}
+void PathHandler::on_activate() {}
+void PathHandler::on_deactivate() {}
 
-auto
-PathHandler::getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped &global_pose) {
+auto PathHandler::getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped &global_pose)
+{
   auto begin = global_plan_.poses.begin();
   auto end = global_plan_.poses.end();
 
-  auto closest_point = std::min_element(begin, end,
-                                        [&global_pose](const geometry_msgs::msg::PoseStamped &lhs,
-                                                       const geometry_msgs::msg::PoseStamped &rhs) {
-                                          return geometry::hypot(lhs, global_pose) <
-                                                 geometry::hypot(rhs, global_pose);
-                                        });
+  auto closest_point = std::min_element(begin,
+    end,
+    [&global_pose](
+      const geometry_msgs::msg::PoseStamped &lhs, const geometry_msgs::msg::PoseStamped &rhs) {
+      return geometry::hypot(lhs, global_pose) < geometry::hypot(rhs, global_pose);
+    });
 
   auto max_costmap_dist = getMaxCostmapDist();
-  auto last_point = std::find_if(closest_point, end,
-                                 [&](const geometry_msgs::msg::PoseStamped &global_plan_pose) {
-                                   auto &&dist = geometry::hypot(global_pose, global_plan_pose);
-                                   return dist > max_costmap_dist || dist > lookahead_dist_;
-                                 });
+  auto last_point =
+    std::find_if(closest_point, end, [&](const geometry_msgs::msg::PoseStamped &global_plan_pose) {
+      auto &&dist = geometry::hypot(global_pose, global_plan_pose);
+      return dist > max_costmap_dist || dist > lookahead_dist_;
+    });
 
-  return std::tuple{closest_point, last_point};
+  return std::tuple{ closest_point, last_point };
 }
 
-void
-PathHandler::getParams() {
+void PathHandler::getParams()
+{
   auto getParam = utils::getParamGetter(parent_, node_name_);
 
   getParam(lookahead_dist_, "lookahead_dist", 1.0);
   getParam(transform_tolerance_, "transform_tolerance", 1);
 }
 
-geometry_msgs::msg::PoseStamped
-PathHandler::transformToGlobalFrame(const geometry_msgs::msg::PoseStamped &pose) {
-  if (global_plan_.poses.empty()) {
-    throw std::runtime_error("Received plan with zero length");
-  }
+geometry_msgs::msg::PoseStamped PathHandler::transformToGlobalFrame(
+  const geometry_msgs::msg::PoseStamped &pose)
+{
+  if (global_plan_.poses.empty()) { throw std::runtime_error("Received plan with zero length"); }
 
   geometry_msgs::msg::PoseStamped robot_pose;
   if (!transformPose(global_plan_.header.frame_id, pose, robot_pose)) {
@@ -70,15 +65,15 @@ PathHandler::transformToGlobalFrame(const geometry_msgs::msg::PoseStamped &pose)
   return robot_pose;
 }
 
-nav_msgs::msg::Path
-PathHandler::transformPath(const geometry_msgs::msg::PoseStamped &robot_pose) {
+nav_msgs::msg::Path PathHandler::transformPath(const geometry_msgs::msg::PoseStamped &robot_pose)
+{
   auto global_pose = transformToGlobalFrame(robot_pose);
   const auto &stamp = global_pose.header.stamp;
 
   auto &&[lower_bound, upper_bound] = getGlobalPlanConsideringBounds(global_pose);
 
   auto transformed_plan =
-      transformGlobalPlan(lower_bound, upper_bound, stamp, costmap_->getGlobalFrameID());
+    transformGlobalPlan(lower_bound, upper_bound, stamp, costmap_->getGlobalFrameID());
 
   pruneGlobalPlan(lower_bound);
 
@@ -89,9 +84,10 @@ PathHandler::transformPath(const geometry_msgs::msg::PoseStamped &robot_pose) {
   return transformed_plan;
 }
 
-bool
-PathHandler::transformPose(const std::string &frame, const geometry_msgs::msg::PoseStamped &in_pose,
-                           geometry_msgs::msg::PoseStamped &out_pose) const {
+bool PathHandler::transformPose(const std::string &frame,
+  const geometry_msgs::msg::PoseStamped &in_pose,
+  geometry_msgs::msg::PoseStamped &out_pose) const
+{
   if (in_pose.header.frame_id == frame) {
     out_pose = in_pose;
     return true;
@@ -107,11 +103,11 @@ PathHandler::transformPose(const std::string &frame, const geometry_msgs::msg::P
   return false;
 }
 
-double
-PathHandler::getMaxCostmapDist() {
+double PathHandler::getMaxCostmapDist()
+{
   const auto &costmap = costmap_->getCostmap();
-  return std::max(costmap->getSizeInCellsX(), costmap->getSizeInCellsY()) *
-         costmap->getResolution() / 2.0;
+  return std::max(costmap->getSizeInCellsX(), costmap->getSizeInCellsY()) * costmap->getResolution()
+         / 2.0;
 }
 
-}  // namespace mppi::handlers
+}// namespace mppi::handlers

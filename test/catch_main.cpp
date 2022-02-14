@@ -1,6 +1,4 @@
-#pragma once
-
-#define CATCH_CONFIG_MAIN // This tells the catch header to generate a main
+#define CATCH_CONFIG_MAIN// This tells the catch header to generate a main
 
 #ifdef DO_BENCHMARKS
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
@@ -9,7 +7,8 @@
 #include <catch2/catch.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-class RosLockGuard {
+class RosLockGuard
+{
 public:
   RosLockGuard() { rclcpp::init(0, nullptr); }
   ~RosLockGuard() { rclcpp::shutdown(); }

@@ -1,0 +1,20 @@
+#pragma once
+#include <rclcpp/rclcpp.hpp>
+
+namespace config {
+/**
+ * Adds some parameters for the optimizer to a special container.
+ *
+ * @param params_ container for optimizer's parameters.
+ */
+void setUpOptimizerParams(auto iter,
+  auto time_steps,
+  auto lookahead,
+  std::vector<rclcpp::Parameter> &params_, 
+  std::string node_name = std::string("dummy"))
+{
+  params_.push_back(rclcpp::Parameter(node_name + ".iteration_count", iter));
+  params_.push_back(rclcpp::Parameter(node_name + ".lookahead_dist", time_steps));
+  params_.push_back(rclcpp::Parameter(node_name + ".time_steps", lookahead));
+}
+}// namespace config

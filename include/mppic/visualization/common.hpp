@@ -6,10 +6,12 @@
 #include <visualization_msgs/msg/marker_array.hpp>
 
 namespace mppi::visualization {
-
-inline visualization_msgs::msg::Marker
-createMarker(int id, const geometry_msgs::msg::Pose &pose, const geometry_msgs::msg::Vector3 &scale,
-             const std_msgs::msg::ColorRGBA &color, const std::string &frame_id) {
+inline visualization_msgs::msg::Marker createMarker(int id,
+  const geometry_msgs::msg::Pose &pose,
+  const geometry_msgs::msg::Vector3 &scale,
+  const std_msgs::msg::ColorRGBA &color,
+  const std::string &frame_id)
+{
   using visualization_msgs::msg::Marker;
   Marker marker;
   marker.header.frame_id = frame_id;
@@ -26,8 +28,8 @@ createMarker(int id, const geometry_msgs::msg::Pose &pose, const geometry_msgs::
   return marker;
 }
 
-inline geometry_msgs::msg::Pose
-createPose(double x, double y, double z) {
+inline geometry_msgs::msg::Pose createPose(double x, double y, double z)
+{
   geometry_msgs::msg::Pose pose;
   pose.position.x = x;
   pose.position.y = y;
@@ -41,8 +43,8 @@ createPose(double x, double y, double z) {
   return pose;
 }
 
-inline geometry_msgs::msg::Vector3
-createScale(double x, double y, double z) {
+inline geometry_msgs::msg::Vector3 createScale(double x, double y, double z)
+{
   geometry_msgs::msg::Vector3 scale;
   scale.x = x;
   scale.y = y;
@@ -51,8 +53,8 @@ createScale(double x, double y, double z) {
   return scale;
 }
 
-inline std_msgs::msg::ColorRGBA
-createColor(float r, float g, float b, float a) {
+inline std_msgs::msg::ColorRGBA createColor(float r, float g, float b, float a)
+{
   std_msgs::msg::ColorRGBA color;
   color.r = r;
   color.g = g;
@@ -62,4 +64,4 @@ createColor(float r, float g, float b, float a) {
   return color;
 }
 
-}  // namespace mppi::visualization
+}// namespace mppi::visualization
