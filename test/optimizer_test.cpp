@@ -1,102 +1,79 @@
-#include <geometry_msgs/msg/detail/point__struct.hpp>
 #ifdef DO_BENCHMARKS
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #endif
 
+#include "mppic/impl/Optimizer.hpp"
+
 #include <catch2/catch.hpp>
-
-#include <rclcpp/executors.hpp>
-
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
-#include <nav_msgs/msg/path.hpp>
-
 #include <nav2_costmap_2d/cost_values.hpp>
 #include <nav2_costmap_2d/costmap_2d.hpp>
 #include <nav2_costmap_2d/costmap_2d_ros.hpp>
-
+#include <nav_msgs/msg/path.hpp>
+#include <rclcpp/executors.hpp>
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
 #include "mppic/StateModels.hpp"
-#include "mppic/impl/Optimizer.hpp"
+#include "utils/config.hpp"
+#include "utils/factory.hpp"
+#include "utils/utils.hpp"
 
-#include "config.hpp"
-#include "factory.hpp"
-#include "utils.hpp"
-
-
-TEST_CASE("Next Control", "[nothrow]")
+TEST_CASE("Optimizer doesn't fail", "[]")
 {
-  auto node = factory::getDummyNode(rclcpp::NodeOptions{});
-  // costmap set up
-  auto costmap_ros = factory::getDummyCostmapRos();
-  auto costmap_ptr = costmap_ros->getCostmap();
-  auto costmap = factory::getDummyCostmap(40, 40, 0, 0, 0.1, 0);
-  *(costmap_ptr) = *costmap;
-  costmap_ros->setRobotFootprint({ factory::getDummyPoint(1, 1),
-    factory::getDummyPoint(-1, -1),
-    factory::getDummyPoint(1, -1),
-    factory::getDummyPoint(-1, 1) });
+  // node
+  int iteration_count = 10;
+  int time_steps = 40;
+  double lookahead_distance = 5.0;
 
-  auto model = factory::getDummyModel();
-  auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
+  // costmap
+  unsigned int cells_x = 40;
+  unsigned int cells_y = 40;
+  double origin_x = 0.0;
+  double origin_y = 0.0;
+  double resolution = 0.1;
+  unsigned char cost_map_default_value = 0;
 
-  unsigned int poses_count = GENERATE(10U, 30U, 100U);
-
-  SECTION("Running evalControl")
-  {
-    auto pose = factory::getDummyPointStamped(node, 5, 5);
-    auto twist = factory::getDummyTwist();
-    auto path = factory::getDummyPath(poses_count, node);
-    CHECK_NOTHROW(optimizer.evalControl(pose, twist, path));
-
-#ifdef DO_BENCHMARKS
-    WARN("Path with " << poses_count);
-    BENCHMARK("evalControl Benchmark") { return optimizer.evalControl(ps, twist, path); };
-#endif
-  }
-}
-
-TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]")
-{
-  // Node Params
-  std::vector<rclcpp::Parameter> params_;
+  std::vector<rclcpp::Parameter> params;
   rclcpp::NodeOptions options;
-  config::setUpOptimizerParams(5, 30, 5, params_);
-  options.parameter_overrides(params_);
-
+  config::setUpOptimizerParams(iteration_count, time_steps, lookahead_distance, params);
+  options.parameter_overrides(params);
   auto node = factory::getDummyNode(options);
+
+  auto costmap_ros = factory::getDummyCostmapRos(
+    cells_x, cells_y, origin_x, origin_y, resolution, cost_map_default_value);
+  costmap_ros->setRobotFootprint(factory::getDummySquareFootprint(0.01));
+  auto costmap = costmap_ros->getCostmap();
   auto model = factory::getDummyModel();
-
-  // costmap set up
-  auto costmap_ros = factory::getDummyCostmapRos();
-  auto costmap_ptr = costmap_ros->getCostmap();
-  auto costmap = factory::getDummyCostmap(40, 40, 0, 0, 0.1, 0);
-  *(costmap_ptr) = *costmap;
-  costmap_ros->setRobotFootprint({ factory::getDummyPoint(1, 1),
-    factory::getDummyPoint(-1, -1),
-    factory::getDummyPoint(1, -1),
-    factory::getDummyPoint(-1, 1) });
-
   auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
-  utils::addObstacle(*costmap_ptr, 5, 7, 9, 255);
 
-  SECTION("evalControl doesn't produce path that crosses the obstacles")
+  SECTION("Collision avoidance works")
   {
-    size_t points_count = 40;
-    float start_x = GENERATE(1.0f, 0.4f);
-    float start_y = 0.4f;
-    float step_x = 0.015f;
-    float step_y = 0.035f;
-    auto velocity = factory::getDummyTwist();
+    // obstacle
+    unsigned int obstacle_size = 3;
+    unsigned char obstacle_cost = 255;
+
+    // path
+    unsigned int path_points_count = 40;
+    double start_x = static_cast<double>(cells_x) * resolution / 2.0;
+    double start_y = static_cast<double>(cells_y) * resolution / 2.0;
+    double step_x = resolution;
+    double step_y = resolution;
+
+    utils::addObstacle(*costmap, 23, 23, obstacle_size, obstacle_cost);
+
+    utils::addObstacle(*costmap, 17, 23, obstacle_size, obstacle_cost);
+
+    utils::addObstacle(*costmap, 29, 23, obstacle_size, obstacle_cost);
+
     auto pose = factory::getDummyPointStamped(node, start_x, start_y);
+    auto velocity = factory::getDummyTwist();
     auto path =
-      factory::getIncrementalDummyPath(start_x, start_y, step_x, step_y, points_count, node);
+      factory::getIncrementalDummyPath(start_x, start_y, step_x, step_y, path_points_count, node);
 
     CHECK_NOTHROW(optimizer.evalControl(pose, velocity, path));
-
     auto trajectory = optimizer.evalTrajectoryFromControlSequence(pose, velocity);
 
 #ifdef TEST_DEBUG_INFO
@@ -104,4 +81,6 @@ TEST_CASE("Optimizer with costmap2d and obstacles", "[collision]")
 #endif
     CHECK(!utils::inCollision(trajectory, *costmap));
   }
+
+  costmap_ros->on_cleanup(rclcpp_lifecycle::State{});
 }
