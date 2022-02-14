@@ -9,7 +9,6 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 namespace utils {
-
 /**
  * Print costmap to stdout.
  * @param costmap map to be printed.
@@ -32,7 +31,7 @@ void printMap(const nav2_costmap_2d::Costmap2D &costmap)
  */
 void printMapWithTrajectory(nav2_costmap_2d::Costmap2D &costmap, const auto &trajectory)
 {
-  std::cout << "map with trajectory: \ntrajectory point = 1 \ngoal point = 100 "
+  std::cout << "map with trajectory: \ntrajectory point = 1 "
                "\nobsctacle = 255\n"
             << std::endl;
 
@@ -46,14 +45,15 @@ void printMapWithTrajectory(nav2_costmap_2d::Costmap2D &costmap, const auto &tra
 
   // copy obstacles from original costmap
   costmap2d = costmap;
-  unsigned int point_mx = 0;
-  unsigned int point_my = 0;
-  unsigned char trajectory_point = 1;
+
+  const unsigned char trajectory_value = 1;
 
   // add trajectory on map
+  unsigned int point_mx = 0;
+  unsigned int point_my = 0;
   for (size_t i = 0; i < trajectory.shape()[0]; ++i) {
     costmap2d.worldToMap(trajectory(i, 0), trajectory(i, 1), point_mx, point_my);
-    costmap2d.setCost(point_mx, point_my, trajectory_point);
+    costmap2d.setCost(point_mx, point_my, trajectory_value);
   }
 
   printMap(costmap2d);
