@@ -266,7 +266,6 @@ public:
         };
 
         auto footprint = getOrientedFootprint(pose, this->costmap_ros_->getRobotFootprint());
-
         auto cost = static_cast<unsigned char>(scoreFootprint(footprint));
 
         if (inCollision(cost)) {
@@ -343,14 +342,15 @@ private:
     double line_cost = 0.0;
     double footprint_cost = 0.0;
 
-    for (unsigned int i = 0; i < footprint.size() - 1; ++i) {
-      if (!this->costmap_->worldToMap(footprint[i].x, footprint[i].y, x0, y0)) {
+    auto world_to_map = [&](size_t i, unsigned int &x, unsigned int &y) {
+      if (!this->costmap_->worldToMap(footprint[i].x, footprint[i].y, x, y)) {
         throw std::runtime_error("Footprint Goes Off Grid.");
       }
+    };
 
-      if (!this->costmap_->worldToMap(footprint[i + 1].x, footprint[i + 1].y, x1, y1)) {
-        throw std::runtime_error("Footprint Goes Off Grid.");
-      }
+    for (unsigned int i = 0; i < footprint.size() - 1; ++i) {
+      world_to_map(i, x0, y0);
+      world_to_map(i + 1, x1, y1);
 
       line_cost = lineCost(
         static_cast<int>(x0), static_cast<int>(x1), static_cast<int>(y0), static_cast<int>(y1));
@@ -358,13 +358,8 @@ private:
       footprint_cost = std::max(line_cost, footprint_cost);
     }
 
-    if (!this->costmap_->worldToMap(footprint.back().x, footprint.back().y, x0, y0)) {
-      throw std::runtime_error("Footprint Goes Off Grid.");
-    }
-
-    if (!this->costmap_->worldToMap(footprint.front().x, footprint.front().y, x1, y1)) {
-      throw std::runtime_error("Footprint Goes Off Grid.");
-    }
+    world_to_map(0, x0, y0);
+    world_to_map(footprint.size() - 1, x1, y1);
 
     line_cost = lineCost(
       static_cast<int>(x0), static_cast<int>(x1), static_cast<int>(y0), static_cast<int>(y1));
