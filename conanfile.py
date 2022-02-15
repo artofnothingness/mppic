@@ -3,10 +3,10 @@ from conans import ConanFile
 
 class MPPIC(ConanFile):
     name = "MPPIC"
-    version = "0.2.1"
+    version = "0.3.0"
     requires = (
-        "xtensor/0.23.9",
-        "catch2/2.13.4",
+        "xtensor/0.24.0",
+        "catch2/2.13.8",
     )
     generators = "cmake", "gcc", "txt", "cmake_find_package"
 

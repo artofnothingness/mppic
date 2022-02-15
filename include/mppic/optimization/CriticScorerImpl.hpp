@@ -19,6 +19,7 @@
 
 namespace mppi::optimization {
 // TODO pluginize
+// TODO separate core from critics
 template<typename T>
 class CriticFunction
 {

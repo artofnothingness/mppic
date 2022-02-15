@@ -8,8 +8,9 @@
 #include <xtensor/xmath.hpp>
 #include <xtensor/xrandom.hpp>
 
-#include "mppic/MotionModel.hpp"
-#include "mppic/Optimizer.hpp"
+#include "mppic/optimization/MotionModel.hpp"
+#include "mppic/optimization/Optimizer.hpp"
+
 #include "mppic/utils/LineIterator.hpp"
 #include "mppic/utils/common.hpp"
 #include "mppic/utils/geometry.hpp"
@@ -72,15 +73,12 @@ void Optimizer<T>::getParams()
   getParam(name, "motion_model", std::string("diff"));
 
   auto &nmap = motion_model_name_map_;
-  auto &cmap = motion_model_control_dim_map_;
 
   if (auto it = nmap.find(name); it != nmap.end()) {
     setMotionModel(it->second);
   } else {
     RCLCPP_INFO(logger_, "Motion model is unknown, use default/previous");
   }
-
-  if (auto it = cmap.find(getMotionModel()); it != cmap.end()) { control_vec_dim_ = it->second; }
 }
 
 // TODO pluginize
@@ -111,7 +109,7 @@ void Optimizer<T>::reset()
 {
   state_.reset(batch_size_, time_steps_);
   state_.getTimeIntervals() = model_dt_;
-  control_sequence_ = xt::zeros<T>({ time_steps_, control_vec_dim_ });
+  control_sequence_.reset(time_steps_);
 }
 
 // Imple dependce on Y
@@ -134,10 +132,10 @@ xt::xtensor<T, 3> Optimizer<T>::generateNoisedControls() const
 
   if (isHolonomic(getMotionModel())) {
     auto vy_noises = xt::random::randn<T>({ batch_size_, time_steps_, 1U }, 0.0, vy_std_);
-    return control_sequence_ + xt::concatenate(xt::xtuple(vx_noises, wz_noises, vy_noises), 2);
+    return control_sequence_.data + xt::concatenate(xt::xtuple(vx_noises, wz_noises, vy_noises), 2);
   }
 
-  return control_sequence_ + xt::concatenate(xt::xtuple(vx_noises, wz_noises), 2);
+  return control_sequence_.data + xt::concatenate(xt::xtuple(vx_noises, wz_noises), 2);
 }
 
 // Imple dependce on Y
@@ -197,9 +195,9 @@ xt::xtensor<T, 2> Optimizer<T>::evalTrajectoryFromControlSequence(
   const geometry_msgs::msg::Twist &robot_speed) const
 {
   State<T> state;
-  state.setMotionModel(getMotionModel());
+  state.idx.setLayout(getMotionModel());
   state.reset(1U, time_steps_);
-  state.getControls() = control_sequence_;
+  state.getControls() = control_sequence_.data;
   state.getTimeIntervals() = model_dt_;
 
   updateStateVelocities(state, robot_speed);
@@ -245,13 +243,13 @@ void Optimizer<T>::updateControlSequence(const xt::xtensor<T, 1> &costs)
   auto softmaxes = exponents / xt::sum(exponents, immediate);
   auto softmaxes_expanded = xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
 
-  control_sequence_ = xt::sum(state_.getControls() * softmaxes_expanded, 0);
+  control_sequence_.data = xt::sum(state_.getControls() * softmaxes_expanded, 0);
 }
 
 template<typename T>
 auto Optimizer<T>::getControlFromSequence(unsigned int offset)
 {
-  return xt::view(control_sequence_, offset);
+  return xt::view(control_sequence_.data, offset);
 }
 
 template<typename T>
@@ -264,7 +262,8 @@ template<typename T>
 void Optimizer<T>::setMotionModel(MotionModel motion_model)
 {
   motion_model_t_ = motion_model;
-  state_.setMotionModel(motion_model);
+  state_.idx.setLayout(motion_model);
+  control_sequence_.idx.setLayout(motion_model);
 }
 
 }// namespace mppi::optimization

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mppic/PathHandler.hpp"
+#include "mppic/handlers/PathHandler.hpp"
 
 namespace mppi::handlers {
 template<typename Iter, typename Stamp>

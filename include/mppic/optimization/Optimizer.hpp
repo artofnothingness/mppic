@@ -13,9 +13,9 @@
 #include <xtensor/xarray.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/MotionModel.hpp"
-#include "mppic/impl/CriticScorer.hpp"
-#include "mppic/impl/State.hpp"
+#include "mppic/optimization/CriticScorerImpl.hpp"
+#include "mppic/optimization/MotionModel.hpp"
+#include "mppic/optimization/TensorWrappersImpl.hpp"
 
 namespace mppi::optimization {
 template<typename T>
@@ -126,18 +126,16 @@ private:
   T vx_std_{ 0 };
   T vy_std_{ 0 };
   T wz_std_{ 0 };
-  unsigned int control_vec_dim_{ 0 };
 
   bool approx_reference_cost_;
 
   State<T> state_;
+  ControlSequence<T> control_sequence_;
   CriticScorer<T> critic_scorer_;
   MotionModel motion_model_t_{ MotionModel::DiffDrive };
   std::function<model_t> model_;
 
-  xt::xtensor<T, 2> control_sequence_;
   xt::xtensor<T, 3> generated_trajectories_;
-
   rclcpp::Logger logger_{ rclcpp::get_logger("MPPI Optimizer") };
 };
 
