@@ -1,8 +1,9 @@
-#include "mppic/impl/PathHandler.hpp"
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
+
+#include "mppic/handlers/PathHandlerImpl.hpp"
 
 #include "mppic/utils/common.hpp"
 #include "mppic/utils/geometry.hpp"
-#include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 namespace mppi::handlers {
 void PathHandler::on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
