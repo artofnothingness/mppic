@@ -1,8 +1,7 @@
 #include "mppic/Controller.hpp"
 
-#include "mppic/StateModels.hpp"
+#include "mppic/optimization/StateModels.hpp"
 #include "mppic/utils/common.hpp"
-#include "mppic/utils/geometry.hpp"
 
 namespace mppi {
 template<typename T>
