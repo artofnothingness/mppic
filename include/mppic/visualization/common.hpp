@@ -1,8 +1,8 @@
 #pragma once
 
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 namespace mppi::visualization {

@@ -1,7 +1,8 @@
 #pragma once
 
-#include <nav2_core/controller.hpp>
 #include <rclcpp/rclcpp.hpp>
+
+#include <nav2_core/controller.hpp>
 
 #include "mppic/impl/Optimizer.hpp"
 #include "mppic/impl/PathHandler.hpp"
