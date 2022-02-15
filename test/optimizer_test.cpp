@@ -62,11 +62,19 @@ TEST_CASE("Optimizer doesn't fail", "[]")
     double step_x = resolution;
     double step_y = resolution;
 
-    utils::addObstacle(*costmap, 23, 23, obstacle_size, obstacle_cost);
-
-    utils::addObstacle(*costmap, 17, 23, obstacle_size, obstacle_cost);
-
-    utils::addObstacle(*costmap, 29, 23, obstacle_size, obstacle_cost);
+    unsigned int center_cells_x = cells_x / 2;
+    unsigned int center_cells_y = cells_y / 2;
+    unsigned int y_offset = 2;
+    unsigned int x_offset = 3;
+    utils::addObstacle(
+      *costmap, center_cells_x - x_offset, center_cells_y + y_offset, obstacle_size, obstacle_cost);
+    utils::addObstacle(
+      *costmap, center_cells_x + x_offset, center_cells_y + y_offset, obstacle_size, obstacle_cost);
+    utils::addObstacle(*costmap,
+      center_cells_x + 3 * x_offset,
+      center_cells_y + y_offset,
+      obstacle_size,
+      obstacle_cost);
 
     auto pose = factory::getDummyPointStamped(node, start_x, start_y);
     auto velocity = factory::getDummyTwist();
