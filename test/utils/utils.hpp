@@ -139,7 +139,7 @@ bool isGoalReached(
     }
     return false;
   };
-  // clang-format off
+  // clang-format on
 
   for (size_t i = 0; i < trajectory.shape()[0]; ++i) {
     costmap.worldToMap(trajectory(i, 0), trajectory(i, 1), trajectory_j, trajectory_i);

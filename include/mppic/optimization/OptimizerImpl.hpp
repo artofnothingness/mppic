@@ -213,30 +213,38 @@ template <typename T>
 xt::xtensor<T, 3> Optimizer<T>::integrateStateVelocities(
   const auto & state, const geometry_msgs::msg::PoseStamped & pose) const
 {
-  using namespace xt;
-  using namespace placeholders;
+  using namespace xt::placeholders;
 
-  auto vx = state.getVelocitiesVX();
   auto w = state.getVelocitiesWZ();
-  xt::xtensor<T, 2> yaw = cumsum(w * model_dt_, 1);
+  xt::xtensor<T, 2> yaw = xt::cumsum(w * model_dt_, 1);
   xt::xtensor<T, 2> yaw_offseted = yaw;
 
-  view(yaw_offseted, all(), range(1, _)) = view(yaw, all(), range(_, -1));
-  view(yaw_offseted, all(), 0) = 0;
-  view(yaw_offseted, all(), all()) += tf2::getYaw(pose.pose.orientation);
+  xt::view(yaw_offseted, xt::all(), xt::range(1, _)) = xt::view(yaw, xt::all(), xt::range(_, -1));
+  xt::view(yaw_offseted, xt::all(), 0) = 0;
+  xt::view(yaw_offseted, xt::all(), xt::all()) += tf2::getYaw(pose.pose.orientation);
 
-  auto dx = vx * cos(yaw_offseted);
-  auto dy = vx * sin(yaw_offseted);
+  auto yaw_cos = xt::eval(xt::cos(yaw_offseted));
+  auto yaw_sin = xt::eval(xt::sin(yaw_offseted));
 
-  auto x = pose.pose.position.x + cumsum(dx * model_dt_, 1);
-  auto y = pose.pose.position.y + cumsum(dy * model_dt_, 1);
+  auto vx = state.getVelocitiesVX();
+  auto dx = xt::eval(vx * yaw_cos);
+  auto dy = xt::eval(vx * yaw_sin);
 
-  // clang-format off
-  return concatenate(xtuple( 
-      view(x, all(), all(), newaxis()), 
-      view(y, all(), all(), newaxis()),
-      view(yaw, all(), all(), newaxis())), 2);
-  // clang-format on
+  if (isHolonomic()) {
+    auto vy = state.getVelocitiesVY();
+    dx = dx - vy * yaw_sin;
+    dy = dy + vy * yaw_cos;
+  }
+
+  auto x = pose.pose.position.x + xt::cumsum(dx * model_dt_, 1);
+  auto y = pose.pose.position.y + xt::cumsum(dy * model_dt_, 1);
+
+  return xt::concatenate(
+    xt::xtuple(
+      xt::view(x, xt::all(), xt::all(), xt::newaxis()),
+      xt::view(y, xt::all(), xt::all(), xt::newaxis()),
+      xt::view(yaw, xt::all(), xt::all(), xt::newaxis())),
+    2);
 }
 
 template <typename T>
