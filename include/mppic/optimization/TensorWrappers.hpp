@@ -13,7 +13,6 @@ namespace mppi::optimization {
 template <typename T>
 struct ControlSequence
 {
-public:
   xt::xtensor<T, 2> data;
   ControlSequnceIdxes idx;
 
@@ -23,7 +22,6 @@ public:
 template <typename T>
 struct State
 {
-public:
   xt::xtensor<T, 3> data;
   StateIdxes idx;
 
