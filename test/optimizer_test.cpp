@@ -22,10 +22,6 @@
 
 TEST_CASE("Optimizer doesn't fail", "[]")
 {
-  // node
-  int iteration_count = 10;
-  int time_steps = 40;
-  double lookahead_distance = 5.0;
 
   // costmap
   unsigned int cells_x = 40;
@@ -35,36 +31,69 @@ TEST_CASE("Optimizer doesn't fail", "[]")
   double resolution = 0.1;
   unsigned char cost_map_default_value = 0;
 
-  std::vector<rclcpp::Parameter> params;
-  rclcpp::NodeOptions options;
-  config::setUpOptimizerParams(iteration_count, time_steps, lookahead_distance, params);
-  options.parameter_overrides(params);
-  auto node = factory::getDummyNode(options);
+  // start pose
+  double start_x = static_cast<double>(cells_x) * resolution / 2.0;
+  double start_y = static_cast<double>(cells_y) * resolution / 2.0;
 
   auto costmap_ros = factory::getDummyCostmapRos(
     cells_x, cells_y, origin_x, origin_y, resolution, cost_map_default_value);
   costmap_ros->setRobotFootprint(factory::getDummySquareFootprint(0.01));
   auto costmap = costmap_ros->getCostmap();
   auto model = factory::getDummyModel();
-  auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
+
+  auto create_node = [](int iteration_count, int time_steps, double lookahead_distance) {
+    std::vector<rclcpp::Parameter> params;
+    rclcpp::NodeOptions options;
+    config::setUpOptimizerParams(iteration_count, time_steps, lookahead_distance, params);
+    options.parameter_overrides(params);
+    return factory::getDummyNode(options);
+  };
+
+#ifdef DO_BENCHMARKS
+  SECTION("Benchmarks")
+  {
+    // node
+    const int iteration_count = 10;
+    const int time_steps = 20;
+    const double lookahead_distance = 5.0;
+
+    auto node = create_node(iteration_count, time_steps, lookahead_distance);
+    auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
+
+    unsigned int poses_count = GENERATE(10U, 30U, 100U);
+    auto pose = factory::getDummyPointStamped(node, start_x, start_y);
+    auto velocity = factory::getDummyTwist();
+    auto path = factory::getDummyPath(poses_count, node);
+    WARN(
+      "Points in path " << poses_count << "\niteration_count " << iteration_count << "\ntime_steps "
+                        << time_steps);
+    BENCHMARK("evalControl Benchmark") { return optimizer.evalControl(pose, velocity, path); };
+  }
+#endif
 
   SECTION("Collision avoidance works")
   {
+    // node
+    const int iteration_count = 10;
+    const int time_steps = 70;
+    const double lookahead_distance = 5.0;
+    auto node = create_node(iteration_count, time_steps, lookahead_distance);
+
+    auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
+
     // obstacle
     unsigned int obstacle_size = 3;
     unsigned char obstacle_cost = 255;
 
     // path
-    unsigned int path_points_count = 40;
-    double start_x = static_cast<double>(cells_x) * resolution / 2.0;
-    double start_y = static_cast<double>(cells_y) * resolution / 2.0;
+    unsigned int path_points_count = 7;
     double step_x = resolution;
     double step_y = resolution;
 
     unsigned int center_cells_x = cells_x / 2;
     unsigned int center_cells_y = cells_y / 2;
     unsigned int y_offset = 2;
-    unsigned int x_offset = 3;
+    unsigned int x_offset = 4;
     utils::addObstacle(
       *costmap, center_cells_x - x_offset, center_cells_y + y_offset, obstacle_size, obstacle_cost);
     utils::addObstacle(
@@ -81,10 +110,12 @@ TEST_CASE("Optimizer doesn't fail", "[]")
     CHECK_NOTHROW(optimizer.evalControl(pose, velocity, path));
     auto trajectory = optimizer.evalTrajectoryFromControlSequence(pose, velocity);
 
+    auto goal_point = path.poses.back();
 #ifdef TEST_DEBUG_INFO
-    utils::printMapWithTrajectory(*costmap, trajectory);
+    utils::printMapWithTrajectoryAndGoal(*costmap, trajectory, goal_point);
 #endif
     CHECK(!utils::inCollision(trajectory, *costmap));
+    CHECK(utils::isGoalReached(trajectory, *costmap, goal_point));
   }
 
   costmap_ros->on_cleanup(rclcpp_lifecycle::State{});

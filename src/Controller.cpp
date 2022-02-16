@@ -101,7 +101,7 @@ template <typename T>
 void
 Controller<T>::configureComponents()
 {
-  // generalize 
+  // generalize
   // pluginize
   auto & model = optimization::models::NaiveModel<T>;
 

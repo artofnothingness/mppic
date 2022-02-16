@@ -31,11 +31,15 @@ printMap(const nav2_costmap_2d::Costmap2D & costmap)
  * @param goal_point goal point to be printed.
  */
 void
-printMapWithTrajectory(nav2_costmap_2d::Costmap2D & costmap, const auto & trajectory)
+printMapWithTrajectoryAndGoal(
+  nav2_costmap_2d::Costmap2D & costmap, const auto & trajectory,
+  const geometry_msgs::msg::PoseStamped & goal)
 {
-  std::cout << "map with trajectory: \ntrajectory point = 1 "
-               "\nobsctacle = 255\n"
-            << std::endl;
+  const unsigned int trajectory_cost = 1;
+  const unsigned int goal_cost = 2;
+
+  std::cout << "Costmap: \n trajectory = " << trajectory_cost << "\n goal = " << goal_cost
+            << "\n obsctacle = 255 \n";
 
   // create new costmap
   nav2_costmap_2d::Costmap2D costmap2d(
@@ -45,16 +49,19 @@ printMapWithTrajectory(nav2_costmap_2d::Costmap2D & costmap, const auto & trajec
   // copy obstacles from original costmap
   costmap2d = costmap;
 
-  const unsigned char trajectory_value = 1;
-
   // add trajectory on map
   unsigned int point_mx = 0;
   unsigned int point_my = 0;
   for (size_t i = 0; i < trajectory.shape()[0]; ++i) {
     costmap2d.worldToMap(trajectory(i, 0), trajectory(i, 1), point_mx, point_my);
-    costmap2d.setCost(point_mx, point_my, trajectory_value);
+    costmap2d.setCost(point_mx, point_my, trajectory_cost);
   }
 
+  unsigned int goal_j{0};
+  unsigned int goal_i{0};
+  costmap2d.worldToMap(goal.pose.position.x, goal.pose.position.y, goal_j, goal_i);
+  std::cout << "Goal Position: " << goal_j << " " << goal_i << "\n";
+  costmap2d.setCost(goal_j, goal_i, goal_cost);
   printMap(costmap2d);
 }
 
@@ -100,6 +107,52 @@ inCollision(const auto & trajectory, const nav2_costmap_2d::Costmap2D & costmap)
       return true;
     }
   }
+  return false;
+}
+
+bool
+isGoalReached(
+  const auto & trajectory, const nav2_costmap_2d::Costmap2D & costmap,
+  const geometry_msgs::msg::PoseStamped & goal)
+{
+  unsigned int trajectory_j = 0;
+  unsigned int trajectory_i = 0;
+
+  unsigned int goal_j = 0;
+  unsigned int goal_i = 0;
+  costmap.worldToMap(goal.pose.position.x, goal.pose.position.y, goal_j, goal_i);
+
+  auto match = [](unsigned int i, unsigned int j, unsigned int i_dst, unsigned int j_dst) {
+    if (i == i_dst && j == j_dst) {
+      return true;
+    }
+    return false;
+  };
+
+  // clang-format off
+  auto match_near = [&](unsigned int i, unsigned int j) {
+    if (match(i, j, goal_i, goal_j) || 
+        match(i, j, goal_i + 1, goal_j) ||
+        match(i, j, goal_i - 1, goal_j) ||
+        match(i, j, goal_i, goal_j + 1) ||
+        match(i, j, goal_i, goal_j - 1) ||
+        match(i, j, goal_i + 1, goal_j + 1) ||
+        match(i, j, goal_i + 1, goal_j - 1) ||
+        match(i, j, goal_i - 1, goal_j + 1) ||
+        match(i, j, goal_i - 1, goal_j - 1)) {
+      return true;
+    }
+    return false;
+  };
+  // clang-format off
+
+  for (size_t i = 0; i < trajectory.shape()[0]; ++i) {
+    costmap.worldToMap(trajectory(i, 0), trajectory(i, 1), trajectory_j, trajectory_i);
+    if (match_near(trajectory_i, trajectory_j)) {
+      return true;
+    }
+  }
+
   return false;
 }
 
