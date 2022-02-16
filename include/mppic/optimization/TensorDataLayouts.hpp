@@ -137,4 +137,4 @@ private:
   unsigned int dim_{0};
 };
 
-}  // namespace mppi::optimization
+} // namespace mppi::optimization

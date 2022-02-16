@@ -1,5 +1,4 @@
 Language: Cpp
-BasedOnStyle: Google
 AccessModifierOffset: -2
 AlignAfterOpenBracket: AlwaysBreak
 BraceWrapping:
@@ -26,5 +25,17 @@ PointerAlignment: Middle
 ReflowComments: false
 AlwaysBreakTemplateDeclarations: true
 AlwaysBreakAfterDefinitionReturnType: All
+
+IncludeCategories:
+- Priority: 2
+  Regex: ^"(llvm|llvm-c|clang|clang-c)/
+- Priority: 3
+  Regex: ^(<|"(gtest|gmock|isl|json)/)
+- Priority: 1
+  Regex: .*
+IncludeIsMainRegex: (Test)?$
+SortIncludes: true
+SortUsingDeclarations: false
+
 Standard: c++20
 UseTab: Never

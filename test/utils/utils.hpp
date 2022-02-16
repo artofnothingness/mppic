@@ -1,12 +1,12 @@
 
 #pragma once
 
+#include "nav2_costmap_2d/costmap_2d.hpp"
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
+
 #include <algorithm>
 #include <iostream>
 #include <rclcpp/executors.hpp>
-
-#include "nav2_costmap_2d/costmap_2d.hpp"
-#include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 namespace utils {
 /**
