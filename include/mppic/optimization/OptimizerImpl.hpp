@@ -1,13 +1,16 @@
 #pragma once
 
 #include <limits>
+
 #include <nav2_core/exceptions.hpp>
 #include <nav2_costmap_2d/cost_values.hpp>
+
 #include <xtensor/xmath.hpp>
 #include <xtensor/xrandom.hpp>
 
 #include "mppic/optimization/MotionModel.hpp"
 #include "mppic/optimization/Optimizer.hpp"
+
 #include "mppic/utils/LineIterator.hpp"
 #include "mppic/utils/common.hpp"
 #include "mppic/utils/geometry.hpp"
@@ -32,8 +35,8 @@ Optimizer<T>::evalControl(
 template <typename T>
 void
 Optimizer<T>::on_configure(
-  rclcpp_lifecycle::LifecycleNode * const parent, const std::string & node_name,
-  nav2_costmap_2d::Costmap2DROS * const costmap_ros, model_t model)
+  rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
+  nav2_costmap_2d::Costmap2DROS * costmap_ros, model_t model)
 {
   parent_ = parent;
   node_name_ = node_name;
@@ -70,7 +73,7 @@ Optimizer<T>::getParams()
   std::string name;
   getParam(name, "motion_model", std::string("diff"));
 
-  auto & nmap = motion_model_name_map_;
+  auto & nmap = MOTION_MODEL_NAMES_MAP;
 
   if (auto it = nmap.find(name); it != nmap.end()) {
     setMotionModel(it->second);
@@ -279,4 +282,4 @@ Optimizer<T>::setMotionModel(MotionModel motion_model)
   control_sequence_.idx.setLayout(motion_model);
 }
 
-}  // namespace mppi::optimization
+} // namespace mppi::optimization

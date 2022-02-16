@@ -6,8 +6,8 @@
 namespace mppi::handlers {
 void
 PathHandler::on_configure(
-  rclcpp_lifecycle::LifecycleNode * const parent, const std::string & node_name,
-  nav2_costmap_2d::Costmap2DROS * const costmap, tf2_ros::Buffer * const buffer)
+  rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
+  nav2_costmap_2d::Costmap2DROS * costmap, tf2_ros::Buffer * buffer)
 {
   parent_ = parent;
   node_name_ = node_name;

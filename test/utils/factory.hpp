@@ -1,12 +1,12 @@
 #pragma once
+#include "nav2_costmap_2d/costmap_2d.hpp"
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
+
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
-
-#include "nav2_costmap_2d/costmap_2d.hpp"
-#include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 namespace factory {
 using T = float;

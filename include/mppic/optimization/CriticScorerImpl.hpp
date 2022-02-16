@@ -3,8 +3,10 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
-#include <nav2_costmap_2d/costmap_2d_ros.hpp>
 #include <nav_msgs/msg/path.hpp>
+
+#include <nav2_costmap_2d/costmap_2d_ros.hpp>
+
 #include <xtensor/xarray.hpp>
 #include <xtensor/xmath.hpp>
 #include <xtensor/xrandom.hpp>
@@ -26,8 +28,8 @@ public:
 
   void
   on_configure(
-    rclcpp_lifecycle::LifecycleNode * const parent, const std::string & parent_name,
-    const std::string & component_name, nav2_costmap_2d::Costmap2DROS * const costmap_ros)
+    rclcpp_lifecycle::LifecycleNode * parent, const std::string & parent_name,
+    const std::string & component_name, nav2_costmap_2d::Costmap2DROS * costmap_ros)
   {
     parent_ = parent;
     node_name_ = parent_name + "." + component_name;
@@ -44,10 +46,10 @@ public:
     const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) = 0;
 
 protected:
-  rclcpp_lifecycle::LifecycleNode * parent_;
   std::string node_name_;
-  nav2_costmap_2d::Costmap2DROS * costmap_ros_;
-  nav2_costmap_2d::Costmap2D * costmap_;
+  rclcpp_lifecycle::LifecycleNode * parent_{nullptr};
+  nav2_costmap_2d::Costmap2DROS * costmap_ros_{nullptr};
+  nav2_costmap_2d::Costmap2D * costmap_{nullptr};
 };
 
 template <typename T>
@@ -61,8 +63,8 @@ public:
 
   void
   on_configure(
-    rclcpp_lifecycle::LifecycleNode * const parent, const std::string & parent_name,
-    const std::string & component_name, nav2_costmap_2d::Costmap2DROS * const costmap_ros)
+    rclcpp_lifecycle::LifecycleNode * parent, const std::string & parent_name,
+    const std::string & component_name, nav2_costmap_2d::Costmap2DROS * costmap_ros)
   {
     for (size_t q = 0; q < critics_.size(); q++) {
       critics_[q]->on_configure(parent, parent_name, component_name, costmap_ros);
@@ -433,4 +435,4 @@ private:
   double weight_{0};
 };
 
-}  // namespace mppi::optimization
+} // namespace mppi::optimization

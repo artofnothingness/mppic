@@ -1,14 +1,16 @@
 #pragma once
 
+#include <algorithm>
+#include <chrono>
+
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-#include <algorithm>
-#include <chrono>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <nav_msgs/msg/path.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
+
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
 #include <xtensor/xview.hpp>
@@ -157,4 +159,4 @@ distPointsToLineSegments2D(P && path, L && batch_of_segments_points)
   return xt::norm_l2(diff, {diff.dimension() - 1}, xt::evaluation_strategy::immediate);
 }
 
-}  // namespace mppi::geometry
+} // namespace mppi::geometry

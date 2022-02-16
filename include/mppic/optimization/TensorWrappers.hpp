@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+
 #include <xtensor/xarray.hpp>
 #include <xtensor/xstrided_view.hpp>
 #include <xtensor/xview.hpp>
@@ -56,4 +57,4 @@ public:
   auto getTimeIntervals() const;
 };
 
-}  // namespace mppi::optimization
+} // namespace mppi::optimization
