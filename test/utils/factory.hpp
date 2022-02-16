@@ -18,7 +18,7 @@ setHeader(auto && msg, auto node, std::string frame)
   msg.header.frame_id = frame;
   msg.header.stamp = time;
 }
-}  // namespace detail
+} // namespace detail
 
 geometry_msgs::msg::Point
 getDummyPoint(double x, double y)
@@ -156,4 +156,4 @@ getDummySquareFootprint(double a)
     getDummyPoint(a, a), getDummyPoint(-a, -a), getDummyPoint(a, -a), getDummyPoint(-a, a)};
 }
 
-}  // namespace factory
+} // namespace factory

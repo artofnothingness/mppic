@@ -57,4 +57,4 @@ private:
   bool visualize_;
 };
 
-}  // namespace mppi
+} // namespace mppi

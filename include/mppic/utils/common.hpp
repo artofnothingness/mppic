@@ -17,7 +17,7 @@ getParam(std::string const & param_name, T default_value, auto * const node)
 
   return param;
 }
-}  // namespace details
+} // namespace details
 
 auto
 getParamGetter(auto * const node, const std::string & node_name_)
@@ -29,4 +29,4 @@ getParamGetter(auto * const node, const std::string & node_name_)
   };
 }
 
-}  // namespace mppi::utils
+} // namespace mppi::utils
