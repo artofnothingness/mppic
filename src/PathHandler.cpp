@@ -122,4 +122,4 @@ PathHandler::getMaxCostmapDist()
          costmap->getResolution() / 2.0;
 }
 
-}  // namespace mppi::handlers
+} // namespace mppi::handlers

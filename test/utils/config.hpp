@@ -16,4 +16,4 @@ setUpOptimizerParams(
   params_.push_back(rclcpp::Parameter(node_name + ".time_steps", time_steps));
   params_.push_back(rclcpp::Parameter(node_name + ".lookahead_dist", lookahead_dist));
 }
-}  // namespace config
+} // namespace config
