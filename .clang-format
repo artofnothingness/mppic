@@ -16,6 +16,7 @@ BraceWrapping:
   SplitEmptyFunction: false
   SplitEmptyNamespace: true
   SplitEmptyRecord: true
+
 BreakBeforeBraces: Custom
 ColumnLimit: 100
 ConstructorInitializerIndentWidth: 0
@@ -24,8 +25,6 @@ DerivePointerAlignment: false
 PointerAlignment: Middle
 ReflowComments: false
 AlwaysBreakTemplateDeclarations: true
-AlwaysBreakAfterDefinitionReturnType: All
-
 SortIncludes: true
 SortUsingDeclarations: false
 

@@ -4,8 +4,7 @@
 
 namespace mppi::handlers {
 template <typename Iter, typename Stamp>
-nav_msgs::msg::Path
-PathHandler::transformGlobalPlan(
+nav_msgs::msg::Path PathHandler::transformGlobalPlan(
   Iter begin, Iter end, const Stamp & stamp, const std::string & frame)
 {
   auto transformToFrame = [&](const auto & global_plan_pose) {

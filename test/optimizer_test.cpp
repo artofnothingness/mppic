@@ -61,9 +61,9 @@ TEST_CASE("Optimizer doesn't fail", "[]")
     auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
 
     unsigned int poses_count = GENERATE(10U, 30U, 100U);
+    auto path = factory::getDummyPath(poses_count, node);
     auto pose = factory::getDummyPointStamped(node, start_x, start_y);
     auto velocity = factory::getDummyTwist();
-    auto path = factory::getDummyPath(poses_count, node);
     WARN(
       "Points in path " << poses_count << "\niteration_count " << iteration_count << "\ntime_steps "
                         << time_steps);

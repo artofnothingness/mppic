@@ -8,14 +8,9 @@ namespace mppi::optimization {
 class ControlSequnceIdxes
 {
 public:
-  unsigned int
-  dim() const
-  {
-    return dim_;
-  }
+  unsigned int dim() const { return dim_; }
 
-  void
-  setLayout(MotionModel motion_model)
+  void setLayout(MotionModel motion_model)
   {
     if (isHolonomic(motion_model)) {
       dim_ = 3;
@@ -31,71 +26,22 @@ private:
 class StateIdxes
 {
 public:
-  uint8_t
-  vbegin() const
-  {
-    return vrange_[0];
-  }
-  uint8_t
-  vend() const
-  {
-    return vrange_[1];
-  }
-  uint8_t
-  vx() const
-  {
-    return vx_;
-  }
-  uint8_t
-  vy() const
-  {
-    return vy_;
-  }
-  uint8_t
-  wz() const
-  {
-    return wz_;
-  }
+  uint8_t vbegin() const { return vrange_[0]; }
+  uint8_t vend() const { return vrange_[1]; }
+  uint8_t vx() const { return vx_; }
+  uint8_t vy() const { return vy_; }
+  uint8_t wz() const { return wz_; }
 
-  uint8_t
-  cbegin() const
-  {
-    return crange_[0];
-  }
-  uint8_t
-  cend() const
-  {
-    return crange_[1];
-  }
-  uint8_t
-  cvx() const
-  {
-    return cvx_;
-  }
-  uint8_t
-  cvy() const
-  {
-    return cvy_;
-  }
-  uint8_t
-  cwz() const
-  {
-    return cwz_;
-  }
+  uint8_t cbegin() const { return crange_[0]; }
+  uint8_t cend() const { return crange_[1]; }
+  uint8_t cvx() const { return cvx_; }
+  uint8_t cvy() const { return cvy_; }
+  uint8_t cwz() const { return cwz_; }
 
-  uint8_t
-  dt() const
-  {
-    return dt_;
-  };
-  unsigned int
-  dim() const
-  {
-    return dim_;
-  }
+  uint8_t dt() const { return dt_; };
+  unsigned int dim() const { return dim_; }
 
-  void
-  setLayout(MotionModel motion_model)
+  void setLayout(MotionModel motion_model)
   {
     if (isHolonomic(motion_model)) {
       vx_ = 0;

@@ -7,8 +7,7 @@
 namespace mppi::optimization {
 enum class MotionModel : uint8_t { Omni, DiffDrive, Carlike };
 
-inline bool
-isHolonomic(MotionModel motion_model)
+inline bool isHolonomic(MotionModel motion_model)
 {
   return (motion_model == MotionModel::Omni) ? true : false;
 }

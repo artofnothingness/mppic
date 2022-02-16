@@ -5,8 +5,7 @@
 namespace mppi::utils {
 namespace details {
 template <typename T>
-T
-getParam(std::string const & param_name, T default_value, auto * const node)
+T getParam(std::string const & param_name, T default_value, auto * const node)
 {
   T param;
 
@@ -19,8 +18,7 @@ getParam(std::string const & param_name, T default_value, auto * const node)
 }
 } // namespace details
 
-auto
-getParamGetter(auto * const node, const std::string & node_name_)
+auto getParamGetter(auto * const node, const std::string & node_name_)
 {
   return [=](auto & param, const std::string & param_name, auto default_value) {
     std::string name = node_name_ + '.' + param_name;

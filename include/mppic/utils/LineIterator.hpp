@@ -42,14 +42,9 @@ public:
     }
   }
 
-  bool
-  isValid() const
-  {
-    return curpixel_ <= numpixels_;
-  }
+  bool isValid() const { return curpixel_ <= numpixels_; }
 
-  void
-  advance()
+  void advance()
   {
     num_ += numadd_;    // Increase the numerator by the top of the fraction
     if (num_ >= den_) { // Check if numerator >= denominator
@@ -63,38 +58,14 @@ public:
     curpixel_++;
   }
 
-  int
-  getX() const
-  {
-    return x_;
-  }
-  int
-  getY() const
-  {
-    return y_;
-  }
+  int getX() const { return x_; }
+  int getY() const { return y_; }
 
-  int
-  getX0() const
-  {
-    return x0_;
-  }
-  int
-  getY0() const
-  {
-    return y0_;
-  }
+  int getX0() const { return x0_; }
+  int getY0() const { return y0_; }
 
-  int
-  getX1() const
-  {
-    return x1_;
-  }
-  int
-  getY1() const
-  {
-    return y1_;
-  }
+  int getX1() const { return x1_; }
+  int getY1() const { return y1_; }
 
 private:
   int x0_; ///< X coordinate of first end point.
