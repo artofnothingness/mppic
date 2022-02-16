@@ -2,6 +2,12 @@
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #endif
 
+#include "mppic/optimization/OptimizerImpl.hpp"
+#include "mppic/optimization/StateModels.hpp"
+#include "utils/config.hpp"
+#include "utils/factory.hpp"
+#include "utils/utils.hpp"
+
 #include <catch2/catch.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -13,12 +19,6 @@
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
-
-#include "mppic/optimization/OptimizerImpl.hpp"
-#include "mppic/optimization/StateModels.hpp"
-#include "utils/config.hpp"
-#include "utils/factory.hpp"
-#include "utils/utils.hpp"
 
 TEST_CASE("Optimizer doesn't fail", "[]")
 {

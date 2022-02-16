@@ -13,7 +13,7 @@ isHolonomic(MotionModel motion_model)
   return (motion_model == MotionModel::Omni) ? true : false;
 }
 
-const inline std::unordered_map<std::string, MotionModel> motion_model_name_map_ = {
+const inline std::unordered_map<std::string, MotionModel> MOTION_MODEL_NAMES_MAP = {
   {"diff", MotionModel::DiffDrive}, {"carlike", MotionModel::Carlike}, {"omni", MotionModel::Omni}};
 
 }  // namespace mppi::optimization

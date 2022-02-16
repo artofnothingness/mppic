@@ -1,13 +1,15 @@
 #pragma once
 
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <tf2/utils.h>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
-#include <nav2_costmap_2d/costmap_2d_ros.hpp>
 #include <nav_msgs/msg/path.hpp>
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
+
+#include <nav2_costmap_2d/costmap_2d_ros.hpp>
+
 #include <xtensor/xarray.hpp>
 #include <xtensor/xview.hpp>
 
@@ -25,8 +27,8 @@ public:
   Optimizer() = default;
 
   void on_configure(
-    rclcpp_lifecycle::LifecycleNode * const parent, const std::string & node_name,
-    nav2_costmap_2d::Costmap2DROS * const costmap_ros, model_t model);
+    rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
+    nav2_costmap_2d::Costmap2DROS * costmap_ros, model_t model);
 
   void
   on_cleanup()
@@ -88,8 +90,8 @@ private:
    */
   void updateStateVelocities(auto & state, const geometry_msgs::msg::Twist & robot_speed) const;
 
-  void updateInitialStateVelocities(
-    auto & state, const geometry_msgs::msg::Twist & robot_speed) const;
+  void
+  updateInitialStateVelocities(auto & state, const geometry_msgs::msg::Twist & robot_speed) const;
 
   /**
    * @brief predict velocities in state_ using model
@@ -118,10 +120,10 @@ private:
    */
   auto getControlFromSequence(unsigned int);
 
-  rclcpp_lifecycle::LifecycleNode * parent_;
+  rclcpp_lifecycle::LifecycleNode * parent_{nullptr};
   std::string node_name_;
-  nav2_costmap_2d::Costmap2DROS * costmap_ros_;
-  nav2_costmap_2d::Costmap2D * costmap_;
+  nav2_costmap_2d::Costmap2DROS * costmap_ros_{nullptr};
+  nav2_costmap_2d::Costmap2D * costmap_{nullptr};
 
   unsigned int batch_size_{0};
   unsigned int time_steps_{0};
@@ -134,8 +136,7 @@ private:
   T vx_std_{0};
   T vy_std_{0};
   T wz_std_{0};
-
-  bool approx_reference_cost_;
+  bool approx_reference_cost_{true};
 
   State<T> state_;
   ControlSequence<T> control_sequence_;
@@ -147,4 +148,4 @@ private:
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
 };
 
-}  // namespace mppi::optimization
+} // namespace mppi::optimization

@@ -5,4 +5,7 @@ CompileFlags:
 Diagnostics:
   ClangTidy:
     Add: modernize*
+    Remove: modernize-use-trailing-return-type
+    Remove: altera-unroll-loops
+
 

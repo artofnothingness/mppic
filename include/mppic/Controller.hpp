@@ -1,11 +1,11 @@
 #pragma once
 
-#include <nav2_core/controller.hpp>
-#include <rclcpp/rclcpp.hpp>
-
 #include "mppic/handlers/PathHandlerImpl.hpp"
 #include "mppic/optimization/OptimizerImpl.hpp"
 #include "mppic/visualization/TrajectoryVisualizer.hpp"
+
+#include <nav2_core/controller.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 namespace mppi {
 template <typename T>
@@ -43,10 +43,10 @@ private:
     const geometry_msgs::msg::Twist & robot_speed,
     std::unique_ptr<nav_msgs::msg::Path> && transformed_plan);
 
-  rclcpp_lifecycle::LifecycleNode * parent_;
-  nav2_costmap_2d::Costmap2DROS * costmap_ros_;
-  tf2_ros::Buffer * tf_buffer_;
   std::string node_name_;
+  rclcpp_lifecycle::LifecycleNode * parent_{nullptr};
+  nav2_costmap_2d::Costmap2DROS * costmap_ros_{nullptr};
+  tf2_ros::Buffer * tf_buffer_{nullptr};
 
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>> transformed_path_pub_;
 
