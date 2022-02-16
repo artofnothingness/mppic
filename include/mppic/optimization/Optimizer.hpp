@@ -120,6 +120,8 @@ private:
    */
   auto getControlFromSequence(unsigned int);
 
+  bool isHolonomic() const;
+
   rclcpp_lifecycle::LifecycleNode * parent_{nullptr};
   std::string node_name_;
   nav2_costmap_2d::Costmap2DROS * costmap_ros_{nullptr};
