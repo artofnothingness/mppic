@@ -1,0 +1,8 @@
+CompileFlags:
+  Add: [ -std=c++17 ]
+  Compiler: g++
+
+Diagnostics:
+  ClangTidy:
+    Add: modernize*
+

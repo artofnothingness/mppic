@@ -13,7 +13,8 @@ namespace utils {
  * Print costmap to stdout.
  * @param costmap map to be printed.
  */
-void printMap(const nav2_costmap_2d::Costmap2D &costmap)
+void
+printMap(const nav2_costmap_2d::Costmap2D & costmap)
 {
   for (unsigned int i = 0; i < costmap.getSizeInCellsY(); i++) {
     for (unsigned int j = 0; j < costmap.getSizeInCellsX(); j++) {
@@ -29,19 +30,17 @@ void printMap(const nav2_costmap_2d::Costmap2D &costmap)
  * @param trajectory trajectory container (xt::tensor) to be printed.
  * @param goal_point goal point to be printed.
  */
-void printMapWithTrajectory(nav2_costmap_2d::Costmap2D &costmap, const auto &trajectory)
+void
+printMapWithTrajectory(nav2_costmap_2d::Costmap2D & costmap, const auto & trajectory)
 {
   std::cout << "map with trajectory: \ntrajectory point = 1 "
                "\nobsctacle = 255\n"
             << std::endl;
 
   // create new costmap
-  nav2_costmap_2d::Costmap2D costmap2d(costmap.getSizeInCellsX(),
-    costmap.getSizeInCellsY(),
-    costmap.getResolution(),
-    costmap.getOriginX(),
-    costmap.getOriginY(),
-    costmap.getDefaultValue());
+  nav2_costmap_2d::Costmap2D costmap2d(
+    costmap.getSizeInCellsX(), costmap.getSizeInCellsY(), costmap.getResolution(),
+    costmap.getOriginX(), costmap.getOriginY(), costmap.getDefaultValue());
 
   // copy obstacles from original costmap
   costmap2d = costmap;
@@ -69,11 +68,10 @@ void printMapWithTrajectory(nav2_costmap_2d::Costmap2D &costmap, const auto &tra
  * @param size obstacle side size.
  * @param cost obstacle value on costmap.
  */
-void addObstacle(nav2_costmap_2d::Costmap2D &costmap,
-  unsigned int upper_left_corner_x,
-  unsigned int upper_left_corner_y,
-  unsigned int size,
-  unsigned char cost)
+void
+addObstacle(
+  nav2_costmap_2d::Costmap2D & costmap, unsigned int upper_left_corner_x,
+  unsigned int upper_left_corner_y, unsigned int size, unsigned char cost)
 {
   for (unsigned int i = upper_left_corner_x; i < upper_left_corner_x + size; i++) {
     for (unsigned int j = upper_left_corner_y; j < upper_left_corner_y + size; j++) {
@@ -89,7 +87,8 @@ void addObstacle(nav2_costmap_2d::Costmap2D &costmap,
  * @return true - if the trajectory crosses an obstacle on the map, false - if
  * not
  */
-bool inCollision(const auto &trajectory, const nav2_costmap_2d::Costmap2D &costmap)
+bool
+inCollision(const auto & trajectory, const nav2_costmap_2d::Costmap2D & costmap)
 {
   unsigned int point_mx = 0;
   unsigned int point_my = 0;
@@ -104,4 +103,4 @@ bool inCollision(const auto &trajectory, const nav2_costmap_2d::Costmap2D &costm
   return false;
 }
 
-}// namespace utils
+}  // namespace utils

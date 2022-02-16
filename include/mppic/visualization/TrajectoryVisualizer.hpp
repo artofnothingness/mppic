@@ -1,10 +1,8 @@
 #pragma once
 
 #include <memory>
-
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
-
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include "mppic/visualization/common.hpp"
@@ -15,7 +13,8 @@ class TrajectoryVisualizer
 public:
   TrajectoryVisualizer() = default;
 
-  void on_configure(rclcpp_lifecycle::LifecycleNode *const parent, const std::string &frame_id)
+  void
+  on_configure(rclcpp_lifecycle::LifecycleNode * const parent, const std::string & frame_id)
   {
     frame_id_ = frame_id;
     parent_ = parent;
@@ -27,21 +26,37 @@ public:
     RCLCPP_INFO(logger_, "Configured");
   }
 
-  void on_cleanup() { trajectories_publisher_.reset(); }
-  void on_activate() { trajectories_publisher_->on_activate(); }
-  void on_deactivate() { trajectories_publisher_->on_deactivate(); }
+  void
+  on_cleanup()
+  {
+    trajectories_publisher_.reset();
+  }
+  void
+  on_activate()
+  {
+    trajectories_publisher_->on_activate();
+  }
+  void
+  on_deactivate()
+  {
+    trajectories_publisher_->on_deactivate();
+  }
 
-  void reset()
+  void
+  reset()
   {
     marker_id_ = 0;
     points_ = std::make_unique<visualization_msgs::msg::MarkerArray>();
   }
 
-  template<typename Container>
-  void add(Container &&trajectory)
+  template <typename Container>
+  void
+  add(Container && trajectory)
   {
-    auto &size = trajectory.shape()[0];
-    if (!size) { return; }
+    auto & size = trajectory.shape()[0];
+    if (!size) {
+      return;
+    }
 
     for (size_t i = 0; i < size; i++) {
       float blue_component = 1.0f - static_cast<float>(i) / static_cast<float>(size);
@@ -57,12 +72,15 @@ public:
     }
   }
 
-  template<typename Container>
-  void add(Container &&trajectories, size_t batch_step, size_t time_step)
+  template <typename Container>
+  void
+  add(Container && trajectories, size_t batch_step, size_t time_step)
   {
-    if (!trajectories.shape()[0]) { return; }
+    if (!trajectories.shape()[0]) {
+      return;
+    }
 
-    auto &shape = trajectories.shape();
+    auto & shape = trajectories.shape();
 
     for (size_t i = 0; i < shape[0]; i += batch_step) {
       for (size_t j = 0; j < shape[1]; j += time_step) {
@@ -79,7 +97,8 @@ public:
     }
   }
 
-  void visualize()
+  void
+  visualize()
   {
     trajectories_publisher_->publish(std::move(points_));
     reset();
@@ -87,7 +106,7 @@ public:
 
 private:
   std::string frame_id_;
-  rclcpp_lifecycle::LifecycleNode *parent_;
+  rclcpp_lifecycle::LifecycleNode * parent_;
 
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<visualization_msgs::msg::MarkerArray>>
     trajectories_publisher_;
@@ -95,7 +114,7 @@ private:
   std::unique_ptr<visualization_msgs::msg::MarkerArray> points_;
   int marker_id_ = 0;
 
-  rclcpp::Logger logger_{ rclcpp::get_logger("Trajectory Visualizer") };
+  rclcpp::Logger logger_{rclcpp::get_logger("Trajectory Visualizer")};
 };
 
-}// namespace mppi::visualization
+}  // namespace mppi::visualization

@@ -3,24 +3,19 @@
 #endif
 
 #include <catch2/catch.hpp>
-
-#include <rclcpp/executors.hpp>
-
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
-#include <nav_msgs/msg/path.hpp>
-
 #include <nav2_costmap_2d/cost_values.hpp>
 #include <nav2_costmap_2d/costmap_2d.hpp>
 #include <nav2_costmap_2d/costmap_2d_ros.hpp>
-
+#include <nav_msgs/msg/path.hpp>
+#include <rclcpp/executors.hpp>
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
 #include "mppic/optimization/OptimizerImpl.hpp"
 #include "mppic/optimization/StateModels.hpp"
-
 #include "utils/config.hpp"
 #include "utils/factory.hpp"
 #include "utils/utils.hpp"
@@ -74,10 +69,8 @@ TEST_CASE("Optimizer doesn't fail", "[]")
       *costmap, center_cells_x - x_offset, center_cells_y + y_offset, obstacle_size, obstacle_cost);
     utils::addObstacle(
       *costmap, center_cells_x + x_offset, center_cells_y + y_offset, obstacle_size, obstacle_cost);
-    utils::addObstacle(*costmap,
-      center_cells_x + 3 * x_offset,
-      center_cells_y + y_offset,
-      obstacle_size,
+    utils::addObstacle(
+      *costmap, center_cells_x + 3 * x_offset, center_cells_y + y_offset, obstacle_size,
       obstacle_cost);
 
     auto pose = factory::getDummyPointStamped(node, start_x, start_y);

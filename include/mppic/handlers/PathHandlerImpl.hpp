@@ -3,13 +3,12 @@
 #include "mppic/handlers/PathHandler.hpp"
 
 namespace mppi::handlers {
-template<typename Iter, typename Stamp>
-nav_msgs::msg::Path PathHandler::transformGlobalPlan(Iter begin,
-  Iter end,
-  const Stamp &stamp,
-  const std::string &frame)
+template <typename Iter, typename Stamp>
+nav_msgs::msg::Path
+PathHandler::transformGlobalPlan(
+  Iter begin, Iter end, const Stamp & stamp, const std::string & frame)
 {
-  auto transformToFrame = [&](const auto &global_plan_pose) {
+  auto transformToFrame = [&](const auto & global_plan_pose) {
     geometry_msgs::msg::PoseStamped global_pose;
     geometry_msgs::msg::PoseStamped local_pose;
 
@@ -30,4 +29,4 @@ nav_msgs::msg::Path PathHandler::transformGlobalPlan(Iter begin,
   return plan;
 }
 
-}// namespace mppi::handlers
+}  // namespace mppi::handlers
