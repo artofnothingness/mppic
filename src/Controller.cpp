@@ -5,8 +5,7 @@
 
 namespace mppi {
 template <typename T>
-void
-Controller<T>::configure(
+void Controller<T>::configure(
   const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> & parent, std::string node_name,
   const std::shared_ptr<tf2_ros::Buffer> & tf,
   const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros)
@@ -22,8 +21,7 @@ Controller<T>::configure(
 }
 
 template <typename T>
-void
-Controller<T>::cleanup()
+void Controller<T>::cleanup()
 {
   optimizer_.on_cleanup();
   path_handler_.on_cleanup();
@@ -32,8 +30,7 @@ Controller<T>::cleanup()
 }
 
 template <typename T>
-void
-Controller<T>::activate()
+void Controller<T>::activate()
 {
   transformed_path_pub_->on_activate();
   optimizer_.on_activate();
@@ -42,8 +39,7 @@ Controller<T>::activate()
 }
 
 template <typename T>
-void
-Controller<T>::deactivate()
+void Controller<T>::deactivate()
 {
   transformed_path_pub_->on_deactivate();
   optimizer_.on_deactivate();
@@ -52,8 +48,7 @@ Controller<T>::deactivate()
 }
 
 template <typename T>
-geometry_msgs::msg::TwistStamped
-Controller<T>::computeVelocityCommands(
+geometry_msgs::msg::TwistStamped Controller<T>::computeVelocityCommands(
   const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed)
 {
   auto && transformed_plan = path_handler_.transformPath(robot_pose);
@@ -68,8 +63,7 @@ Controller<T>::computeVelocityCommands(
 }
 
 template <typename T>
-void
-Controller<T>::handleVisualizations(
+void Controller<T>::handleVisualizations(
   const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed,
   std::unique_ptr<nav_msgs::msg::Path> && transformed_plan)
 {
@@ -81,8 +75,7 @@ Controller<T>::handleVisualizations(
 }
 
 template <typename T>
-void
-Controller<T>::getParams()
+void Controller<T>::getParams()
 {
   auto getParam = utils::getParamGetter(parent_, node_name_);
 
@@ -90,16 +83,14 @@ Controller<T>::getParams()
 }
 
 template <typename T>
-void
-Controller<T>::setPublishers()
+void Controller<T>::setPublishers()
 {
   transformed_path_pub_ =
     parent_->create_publisher<nav_msgs::msg::Path>("transformed_global_plan", 1);
 }
 
 template <typename T>
-void
-Controller<T>::configureComponents()
+void Controller<T>::configureComponents()
 {
   // generalize
   // pluginize

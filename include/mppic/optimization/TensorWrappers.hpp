@@ -17,11 +17,7 @@ public:
   xt::xtensor<T, 2> data;
   ControlSequnceIdxes idx;
 
-  void
-  reset(unsigned int time_steps)
-  {
-    data = xt::zeros<T>({time_steps, idx.dim()});
-  }
+  void reset(unsigned int time_steps) { data = xt::zeros<T>({time_steps, idx.dim()}); }
 };
 
 template <typename T>
@@ -31,8 +27,7 @@ public:
   xt::xtensor<T, 3> data;
   StateIdxes idx;
 
-  void
-  reset(unsigned int batch_size, unsigned int time_steps)
+  void reset(unsigned int batch_size, unsigned int time_steps)
   {
     data = xt::zeros<T>({batch_size, time_steps, idx.dim()});
   }

@@ -27,11 +27,7 @@ public:
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed) final;
 
-  void
-  setPlan(const nav_msgs::msg::Path & path) final
-  {
-    path_handler_.setPath(path);
-  }
+  void setPlan(const nav_msgs::msg::Path & path) final { path_handler_.setPath(path); }
 
 private:
   void getParams();

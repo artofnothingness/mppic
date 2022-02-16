@@ -17,8 +17,7 @@
 
 namespace mppi::optimization {
 template <typename T>
-geometry_msgs::msg::TwistStamped
-Optimizer<T>::evalControl(
+geometry_msgs::msg::TwistStamped Optimizer<T>::evalControl(
   const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed,
   const nav_msgs::msg::Path & plan)
 {
@@ -33,8 +32,7 @@ Optimizer<T>::evalControl(
 }
 
 template <typename T>
-void
-Optimizer<T>::on_configure(
+void Optimizer<T>::on_configure(
   rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
   nav2_costmap_2d::Costmap2DROS * costmap_ros, model_t model)
 {
@@ -51,8 +49,7 @@ Optimizer<T>::on_configure(
 }
 
 template <typename T>
-void
-Optimizer<T>::getParams()
+void Optimizer<T>::getParams()
 {
   auto getParam = utils::getParamGetter(parent_, node_name_);
 
@@ -84,8 +81,7 @@ Optimizer<T>::getParams()
 
 // TODO pluginize
 template <typename T>
-void
-Optimizer<T>::configureComponents()
+void Optimizer<T>::configureComponents()
 {
   std::vector<std::unique_ptr<optimization::CriticFunction<T>>> critics;
 
@@ -107,8 +103,7 @@ Optimizer<T>::configureComponents()
 
 // Imple dependce on Y
 template <typename T>
-void
-Optimizer<T>::reset()
+void Optimizer<T>::reset()
 {
   state_.reset(batch_size_, time_steps_);
   state_.getTimeIntervals() = model_dt_;
@@ -117,8 +112,7 @@ Optimizer<T>::reset()
 
 // Imple dependce on Y
 template <typename T>
-xt::xtensor<T, 3>
-Optimizer<T>::generateNoisedTrajectories(
+xt::xtensor<T, 3> Optimizer<T>::generateNoisedTrajectories(
   const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed)
 {
   state_.getControls() = generateNoisedControls();
@@ -128,8 +122,7 @@ Optimizer<T>::generateNoisedTrajectories(
 }
 
 template <typename T>
-xt::xtensor<T, 3>
-Optimizer<T>::generateNoisedControls() const
+xt::xtensor<T, 3> Optimizer<T>::generateNoisedControls() const
 {
   auto vx_noises = xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, vx_std_);
   auto wz_noises = xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, wz_std_);
@@ -143,16 +136,14 @@ Optimizer<T>::generateNoisedControls() const
 }
 
 template <typename T>
-bool
-Optimizer<T>::isHolonomic() const
+bool Optimizer<T>::isHolonomic() const
 {
   return mppi::optimization::isHolonomic(motion_model_t_);
 }
 
 // Imple dependce on Y
 template <typename T>
-void
-Optimizer<T>::applyControlConstraints()
+void Optimizer<T>::applyControlConstraints()
 {
   auto vx = state_.getControlVelocitiesVX();
   auto wz = state_.getControlVelocitiesWZ();
@@ -167,8 +158,7 @@ Optimizer<T>::applyControlConstraints()
 }
 
 template <typename T>
-void
-Optimizer<T>::updateStateVelocities(
+void Optimizer<T>::updateStateVelocities(
   auto & state, const geometry_msgs::msg::Twist & robot_speed) const
 {
   updateInitialStateVelocities(state, robot_speed);
@@ -176,8 +166,7 @@ Optimizer<T>::updateStateVelocities(
 }
 
 template <typename T>
-void
-Optimizer<T>::updateInitialStateVelocities(
+void Optimizer<T>::updateInitialStateVelocities(
   auto & state, const geometry_msgs::msg::Twist & robot_speed) const
 {
   xt::view(state.getVelocitiesVX(), xt::all(), 0) = robot_speed.linear.x;
@@ -190,8 +179,7 @@ Optimizer<T>::updateInitialStateVelocities(
 
 // Imple dependce on Y
 template <typename T>
-void
-Optimizer<T>::propagateStateVelocitiesFromInitials(auto & state) const
+void Optimizer<T>::propagateStateVelocitiesFromInitials(auto & state) const
 {
   using namespace xt::placeholders;
 
@@ -206,8 +194,7 @@ Optimizer<T>::propagateStateVelocitiesFromInitials(auto & state) const
 
 // Imple dependce on Y
 template <typename T>
-xt::xtensor<T, 2>
-Optimizer<T>::evalTrajectoryFromControlSequence(
+xt::xtensor<T, 2> Optimizer<T>::evalTrajectoryFromControlSequence(
   const geometry_msgs::msg::PoseStamped & robot_pose,
   const geometry_msgs::msg::Twist & robot_speed) const
 {
@@ -223,8 +210,7 @@ Optimizer<T>::evalTrajectoryFromControlSequence(
 
 // Imple dependce on Y
 template <typename T>
-xt::xtensor<T, 3>
-Optimizer<T>::integrateStateVelocities(
+xt::xtensor<T, 3> Optimizer<T>::integrateStateVelocities(
   const auto & state, const geometry_msgs::msg::PoseStamped & pose) const
 {
   using namespace xt;
@@ -254,8 +240,7 @@ Optimizer<T>::integrateStateVelocities(
 }
 
 template <typename T>
-void
-Optimizer<T>::updateControlSequence(const xt::xtensor<T, 1> & costs)
+void Optimizer<T>::updateControlSequence(const xt::xtensor<T, 1> & costs)
 {
   using xt::evaluation_strategy::immediate;
 
@@ -268,22 +253,19 @@ Optimizer<T>::updateControlSequence(const xt::xtensor<T, 1> & costs)
 }
 
 template <typename T>
-auto
-Optimizer<T>::getControlFromSequence(unsigned int offset)
+auto Optimizer<T>::getControlFromSequence(unsigned int offset)
 {
   return xt::view(control_sequence_.data, offset);
 }
 
 template <typename T>
-MotionModel
-Optimizer<T>::getMotionModel() const
+MotionModel Optimizer<T>::getMotionModel() const
 {
   return motion_model_t_;
 }
 
 template <typename T>
-void
-Optimizer<T>::setMotionModel(MotionModel motion_model)
+void Optimizer<T>::setMotionModel(MotionModel motion_model)
 {
   motion_model_t_ = motion_model;
   state_.idx.setLayout(motion_model);

@@ -26,8 +26,7 @@ public:
   CriticFunction() = default;
   virtual ~CriticFunction() = default;
 
-  void
-  on_configure(
+  void on_configure(
     rclcpp_lifecycle::LifecycleNode * parent, const std::string & parent_name,
     const std::string & component_name, nav2_costmap_2d::Costmap2DROS * costmap_ros)
   {
@@ -61,8 +60,7 @@ public:
   : critics_(std::move(critics))
   {}
 
-  void
-  on_configure(
+  void on_configure(
     rclcpp_lifecycle::LifecycleNode * parent, const std::string & parent_name,
     const std::string & component_name, nav2_costmap_2d::Costmap2DROS * costmap_ros)
   {
@@ -78,8 +76,7 @@ public:
    * where 3 stands for x, y, yaw
    * @return Cost for each trajectory
    */
-  xt::xtensor<T, 1>
-  evalTrajectoriesScores(
+  xt::xtensor<T, 1> evalTrajectoriesScores(
     const xt::xtensor<T, 3> & trajectories, const nav_msgs::msg::Path & global_plan,
     const geometry_msgs::msg::PoseStamped & robot_pose) const
   {
@@ -107,8 +104,7 @@ template <typename T>
 class GoalCritic : public CriticFunction<T>
 {
 public:
-  void
-  getParams() final
+  void getParams() final
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
     getParam(power_, "goal_cost_power", 1);
@@ -120,8 +116,7 @@ public:
    *
    * @param costs [out] add reference cost values to this tensor
    */
-  virtual void
-  score(
+  virtual void score(
     const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
     const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
   {
@@ -148,8 +143,7 @@ template <typename T>
 class approxReferenceTrajectoryCritic : public CriticFunction<T>
 {
 public:
-  void
-  getParams() final
+  void getParams() final
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
     getParam(power_, "reference_cost_power", 1);
@@ -162,8 +156,7 @@ public:
    *
    * @param costs [out] add reference cost values to this tensor
    */
-  virtual void
-  score(
+  virtual void score(
     const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
     const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
   {
@@ -188,8 +181,7 @@ template <typename T>
 class referenceTrajectoryCritic : public CriticFunction<T>
 {
 public:
-  void
-  getParams() final
+  void getParams() final
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
     getParam(power_, "reference_cost_power", 1);
@@ -201,8 +193,7 @@ public:
    *
    * @param costs [out] add reference cost values to this tensor
    */
-  virtual void
-  score(
+  virtual void score(
     const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
     const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
   {
@@ -228,8 +219,7 @@ template <typename T>
 class ObstaclesCritic : public CriticFunction<T>
 {
 public:
-  void
-  getParams() final
+  void getParams() final
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
     getParam(power_, "obstacle_cost_power", 2);
@@ -245,8 +235,7 @@ public:
    *
    * @param costs [out] add obstacle cost values to this tensor
    */
-  virtual void
-  score(
+  virtual void score(
     const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
     const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
   {
@@ -295,8 +284,7 @@ public:
   }
 
 private:
-  bool
-  inCollision(unsigned char cost) const
+  bool inCollision(unsigned char cost) const
   {
     if (this->costmap_ros_->getLayeredCostmap()->isTrackingUnknown()) {
       return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE &&
@@ -306,8 +294,7 @@ private:
     return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
   }
 
-  std::vector<geometry_msgs::msg::Point>
-  getOrientedFootprint(
+  std::vector<geometry_msgs::msg::Point> getOrientedFootprint(
     const std::array<double, 3> & robot_pose,
     const std::vector<geometry_msgs::msg::Point> & footprint_spec) const
   {
@@ -327,8 +314,7 @@ private:
     return oriented_footprint;
   }
 
-  double
-  lineCost(int x0, int x1, int y0, int y1) const
+  double lineCost(int x0, int x1, int y0, int y1) const
   {
     double line_cost = 0.0;
     double point_cost = -1.0;
@@ -345,8 +331,7 @@ private:
     return line_cost;
   }
 
-  double
-  scoreFootprint(const std::vector<geometry_msgs::msg::Point> & footprint) const
+  double scoreFootprint(const std::vector<geometry_msgs::msg::Point> & footprint) const
   {
     unsigned int x0{0};
     unsigned int x1{0};
@@ -394,8 +379,7 @@ template <typename T>
 class GoalAngleCritic : public CriticFunction<T>
 {
 public:
-  void
-  getParams() final
+  void getParams() final
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
     getParam(power_, "goal_angle_cost_power", 1);
@@ -409,8 +393,7 @@ public:
    *
    * @param costs [out] add goal angle cost values to this tensor
    */
-  virtual void
-  score(
+  virtual void score(
     const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
     const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
   {

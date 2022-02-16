@@ -6,8 +6,7 @@
 #include <visualization_msgs/msg/marker_array.hpp>
 
 namespace mppi::visualization {
-inline visualization_msgs::msg::Marker
-createMarker(
+inline visualization_msgs::msg::Marker createMarker(
   int id, const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & scale,
   const std_msgs::msg::ColorRGBA & color, const std::string & frame_id)
 {
@@ -27,8 +26,7 @@ createMarker(
   return marker;
 }
 
-inline geometry_msgs::msg::Pose
-createPose(double x, double y, double z)
+inline geometry_msgs::msg::Pose createPose(double x, double y, double z)
 {
   geometry_msgs::msg::Pose pose;
   pose.position.x = x;
@@ -43,8 +41,7 @@ createPose(double x, double y, double z)
   return pose;
 }
 
-inline geometry_msgs::msg::Vector3
-createScale(double x, double y, double z)
+inline geometry_msgs::msg::Vector3 createScale(double x, double y, double z)
 {
   geometry_msgs::msg::Vector3 scale;
   scale.x = x;
@@ -54,8 +51,7 @@ createScale(double x, double y, double z)
   return scale;
 }
 
-inline std_msgs::msg::ColorRGBA
-createColor(float r, float g, float b, float a)
+inline std_msgs::msg::ColorRGBA createColor(float r, float g, float b, float a)
 {
   std_msgs::msg::ColorRGBA color;
   color.r = r;
