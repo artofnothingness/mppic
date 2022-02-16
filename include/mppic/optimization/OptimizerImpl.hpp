@@ -188,11 +188,12 @@ Optimizer<T>::propagateStateVelocitiesFromInitials(auto & state) const
 {
   using namespace xt::placeholders;
 
-  for (size_t t = 0; t < time_steps_ - 1; t++) {
-    auto curr_state = xt::view(state.data, xt::all(), t);
-    auto next_vels = xt::view(state.getVelocities(), xt::all(), t + 1);
+  for (size_t i = 0; i < time_steps_ - 1; i++) {
+    auto curr_state = xt::view(state.data, xt::all(), i);
+    auto next_velocities =
+      xt::view(state.data, xt::all(), i + 1, xt::range(state.idx.vbegin(), state.idx.vend()));
 
-    next_vels = model_(curr_state);
+    next_velocities = model_(curr_state, state.idx);
   }
 }
 

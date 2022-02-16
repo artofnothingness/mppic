@@ -66,7 +66,7 @@ getDummyCostmapRos(
 auto
 getDummyModel()
 {
-  auto model = mppi::models::NaiveModel<T>;
+  auto model = mppi::optimization::models::NaiveModel<T>;
   return model;
 }
 

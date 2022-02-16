@@ -101,7 +101,9 @@ template <typename T>
 void
 Controller<T>::configureComponents()
 {
-  auto & model = models::NaiveModel<T>;
+  // generalize 
+  // pluginize
+  auto & model = optimization::models::NaiveModel<T>;
 
   optimizer_.on_configure(parent_, node_name_, costmap_ros_, model);
   path_handler_.on_configure(parent_, node_name_, costmap_ros_, tf_buffer_);
