@@ -20,9 +20,9 @@
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
+
 TEST_CASE("Optimizer doesn't fail", "[]")
 {
-
   // costmap
   unsigned int cells_x = 40;
   unsigned int cells_y = 40;
@@ -41,45 +41,45 @@ TEST_CASE("Optimizer doesn't fail", "[]")
   auto costmap = costmap_ros->getCostmap();
   auto model = factory::getDummyModel();
 
-  auto create_node = [](int iteration_count, int time_steps, double lookahead_distance) {
-    std::vector<rclcpp::Parameter> params;
-    rclcpp::NodeOptions options;
-    config::setUpOptimizerParams(iteration_count, time_steps, lookahead_distance, params);
-    options.parameter_overrides(params);
-    return factory::getDummyNode(options);
-  };
+  auto create_node =
+    [](int iteration_count, int time_steps, double lookahead_distance, std::string motion_model) {
+      std::vector<rclcpp::Parameter> params;
+      rclcpp::NodeOptions options;
+      config::setUpOptimizerParams(
+        iteration_count, time_steps, lookahead_distance, motion_model, params);
+      options.parameter_overrides(params);
+      return factory::getDummyNode(options);
+    };
 
 #ifdef DO_BENCHMARKS
   SECTION("Benchmarks")
   {
     // node
     const int iteration_count = 10;
-    const int time_steps = 20;
-    const double lookahead_distance = 5.0;
-
-    auto node = create_node(iteration_count, time_steps, lookahead_distance);
-    auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
-
+    const int time_steps = 10;
+    const double lookahead_distance = 2.0;
+    auto motion_model = GENERATE(as<std::string>{}, "diff", "omni");
     unsigned int poses_count = GENERATE(10U, 30U, 100U);
+
+    auto node = create_node(iteration_count, time_steps, lookahead_distance, motion_model);
+    auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
     auto path = factory::getDummyPath(poses_count, node);
     auto pose = factory::getDummyPointStamped(node, start_x, start_y);
     auto velocity = factory::getDummyTwist();
     WARN(
       "Points in path " << poses_count << "\niteration_count " << iteration_count << "\ntime_steps "
-                        << time_steps);
+                        << time_steps << "\nMotion model : " << motion_model);
     BENCHMARK("evalControl Benchmark") { return optimizer.evalControl(pose, velocity, path); };
   }
 #endif
 
-  SECTION("Collision avoidance works")
+  SECTION("Collision avoidance works, goal reached")
   {
     // node
     const int iteration_count = 10;
     const int time_steps = 70;
     const double lookahead_distance = 5.0;
-    auto node = create_node(iteration_count, time_steps, lookahead_distance);
-
-    auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
+    auto motion_model = GENERATE(as<std::string>{}, "diff", "omni");
 
     // obstacle
     unsigned int obstacle_size = 3;
@@ -101,6 +101,13 @@ TEST_CASE("Optimizer doesn't fail", "[]")
     utils::addObstacle(
       *costmap, center_cells_x + 3 * x_offset, center_cells_y + y_offset, obstacle_size,
       obstacle_cost);
+
+    WARN(
+      "Points in path " << path_points_count << "\niteration_count " << iteration_count
+                        << "\ntime_steps " << time_steps << "\nMotion model : " << motion_model);
+
+    auto node = create_node(iteration_count, time_steps, lookahead_distance, motion_model);
+    auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
 
     auto pose = factory::getDummyPointStamped(node, start_x, start_y);
     auto velocity = factory::getDummyTwist();
