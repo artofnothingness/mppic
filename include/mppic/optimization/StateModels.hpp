@@ -2,7 +2,9 @@
 
 #include <xtensor/xview.hpp>
 
-namespace mppi::models {
+#include "mppic/optimization/TensorDataLayouts.hpp"
+
+namespace mppi::optimization::models {
 /**
  * @brief Predict velocities for given trajectories the next time step
  *
@@ -12,11 +14,11 @@ namespace mppi::models {
  * @return predicted velocities of the robot: tensor of shape [batch_size, ... ]
  * where last dim could be 2 or 3 depending on motion model used
  */
-template <typename T, typename Tensor = xt::xtensor<T, 2>>
-Tensor
-NaiveModel(const Tensor & state)
+template <typename T>
+xt::xtensor<T, 2>
+NaiveModel(const xt::xtensor<T, 2> & state, const StateIdxes & idx)
 {
-  return xt::view(state, xt::all(), xt::range(2, 4));
+  return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
 }
 
-} // namespace mppi::models
+} // namespace mppi::optimization::models

@@ -22,7 +22,7 @@ template <typename T>
 class Optimizer
 {
 public:
-  using model_t = xt::xtensor<T, 2>(const xt::xtensor<T, 2> &);
+  using model_t = xt::xtensor<T, 2>(const xt::xtensor<T, 2> & state, const StateIdxes & idx);
 
   Optimizer() = default;
 
