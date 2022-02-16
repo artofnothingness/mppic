@@ -19,4 +19,4 @@ NaiveModel(const Tensor & state)
   return xt::view(state, xt::all(), xt::range(2, 4));
 }
 
-}  // namespace mppi::models
+} // namespace mppi::models

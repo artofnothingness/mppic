@@ -129,4 +129,4 @@ State<T>::getVelocities()
   return xt::view(data, xt::all(), xt::all(), xt::range(idx.vbegin(), idx.vend()));
 }
 
-}  // namespace mppi::optimization
+} // namespace mppi::optimization

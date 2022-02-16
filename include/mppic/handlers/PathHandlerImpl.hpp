@@ -29,4 +29,4 @@ PathHandler::transformGlobalPlan(
   return plan;
 }
 
-}  // namespace mppi::handlers
+} // namespace mppi::handlers

@@ -108,7 +108,7 @@ Controller<T>::configureComponents()
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 }
 
-}  // namespace mppi
+} // namespace mppi
 
 #include "pluginlib/class_list_macros.hpp"
 #include "pluginlib/class_loader.hpp"

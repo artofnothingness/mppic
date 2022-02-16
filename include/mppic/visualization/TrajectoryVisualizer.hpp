@@ -121,4 +121,4 @@ private:
   rclcpp::Logger logger_{rclcpp::get_logger("Trajectory Visualizer")};
 };
 
-}  // namespace mppi::visualization
+} // namespace mppi::visualization

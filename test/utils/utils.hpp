@@ -103,4 +103,4 @@ inCollision(const auto & trajectory, const nav2_costmap_2d::Costmap2D & costmap)
   return false;
 }
 
-}  // namespace utils
+} // namespace utils
