@@ -13,8 +13,7 @@ namespace utils {
  * Print costmap to stdout.
  * @param costmap map to be printed.
  */
-void
-printMap(const nav2_costmap_2d::Costmap2D & costmap)
+void printMap(const nav2_costmap_2d::Costmap2D & costmap)
 {
   for (unsigned int i = 0; i < costmap.getSizeInCellsY(); i++) {
     for (unsigned int j = 0; j < costmap.getSizeInCellsX(); j++) {
@@ -30,8 +29,7 @@ printMap(const nav2_costmap_2d::Costmap2D & costmap)
  * @param trajectory trajectory container (xt::tensor) to be printed.
  * @param goal_point goal point to be printed.
  */
-void
-printMapWithTrajectoryAndGoal(
+void printMapWithTrajectoryAndGoal(
   nav2_costmap_2d::Costmap2D & costmap, const auto & trajectory,
   const geometry_msgs::msg::PoseStamped & goal)
 {
@@ -75,8 +73,7 @@ printMapWithTrajectoryAndGoal(
  * @param size obstacle side size.
  * @param cost obstacle value on costmap.
  */
-void
-addObstacle(
+void addObstacle(
   nav2_costmap_2d::Costmap2D & costmap, unsigned int upper_left_corner_x,
   unsigned int upper_left_corner_y, unsigned int size, unsigned char cost)
 {
@@ -94,8 +91,7 @@ addObstacle(
  * @return true - if the trajectory crosses an obstacle on the map, false - if
  * not
  */
-bool
-inCollision(const auto & trajectory, const nav2_costmap_2d::Costmap2D & costmap)
+bool inCollision(const auto & trajectory, const nav2_costmap_2d::Costmap2D & costmap)
 {
   unsigned int point_mx = 0;
   unsigned int point_my = 0;
@@ -110,8 +106,7 @@ inCollision(const auto & trajectory, const nav2_costmap_2d::Costmap2D & costmap)
   return false;
 }
 
-bool
-isGoalReached(
+bool isGoalReached(
   const auto & trajectory, const nav2_costmap_2d::Costmap2D & costmap,
   const geometry_msgs::msg::PoseStamped & goal)
 {

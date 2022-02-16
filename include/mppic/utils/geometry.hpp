@@ -17,8 +17,7 @@
 
 namespace mppi::geometry {
 template <typename T, typename H>
-geometry_msgs::msg::TwistStamped
-toTwistStamped(const T & velocities, const H & header)
+geometry_msgs::msg::TwistStamped toTwistStamped(const T & velocities, const H & header)
 {
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = header.frame_id;
@@ -41,8 +40,7 @@ toTwistStamped(const T & velocities, const S & stamp, const std::string & frame)
 }
 
 template <typename T>
-xt::xtensor<T, 2>
-toTensor(const nav_msgs::msg::Path & path)
+xt::xtensor<T, 2> toTensor(const nav_msgs::msg::Path & path)
 {
   size_t path_size = path.poses.size();
   static constexpr size_t last_dim_size = 3;
@@ -59,8 +57,7 @@ toTensor(const nav_msgs::msg::Path & path)
 }
 
 template <typename T>
-auto
-hypot(const T & p1, const T & p2)
+auto hypot(const T & p1, const T & p2)
 {
   double dx = p1.x - p2.x;
   double dy = p1.y - p2.y;
@@ -70,8 +67,7 @@ hypot(const T & p1, const T & p2)
 }
 
 template <>
-inline auto
-hypot(const geometry_msgs::msg::Pose & lhs, const geometry_msgs::msg::Pose & rhs)
+inline auto hypot(const geometry_msgs::msg::Pose & lhs, const geometry_msgs::msg::Pose & rhs)
 {
   return hypot(lhs.position, rhs.position);
 }
@@ -94,8 +90,7 @@ hypot(const geometry_msgs::msg::PoseStamped & lhs, const geometry_msgs::msg::Pos
  * batch_of_segments_points.shape()[1] - 1, path.shape()[0], path.shape()[1] ]
  */
 template <typename P, typename L>
-auto
-closestPointsOnLinesSegment2D(P && path, L && batch_of_segments_points)
+auto closestPointsOnLinesSegment2D(P && path, L && batch_of_segments_points)
 {
   using namespace xt::placeholders;
   using T = typename std::decay_t<P>::value_type;
@@ -148,8 +143,7 @@ closestPointsOnLinesSegment2D(P && path, L && batch_of_segments_points)
  * batch_of_segments_points.shape()[1] - 1, path.shape()[0] ]
  */
 template <typename P, typename L>
-auto
-distPointsToLineSegments2D(P && path, L && batch_of_segments_points)
+auto distPointsToLineSegments2D(P && path, L && batch_of_segments_points)
 {
   auto path_points = xt::view(path, xt::all(), xt::range(0, 2));
   auto batch_of_lines = xt::view(batch_of_segments_points, xt::all(), xt::all(), xt::range(0, 2));

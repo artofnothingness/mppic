@@ -30,25 +30,15 @@ public:
     rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
     nav2_costmap_2d::Costmap2DROS * costmap_ros, model_t model);
 
-  void
-  on_cleanup()
-  {}
-  void
-  on_activate()
-  {}
-  void
-  on_deactivate()
-  {}
+  void on_cleanup() {}
+  void on_activate() {}
+  void on_deactivate() {}
 
   geometry_msgs::msg::TwistStamped evalControl(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan);
 
-  xt::xtensor<T, 3>
-  getGeneratedTrajectories() const
-  {
-    return generated_trajectories_;
-  }
+  xt::xtensor<T, 3> getGeneratedTrajectories() const { return generated_trajectories_; }
 
   xt::xtensor<T, 2> evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::PoseStamped & robot_pose,

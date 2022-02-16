@@ -23,17 +23,9 @@ public:
   void on_activate();
   void on_deactivate();
 
-  void
-  setPath(const nav_msgs::msg::Path & plan)
-  {
-    global_plan_ = plan;
-  }
+  void setPath(const nav_msgs::msg::Path & plan) { global_plan_ = plan; }
 
-  nav_msgs::msg::Path &
-  getPath()
-  {
-    return global_plan_;
-  }
+  nav_msgs::msg::Path & getPath() { return global_plan_; }
 
   /**
    * @brief transform global plan to local applying constraints,
@@ -62,8 +54,7 @@ private:
   auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped & global_pose);
 
   template <typename T>
-  void
-  pruneGlobalPlan(const T & end)
+  void pruneGlobalPlan(const T & end)
   {
     global_plan_.poses.erase(global_plan_.poses.begin(), end);
   }

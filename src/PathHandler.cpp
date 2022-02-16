@@ -4,8 +4,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 namespace mppi::handlers {
-void
-PathHandler::on_configure(
+void PathHandler::on_configure(
   rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
   nav2_costmap_2d::Costmap2DROS * costmap, tf2_ros::Buffer * buffer)
 {
@@ -17,18 +16,12 @@ PathHandler::on_configure(
   getParams();
   RCLCPP_INFO(logger_, "Configured");
 }
-void
-PathHandler::on_cleanup()
-{}
-void
-PathHandler::on_activate()
-{}
-void
-PathHandler::on_deactivate()
-{}
+void PathHandler::on_cleanup() {}
+void PathHandler::on_activate() {}
+void PathHandler::on_deactivate() {}
 
-auto
-PathHandler::getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped & global_pose)
+auto PathHandler::getGlobalPlanConsideringBounds(
+  const geometry_msgs::msg::PoseStamped & global_pose)
 {
   auto begin = global_plan_.poses.begin();
   auto end = global_plan_.poses.end();
@@ -50,8 +43,7 @@ PathHandler::getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStampe
   return std::tuple{closest_point, last_point};
 }
 
-void
-PathHandler::getParams()
+void PathHandler::getParams()
 {
   auto getParam = utils::getParamGetter(parent_, node_name_);
 
@@ -74,8 +66,7 @@ PathHandler::transformToGlobalFrame(const geometry_msgs::msg::PoseStamped & pose
   return robot_pose;
 }
 
-nav_msgs::msg::Path
-PathHandler::transformPath(const geometry_msgs::msg::PoseStamped & robot_pose)
+nav_msgs::msg::Path PathHandler::transformPath(const geometry_msgs::msg::PoseStamped & robot_pose)
 {
   auto global_pose = transformToGlobalFrame(robot_pose);
   const auto & stamp = global_pose.header.stamp;
@@ -94,8 +85,7 @@ PathHandler::transformPath(const geometry_msgs::msg::PoseStamped & robot_pose)
   return transformed_plan;
 }
 
-bool
-PathHandler::transformPose(
+bool PathHandler::transformPose(
   const std::string & frame, const geometry_msgs::msg::PoseStamped & in_pose,
   geometry_msgs::msg::PoseStamped & out_pose) const
 {
@@ -114,8 +104,7 @@ PathHandler::transformPose(
   return false;
 }
 
-double
-PathHandler::getMaxCostmapDist()
+double PathHandler::getMaxCostmapDist()
 {
   const auto & costmap = costmap_->getCostmap();
   return std::max(costmap->getSizeInCellsX(), costmap->getSizeInCellsY()) *

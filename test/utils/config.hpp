@@ -7,8 +7,7 @@ namespace config {
  *
  * @param params_ container for optimizer's parameters.
  */
-void
-setUpOptimizerParams(
+void setUpOptimizerParams(
   int iter, int time_steps, double lookahead_dist, std::vector<rclcpp::Parameter> & params_,
   std::string node_name = std::string("dummy"))
 {
