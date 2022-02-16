@@ -1,13 +1,10 @@
 #pragma once
 
-
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
-#include <nav_msgs/msg/path.hpp>
-
 #include <nav2_costmap_2d/costmap_2d_ros.hpp>
-
+#include <nav_msgs/msg/path.hpp>
 #include <xtensor/xarray.hpp>
 #include <xtensor/xmath.hpp>
 #include <xtensor/xrandom.hpp>
@@ -20,17 +17,17 @@
 namespace mppi::optimization {
 // TODO pluginize
 // TODO separate core from critics
-template<typename T>
+template <typename T>
 class CriticFunction
 {
 public:
   CriticFunction() = default;
   virtual ~CriticFunction() = default;
 
-  void on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
-    const std::string &parent_name,
-    const std::string &component_name,
-    nav2_costmap_2d::Costmap2DROS *const costmap_ros)
+  void
+  on_configure(
+    rclcpp_lifecycle::LifecycleNode * const parent, const std::string & parent_name,
+    const std::string & component_name, nav2_costmap_2d::Costmap2DROS * const costmap_ros)
   {
     parent_ = parent;
     node_name_ = parent_name + "." + component_name;
@@ -42,31 +39,30 @@ public:
 
   virtual void getParams() = 0;
 
-  virtual void score(const geometry_msgs::msg::PoseStamped &robot_pose,
-    const xt::xtensor<T, 3> &trajectories,
-    const xt::xtensor<T, 2> &path,
-    xt::xtensor<T, 1> &costs) = 0;
+  virtual void score(
+    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
+    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) = 0;
 
 protected:
-  rclcpp_lifecycle::LifecycleNode *parent_;
+  rclcpp_lifecycle::LifecycleNode * parent_;
   std::string node_name_;
-  nav2_costmap_2d::Costmap2DROS *costmap_ros_;
-  nav2_costmap_2d::Costmap2D *costmap_;
+  nav2_costmap_2d::Costmap2DROS * costmap_ros_;
+  nav2_costmap_2d::Costmap2D * costmap_;
 };
 
-template<typename T>
+template <typename T>
 class CriticScorer
 {
 public:
   CriticScorer() = default;
-  explicit CriticScorer(std::vector<std::unique_ptr<CriticFunction<T>>> &&critics)
-    : critics_(std::move(critics))
+  explicit CriticScorer(std::vector<std::unique_ptr<CriticFunction<T>>> && critics)
+  : critics_(std::move(critics))
   {}
 
-  void on_configure(rclcpp_lifecycle::LifecycleNode *const parent,
-    const std::string &parent_name,
-    const std::string &component_name,
-    nav2_costmap_2d::Costmap2DROS *const costmap_ros)
+  void
+  on_configure(
+    rclcpp_lifecycle::LifecycleNode * const parent, const std::string & parent_name,
+    const std::string & component_name, nav2_costmap_2d::Costmap2DROS * const costmap_ros)
   {
     for (size_t q = 0; q < critics_.size(); q++) {
       critics_[q]->on_configure(parent, parent_name, component_name, costmap_ros);
@@ -80,14 +76,17 @@ public:
    * where 3 stands for x, y, yaw
    * @return Cost for each trajectory
    */
-  xt::xtensor<T, 1> evalTrajectoriesScores(const xt::xtensor<T, 3> &trajectories,
-    const nav_msgs::msg::Path &global_plan,
-    const geometry_msgs::msg::PoseStamped &robot_pose) const
+  xt::xtensor<T, 1>
+  evalTrajectoriesScores(
+    const xt::xtensor<T, 3> & trajectories, const nav_msgs::msg::Path & global_plan,
+    const geometry_msgs::msg::PoseStamped & robot_pose) const
   {
     size_t trajectories_count = trajectories.shape()[0];
-    xt::xtensor<T, 1> costs = xt::zeros<T>({ trajectories_count });
+    xt::xtensor<T, 1> costs = xt::zeros<T>({trajectories_count});
 
-    if (global_plan.poses.empty()) { return costs; }
+    if (global_plan.poses.empty()) {
+      return costs;
+    }
 
     xt::xtensor<T, 2> path = std::move(geometry::toTensor<T>(global_plan));
 
@@ -102,11 +101,12 @@ private:
   std::vector<std::unique_ptr<CriticFunction<T>>> critics_;
 };
 
-template<typename T>
+template <typename T>
 class GoalCritic : public CriticFunction<T>
 {
 public:
-  void getParams() final
+  void
+  getParams() final
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
     getParam(power_, "goal_cost_power", 1);
@@ -118,10 +118,10 @@ public:
    *
    * @param costs [out] add reference cost values to this tensor
    */
-  virtual void score(const geometry_msgs::msg::PoseStamped &robot_pose,
-    const xt::xtensor<T, 3> &trajectories,
-    const xt::xtensor<T, 2> &path,
-    xt::xtensor<T, 1> &costs) final
+  virtual void
+  score(
+    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
+    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
   {
     (void)robot_pose;
 
@@ -131,22 +131,23 @@ public:
 
     auto dim = trajectories_end.dimension() - 1;
 
-    auto &&dists_trajectories_end_to_goal =
-      xt::norm_l2(std::move(trajectories_end) - goal_points, { dim });
+    auto && dists_trajectories_end_to_goal =
+      xt::norm_l2(std::move(trajectories_end) - goal_points, {dim});
 
     costs += xt::pow(std::move(dists_trajectories_end_to_goal) * weight_, power_);
   }
 
 private:
-  unsigned int power_{ 0 };
-  double weight_{ 0 };
+  unsigned int power_{0};
+  double weight_{0};
 };
 
-template<typename T>
+template <typename T>
 class approxReferenceTrajectoryCritic : public CriticFunction<T>
 {
 public:
-  void getParams() final
+  void
+  getParams() final
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
     getParam(power_, "reference_cost_power", 1);
@@ -159,10 +160,10 @@ public:
    *
    * @param costs [out] add reference cost values to this tensor
    */
-  virtual void score(const geometry_msgs::msg::PoseStamped &robot_pose,
-    const xt::xtensor<T, 3> &trajectories,
-    const xt::xtensor<T, 2> &path,
-    xt::xtensor<T, 1> &costs) final
+  virtual void
+  score(
+    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
+    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
   {
     (void)robot_pose;
 
@@ -171,21 +172,22 @@ public:
       xt::view(trajectories, xt::all(), xt::all(), xt::newaxis(), xt::range(0, 2));
 
     auto dists = xt::norm_l2(
-      path_points - trajectories_points_extended, { trajectories_points_extended.dimension() - 1 });
-    auto &&cost = xt::mean(xt::amin(std::move(dists), 1), 1);
+      path_points - trajectories_points_extended, {trajectories_points_extended.dimension() - 1});
+    auto && cost = xt::mean(xt::amin(std::move(dists), 1), 1);
     costs += xt::pow(std::move(cost) * weight_, power_);
   }
 
 private:
-  unsigned int power_{ 0 };
-  double weight_{ 0 };
+  unsigned int power_{0};
+  double weight_{0};
 };
 
-template<typename T>
+template <typename T>
 class referenceTrajectoryCritic : public CriticFunction<T>
 {
 public:
-  void getParams() final
+  void
+  getParams() final
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
     getParam(power_, "reference_cost_power", 1);
@@ -197,10 +199,10 @@ public:
    *
    * @param costs [out] add reference cost values to this tensor
    */
-  virtual void score(const geometry_msgs::msg::PoseStamped &robot_pose,
-    const xt::xtensor<T, 3> &trajectories,
-    const xt::xtensor<T, 2> &path,
-    xt::xtensor<T, 1> &costs) final
+  virtual void
+  score(
+    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
+    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
   {
     (void)robot_pose;
 
@@ -216,15 +218,16 @@ public:
   }
 
 private:
-  unsigned int power_{ 0 };
-  double weight_{ 0 };
+  unsigned int power_{0};
+  double weight_{0};
 };
 
-template<typename T>
+template <typename T>
 class ObstaclesCritic : public CriticFunction<T>
 {
 public:
-  void getParams() final
+  void
+  getParams() final
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
     getParam(power_, "obstacle_cost_power", 2);
@@ -240,10 +243,10 @@ public:
    *
    * @param costs [out] add obstacle cost values to this tensor
    */
-  virtual void score(const geometry_msgs::msg::PoseStamped &robot_pose,
-    const xt::xtensor<T, 3> &trajectories,
-    const xt::xtensor<T, 2> &path,
-    xt::xtensor<T, 1> &costs) final
+  virtual void
+  score(
+    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
+    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
   {
     (void)robot_pose;
     (void)path;
@@ -254,11 +257,11 @@ public:
     constexpr T collision_cost_value = std::numeric_limits<T>::max() / 2;
 
     auto minDistToObstacle = [this](const auto cost) {
-      return (-1.0 / inflation_cost_scaling_factor_)
-               * std::log(
-                 static_cast<double>(cost)
-                 / (static_cast<double>(nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE) - 1.0))
-             + inscribed_radius_;
+      return (-1.0 / inflation_cost_scaling_factor_) *
+               std::log(
+                 static_cast<double>(cost) /
+                 (static_cast<double>(nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE) - 1.0)) +
+             inscribed_radius_;
     };
 
     for (size_t i = 0; i < trajectories_count; ++i) {
@@ -266,8 +269,7 @@ public:
       bool inflated = false;
       for (size_t j = 0; j < time_steps; ++j) {
         std::array<double, 3> pose = {
-          trajectories(i, j, 0), trajectories(i, j, 1), trajectories(i, j, 2)
-        };
+          trajectories(i, j, 0), trajectories(i, j, 1), trajectories(i, j, 2)};
 
         auto footprint = getOrientedFootprint(pose, this->costmap_ros_->getRobotFootprint());
         auto cost = static_cast<unsigned char>(scoreFootprint(footprint));
@@ -291,19 +293,21 @@ public:
   }
 
 private:
-  bool inCollision(unsigned char cost) const
+  bool
+  inCollision(unsigned char cost) const
   {
     if (this->costmap_ros_->getLayeredCostmap()->isTrackingUnknown()) {
-      return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE
-             && cost != nav2_costmap_2d::NO_INFORMATION;
+      return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE &&
+             cost != nav2_costmap_2d::NO_INFORMATION;
     }
 
     return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
   }
 
-  std::vector<geometry_msgs::msg::Point> getOrientedFootprint(
-    const std::array<double, 3> &robot_pose,
-    const std::vector<geometry_msgs::msg::Point> &footprint_spec) const
+  std::vector<geometry_msgs::msg::Point>
+  getOrientedFootprint(
+    const std::array<double, 3> & robot_pose,
+    const std::vector<geometry_msgs::msg::Point> & footprint_spec) const
   {
     std::vector<geometry_msgs::msg::Point> oriented_footprint;
     oriented_footprint.resize(footprint_spec.size());
@@ -321,7 +325,8 @@ private:
     return oriented_footprint;
   }
 
-  double lineCost(int x0, int x1, int y0, int y1) const
+  double
+  lineCost(int x0, int x1, int y0, int y1) const
   {
     double line_cost = 0.0;
     double point_cost = -1.0;
@@ -330,23 +335,26 @@ private:
       point_cost = static_cast<double>(this->costmap_->getCost(
         static_cast<unsigned int>(line.getX()), static_cast<unsigned int>(line.getY())));
 
-      if (line_cost < point_cost) { line_cost = point_cost; }
+      if (line_cost < point_cost) {
+        line_cost = point_cost;
+      }
     }
 
     return line_cost;
   }
 
-  double scoreFootprint(const std::vector<geometry_msgs::msg::Point> &footprint) const
+  double
+  scoreFootprint(const std::vector<geometry_msgs::msg::Point> & footprint) const
   {
-    unsigned int x0{ 0 };
-    unsigned int x1{ 0 };
-    unsigned int y0{ 0 };
-    unsigned int y1{ 0 };
+    unsigned int x0{0};
+    unsigned int x1{0};
+    unsigned int y0{0};
+    unsigned int y1{0};
 
     double line_cost = 0.0;
     double footprint_cost = 0.0;
 
-    auto world_to_map = [&](size_t i, unsigned int &x, unsigned int &y) {
+    auto world_to_map = [&](size_t i, unsigned int & x, unsigned int & y) {
       if (!this->costmap_->worldToMap(footprint[i].x, footprint[i].y, x, y)) {
         throw std::runtime_error("Footprint Goes Off Grid.");
       }
@@ -373,18 +381,19 @@ private:
     return footprint_cost;
   }
 
-  double inflation_cost_scaling_factor_{ 0 };
-  double inscribed_radius_{ 0 };
-  double inflation_radius_{ 0 };
-  unsigned int power_{ 0 };
-  double weight_{ 0 };
+  double inflation_cost_scaling_factor_{0};
+  double inscribed_radius_{0};
+  double inflation_radius_{0};
+  unsigned int power_{0};
+  double weight_{0};
 };
 
-template<typename T>
+template <typename T>
 class GoalAngleCritic : public CriticFunction<T>
 {
 public:
-  void getParams() final
+  void
+  getParams() final
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
     getParam(power_, "goal_angle_cost_power", 1);
@@ -398,30 +407,30 @@ public:
    *
    * @param costs [out] add goal angle cost values to this tensor
    */
-  virtual void score(const geometry_msgs::msg::PoseStamped &robot_pose,
-    const xt::xtensor<T, 3> &trajectories,
-    const xt::xtensor<T, 2> &path,
-    xt::xtensor<T, 1> &costs) final
+  virtual void
+  score(
+    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
+    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
   {
-    xt::xtensor<T, 1> tensor_pose = { static_cast<T>(robot_pose.pose.position.x),
-      static_cast<T>(robot_pose.pose.position.y) };
+    xt::xtensor<T, 1> tensor_pose = {
+      static_cast<T>(robot_pose.pose.position.x), static_cast<T>(robot_pose.pose.position.y)};
 
     auto path_points = xt::view(path, -1, xt::range(0, 2));
 
-    double points_to_goal_dists = xt::norm_l2(tensor_pose - path_points, { 0 })();
+    double points_to_goal_dists = xt::norm_l2(tensor_pose - path_points, {0})();
 
     if (points_to_goal_dists < threshold_to_consider_goal_angle_) {
       auto yaws = xt::view(trajectories, xt::all(), xt::all(), 2);
       auto goal_yaw = xt::view(path, -1, 2);
 
-      costs += xt::pow(xt::mean(xt::abs(yaws - goal_yaw), { 1 }) * weight_, power_);
+      costs += xt::pow(xt::mean(xt::abs(yaws - goal_yaw), {1}) * weight_, power_);
     }
   }
 
 private:
-  double threshold_to_consider_goal_angle_{ 0 };
-  unsigned int power_{ 0 };
-  double weight_{ 0 };
+  double threshold_to_consider_goal_angle_{0};
+  unsigned int power_{0};
+  double weight_{0};
 };
 
-}// namespace mppi::optimization
+}  // namespace mppi::optimization

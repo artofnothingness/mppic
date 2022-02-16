@@ -2,7 +2,6 @@
 
 #include <array>
 #include <cstdint>
-
 #include <xtensor/xarray.hpp>
 #include <xtensor/xstrided_view.hpp>
 #include <xtensor/xview.hpp>
@@ -10,27 +9,31 @@
 #include "mppic/optimization/TensorDataLayouts.hpp"
 
 namespace mppi::optimization {
-
-template<typename T>
+template <typename T>
 struct ControlSequence
 {
 public:
   xt::xtensor<T, 2> data;
   ControlSequnceIdxes idx;
 
-  void reset(unsigned int time_steps) { data = xt::zeros<T>({ time_steps, idx.dim() }); }
+  void
+  reset(unsigned int time_steps)
+  {
+    data = xt::zeros<T>({time_steps, idx.dim()});
+  }
 };
 
-template<typename T>
+template <typename T>
 struct State
 {
 public:
   xt::xtensor<T, 3> data;
   StateIdxes idx;
 
-  void reset(unsigned int batch_size, unsigned int time_steps)
+  void
+  reset(unsigned int batch_size, unsigned int time_steps)
   {
-    data = xt::zeros<T>({ batch_size, time_steps, idx.dim() });
+    data = xt::zeros<T>({batch_size, time_steps, idx.dim()});
   }
 
   auto getControls() const;
@@ -53,5 +56,4 @@ public:
   auto getTimeIntervals() const;
 };
 
-
-}// namespace mppi::optimization
+}  // namespace mppi::optimization
