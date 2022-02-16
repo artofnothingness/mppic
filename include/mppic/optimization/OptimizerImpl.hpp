@@ -134,12 +134,19 @@ Optimizer<T>::generateNoisedControls() const
   auto vx_noises = xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, vx_std_);
   auto wz_noises = xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, wz_std_);
 
-  if (isHolonomic(getMotionModel())) {
+  if (isHolonomic()) {
     auto vy_noises = xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, vy_std_);
     return control_sequence_.data + xt::concatenate(xt::xtuple(vx_noises, wz_noises, vy_noises), 2);
   }
 
   return control_sequence_.data + xt::concatenate(xt::xtuple(vx_noises, wz_noises), 2);
+}
+
+template <typename T>
+bool
+Optimizer<T>::isHolonomic() const
+{
+  return mppi::optimization::isHolonomic(motion_model_t_);
 }
 
 // Imple dependce on Y
@@ -150,7 +157,7 @@ Optimizer<T>::applyControlConstraints()
   auto vx = state_.getControlVelocitiesVX();
   auto wz = state_.getControlVelocitiesWZ();
 
-  if (isHolonomic(getMotionModel())) {
+  if (isHolonomic()) {
     auto vy = state_.getControlVelocitiesVY();
     vy = xt::clip(vy, -vy_max_, vy_max_);
   }
@@ -176,7 +183,7 @@ Optimizer<T>::updateInitialStateVelocities(
   xt::view(state.getVelocitiesVX(), xt::all(), 0) = robot_speed.linear.x;
   xt::view(state.getVelocitiesWZ(), xt::all(), 0) = robot_speed.angular.z;
 
-  if (isHolonomic(getMotionModel())) {
+  if (isHolonomic()) {
     xt::view(state.getVelocitiesVY(), xt::all(), 0) = robot_speed.linear.y;
   }
 }
@@ -220,30 +227,30 @@ xt::xtensor<T, 3>
 Optimizer<T>::integrateStateVelocities(
   const auto & state, const geometry_msgs::msg::PoseStamped & pose) const
 {
-  using namespace xt::placeholders;
+  using namespace xt;
+  using namespace placeholders;
 
-  auto v = state.getVelocitiesVX();
+  auto vx = state.getVelocitiesVX();
   auto w = state.getVelocitiesWZ();
-  auto yaw = xt::cumsum(w * model_dt_, 1);
+  xt::xtensor<T, 2> yaw = cumsum(w * model_dt_, 1);
+  xt::xtensor<T, 2> yaw_offseted = yaw;
 
-  auto yaw_offseted = yaw;
-  xt::view(yaw_offseted, xt::all(), xt::range(1, _)) =
-    xt::eval(xt::view(yaw, xt::all(), xt::range(_, -1)));
-  xt::view(yaw_offseted, xt::all(), 0) = 0;
-  xt::view(yaw_offseted, xt::all(), xt::all()) += tf2::getYaw(pose.pose.orientation);
+  view(yaw_offseted, all(), range(1, _)) = view(yaw, all(), range(_, -1));
+  view(yaw_offseted, all(), 0) = 0;
+  view(yaw_offseted, all(), all()) += tf2::getYaw(pose.pose.orientation);
 
-  auto v_x = v * xt::cos(yaw_offseted);
-  auto v_y = v * xt::sin(yaw_offseted);
+  auto dx = vx * cos(yaw_offseted);
+  auto dy = vx * sin(yaw_offseted);
 
-  auto x = pose.pose.position.x + xt::cumsum(v_x * model_dt_, 1);
-  auto y = pose.pose.position.y + xt::cumsum(v_y * model_dt_, 1);
+  auto x = pose.pose.position.x + cumsum(dx * model_dt_, 1);
+  auto y = pose.pose.position.y + cumsum(dy * model_dt_, 1);
 
-  return xt::concatenate(
-    xt::xtuple(
-      xt::view(x, xt::all(), xt::all(), xt::newaxis()),
-      xt::view(y, xt::all(), xt::all(), xt::newaxis()),
-      xt::view(yaw, xt::all(), xt::all(), xt::newaxis())),
-    2);
+  // clang-format off
+  return concatenate(xtuple( 
+      view(x, all(), all(), newaxis()), 
+      view(y, all(), all(), newaxis()),
+      view(yaw, all(), all(), newaxis())), 2);
+  // clang-format on
 }
 
 template <typename T>

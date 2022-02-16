@@ -122,7 +122,7 @@ getDummyPath(auto node, std::string frame = std::string("odom"))
 }
 
 auto
-getDummyPath(auto points_count, auto node)
+getDummyPath(size_t points_count, auto node)
 {
   auto path = getDummyPath(node);
 

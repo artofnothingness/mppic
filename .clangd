@@ -7,5 +7,7 @@ Diagnostics:
     Add: modernize*
     Remove: modernize-use-trailing-return-type
     Remove: altera-unroll-loops
+    Remove: modernize-use-nodiscard
+
 
 
