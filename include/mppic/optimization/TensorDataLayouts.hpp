@@ -10,16 +10,28 @@ class ControlSequnceIdxes
 public:
   unsigned int dim() const { return dim_; }
 
+  uint8_t vx() const { return vx_; }
+  uint8_t vy() const { return vy_; }
+  uint8_t wz() const { return wz_; }
+
   void setLayout(MotionModel motion_model)
   {
     if (isHolonomic(motion_model)) {
+      vx_ = 0;
+      vy_ = 1;
+      wz_ = 2;
       dim_ = 3;
     } else {
+      vx_ = 0;
+      wz_ = 1;
       dim_ = 2;
     }
   }
 
 private:
+  uint8_t vx_{0};
+  uint8_t vy_{0};
+  uint8_t wz_{0};
   unsigned int dim_{0};
 };
 
@@ -58,8 +70,6 @@ public:
       cvx_ = 2;
       cwz_ = 3;
       dt_ = 4;
-      vy_ = 0;
-      cvy_ = 0;
       dim_ = 5;
     }
 

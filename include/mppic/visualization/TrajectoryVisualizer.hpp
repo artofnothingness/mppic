@@ -48,13 +48,12 @@ public:
     }
 
     for (size_t i = 0; i < size; i++) {
-      float blue_component = 1.0f - static_cast<float>(i) / static_cast<float>(size);
-      float green_component = static_cast<float>(i) / static_cast<float>(size);
+      float red_component = static_cast<float>(i) / static_cast<float>(size);
 
       auto pose = createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
       auto scale = i != size - 1 ? createScale(0.03, 0.03, 0.07) : createScale(0.10, 0.10, 0.10);
 
-      auto color = createColor(0, green_component, blue_component, 1);
+      auto color = createColor(red_component, 0, 0, 1);
       auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
 
       points_->markers.push_back(std::move(marker));

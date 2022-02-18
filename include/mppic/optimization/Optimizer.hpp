@@ -110,6 +110,8 @@ private:
    */
   auto getControlFromSequence(unsigned int);
 
+  auto getControlFromSequenceAsTwist(unsigned int offset, const auto & stamp);
+
   bool isHolonomic() const;
 
   rclcpp_lifecycle::LifecycleNode * parent_{nullptr};
