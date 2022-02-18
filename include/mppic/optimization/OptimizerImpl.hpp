@@ -27,8 +27,7 @@ geometry_msgs::msg::TwistStamped Optimizer<T>::evalControl(
     updateControlSequence(costs);
   }
 
-  return geometry::toTwistStamped(
-    getControlFromSequence(0), plan.header.stamp, costmap_ros_->getBaseFrameID());
+  return getControlFromSequenceAsTwist(0, plan.header.stamp);
 }
 
 template <typename T>
@@ -258,6 +257,15 @@ void Optimizer<T>::updateControlSequence(const xt::xtensor<T, 1> & costs)
   auto softmaxes_expanded = xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
 
   control_sequence_.data = xt::sum(state_.getControls() * softmaxes_expanded, 0);
+}
+
+template <typename T>
+auto Optimizer<T>::getControlFromSequenceAsTwist(unsigned int offset, const auto & stamp)
+{
+
+  return geometry::toTwistStamped(
+    getControlFromSequence(offset), control_sequence_.idx, isHolonomic(), stamp,
+    costmap_ros_->getBaseFrameID());
 }
 
 template <typename T>

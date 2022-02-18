@@ -20,7 +20,6 @@
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
-
 TEST_CASE("Optimizer doesn't fail", "[]")
 {
   // costmap
