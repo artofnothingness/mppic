@@ -1,9 +1,10 @@
-#MPPI Local Planner
+# MPPI Local Planner
 
-Diff-drive
+## Differential drive  
 ![](.resources/demo-diff.gif)
 
-Omni (experimental, requires adding some critics)
+## Omni (experimental)
+requires adding some critics, and more tests
 ![](.resources/demo-omni.gif)
 
 ## Overview
