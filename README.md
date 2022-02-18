@@ -1,32 +1,27 @@
-# MPPI Local Planner 
+#MPPI Local Planner
 
-![](.resources/demo.gif)
+Diff-drive
+![](.resources/demo-diff.gif)
+
+Omni (experimental, requires adding some critics)
+![](.resources/demo-omni.gif)
 
 ## Overview
 
-Navigation2 Controller plugin. Currently tested on ros2 foxy.
+Navigation2 Controller plugin. Currently testing on ros2 foxy.
 
 This is a controller (local trajectory planner) that implements model predictive 
 path integral control to track a path with collision avoidance. 
 
-The main idea of the algorithm is to sample batch of consecutive controls (linear and angular velocities) by given time window and dt, 
-use model to predict real velocities (linear and angular) for each time_step by given controls and initial velocities (current Twist),
-this can be explained as follows V( t+1 ) = F( X(t) ), where 
-  - V(t+1) - velocities (linear and angular) of all batches at time step t + 1, shape [batch size x 2]
-  - X(T) - batches of time step t, consisting current velocities (linear, angular), controls (linear, angular) and dt, shape [batch size x 5]
+The main idea of the algorithm is to sample batch of control sequences with specified time step for each control, 
+Having inital state of robot (pose, velocity) and batch of controls use iteratively "model" to predict real velocities for each time step in batch.
 
-then integrate these velocities to get trajectories, 
-evalueate cost for each trajectory, and take relative scale of original controls
-(mean of batches controls with overweight for those controls which propagated trajectories has lesser cost) 
-using softmax function calculated with costs.
+this can be explained as follows V(t+1) = M(t), where 
+  - V(t+1) - predicted velocities of batch at time step t + 1
+  - M(T) - Function that predicts real velocities at t + 1 step, by given velocities and control actions at t step.
 
-This implementation has reworked cost function, which for now has 4 components which are related to 
-obstacle avoidance, goal following, reference alignment, goal angle considerring near the goal. May be i'll "pluginize" this in future like in dwb
-There is no GPU acceleration / parallelisation, but you can implement generic "model" function which uses neural network 
-(which predict linear and angular speed of the robot by given control and current state (curent linear and angular velocities))
-which can opperate on whole batch in parrallel. (i'll probably implement this in near future)
-
-This plugin implements the nav2_core::Controller interface allowing it to be used across the navigation stack as a local trajectory planner in the controller server's action server (controller_server).
+Then velocities integrated to get trajectories. For each trajectory, the cost function is calculated. 
+All control sequences are weighted by trajectories costs using softmax function to get final control sequence.
 
 ## Dependencies 
 MPPIc package requires a modern C++ compiler supporting C++17, and Conan C++ package manager:
@@ -39,15 +34,19 @@ pip install conan
  Parameter       | Type   | Definition                                                                                                   |
 | ---------------                  | ------ | -----------------------------------------------------------------------------------------------------------                                                                                                                                    |
 | iteration_count                  | int    | Iteration count in MPPI algorithm                                                                                                                                                                                                              |
-| lookahead_dist                   | double | Max lenght of the global plan, considering by local planner                                                                                                                                                                                    |
+| lookahead_dist                   | double | Max lenght of the global plan that considered by local planner                                                                                                                                                                                    |
 | batch_size                       | int    | Count of randomly sampled trajectories                                                                                                                                                                                                         |
-| time_steps                       | int    | Number of points propagated in time in each sampled trajectory                                                                                                                                                                                 |
-| model_dt                         | double | Time interval between two points in sampled trajectories                                                                                                                                                                                       |
-| v_std                            | double | Standart deviation for linear speed sampling                                                                                                                                                                                                   |
-| w_std                            | double | Standart deviation for angular speed sampling                                                                                                                                                                                                  |
-| v_limit                          | double | Linear speed control limit                                                                                                                                                                                                                     |
-| w_limit                          | double | Angular speed control limit                                                                                                                                                                                                                    |
-| temperature                      | double | Selectiveness of trajectories by their costs (The closer this value to 0, the more we take controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories withou cost consideration |
+| time_steps                       | int    | Number of time steps (points) in each sampled trajectory                                                                                                                                                                                 |
+| model_dt                         | double | Time interval between two sampled points in trajectories                                                                                                                                                                                       |
+| vx_std                           | double | Sampling standart deviation for VX
+| vy_std                           | double | Sampling standart deviation for VY
+| wx_std                           | double | Sampling Standart deviation for WX
+| vx_max                           | double | Max VX
+| vy_max                           | double | Max VY 
+| wz_max                           | double | Max WZ 
+| temperature                      | double | Selectiveness of trajectories by their costs (The closer this value to 0, the "more" we take in considiration controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories withou cost consideration |
+| approx_reference_cost            | bool   | Use approximate point to segment distance calculation                                                                                                                                                                                          |
+| visualize                        | bool   | Use visualization                                                                                                                                                                                                                              |
 | goal_weight                      | double |                                                                                                                                                                                                                                                |
 | goal_power                       | int    |                                                                                                                                                                                                                                                |
 | reference_cost_weight            | double |                                                                                                                                                                                                                                                |
@@ -59,8 +58,6 @@ pip install conan
 | inflation_cost_scaling_factor    | int    | Must be set accurately according to inflation layer params                                                                                                                                                                                     |
 | inflation_radius                 | double | Must be set accurately according to inflation layer params                                                                                                                                                                                     |
 | threshold_to_consider_goal_angle | double | Minimal distance between robot and goal above which angle goal cost considered                                                                                                                                                                 |
-| approx_reference_cost            | bool   | Use approximate point to segment distance calculation                                                                                                                                                                                          |
-| visualize                        | bool   | Use visualization                                                                                                                                                                                                                              |
 
 Example fully-described XML with default parameter values:
 
@@ -89,27 +86,32 @@ controller_server:
 
     FollowPath:
       plugin: "mppi::Controller<float>"
-      time_steps: 20
+      time_steps: 15
       model_dt: 0.1
       batch_size: 300
-      v_std: 0.1
-      w_std: 0.3
-      v_limit: 0.5
-      w_limit: 1.3
+      vx_std: 0.1
+      vy_std: 0.1
+      wz_std: 0.40
+      vx_max: 0.5
+      vy_max: 0.5
+      wz_max: 1.3
       iteration_count: 2
       temperature: 0.25
-      reference_cost_power: 1
-      reference_cost_weight: 5
-      goal_cost_power: 1.0
-      goal_cost_weight: 20.0
-      goal_angle_cost_power: 1.0
-      goal_angle_cost_weight: 5.0
-      obstacle_cost_power: 2
-      obstacle_cost_weight: 10
-      inflation_cost_scaling_factor: 3
-      inflation_radius: 0.75
-      threshold_to_consider_goal_angle: 0.3
       approx_reference_cost: false
+      motion_model: "diff"
+      visualize: true
+      CriticScorer:
+        reference_cost_power: 1
+        reference_cost_weight: 5
+        goal_cost_power: 1
+        goal_cost_weight: 15
+        goal_angle_cost_power: 1
+        goal_angle_cost_weight: 15
+        obstacle_cost_power: 1
+        obstacle_cost_weight: 1
+        inflation_cost_scaling_factor: 3.0
+        inflation_radius: 0.75
+        threshold_to_consider_goal_angle: 0.20
 ```
 
 ## Topics
