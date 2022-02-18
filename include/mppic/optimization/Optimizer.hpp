@@ -10,7 +10,7 @@
 
 #include <nav2_costmap_2d/costmap_2d_ros.hpp>
 
-#include <xtensor/xarray.hpp>
+#include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
 #include "mppic/optimization/CriticScorer.hpp"
@@ -139,7 +139,7 @@ private:
   CriticScorer<T> critic_scorer_;
   std::function<model_t> model_;
 
-  xt::xtensor<T, 3> generated_trajectories_;
+  xt::xtensor<T, 3> generated_trajectories_{};
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
 };
 

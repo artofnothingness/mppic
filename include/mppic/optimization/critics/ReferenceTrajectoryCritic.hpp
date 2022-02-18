@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <xtensor/xtensor.hpp>
 
 #include "mppic/optimization/critics/CriticFunction.hpp"
