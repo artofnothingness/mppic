@@ -5,6 +5,7 @@
 #include "mppic/optimization/MotionModel.hpp"
 
 namespace mppi::optimization {
+
 class ControlSequnceIdxes
 {
 public:
