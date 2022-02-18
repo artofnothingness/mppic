@@ -2,13 +2,14 @@
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #endif
 
-#include "mppic/utils/geometry.hpp"
-
 #include <catch2/catch.hpp>
 #include <cmath>
 #include <vector>
+
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
+
+#include "mppic/utils/geometry.hpp"
 
 static auto toStr = [](auto && container) {
   std::stringstream ss;
