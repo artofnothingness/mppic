@@ -76,7 +76,7 @@ void Optimizer<T>::getParams()
   std::string name;
   getParam(name, "motion_model", std::string("diff"));
 
-  auto & nmap = MOTION_MODEL_NAMES_MAP;
+  const auto & nmap = MOTION_MODEL_NAMES_MAP;
 
   if (auto it = nmap.find(name); it != nmap.end()) {
     setMotionModel(it->second);
