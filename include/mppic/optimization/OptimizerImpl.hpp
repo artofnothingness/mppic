@@ -15,6 +15,13 @@
 #include "mppic/utils/common.hpp"
 #include "mppic/utils/geometry.hpp"
 
+#include "mppic/optimization/critics/ApproxReferenceTrajectoryCritic.hpp"
+#include "mppic/optimization/critics/CriticFunction.hpp"
+#include "mppic/optimization/critics/GoalAngleCritic.hpp"
+#include "mppic/optimization/critics/GoalCritic.hpp"
+#include "mppic/optimization/critics/ObstaclesCritic.hpp"
+#include "mppic/optimization/critics/ReferenceTrajectoryCritic.hpp"
+
 namespace mppi::optimization {
 template <typename T>
 geometry_msgs::msg::TwistStamped Optimizer<T>::evalControl(
@@ -89,9 +96,9 @@ void Optimizer<T>::configureComponents()
   critics.push_back(std::make_unique<optimization::ObstaclesCritic<T>>());
 
   if (approx_reference_cost_) {
-    critics.push_back(std::make_unique<optimization::approxReferenceTrajectoryCritic<T>>());
+    critics.push_back(std::make_unique<optimization::ApproxReferenceTrajectoryCritic<T>>());
   } else {
-    critics.push_back(std::make_unique<optimization::referenceTrajectoryCritic<T>>());
+    critics.push_back(std::make_unique<optimization::ReferenceTrajectoryCritic<T>>());
   }
 
   critic_scorer_ = optimization::CriticScorer<T>(std::move(critics));
@@ -100,7 +107,6 @@ void Optimizer<T>::configureComponents()
   critic_scorer_.on_configure(parent_, node_name_, component_name, costmap_ros_);
 }
 
-// Imple dependce on Y
 template <typename T>
 void Optimizer<T>::reset()
 {
@@ -109,7 +115,6 @@ void Optimizer<T>::reset()
   control_sequence_.reset(time_steps_);
 }
 
-// Imple dependce on Y
 template <typename T>
 xt::xtensor<T, 3> Optimizer<T>::generateNoisedTrajectories(
   const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed)
@@ -140,7 +145,6 @@ bool Optimizer<T>::isHolonomic() const
   return mppi::optimization::isHolonomic(motion_model_t_);
 }
 
-// Imple dependce on Y
 template <typename T>
 void Optimizer<T>::applyControlConstraints()
 {
@@ -176,7 +180,6 @@ void Optimizer<T>::updateInitialStateVelocities(
   }
 }
 
-// Imple dependce on Y
 template <typename T>
 void Optimizer<T>::propagateStateVelocitiesFromInitials(auto & state) const
 {
@@ -191,7 +194,6 @@ void Optimizer<T>::propagateStateVelocitiesFromInitials(auto & state) const
   }
 }
 
-// Imple dependce on Y
 template <typename T>
 xt::xtensor<T, 2> Optimizer<T>::evalTrajectoryFromControlSequence(
   const geometry_msgs::msg::PoseStamped & robot_pose,
@@ -207,7 +209,6 @@ xt::xtensor<T, 2> Optimizer<T>::evalTrajectoryFromControlSequence(
   return xt::squeeze(integrateStateVelocities(state, robot_pose));
 }
 
-// Imple dependce on Y
 template <typename T>
 xt::xtensor<T, 3> Optimizer<T>::integrateStateVelocities(
   const auto & state, const geometry_msgs::msg::PoseStamped & pose) const

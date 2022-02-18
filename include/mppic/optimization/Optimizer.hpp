@@ -13,7 +13,7 @@
 #include <xtensor/xarray.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/optimization/CriticScorerImpl.hpp"
+#include "mppic/optimization/CriticScorer.hpp"
 #include "mppic/optimization/MotionModel.hpp"
 #include "mppic/optimization/TensorWrappersImpl.hpp"
 
@@ -108,16 +108,16 @@ private:
    * @brief Get offseted control from control_sequence_
    *
    */
-  auto getControlFromSequence(unsigned int);
-
+  auto getControlFromSequence(unsigned int offset);
   auto getControlFromSequenceAsTwist(unsigned int offset, const auto & stamp);
 
   bool isHolonomic() const;
 
   rclcpp_lifecycle::LifecycleNode * parent_{nullptr};
-  std::string node_name_;
   nav2_costmap_2d::Costmap2DROS * costmap_ros_{nullptr};
   nav2_costmap_2d::Costmap2D * costmap_{nullptr};
+
+  std::string node_name_;
 
   unsigned int batch_size_{0};
   unsigned int time_steps_{0};
@@ -134,8 +134,9 @@ private:
 
   State<T> state_;
   ControlSequence<T> control_sequence_;
-  CriticScorer<T> critic_scorer_;
   MotionModel motion_model_t_{MotionModel::DiffDrive};
+
+  CriticScorer<T> critic_scorer_;
   std::function<model_t> model_;
 
   xt::xtensor<T, 3> generated_trajectories_;
