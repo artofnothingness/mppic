@@ -15,27 +15,42 @@
 #include <xtensor/xnorm.hpp>
 #include <xtensor/xview.hpp>
 
+#include "mppic/optimization/TensorDataLayouts.hpp"
+
 namespace mppi::geometry {
 template <typename T, typename H>
-geometry_msgs::msg::TwistStamped toTwistStamped(const T & velocities, const H & header)
+geometry_msgs::msg::TwistStamped toTwistStamped(
+  const T & velocities, optimization::ControlSequnceIdxes idx, bool is_holonomic, const H & header)
 {
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = header.frame_id;
   twist.header.stamp = header.stamp;
-  twist.twist.linear.x = velocities(0);
-  twist.twist.angular.z = velocities(1);
+
+  twist.twist.linear.x = velocities(idx.vx());
+  twist.twist.angular.z = velocities(idx.wz());
+
+  if (is_holonomic) {
+    twist.twist.linear.y = velocities(idx.vy());
+  }
+
   return twist;
 }
 
 template <typename T, typename S>
-geometry_msgs::msg::TwistStamped
-toTwistStamped(const T & velocities, const S & stamp, const std::string & frame)
+geometry_msgs::msg::TwistStamped toTwistStamped(
+  const T & velocities, optimization::ControlSequnceIdxes idx, bool is_holonomic, const S & stamp,
+  const std::string & frame)
 {
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = frame;
   twist.header.stamp = stamp;
-  twist.twist.linear.x = velocities(0);
-  twist.twist.angular.z = velocities(1);
+  twist.twist.linear.x = velocities(idx.vx());
+  twist.twist.angular.z = velocities(idx.wz());
+
+  if (is_holonomic) {
+    twist.twist.linear.y = velocities(idx.vy());
+  }
+
   return twist;
 }
 
