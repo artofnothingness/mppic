@@ -1,5 +1,5 @@
 CompileFlags:
-  Add: [ -std=c++17 ]
+  Add: [ -std=c++20 ]
   Compiler: g++
 
 Diagnostics:
@@ -8,6 +8,3 @@ Diagnostics:
     Remove: modernize-use-trailing-return-type
     Remove: altera-unroll-loops
     Remove: modernize-use-nodiscard
-
-
-
