@@ -17,51 +17,62 @@
 
 namespace mppi::optimization {
 
-// TODO pluginize
 template <typename T>
 class CriticScorer
 {
 public:
   CriticScorer() = default;
-  explicit CriticScorer(std::vector<std::unique_ptr<CriticFunction<T>>> && critics)
-  : critics_(std::move(critics))
-  {}
 
   void on_configure(
     rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
     nav2_costmap_2d::Costmap2DROS * costmap_ros)
   {
+    parent_ = parent;
+    costmap_ros_ = costmap_ros;
+    node_name_ = node_name;
 
-    auto getParam = utils::getParamGetter(parent, node_name);
+    getParams();
+    setLoader();
+    loadCritics();
+    configureCritics();
+  }
 
-    std::vector<std::string> critics_names;
-    std::string critics_type;
-    getParam(critics_names, "critics_names", std::vector<std::string>{});
-    getParam(critics_type, "critics_type", std::string("float"));
-
-    auto getFullName = [&critics_type](const std::string & name) {
-      return "mppi::optimization::" + name + "<" + critics_type + ">";
-    };
-
-    for (auto name : critics_names) {
-      getFullName(name);
+  void setLoader()
+  {
+    if (!loader_) {
+      loader_ = std::make_unique<pluginlib::ClassLoader<optimization::CriticFunction<T>>>(
+        "mppic_base", getFullName(base_name_));
     }
+  }
 
-    const std::string base_name = "CriticFunction";
-    pluginlib::ClassLoader<optimization::CriticFunction<T>> loader(
-      "mppic_base", getFullName(base_name));
+  std::string getFullName(const std::string & name)
+  {
+    return "mppi::optimization::" + name + "<" + critics_type_ + ">";
+  }
 
+  void getParams()
+  {
+    auto getParam = utils::getParamGetter(parent_, node_name_);
+    getParam(critics_names_, "critics_names", std::vector<std::string>{});
+    getParam(critics_type_, "critics_type", std::string("float"));
+  }
+
+  void loadCritics()
+  {
     critics_.clear();
-    for (auto name : critics_names) {
+    for (auto name : critics_names_) {
       std::string fullname = getFullName(name);
-      auto instance =
-        std::unique_ptr<optimization::CriticFunction<T>>(loader.createUnmanagedInstance(fullname));
+      auto instance = std::unique_ptr<optimization::CriticFunction<T>>(
+        loader_->createUnmanagedInstance(fullname));
       critics_.push_back(std::move(instance));
       RCLCPP_INFO(logger_, "Critic loaded : %s", fullname.c_str());
     }
+  }
 
+  void configureCritics()
+  {
     for (size_t q = 0; q < critics_.size(); q++) {
-      critics_[q]->on_configure(parent, node_name + "." + critics_names[q], costmap_ros);
+      critics_[q]->on_configure(parent_, node_name_ + "." + critics_names_[q], costmap_ros_);
     }
   }
 
@@ -93,7 +104,17 @@ public:
   }
 
 private:
+  rclcpp_lifecycle::LifecycleNode * parent_{nullptr};
+  nav2_costmap_2d::Costmap2DROS * costmap_ros_{nullptr};
+  std::string node_name_;
+
+  std::vector<std::string> critics_names_;
+  std::string critics_type_;
+  const std::string base_name_ = "CriticFunction";
+
+  std::unique_ptr<pluginlib::ClassLoader<optimization::CriticFunction<T>>> loader_;
   std::vector<std::unique_ptr<CriticFunction<T>>> critics_;
+
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI CriticScorer")};
 };
 
