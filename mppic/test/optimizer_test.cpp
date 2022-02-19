@@ -25,12 +25,12 @@
 TEST_CASE("Optimizer doesn't fail", "[]")
 {
   // costmap
-  unsigned int cells_x = 40;
-  unsigned int cells_y = 40;
-  double origin_x = 0.0;
-  double origin_y = 0.0;
-  double resolution = 0.1;
-  unsigned char cost_map_default_value = 0;
+  const unsigned int cells_x = 40;
+  const unsigned int cells_y = 40;
+  const double origin_x = 0.0;
+  const double origin_y = 0.0;
+  const double resolution = 0.1;
+  const unsigned char cost_map_default_value = 0;
 
   // start pose
   double start_x = static_cast<double>(cells_x) * resolution / 2.0;

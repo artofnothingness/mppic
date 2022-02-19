@@ -3,8 +3,8 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic_base/CriticFunction.hpp"
 #include "mppic/utils/common.hpp"
+#include "mppic_base/CriticFunction.hpp"
 
 namespace mppi::optimization {
 
@@ -16,7 +16,7 @@ public:
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
     getParam(power_, "reference_cost_power", 1);
-    getParam(weight_, "reference_cost_weight", 20);
+    getParam(weight_, "reference_cost_weight", 15);
   }
 
   /**

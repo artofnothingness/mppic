@@ -130,7 +130,6 @@ private:
   T vx_std_{0};
   T vy_std_{0};
   T wz_std_{0};
-  bool approx_reference_cost_{true};
 
   State<T> state_;
   ControlSequence<T> control_sequence_;

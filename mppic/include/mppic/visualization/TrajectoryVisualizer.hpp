@@ -100,7 +100,7 @@ private:
   std::unique_ptr<visualization_msgs::msg::MarkerArray> points_;
   int marker_id_ = 0;
 
-  rclcpp::Logger logger_{rclcpp::get_logger("Trajectory Visualizer")};
+  rclcpp::Logger logger_{rclcpp::get_logger("MPPI Trajectory Visualizer")};
 };
 
 } // namespace mppi::visualization

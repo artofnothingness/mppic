@@ -15,8 +15,8 @@ public:
   void getParams() final
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
-    getParam(power_, "obstacle_cost_power", 2);
-    getParam(weight_, "obstacle_cost_weight", 10);
+    getParam(power_, "obstacle_cost_power", 1);
+    getParam(weight_, "obstacle_cost_weight", 20);
     getParam(inflation_cost_scaling_factor_, "inflation_cost_scaling_factor", 3.0);
     getParam(inflation_radius_, "inflation_radius", 0.75);
 
