@@ -1,9 +1,7 @@
-#pragma once
-
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/optimization/critics/CriticFunction.hpp"
+#include "mppic_base/CriticFunction.hpp"
 #include "mppic/utils/common.hpp"
 
 namespace mppi::optimization {

@@ -1,8 +1,6 @@
-#pragma once
-
 #include <xtensor/xtensor.hpp>
 
-#include "mppic/optimization/critics/CriticFunction.hpp"
+#include "mppic_base/CriticFunction.hpp"
 
 #include "mppic/utils/LineIterator.hpp"
 #include "mppic/utils/common.hpp"
