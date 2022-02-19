@@ -5,12 +5,12 @@ option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
 option(ENABLE_TESTING "Enable Test Builds" ON)
 option(ENABLE_CONAN "Use Conan for dependency management" ON)
 
-include(cmake/StandardProjectSettings.cmake)
-include(cmake/CompilerWarnings.cmake)
-include(cmake/Sanitizers.cmake)
-include(cmake/Doxygen.cmake)
-include(cmake/StaticAnalyzers.cmake)
-include(cmake/Conan.cmake)
+include(../cmake/StandardProjectSettings.cmake)
+include(../cmake/CompilerWarnings.cmake)
+include(../cmake/Sanitizers.cmake)
+include(../cmake/Doxygen.cmake)
+include(../cmake/StaticAnalyzers.cmake)
+include(../cmake/Conan.cmake)
 
 if(ENABLE_CONAN)
   run_conan()
@@ -40,6 +40,7 @@ set(packages
   nav2_core 
   nav2_costmap_2d 
   nav2_util
+  mppic_base 
 )
 
 
@@ -48,11 +49,12 @@ foreach(pkg IN LISTS packages)
 endforeach()
 
 add_library(mppic SHARED src/Controller.cpp src/PathHandler.cpp)
+
 ament_target_dependencies(mppic
   ${packages}
 )
-
 target_link_libraries(mppic project_options)
+
 
 if(ENABLE_TESTING)
   enable_testing()
