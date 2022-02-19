@@ -4,6 +4,7 @@
 #include "mppic/utils/common.hpp"
 
 namespace mppi {
+
 template <typename T>
 void Controller<T>::configure(
   const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> & parent, std::string node_name,
@@ -107,5 +108,7 @@ void Controller<T>::configureComponents()
 #include "pluginlib/class_loader.hpp"
 
 template class mppi::Controller<float>;
+template class mppi::Controller<double>;
 
 PLUGINLIB_EXPORT_CLASS(mppi::Controller<float>, nav2_core::Controller)
+PLUGINLIB_EXPORT_CLASS(mppi::Controller<double>, nav2_core::Controller)

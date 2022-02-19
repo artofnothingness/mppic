@@ -19,6 +19,7 @@
   <depend>nav2_msgs</depend>
   <depend>pluginlib</depend>
   <depend>tf2</depend>
+  <depend>mppic_base</depend>
 
   <exec_depend>nav2_bringup</exec_depend>
 

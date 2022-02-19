@@ -1,15 +1,15 @@
-#pragma once
-
+#include <xtensor/xmath.hpp>
+#include <xtensor/xnorm.hpp>
 #include <xtensor/xtensor.hpp>
+#include <xtensor/xview.hpp>
 
-#include "mppic/optimization/critics/CriticFunction.hpp"
+#include "mppic_base/CriticFunction.hpp"
 #include "mppic/utils/common.hpp"
-#include "mppic/utils/geometry.hpp"
 
 namespace mppi::optimization {
 
 template <typename T>
-class ReferenceTrajectoryCritic : public CriticFunction<T>
+class ApproxReferenceTrajectoryCritic : public CriticFunction<T>
 {
 public:
   void getParams() final
@@ -20,7 +20,8 @@ public:
   }
 
   /**
-   * @brief Evaluate cost related to trajectories path alignment
+   * @brief Evaluate cost related to trajectories path alignment using
+   * approximate path to segment function
    *
    * @param costs [out] add reference cost values to this tensor
    */
@@ -30,14 +31,13 @@ public:
   {
     (void)robot_pose;
 
-    using xt::evaluation_strategy::immediate;
+    auto path_points = xt::view(path, xt::all(), xt::range(0, 2));
+    auto trajectories_points_extended =
+      xt::view(trajectories, xt::all(), xt::all(), xt::newaxis(), xt::range(0, 2));
 
-    xt::xtensor<T, 3> dists_path_to_trajectories =
-      geometry::distPointsToLineSegments2D(path, trajectories);
-
-    xt::xtensor<T, 1> cost =
-      xt::mean(xt::amin(std::move(dists_path_to_trajectories), 1, immediate), 1, immediate);
-
+    auto dists = xt::norm_l2(
+      path_points - trajectories_points_extended, {trajectories_points_extended.dimension() - 1});
+    auto && cost = xt::mean(xt::amin(std::move(dists), 1), 1);
     costs += xt::pow(std::move(cost) * weight_, power_);
   }
 
