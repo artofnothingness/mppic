@@ -1,13 +1,9 @@
 #pragma once
 
-#include <string>
-
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
-
 #include <geometry_msgs/msg/pose_stamped.hpp>
-
 #include <nav2_costmap_2d/costmap_2d_ros.hpp>
-
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <string>
 #include <xtensor/xtensor.hpp>
 
 namespace mppi::optimization {
