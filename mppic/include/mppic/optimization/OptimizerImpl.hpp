@@ -1,9 +1,9 @@
 #pragma once
 
 #include <limits>
-#include <vector>
-#include <string>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <pluginlib/class_loader.hpp>
 
@@ -19,8 +19,6 @@
 #include "mppic/utils/LineIterator.hpp"
 #include "mppic/utils/common.hpp"
 #include "mppic/utils/geometry.hpp"
-
-#include "mppic_base/CriticFunction.hpp"
 
 namespace mppi::optimization {
 template <typename T>
@@ -64,7 +62,6 @@ void Optimizer<T>::getParams()
   getParam(batch_size_, "batch_size", 200);
   getParam(iteration_count_, "iteration_count", 2);
   getParam(temperature_, "temperature", 0.25);
-  getParam(approx_reference_cost_, "approx_reference_cost", false);
 
   getParam(vx_max_, "vx_max", 0.5);
   getParam(vy_max_, "vy_max", 1.3);
@@ -89,32 +86,9 @@ void Optimizer<T>::getParams()
 template <typename T>
 void Optimizer<T>::configureComponents()
 {
-  std::vector<std::unique_ptr<optimization::CriticFunction<T>>> critics;
 
-  std::string base_critic_name = "mppi::optimization::CriticFunction<float>";
-  pluginlib::ClassLoader<optimization::CriticFunction<T>> loader("mppic_base", base_critic_name);
-
-  std::vector<std::string> critic_names = {
-    "mppi::optimization::GoalCritic<float>",
-    "mppi::optimization::GoalAngleCritic<float>",
-    "mppi::optimization::ObstaclesCritic<float>",
-  };
-
-  if (approx_reference_cost_) {
-    critic_names.emplace_back("mppi::optimization::ApproxReferenceTrajectoryCritic<float>");
-  } else {
-    critic_names.emplace_back("mppi::optimization::ReferenceTrajectoryCritic<float>");
-  }
-
-  for (auto name : critic_names) {
-    auto instance =
-      std::unique_ptr<optimization::CriticFunction<T>>(loader.createUnmanagedInstance(name));
-    critics.push_back(std::move(instance));
-  }
-
-  critic_scorer_ = optimization::CriticScorer<T>(std::move(critics));
-  std::string component_name = "CriticScorer";
-  critic_scorer_.on_configure(parent_, node_name_, component_name, costmap_ros_);
+  std::string component_name = node_name_ + ".CriticScorer";
+  critic_scorer_.on_configure(parent_, component_name, costmap_ros_);
 }
 
 template <typename T>
