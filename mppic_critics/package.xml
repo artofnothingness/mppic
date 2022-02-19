@@ -9,8 +9,12 @@
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
-  <depend>mppic_base</depend>
   <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>nav2_costmap_2d</depend>
+  <depend>geometry_msgs</depend>
+  <depend>mppic_base</depend>
+  <depend>mppic</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

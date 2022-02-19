@@ -1,4 +1,5 @@
 #include <xtensor/xmath.hpp>
+#include <xtensor/xnorm.hpp>
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 

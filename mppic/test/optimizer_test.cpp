@@ -67,6 +67,7 @@ TEST_CASE("Optimizer doesn't fail", "[]")
     auto path = factory::getDummyPath(poses_count, node);
     auto pose = factory::getDummyPointStamped(node, start_x, start_y);
     auto velocity = factory::getDummyTwist();
+
     WARN(
       "Points in path " << poses_count << "\niteration_count " << iteration_count << "\ntime_steps "
                         << time_steps << "\nMotion model : " << motion_model);

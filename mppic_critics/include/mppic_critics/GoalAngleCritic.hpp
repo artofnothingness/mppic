@@ -1,8 +1,9 @@
+#include <xtensor/xnorm.hpp>
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic_base/CriticFunction.hpp"
 #include "mppic/utils/common.hpp"
+#include "mppic_base/CriticFunction.hpp"
 
 namespace mppi::optimization {
 
