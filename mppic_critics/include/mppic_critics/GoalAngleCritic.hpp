@@ -15,7 +15,7 @@ public:
   {
     auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
     getParam(power_, "goal_angle_cost_power", 1);
-    getParam(weight_, "goal_angle_cost_weight", 10);
+    getParam(weight_, "goal_angle_cost_weight", 15);
     getParam(threshold_to_consider_goal_angle_, "threshold_to_consider_goal_angle", 0.30);
   }
 
