@@ -35,6 +35,8 @@ public:
     setLoader();
     loadCritics();
     configureCritics();
+
+    RCLCPP_INFO(logger_, "Configured");
   }
 
   void setLoader()

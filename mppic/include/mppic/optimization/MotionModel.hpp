@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 namespace mppi::optimization {
+
 enum class MotionModel : uint8_t { Omni, DiffDrive, Carlike };
 
 inline bool isHolonomic(MotionModel motion_model)
