@@ -1,4 +1,4 @@
-# Model Predictive Path Integral Controller (mppic)
+# Model Predictive Path Integral Controller
 
 ## Differential drive  
 ![](.resources/demo-diff.gif)
