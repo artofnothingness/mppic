@@ -4,6 +4,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 namespace mppi::handlers {
+
 void PathHandler::on_configure(
   rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
   nav2_costmap_2d::Costmap2DROS * costmap, tf2_ros::Buffer * buffer)

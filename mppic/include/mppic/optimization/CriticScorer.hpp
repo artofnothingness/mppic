@@ -1,5 +1,6 @@
 #pragma once
 
+#include <pluginlib/class_loader.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>

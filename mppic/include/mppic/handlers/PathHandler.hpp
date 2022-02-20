@@ -47,14 +47,13 @@ private:
   geometry_msgs::msg::PoseStamped
   transformToGlobalFrame(const geometry_msgs::msg::PoseStamped & pose);
 
-  template <typename Iter, typename Stamp>
+  template <typename Iter>
   nav_msgs::msg::Path
-  transformGlobalPlan(Iter begin, Iter end, const Stamp & stamp, const std::string & frame);
+  transformGlobalPlan(Iter begin, Iter end, const auto & stamp, const std::string & frame);
 
   auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped & global_pose);
 
-  template <typename T>
-  void pruneGlobalPlan(const T & end)
+  void pruneGlobalPlan(const auto & end)
   {
     global_plan_.poses.erase(global_plan_.poses.begin(), end);
   }

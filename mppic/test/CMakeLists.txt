@@ -13,18 +13,14 @@ if (${TEST_DEBUG_INFO})
   target_compile_definitions(catch_main PUBLIC -DTEST_DEBUG_INFO)
 endif()
 
-
-macro(mppi_add_tests test_names)
-  foreach(mppi_test IN LISTS test_names)
-    find_package(${pkg} REQUIRED)
-    add_executable(${test_name} {test_name}.cpp)
-    ament_target_dependencies(${test_name} ${packages})
-    target_link_libraries(${test_name} catch_main project_options)
-    catch_discover_tests(${test_name})
-  endforeach()
-endmacro()
-
-mppi_add_tests(
-  optimizer_test 
+set(TEST_NAMES 
+  optimizer_test
   geometry_test
 )
+
+foreach(name IN LISTS TEST_NAMES)
+  add_executable(${name} ${name}.cpp)
+  ament_target_dependencies(${name} ${packages})
+  target_link_libraries(${name} catch_main project_options)
+  catch_discover_tests(${name})
+endforeach()
