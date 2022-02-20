@@ -53,6 +53,7 @@ set(CRITICS
   src/ApproxReferenceTrajectoryCritic.cpp
   src/ReferenceTrajectoryCritic.cpp
   src/GoalAngleCritic.cpp
+  src/AngleToGoalCritic.cpp
   src/GoalCritic.cpp
   src/ObstaclesCritic.cpp
 )
