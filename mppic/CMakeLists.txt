@@ -1,34 +1,36 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.16)
+
+set(CMAKE_CXX_STANDARD 17)
+
+include(FetchContent)
+FetchContent_Declare(_project_options URL https://github.com/cpp-best-practices/project_options/archive/refs/tags/v0.17.0.zip)
+FetchContent_MakeAvailable(_project_options)
+include(${_project_options_SOURCE_DIR}/Index.cmake)
+
+
 project(mppic CXX)
 
-option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
-option(ENABLE_TESTING "Enable Test Builds" ON)
-option(ENABLE_CONAN "Use Conan for dependency management" ON)
+project_options(
+  ENABLE_CONAN
+  WARNINGS_AS_ERRORS
+  ENABLE_DOXYGEN
+  ENABLE_COVERAGE
+  # ENABLE_SANITIZER_ADDRESS
+  # ENABLE_SANITIZER_LEAK
+  # ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
+  # ENABLE_SANITIZER_THREAD
+  # ENABLE_SANITIZER_MEMORY
+  # CONAN_OPTIONS
+)
 
-include(../cmake/StandardProjectSettings.cmake)
-include(../cmake/CompilerWarnings.cmake)
-include(../cmake/Sanitizers.cmake)
-include(../cmake/Doxygen.cmake)
-include(../cmake/StaticAnalyzers.cmake)
-include(../cmake/Conan.cmake)
+option(ENABLE_TESTING "Enable Test Builds" ON)
 
 if(ENABLE_CONAN)
   run_conan()
 endif()
 
+
 find_package(ament_cmake REQUIRED)
-find_package(nav2_common REQUIRED)
-find_package(xtensor REQUIRED)
-
-add_library(project_options INTERFACE)
-target_include_directories(project_options INTERFACE include)
-target_compile_features(project_options INTERFACE cxx_std_17)
-target_compile_options(project_options INTERFACE -fconcepts)
-target_link_libraries(project_options INTERFACE xtensor)
-
-enable_sanitizers(project_options)
-set_project_warnings(project_options)
-
 
 set(packages 
   rclcpp 
@@ -43,17 +45,19 @@ set(packages
   mppic_base 
 )
 
+set(libraries 
+  xtensor
+)
 
-foreach(pkg IN LISTS packages)
+foreach(pkg IN LISTS packages libraries)
   find_package(${pkg} REQUIRED)
 endforeach()
 
 add_library(mppic SHARED src/Controller.cpp src/PathHandler.cpp)
-
-ament_target_dependencies(mppic
-  ${packages}
-)
-target_link_libraries(mppic project_options)
+target_include_directories(mppic PUBLIC include)
+target_compile_options(mppic PUBLIC -fconcepts)
+ament_target_dependencies(mppic ${packages})
+target_link_libraries(mppic project_options ${libraries})
 
 
 if(ENABLE_TESTING)
@@ -63,6 +67,7 @@ if(ENABLE_TESTING)
   add_subdirectory(test)
 endif()
 
+# >>>> Ros
 ament_export_libraries(mppic)
 ament_export_dependencies(${packages})
 ament_export_include_directories(include)
@@ -77,5 +82,6 @@ install(TARGETS mppic
 install(DIRECTORY include/
   DESTINATION include/
 )
+# <<<< Ros
 
 ament_package()
