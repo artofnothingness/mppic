@@ -32,59 +32,65 @@ pip install conan
 
 ## Configuration
 
- Parameter       | Type   | Definition                                                                                                   |
-| ---------------                  | ------ | -----------------------------------------------------------------------------------------------------------                                                                                                                                    |
-| iteration_count                  | int    | Iteration count in MPPI algorithm                                                                                                                                                                                                              |
-| lookahead_dist                   | double | Max lenght of the global plan that considered by local planner                                                                                                                                                                                    |
-| batch_size                       | int    | Count of randomly sampled trajectories                                                                                                                                                                                                         |
-| time_steps                       | int    | Number of time steps (points) in each sampled trajectory                                                                                                                                                                                 |
-| model_dt                         | double | Time interval between two sampled points in trajectories                                                                                                                                                                                       |
-| vx_std                           | double | Sampling standart deviation for VX
-| vy_std                           | double | Sampling standart deviation for VY
-| wx_std                           | double | Sampling Standart deviation for WX
-| vx_max                           | double | Max VX
-| vy_max                           | double | Max VY 
-| wz_max                           | double | Max WZ 
-| temperature                      | double | Selectiveness of trajectories by their costs (The closer this value to 0, the "more" we take in considiration controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories withou cost consideration |
-| approx_reference_cost            | bool   | Use approximate point to segment distance calculation                                                                                                                                                                                          |
-| visualize                        | bool   | Use visualization                                                                                                                                                                                                                              |
-| goal_weight                      | double |                                                                                                                                                                                                                                                |
-| goal_power                       | int    |                                                                                                                                                                                                                                                |
-| reference_cost_weight            | double |                                                                                                                                                                                                                                                |
-| reference_cost_power             | int    |                                                                                                                                                                                                                                                |
-| obstacle_cost_weight             | double |                                                                                                                                                                                                                                                |
-| obstacle_cost_power              | int    |                                                                                                                                                                                                                                                |
-| goal_angle_cost_weight           | double |                                                                                                                                                                                                                                                |
-| goal_angle_cost_power            | int    |                                                                                                                                                                                                                                                |
-| inflation_cost_scaling_factor    | int    | Must be set accurately according to inflation layer params                                                                                                                                                                                     |
-| inflation_radius                 | double | Must be set accurately according to inflation layer params                                                                                                                                                                                     |
-| threshold_to_consider_goal_angle | double | Minimal distance between robot and goal above which angle goal cost considered                                                                                                                                                                 |
+### Controller params
+ Parameter                         | Type   | Definition                                                                                                   |
+| ---------------               | ------ | -----------------------------------------------------------------------------------------------------------                                                                                                                                                       |
+| iteration_count               | int    | Iteration count in MPPI algorithm                                                                                                                                                                                                                                 |
+| lookahead_dist                | double | Max lenght of the global plan that considered by local planner                                                                                                                                                                                                    |
+| batch_size                    | int    | Count of randomly sampled trajectories                                                                                                                                                                                                                            |
+| time_steps                    | int    | Number of time steps (points) in each sampled trajectory                                                                                                                                                                                                          |
+| model_dt                      | double | Time interval between two sampled points in trajectories                                                                                                                                                                                                          |
+| vx_std                        | double | Sampling standart deviation for VX
+| vy_std                        | double | Sampling standart deviation for VY
+| wx_std                        | double | Sampling Standart deviation for WX
+| vx_max                        | double | Max VX
+| vy_max                        | double | Max VY
+| wz_max                        | double | Max WZ
+| temperature                   | double | Selectiveness of trajectories by their costs (The closer this value to 0, the "more" we take in considiration controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories withou cost consideration |
+| visualize                     | bool   | Use visualization                                                                                                                                                                                                                                                 |
+| motion_model                  | string | Type of model [diff, omni, carlike]                                                                                                                                                                                                                               |
 
-Example fully-described XML with default parameter values:
+#### CriticScorer params
 
+ Parameter                   | Type   | Definition                                                                                                  |
+| --------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+| critics_type    | string | Type of controller [float, double]                                                                          |
+| critics_names   | string | Critics (plugins) names
+| GoalCritic      | string | Critics (plugins) names
+
+#### GoalCritic params
+ Parameter                   | Type   | Definition                                                                                                  |
+| --------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+| goal_weight     | double |                                                                                                             |
+| goal_power      | int    |                                                                                                             |
+
+#### GoalAngleCritic params
+ Parameter                   | Type   | Definition                                                                                                  |
+| ---------------        | ------ | ----------------------------------------------------------------------------------------------------------- |
+| goal_angle_cost_weight | double |                                                                                                             |
+| goal_angle_cost_power  | int    |                                                                                                             |
+| threshold_to_consider_goal_angle | double | Minimal distance between robot and goal above which angle goal cost considered                                                                                                                                                                                    |
+
+#### [Approx]ReferenceTrajectoryCritic params
+ Parameter                   | Type   | Definition                                                                                                  |
+| --------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+| reference_cost_weight            | double |                                                                                                                                                                                                                                                                   |
+| reference_cost_power             | int    |                                                                                                                                                                                                                                                                   |
+
+#### ObstaclesCritic params
+ Parameter                   | Type   | Definition                                                                                                  |
+| ---------------               | ------ | ----------------------------------------------------------------------------------------------------------- |
+| obstacle_cost_weight          | double |                                                                                                             |
+| obstacle_cost_power           | int    |                                                                                                             |
+| inflation_cost_scaling_factor | int    | Must be set accurately according to inflation layer params                                                  |
+| inflation_radius              | double | Must be set accurately according to inflation layer params                                                  |
+
+
+
+### XML configuration example
 ```
 controller_server:
   ros__parameters:
-    use_sim_time: True
-    controller_frequency: 10.0
-    min_x_velocity_threshold: 0.001
-    min_y_velocity_threshold: 1.0
-    min_theta_velocity_threshold: 0.001
-    progress_checker_plugin: "progress_checker"
-    goal_checker_plugin: "goal_checker"
-    controller_plugins: ["FollowPath"]
-
-    progress_checker:
-      plugin: "nav2_controller::SimpleProgressChecker"
-      required_movement_radius: 0.5
-      movement_time_allowance: 10.0
-
-    goal_checker:
-      plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.25
-      yaw_goal_tolerance: 0.25
-      stateful: True
-
     FollowPath:
       plugin: "mppi::Controller<float>"
       time_steps: 15
