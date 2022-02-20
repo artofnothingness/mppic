@@ -1,4 +1,4 @@
-# MPPI Local Planner
+# Model Predictive Path Integral Controller (mppic)
 
 ## Differential drive  
 ![](.resources/demo-diff.gif)
