@@ -5,8 +5,6 @@
 #include <string>
 #include <vector>
 
-#include <pluginlib/class_loader.hpp>
-
 #include <nav2_core/exceptions.hpp>
 #include <nav2_costmap_2d/cost_values.hpp>
 
