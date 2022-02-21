@@ -28,20 +28,19 @@ public:
     const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
     const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
   {
-    (void) robot_pose;
+    (void)robot_pose;
+    auto init_yaw = tf2::getYaw(robot_pose.pose.orientation);
 
     auto goal_x = xt::view(path, -1, 0);
     auto goal_y = xt::view(path, -1, 1);
+    auto traj_x = xt::view(trajectories, xt::all(), xt::all(), 0);
+    auto traj_y = xt::view(trajectories, xt::all(), xt::all(), 1);
+    auto traj_yaws = xt::view(trajectories, xt::all(), xt::all(), 2);
 
-    auto traj_xs = xt::view(trajectories, xt::all(), xt::all(), 0);
-    auto traj_ys = xt::view(trajectories, xt::all(), xt::all(), 1);
+    auto angle_between_points = atan2(goal_y - traj_y, goal_x - traj_x);
+    auto yaws = xt::abs(traj_yaws - angle_between_points);
 
-    auto dx = traj_xs - goal_x ;
-    auto dy = traj_ys - goal_y;
-
-    auto angle = xt::atan2(dy, dx);
-
-    costs += xt::pow(xt::mean(angle, {1}) * weight_, power_);
+    costs += xt::pow(xt::mean(yaws, {1}) * weight_, power_);
   }
 
 private:

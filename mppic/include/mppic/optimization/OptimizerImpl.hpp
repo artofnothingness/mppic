@@ -115,7 +115,7 @@ xt::xtensor<T, 3> Optimizer<T>::generateNoisedControls() const
 
   if (isHolonomic()) {
     auto vy_noises = xt::random::randn<T>({batch_size_, time_steps_, 1U}, 0.0, vy_std_);
-    return control_sequence_.data + xt::concatenate(xt::xtuple(vx_noises, wz_noises, vy_noises), 2);
+    return control_sequence_.data + xt::concatenate(xt::xtuple(vx_noises, vy_noises, wz_noises), 2);
   }
 
   return control_sequence_.data + xt::concatenate(xt::xtuple(vx_noises, wz_noises), 2);
@@ -198,12 +198,12 @@ xt::xtensor<T, 3> Optimizer<T>::integrateStateVelocities(
   using namespace xt::placeholders;
 
   auto w = state.getVelocitiesWZ();
-  xt::xtensor<T, 2> yaw = xt::cumsum(w * model_dt_, 1);
+  double initial_yaw = tf2::getYaw(pose.pose.orientation);
+  xt::xtensor<T, 2> yaw = xt::cumsum(w * model_dt_, 1) + initial_yaw;
   xt::xtensor<T, 2> yaw_offseted = yaw;
 
   xt::view(yaw_offseted, xt::all(), xt::range(1, _)) = xt::view(yaw, xt::all(), xt::range(_, -1));
-  xt::view(yaw_offseted, xt::all(), 0) = 0;
-  xt::view(yaw_offseted, xt::all(), xt::all()) += tf2::getYaw(pose.pose.orientation);
+  xt::view(yaw_offseted, xt::all(), 0) = initial_yaw;
 
   auto yaw_cos = xt::eval(xt::cos(yaw_offseted));
   auto yaw_sin = xt::eval(xt::sin(yaw_offseted));
