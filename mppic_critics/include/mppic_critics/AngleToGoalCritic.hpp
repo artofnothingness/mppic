@@ -33,12 +33,12 @@ public:
 
     auto goal_x = xt::view(path, -1, 0);
     auto goal_y = xt::view(path, -1, 1);
-    auto traj_x = xt::view(trajectories, xt::all(), xt::all(), 0);
-    auto traj_y = xt::view(trajectories, xt::all(), xt::all(), 1);
+    auto traj_xs = xt::view(trajectories, xt::all(), xt::all(), 0);
+    auto traj_ys = xt::view(trajectories, xt::all(), xt::all(), 1);
     auto traj_yaws = xt::view(trajectories, xt::all(), xt::all(), 2);
 
-    auto angle_between_points = atan2(goal_y - traj_y, goal_x - traj_x);
-    auto yaws = xt::abs(traj_yaws - angle_between_points);
+    auto yaws_between_points = atan2(goal_y - traj_ys, goal_x - traj_xs);
+    auto yaws = xt::abs(traj_yaws - yaws_between_points);
 
     costs += xt::pow(xt::mean(yaws, {1}) * weight_, power_);
   }
