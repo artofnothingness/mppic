@@ -3,8 +3,7 @@
 ## Differential drive  
 ![](.resources/demo-diff.gif)
 
-## Omni (experimental)
-requires adding some critics, and more tests
+## Omni
 ![](.resources/demo-omni.gif)
 
 ## Overview
