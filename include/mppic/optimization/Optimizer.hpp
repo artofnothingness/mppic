@@ -15,7 +15,9 @@
 
 #include "mppic/optimization/MotionModel.hpp"
 #include "mppic/optimization/scoring/CriticScorer.hpp"
-#include "mppic/optimization/tensor_wrappers/TensorWrappersImpl.hpp"
+
+#include "mppic/optimization/tensor_wrappers/StateImpl.hpp"
+#include "mppic/optimization/tensor_wrappers/ControlSequence.hpp"
 
 namespace mppi::optimization {
 template <typename T>
