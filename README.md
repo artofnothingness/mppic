@@ -72,6 +72,12 @@ pip install conan
  | goal_angle_cost_power            | int    |                                                                                                             |
  | threshold_to_consider_goal_angle | double | Minimal distance between robot and goal above which angle goal cost considered                              |
 
+#### AngleToGoalCritic params
+ | Parameter                 | Type   | Definition                                                                                                  |
+ | ---------------           | ------ | ----------------------------------------------------------------------------------------------------------- |
+ | angle_to_goal_cost_weight | double |                                                                                                             |
+ | angle_to_goal_cost_power  | int    |                                                                                                             |
+
 #### [Approx]ReferenceTrajectoryCritic params
  | Parameter             | Type   | Definition                                                                                                  |
  | ---------------       | ------ | ----------------------------------------------------------------------------------------------------------- |
@@ -109,7 +115,7 @@ controller_server:
       visualize: true
       CriticScorer:
         critics_type: "float"
-        critics_names: [ "GoalCritic", "GoalAngleCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
+        critics_names: [ "GoalCritic", "GoalAngleCritic", "AngleToGoalCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
         GoalCritic:
           goal_cost_power: 1
           goal_cost_weight: 15
@@ -117,6 +123,9 @@ controller_server:
           goal_angle_cost_power: 1
           goal_angle_cost_weight: 15 
           threshold_to_consider_goal_angle: 0.20
+        AngleToGoalCritic:
+          angle_to_goal_cost_power: 2
+          angle_to_goal_cost_weight: 2
         ReferenceTrajectoryCritic:
           reference_cost_power: 1
           reference_cost_weight: 5
