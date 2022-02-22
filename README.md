@@ -58,7 +58,6 @@ pip install conan
  | --------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
  | critics_type    | string | Type of controller [float, double]                                                                          |
  | critics_names   | string | Critics (plugins) names
- | GoalCritic      | string | Critics (plugins) names
 
 #### GoalCritic params
  | Parameter       | Type   | Definition                                                                                                  |
