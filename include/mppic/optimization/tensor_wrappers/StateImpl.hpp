@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mppic/optimization/tensor_wrappers/TensorWrappers.hpp"
+#include "mppic/optimization/tensor_wrappers/State.hpp"
 
 namespace mppi::optimization {
 template <typename T>
