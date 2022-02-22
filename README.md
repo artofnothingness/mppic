@@ -43,7 +43,7 @@ pip install conan
  | model_dt        | double | Time interval between two sampled points in trajectories                                                                                                                                                                                                          |
  | vx_std          | double | Sampling standart deviation for VX
  | vy_std          | double | Sampling standart deviation for VY
- | wx_std          | double | Sampling Standart deviation for WX
+ | wx_std          | double | Sampling standart deviation for WX
  | vx_max          | double | Max VX
  | vy_max          | double | Max VY
  | wz_max          | double | Max WZ
