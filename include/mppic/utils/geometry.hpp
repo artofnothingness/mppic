@@ -15,12 +15,12 @@
 #include <xtensor/xnorm.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/optimization/tensor_wrappers/TensorDataLayouts.hpp"
+#include "mppic/optimization/tensor_wrappers/ControlSequence.hpp"
 
 namespace mppi::geometry {
 template <typename T, typename H>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, optimization::ControlSequnceIdxes idx, bool is_holonomic, const H & header)
+  const T & velocities, const optimization::ControlSequnceIdxes &idx, bool is_holonomic, const H & header)
 {
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = header.frame_id;
