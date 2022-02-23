@@ -50,7 +50,7 @@ public:
     enum TrajectoryState : uint8_t { Collision, Inflated, Free };
 
     for (size_t i = 0; i < trajectories.shape()[0]; ++i) {
-      double min_dist = std::numeric_limits<double>::max();
+      double min_dist_to_obstacle = std::numeric_limits<double>::max();
       TrajectoryState state = Free;
 
       for (size_t j = 0; j < trajectories.shape()[1]; ++j) {
@@ -62,14 +62,14 @@ public:
             break;
           }
           state = Inflated;
-          min_dist = std::min(costToDist(cost), min_dist);
+          min_dist_to_obstacle = std::min(toDist(cost), min_dist_to_obstacle);
         }
       }
 
       if (state == Inflated) {
-        costs[i] += static_cast<T>(pow((1.01 * inflation_radius_ - min_dist) * weight_, power_));
+        costs[i] += scoreDistance(min_dist_to_obstacle);
       } else if (state == Collision) {
-        costs[i] = collision_cost_value;
+        costs[i] += collision_cost_value;
       }
     }
   }
@@ -101,13 +101,18 @@ private:
 
   bool isFree(unsigned char cost) const { return cost == nav2_costmap_2d::FREE_SPACE; }
 
-  double costToDist(auto cost)
+  double toDist(auto cost)
   {
     return (-1.0 / inflation_cost_scaling_factor_) *
              std::log(
                static_cast<double>(cost) /
                (static_cast<double>(nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE) - 1.0)) +
            inscribed_radius_;
+  }
+
+  T scoreDistance(double min_dist)
+  {
+    return static_cast<T>(pow((1.01 * inflation_radius_ - min_dist) * weight_, power_));
   }
 
   nav2_costmap_2d::FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *> collision_checker_{
