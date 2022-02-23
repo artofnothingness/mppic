@@ -52,7 +52,6 @@ pip install conan
 
 #### CriticScorer params
 
-
  | Parameter       | Type   | Definition                                                                                                  |
  | --------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
  | critics_type    | string | Type of controller [float, double]                                                                          |
@@ -86,6 +85,7 @@ pip install conan
 #### ObstaclesCritic params
  | Parameter                     | Type   | Definition                                                                                                  |
  | ---------------               | ------ | ----------------------------------------------------------------------------------------------------------- |
+ | consider_footprint            | bool   |                                                                                                             |
  | obstacle_cost_weight          | double |                                                                                                             |
  | obstacle_cost_power           | int    |                                                                                                             |
  | inflation_cost_scaling_factor | int    | Must be set accurately according to inflation layer params                                                  |
@@ -129,6 +129,7 @@ controller_server:
           reference_cost_power: 1
           reference_cost_weight: 5
         ObstaclesCritic:
+          consider_footprint: true
           obstacle_cost_power: 1
           obstacle_cost_weight: 20
           inflation_cost_scaling_factor: 3.0
