@@ -14,7 +14,6 @@
 #include "mppic/optimization/MotionModel.hpp"
 #include "mppic/optimization/Optimizer.hpp"
 
-#include "mppic/utils/LineIterator.hpp"
 #include "mppic/utils/common.hpp"
 #include "mppic/utils/geometry.hpp"
 
