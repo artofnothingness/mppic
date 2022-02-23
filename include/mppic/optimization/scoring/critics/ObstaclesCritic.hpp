@@ -2,9 +2,10 @@
 
 #include <xtensor/xtensor.hpp>
 
+#include <nav2_costmap_2d/footprint_collision_checker.hpp>
+
 #include "mppic/optimization/scoring/CriticFunction.hpp"
 
-#include "mppic/utils/LineIterator.hpp"
 #include "mppic/utils/common.hpp"
 #include "mppic/utils/geometry.hpp"
 
@@ -14,15 +15,22 @@ template <typename T>
 class ObstaclesCritic : public CriticFunction<T>
 {
 public:
+  using CriticFunction<T>::costmap_ros_;
+  using CriticFunction<T>::costmap_;
+  using CriticFunction<T>::parent_;
+  using CriticFunction<T>::node_name_;
+
   void getParams() final
   {
-    auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
+    auto getParam = utils::getParamGetter(parent_, node_name_);
+    getParam(consider_footprint_, "consider_footprint", true);
     getParam(power_, "obstacle_cost_power", 1);
     getParam(weight_, "obstacle_cost_weight", 20);
     getParam(inflation_cost_scaling_factor_, "inflation_cost_scaling_factor", 3.0);
     getParam(inflation_radius_, "inflation_radius", 0.75);
 
-    inscribed_radius_ = this->costmap_ros_->getLayeredCostmap()->getInscribedRadius();
+    inscribed_radius_ = costmap_ros_->getLayeredCostmap()->getInscribedRadius();
+    collision_checker_.setCostmap(costmap_);
   }
 
   /**
@@ -39,44 +47,51 @@ public:
 
     constexpr T collision_cost_value = std::numeric_limits<T>::max() / 2;
 
-    auto dist_by_cost = [this](const auto cost) {
-      return (-1.0 / inflation_cost_scaling_factor_) *
-               std::log(
-                 static_cast<double>(cost) /
-                 (static_cast<double>(nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE) - 1.0)) +
-             inscribed_radius_;
-    };
+    enum TrajectoryState : uint8_t { Collision, Inflated, Free };
 
     for (size_t i = 0; i < trajectories.shape()[0]; ++i) {
       double min_dist = std::numeric_limits<double>::max();
-      bool inflated = false;
+      TrajectoryState state = Free;
+
       for (size_t j = 0; j < trajectories.shape()[1]; ++j) {
-        auto footprint = getOrientedFootprint(
-          xt::view(trajectories, i, j), this->costmap_ros_->getRobotFootprint());
-        auto cost = static_cast<unsigned char>(scoreFootprint(footprint));
-
-        if (inCollision(cost)) {
-          costs[i] = collision_cost_value;
-          inflated = false;
-          break;
-        }
-
-        if (cost != nav2_costmap_2d::FREE_SPACE) {
-          min_dist = std::min(dist_by_cost(cost), min_dist);
-          inflated = true;
+        auto point = xt::view(trajectories, i, j, xt::all());
+        auto cost = costAtPose(point);
+        if (!isFree(cost)) {
+          if (inCollision(cost)) {
+            state = Collision;
+            break;
+          }
+          state = Inflated;
+          min_dist = std::min(costToDist(cost), min_dist);
         }
       }
 
-      if (inflated) {
+      if (state == Inflated) {
         costs[i] += static_cast<T>(pow((1.01 * inflation_radius_ - min_dist) * weight_, power_));
+      } else if (state == Collision) {
+        costs[i] = collision_cost_value;
       }
     }
   }
 
 private:
+  unsigned char costAtPose(const auto & point)
+  {
+    unsigned char cost;
+
+    if (consider_footprint_) {
+      cost = static_cast<unsigned char>(collision_checker_.footprintCostAtPose(
+        point(0), point(1), point(2), costmap_ros_->getRobotFootprint()));
+    } else {
+      cost = static_cast<unsigned char>(collision_checker_.pointCost(point(0), point(1)));
+    }
+
+    return cost;
+  }
+
   bool inCollision(unsigned char cost) const
   {
-    if (this->costmap_ros_->getLayeredCostmap()->isTrackingUnknown()) {
+    if (costmap_ros_->getLayeredCostmap()->isTrackingUnknown()) {
       return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE &&
              cost != nav2_costmap_2d::NO_INFORMATION;
     }
@@ -84,71 +99,21 @@ private:
     return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
   }
 
-  std::vector<geometry_msgs::msg::Point> getOrientedFootprint(
-    const auto & robot_pose, const std::vector<geometry_msgs::msg::Point> & footprint_spec) const
+  bool isFree(unsigned char cost) const { return cost == nav2_costmap_2d::FREE_SPACE; }
+
+  double costToDist(auto cost)
   {
-    std::vector<geometry_msgs::msg::Point> oriented_footprint;
-    oriented_footprint.resize(footprint_spec.size());
-
-    double cos_yaw = cos(static_cast<double>(robot_pose(2)));
-    double sin_yaw = sin(static_cast<double>(robot_pose(2)));
-
-    for (size_t i = 0; i < footprint_spec.size(); ++i) {
-      oriented_footprint[i].x = static_cast<double>(robot_pose(0)) + footprint_spec[i].x * cos_yaw -
-                                footprint_spec[i].y * sin_yaw;
-      oriented_footprint[i].y = static_cast<double>(robot_pose(1)) + footprint_spec[i].x * sin_yaw +
-                                footprint_spec[i].y * cos_yaw;
-    }
-
-    return oriented_footprint;
+    return (-1.0 / inflation_cost_scaling_factor_) *
+             std::log(
+               static_cast<double>(cost) /
+               (static_cast<double>(nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE) - 1.0)) +
+           inscribed_radius_;
   }
 
-  double lineCost(int x0, int x1, int y0, int y1) const
-  {
-    double line_cost = 0.0;
-    double point_cost = -1.0;
+  nav2_costmap_2d::FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *> collision_checker_{
+    nullptr};
 
-    for (LineIterator line(x0, y0, x1, y1); line.isValid(); line.advance()) {
-      point_cost = static_cast<double>(this->costmap_->getCost(
-        static_cast<unsigned int>(line.getX()), static_cast<unsigned int>(line.getY())));
-
-      if (line_cost < point_cost) {
-        line_cost = point_cost;
-      }
-    }
-
-    return line_cost;
-  }
-
-  double scoreFootprint(const std::vector<geometry_msgs::msg::Point> & footprint) const
-  {
-    unsigned int x0{0};
-    unsigned int x1{0};
-    unsigned int y0{0};
-    unsigned int y1{0};
-
-    double line_cost = 0.0;
-    double footprint_cost = 0.0;
-
-    auto world_to_map = [&](size_t i, unsigned int & x, unsigned int & y) {
-      if (!this->costmap_->worldToMap(footprint[i].x, footprint[i].y, x, y)) {
-        throw std::runtime_error("Footprint Goes Off Grid.");
-      }
-    };
-
-    for (unsigned int i = 0; i < footprint.size(); ++i) {
-      world_to_map(i, x0, y0);
-      world_to_map(i != footprint.size() - 1 ? i + 1 : 0, x1, y1);
-
-      line_cost = lineCost(
-        static_cast<int>(x0), static_cast<int>(x1), static_cast<int>(y0), static_cast<int>(y1));
-
-      footprint_cost = std::max(line_cost, footprint_cost);
-    }
-
-    return footprint_cost;
-  }
-
+  bool consider_footprint_{true};
   double inflation_cost_scaling_factor_{0};
   double inscribed_radius_{0};
   double inflation_radius_{0};
