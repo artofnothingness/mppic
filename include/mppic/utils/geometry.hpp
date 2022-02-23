@@ -20,7 +20,8 @@
 namespace mppi::geometry {
 template <typename T, typename H>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, const optimization::ControlSequnceIdxes &idx, bool is_holonomic, const H & header)
+  const T & velocities, const optimization::ControlSequnceIdxes & idx, bool is_holonomic,
+  const H & header)
 {
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = header.frame_id;

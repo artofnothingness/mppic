@@ -15,9 +15,12 @@ template <typename T>
 class GoalCritic : public CriticFunction<T>
 {
 public:
+  using CriticFunction<T>::parent_;
+  using CriticFunction<T>::node_name_;
+
   void getParams() final
   {
-    auto getParam = utils::getParamGetter(this->parent_, this->node_name_);
+    auto getParam = utils::getParamGetter(parent_, node_name_);
     getParam(power_, "goal_cost_power", 1);
     getParam(weight_, "goal_cost_weight", 20);
   }
