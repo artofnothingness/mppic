@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mppic/handlers/PathHandlerImpl.hpp"
+#include "mppic/handlers/PathHandler.hpp"
 #include "mppic/optimization/OptimizerImpl.hpp"
 #include "mppic/visualization/TrajectoryVisualizer.hpp"
 
