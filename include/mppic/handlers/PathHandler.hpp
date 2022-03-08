@@ -5,10 +5,14 @@
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/path.hpp>
+#include <std_msgs/msg/header.hpp>
 
 #include <nav2_costmap_2d/costmap_2d_ros.hpp>
 
 namespace mppi::handlers {
+using PathIterator = std::vector<geometry_msgs::msg::PoseStamped>::iterator;
+using StampType = decltype(std::declval<std_msgs::msg::Header>().stamp);
+
 class PathHandler
 {
 public:
@@ -45,15 +49,14 @@ private:
   double getMaxCostmapDist();
 
   geometry_msgs::msg::PoseStamped
-  transformToGlobalFrame(const geometry_msgs::msg::PoseStamped & pose);
+  transformToGlobalPlanFrame(const geometry_msgs::msg::PoseStamped & pose);
 
-  template <typename Iter>
   nav_msgs::msg::Path
-  transformGlobalPlan(Iter begin, Iter end, const auto & stamp, const std::string & frame);
+  transformPlanPosesToCostmapFrame(PathIterator begin, PathIterator end, const StampType & stamp);
 
   auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped & global_pose);
 
-  void pruneGlobalPlan(const auto & end)
+  void pruneGlobalPlan(const PathIterator & end)
   {
     global_plan_.poses.erase(global_plan_.poses.begin(), end);
   }
@@ -69,5 +72,4 @@ private:
   double lookahead_dist_{0};
   double transform_tolerance_{0};
 };
-
 } // namespace mppi::handlers
