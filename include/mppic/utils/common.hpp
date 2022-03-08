@@ -1,29 +1,23 @@
 #pragma once
 
 #include <rclcpp/rclcpp.hpp>
+#include <nav2_util/node_utils.hpp>
 
 namespace mppi::utils {
-namespace details {
-template <typename T>
-T getParam(std::string const & param_name, T default_value, auto * const node)
-{
-  T param;
 
-  if (!node->has_parameter(param_name)) {
-    node->declare_parameter(param_name, rclcpp::ParameterValue(default_value));
-  }
-  node->get_parameter(param_name, param);
-
-  return param;
-}
-} // namespace details
-
-auto getParamGetter(auto * const node, const std::string & node_name_)
+template <typename NodeT>
+auto getParamGetter(NodeT * node, const std::string & node_name_)
 {
   return [=](auto & param, const std::string & param_name, auto default_value) {
+    using OutType = std::decay_t<decltype(param)>;
+    using InType = std::decay_t<decltype(default_value)>;
+
     std::string name = node_name_ + '.' + param_name;
-    param =
-      static_cast<std::decay_t<decltype(param)>>(details::getParam(name, default_value, node));
+    nav2_util::declare_parameter_if_not_declared(node, name, rclcpp::ParameterValue(default_value));
+
+    InType param_in;
+    node->get_parameter(name, param_in);
+    param = static_cast<OutType>(param_in);
   };
 }
 
