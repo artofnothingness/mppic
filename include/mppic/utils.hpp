@@ -3,21 +3,37 @@
 #include <algorithm>
 #include <chrono>
 
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
-#include <tf2/utils.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-
-#include <geometry_msgs/msg/twist_stamped.hpp>
-#include <nav_msgs/msg/path.hpp>
-
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
 #include <xtensor/xview.hpp>
 
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include "tf2/utils.h"
+#include "geometry_msgs/msg/twist_stamped.hpp"
+#include "nav_msgs/msg/path.hpp"
+#include "nav2_util/node_utils.hpp"
 #include "mppic/optimization/tensor_wrappers/ControlSequence.hpp"
 
-namespace mppi::geometry {
+namespace mppi::utils {
+
+template <typename NodeT>
+auto getParamGetter(NodeT * node, const std::string & node_name_)
+{
+  return [=](auto & param, const std::string & param_name, auto default_value) {
+    using OutType = std::decay_t<decltype(param)>;
+    using InType = std::decay_t<decltype(default_value)>;
+
+    std::string name = node_name_ + '.' + param_name;
+    nav2_util::declare_parameter_if_not_declared(node, name, rclcpp::ParameterValue(default_value));
+
+    InType param_in;
+    node->get_parameter(name, param_in);
+    param = static_cast<OutType>(param_in);
+  };
+}
+
 template <typename T, typename H>
 geometry_msgs::msg::TwistStamped toTwistStamped(
   const T & velocities, const optimization::ControlSequnceIdxes & idx, bool is_holonomic,
@@ -169,4 +185,4 @@ auto distPointsToLineSegments2D(P && path, L && batch_of_segments_points)
   return xt::norm_l2(diff, {diff.dimension() - 1}, xt::evaluation_strategy::immediate);
 }
 
-} // namespace mppi::geometry
+} // namespace mppi::utils

@@ -1,13 +1,13 @@
 #pragma once
 
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
-#include <tf2_ros/buffer.h>
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "tf2_ros/buffer.h"
 
-#include <geometry_msgs/msg/pose_stamped.hpp>
-#include <nav_msgs/msg/path.hpp>
-#include <std_msgs/msg/header.hpp>
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "nav_msgs/msg/path.hpp"
+#include "std_msgs/msg/header.hpp"
 
-#include <nav2_costmap_2d/costmap_2d_ros.hpp>
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 namespace mppi::handlers {
 using PathIterator = std::vector<geometry_msgs::msg::PoseStamped>::iterator;
@@ -19,13 +19,9 @@ public:
   PathHandler() = default;
   ~PathHandler() = default;
 
-  void on_configure(
+  void initialize(
     rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
     nav2_costmap_2d::Costmap2DROS * costmap, tf2_ros::Buffer * buffer);
-
-  void on_cleanup();
-  void on_activate();
-  void on_deactivate();
 
   void setPath(const nav_msgs::msg::Path & plan) { global_plan_ = plan; }
 
