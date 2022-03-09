@@ -6,7 +6,7 @@
 #include <xtensor/xview.hpp>
 
 #include "mppic/optimization/scoring/CriticFunction.hpp"
-#include "mppic/utils/common.hpp"
+#include "mppic/utils.hpp"
 
 namespace mppi::optimization {
 

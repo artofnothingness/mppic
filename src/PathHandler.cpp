@@ -1,8 +1,7 @@
 #include <nav2_costmap_2d/costmap_2d_ros.hpp>
 
 #include "mppic/PathHandler.hpp"
-#include "mppic/utils/common.hpp"
-#include "mppic/utils/geometry.hpp"
+#include "mppic/utils.hpp"
 
 namespace mppi::handlers {
 
@@ -19,6 +18,14 @@ void PathHandler::initialize(
   RCLCPP_INFO(logger_, "Configured");
 }
 
+void PathHandler::getParams()
+{
+  auto getParam = utils::getParamGetter(parent_, node_name_);
+
+  getParam(lookahead_dist_, "lookahead_dist", 1.0);
+  getParam(transform_tolerance_, "transform_tolerance", 1);
+}
+
 auto PathHandler::getGlobalPlanConsideringBounds(
   const geometry_msgs::msg::PoseStamped & global_pose)
 {
@@ -29,25 +36,17 @@ auto PathHandler::getGlobalPlanConsideringBounds(
     begin, end,
     [&global_pose](
       const geometry_msgs::msg::PoseStamped & lhs, const geometry_msgs::msg::PoseStamped & rhs) {
-      return geometry::hypot(lhs, global_pose) < geometry::hypot(rhs, global_pose);
+      return utils::hypot(lhs, global_pose) < utils::hypot(rhs, global_pose);
     });
 
   auto max_costmap_dist = getMaxCostmapDist();
   auto last_point =
     std::find_if(closest_point, end, [&](const geometry_msgs::msg::PoseStamped & global_plan_pose) {
-      auto dist = geometry::hypot(global_pose, global_plan_pose);
+      auto dist = utils::hypot(global_pose, global_plan_pose);
       return dist > max_costmap_dist || dist > lookahead_dist_;
     });
 
   return std::tuple{closest_point, last_point};
-}
-
-void PathHandler::getParams()
-{
-  auto getParam = utils::getParamGetter(parent_, node_name_);
-
-  getParam(lookahead_dist_, "lookahead_dist", 1.0);
-  getParam(transform_tolerance_, "transform_tolerance", 1);
 }
 
 geometry_msgs::msg::PoseStamped
@@ -134,6 +133,5 @@ nav_msgs::msg::Path PathHandler::transformPlanPosesToCostmapFrame(
 
   return plan;
 }
-
 
 } // namespace mppi::handlers
