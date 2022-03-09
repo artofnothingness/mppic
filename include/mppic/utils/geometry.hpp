@@ -3,17 +3,16 @@
 #include <algorithm>
 #include <chrono>
 
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
-#include <tf2/utils.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-
-#include <geometry_msgs/msg/twist_stamped.hpp>
-#include <nav_msgs/msg/path.hpp>
-
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
 #include <xtensor/xview.hpp>
+
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include "tf2/utils.h"
+#include "geometry_msgs/msg/twist_stamped.hpp"
+#include "nav_msgs/msg/path.hpp"
 
 #include "mppic/optimization/tensor_wrappers/ControlSequence.hpp"
 
