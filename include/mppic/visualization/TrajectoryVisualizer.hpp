@@ -21,14 +21,30 @@ public:
 
     trajectories_publisher_ =
       parent_->create_publisher<visualization_msgs::msg::MarkerArray>("/trajectories", 1);
+    transformed_path_pub_ =
+      parent_->create_publisher<nav_msgs::msg::Path>("transformed_global_plan", 1);
 
     reset();
     RCLCPP_INFO(logger_, "Configured");
   }
 
-  void on_cleanup() { trajectories_publisher_.reset(); }
-  void on_activate() { trajectories_publisher_->on_activate(); }
-  void on_deactivate() { trajectories_publisher_->on_deactivate(); }
+  void on_cleanup()
+  {
+    trajectories_publisher_.reset();
+    transformed_path_pub_.reset();
+  }
+
+  void on_activate()
+  {
+    trajectories_publisher_->on_activate();
+    transformed_path_pub_->on_activate();
+  }
+
+  void on_deactivate()
+  {
+    trajectories_publisher_->on_deactivate();
+    transformed_path_pub_->on_deactivate();
+  }
 
   void reset()
   {
@@ -81,10 +97,12 @@ public:
     }
   }
 
-  void visualize()
+  void visualize(nav_msgs::msg::Path & plan)
   {
     trajectories_publisher_->publish(std::move(points_));
     reset();
+    std::unique_ptr<nav_msgs::msg::Path> plan_ptr = std::make_unique<nav_msgs::msg::Path>(plan);
+    transformed_path_pub_->publish(std::move(plan_ptr));
   }
 
 private:
@@ -93,6 +111,7 @@ private:
 
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<visualization_msgs::msg::MarkerArray>>
     trajectories_publisher_;
+  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>> transformed_path_pub_;
 
   std::unique_ptr<visualization_msgs::msg::MarkerArray> points_;
   int marker_id_ = 0;
