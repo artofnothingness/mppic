@@ -3,9 +3,7 @@
 #include <xtensor/xtensor.hpp>
 
 #include "mppic/optimization/scoring/CriticFunction.hpp"
-
-#include "mppic/utils/common.hpp"
-#include "mppic/utils/geometry.hpp"
+#include "mppic/utils.hpp"
 
 namespace mppi::optimization {
 
@@ -37,7 +35,7 @@ public:
     using xt::evaluation_strategy::immediate;
 
     xt::xtensor<T, 3> dists_path_to_trajectories =
-      geometry::distPointsToLineSegments2D(path, trajectories);
+      utils::distPointsToLineSegments2D(path, trajectories);
 
     xt::xtensor<T, 1> cost =
       xt::mean(xt::amin(std::move(dists_path_to_trajectories), 1, immediate), 1, immediate);

@@ -9,7 +9,7 @@
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
 
-#include "mppic/utils/geometry.hpp"
+#include "mppic/utils.hpp"
 
 static auto toStr = [](auto && container) {
   std::stringstream ss;
@@ -43,7 +43,7 @@ TEST_CASE("Closest points on Line Segments 2D", "[geometry]")
   Array result;
   // clang-format on
 
-  REQUIRE_NOTHROW(result = mppi::geometry::closestPointsOnLinesSegment2D(points, line_points));
+  REQUIRE_NOTHROW(result = mppi::utils::closestPointsOnLinesSegment2D(points, line_points));
 
   size_t bench_points_size = GENERATE(10U, 100U);
   auto bench_points = Array::from_shape({bench_points_size, 2});
@@ -56,7 +56,7 @@ TEST_CASE("Closest points on Line Segments 2D", "[geometry]")
                           << "Lines shape: " << toStr(bench_lines.shape()));
   BENCHMARK("Closest Points on Segments Benchmark")
   {
-    return mppi::geometry::closestPointsOnLinesSegment2D(bench_points, bench_lines);
+    return mppi::utils::closestPointsOnLinesSegment2D(bench_points, bench_lines);
   };
 #endif
 
@@ -131,7 +131,7 @@ TEST_CASE("Distance Points To Line Segments 2D", "[geometry]")
   Array result;
   // clang-format on
 
-  REQUIRE_NOTHROW(result = mppi::geometry::distPointsToLineSegments2D(points, line_points));
+  REQUIRE_NOTHROW(result = mppi::utils::distPointsToLineSegments2D(points, line_points));
 
   size_t bench_points_size = GENERATE(10U, 30U, 100U);
   auto bench_points = Array::from_shape({bench_points_size, 2});
@@ -143,7 +143,7 @@ TEST_CASE("Distance Points To Line Segments 2D", "[geometry]")
                               << "Lines shape: " << toStr(bench_lines.shape()));
   BENCHMARK("Distance from Lines to Points Benchmark")
   {
-    return mppi::geometry::distPointsToLineSegments2D(bench_points, bench_lines);
+    return mppi::utils::distPointsToLineSegments2D(bench_points, bench_lines);
   };
 #endif
 
