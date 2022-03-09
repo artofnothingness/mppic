@@ -1,6 +1,6 @@
 #include "mppic/Controller.hpp"
 #include "mppic/optimization/StateModels.hpp"
-#include "mppic/utils/common.hpp"
+#include "mppic/utils.hpp"
 
 namespace mppi {
 
