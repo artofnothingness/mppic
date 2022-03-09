@@ -2,7 +2,7 @@
 
 #include "mppic/PathHandler.hpp"
 #include "mppic/optimization/Optimizer.hpp"
-#include "mppic/visualization/TrajectoryVisualizer.hpp"
+#include "mppic/TrajectoryVisualizer.hpp"
 
 #include "nav2_core/controller.hpp"
 #include "nav2_core/goal_checker.hpp"
