@@ -42,6 +42,9 @@ set(dependencies_pkgs
   nav2_core 
   nav2_costmap_2d 
   nav2_util
+  tf2_geometry_msgs
+  tf2_eigen
+  tf2_ros
 )
 
 set(dependencies_libs
@@ -60,6 +63,7 @@ set(critics_sources
 set(mppic_sources
   src/Controller.cpp
   src/PathHandler.cpp
+  src/Optimizer.cpp
 )
 
 
