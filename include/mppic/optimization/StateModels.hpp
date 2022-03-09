@@ -2,7 +2,7 @@
 
 #include <xtensor/xview.hpp>
 
-#include "mppic/optimization/tensor_wrappers/StateImpl.hpp"
+#include "mppic/optimization/tensor_wrappers/State.hpp"
 
 namespace mppi::optimization::models {
 /**
@@ -14,8 +14,7 @@ namespace mppi::optimization::models {
  * @return predicted velocities of the robot: tensor of shape [batch_size, ... ]
  * where last dim could be 2 or 3 depending on motion model used
  */
-template <typename T>
-xt::xtensor<T, 2> NaiveModel(const xt::xtensor<T, 2> & state, const StateIdxes & idx)
+xt::xtensor<double, 2> NaiveModel(const xt::xtensor<double, 2> & state, const StateIdxes & idx)
 {
   return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
 }

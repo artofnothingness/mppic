@@ -1,48 +1,42 @@
 #pragma once
 
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
-#include <tf2/utils.h>
-
-#include <geometry_msgs/msg/pose_stamped.hpp>
-#include <geometry_msgs/msg/twist.hpp>
-#include <geometry_msgs/msg/twist_stamped.hpp>
-#include <nav_msgs/msg/path.hpp>
-
-#include <nav2_costmap_2d/costmap_2d_ros.hpp>
-
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
+
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
+#include "nav_msgs/msg/path.hpp"
+
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 #include "mppic/optimization/MotionModel.hpp"
 #include "mppic/optimization/scoring/CriticScorer.hpp"
 
 #include "mppic/optimization/tensor_wrappers/ControlSequence.hpp"
-#include "mppic/optimization/tensor_wrappers/StateImpl.hpp"
+#include "mppic/optimization/tensor_wrappers/State.hpp"
 
 namespace mppi::optimization {
-template <typename T>
 class Optimizer
 {
 public:
-  using model_t = xt::xtensor<T, 2>(const xt::xtensor<T, 2> & state, const StateIdxes & idx);
+  using model_t = xt::xtensor<double, 2>(const xt::xtensor<double, 2> & state, const StateIdxes & idx);
 
   Optimizer() = default;
 
-  void on_configure(
+  void initialize(
     rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
     nav2_costmap_2d::Costmap2DROS * costmap_ros, model_t model);
-
-  void on_cleanup() {}
-  void on_activate() {}
-  void on_deactivate() {}
 
   geometry_msgs::msg::TwistStamped evalControl(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan);
 
-  xt::xtensor<T, 3> getGeneratedTrajectories() const { return generated_trajectories_; }
+  xt::xtensor<double, 3> getGeneratedTrajectories() const { return generated_trajectories_; }
 
-  xt::xtensor<T, 2> evalTrajectoryFromControlSequence(
+  xt::xtensor<double, 2> evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed) const;
 
@@ -59,7 +53,7 @@ private:
    * @return trajectories: tensor of shape [ batch_size_, time_steps_, 3 ]
    * where 3 stands for x, y, yaw
    */
-  xt::xtensor<T, 3> generateNoisedTrajectories(
+  xt::xtensor<double, 3> generateNoisedTrajectories(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed);
 
@@ -70,7 +64,7 @@ private:
    * @return tensor of shape [ batch_size_, time_steps_, 2]
    * where 2 stands for v, w
    */
-  xt::xtensor<T, 3> generateNoisedControls() const;
+  xt::xtensor<double, 3> generateNoisedControls() const;
 
   void applyControlConstraints();
 
@@ -91,7 +85,7 @@ private:
    */
   void propagateStateVelocitiesFromInitials(auto & state) const;
 
-  xt::xtensor<T, 3> integrateStateVelocities(
+  xt::xtensor<double, 3> integrateStateVelocities(
     const auto & state, const geometry_msgs::msg::PoseStamped & robot_pose) const;
 
   /**
@@ -100,7 +94,7 @@ private:
    *
    * @param trajectories costs, tensor of shape [ batch_size ]
    */
-  void updateControlSequence(const xt::xtensor<T, 1> & costs);
+  void updateControlSequence(const xt::xtensor<double, 1> & costs);
 
   std::vector<geometry_msgs::msg::Point> getOrientedFootprint(
     const std::array<double, 3> & robot_pose,
@@ -111,7 +105,7 @@ private:
    *
    */
   auto getControlFromSequence(unsigned int offset);
-  auto getControlFromSequenceAsTwist(unsigned int offset, const auto & stamp);
+  geometry_msgs::msg::TwistStamped getControlFromSequenceAsTwist(unsigned int offset, const auto & stamp);
 
   bool isHolonomic() const;
 
@@ -129,18 +123,18 @@ private:
   double vx_max_{0};
   double vy_max_{0};
   double wz_max_{0};
-  T vx_std_{0};
-  T vy_std_{0};
-  T wz_std_{0};
+  double vx_std_{0};
+  double vy_std_{0};
+  double wz_std_{0};
 
-  State<T> state_;
-  ControlSequence<T> control_sequence_;
+  State state_;
+  ControlSequence control_sequence_;
   MotionModel motion_model_t_{MotionModel::DiffDrive};
 
-  CriticScorer<T> critic_scorer_;
+  CriticScorer<double> critic_scorer_;
   std::function<model_t> model_;
 
-  xt::xtensor<T, 3> generated_trajectories_{};
+  xt::xtensor<double, 3> generated_trajectories_{};
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
 };
 
