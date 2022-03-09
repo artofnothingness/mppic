@@ -1,52 +1,50 @@
 #pragma once
 
-#include "mppic/handlers/PathHandler.hpp"
-#include "mppic/optimization/OptimizerImpl.hpp"
+#include "mppic/PathHandler.hpp"
+#include "mppic/optimization/Optimizer.hpp"
 #include "mppic/visualization/TrajectoryVisualizer.hpp"
 
-#include <nav2_core/controller.hpp>
-#include <rclcpp/rclcpp.hpp>
+#include "nav2_core/controller.hpp"
+#include "nav2_core/goal_checker.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace mppi {
-template <typename T>
 class Controller : public nav2_core::Controller
 {
 public:
   Controller() = default;
 
   void configure(
-    const std::shared_ptr<rclcpp_lifecycle::LifecycleNode> & parent, std::string node_name,
-    const std::shared_ptr<tf2_ros::Buffer> & tf,
-    const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros) final;
+    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
+    std::string node_name, const std::shared_ptr<tf2_ros::Buffer> & tf,
+    const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros) override;
 
-  void cleanup() final;
-  void activate() final;
-  void deactivate() final;
+  void cleanup() override;
+  void activate() override;
+  void deactivate() override;
 
   geometry_msgs::msg::TwistStamped computeVelocityCommands(
     const geometry_msgs::msg::PoseStamped & robot_pose,
-    const geometry_msgs::msg::Twist & robot_speed) final;
+    const geometry_msgs::msg::Twist & robot_speed,
+    nav2_core::GoalChecker * goal_checker) override;
 
-  void setPlan(const nav_msgs::msg::Path & path) final { path_handler_.setPath(path); }
+  void setPlan(const nav_msgs::msg::Path & path) override;
+
+  void setSpeedLimit(const double & speed_limit, const bool & percentage) override;
 
 private:
-  void getParams();
-  void setPublishers();
-  void configureComponents();
 
   void handleVisualizations(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed,
-    std::unique_ptr<nav_msgs::msg::Path> && transformed_plan);
+    nav_msgs::msg::Path & transformed_plan);
 
   std::string node_name_;
-  rclcpp_lifecycle::LifecycleNode * parent_{nullptr};
+  rclcpp_lifecycle::LifecycleNode * parent_;
   nav2_costmap_2d::Costmap2DROS * costmap_ros_{nullptr};
   tf2_ros::Buffer * tf_buffer_{nullptr};
 
-  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>> transformed_path_pub_;
-
-  optimization::Optimizer<T> optimizer_;
+  optimization::Optimizer optimizer_;
   handlers::PathHandler path_handler_;
   visualization::TrajectoryVisualizer trajectory_visualizer_;
 
