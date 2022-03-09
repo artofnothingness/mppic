@@ -39,13 +39,12 @@ private:
   unsigned int dim_{0};
 };
 
-template <typename T>
 struct ControlSequence
 {
-  xt::xtensor<T, 2> data;
+  xt::xtensor<double, 2> data;
   ControlSequnceIdxes idx;
 
-  void reset(unsigned int time_steps) { data = xt::zeros<T>({time_steps, idx.dim()}); }
+  void reset(unsigned int time_steps) { data = xt::zeros<double>({time_steps, idx.dim()}); }
 };
 
 } // namespace mppi::optimization

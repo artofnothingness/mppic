@@ -4,6 +4,8 @@
 #include <cstdint>
 
 #include <xtensor/xtensor.hpp>
+#include <xtensor/xview.hpp>
+#include <xtensor/xarray.hpp>
 
 #include "mppic/optimization/MotionModel.hpp"
 
@@ -67,35 +69,105 @@ private:
   unsigned int dim_{0};
 };
 
-template <typename T>
 struct State
 {
-  xt::xtensor<T, 3> data;
+  xt::xtensor<double, 3> data;
   StateIdxes idx;
 
   void reset(unsigned int batch_size, unsigned int time_steps)
   {
-    data = xt::zeros<T>({batch_size, time_steps, idx.dim()});
+    data = xt::zeros<double>({batch_size, time_steps, idx.dim()});
   }
 
-  auto getControls() const;
-  auto getControls();
-  auto getVelocities();
-  auto getVelocities() const;
-  auto getVelocitiesVX() const;
-  auto getVelocitiesVX();
-  auto getVelocitiesVY() const;
-  auto getVelocitiesVY();
-  auto getVelocitiesWZ() const;
-  auto getVelocitiesWZ();
-  auto getControlVelocitiesVX() const;
-  auto getControlVelocitiesVX();
-  auto getControlVelocitiesVY() const;
-  auto getControlVelocitiesVY();
-  auto getControlVelocitiesWZ() const;
-  auto getControlVelocitiesWZ();
-  auto getTimeIntervals();
-  auto getTimeIntervals() const;
+  auto getVelocitiesVX() const
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.vx());
+  }
+
+  auto getVelocitiesVX()
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.vx());
+  }
+
+  auto getVelocitiesVY()
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.vy());
+  }
+
+  auto getVelocitiesVY() const
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.vy());
+  }
+
+  auto getVelocitiesWZ() const
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.wz());
+  }
+
+  auto getVelocitiesWZ()
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.wz());
+  }
+
+  auto getControlVelocitiesVX() const
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.cvx());
+  }
+
+  auto getControlVelocitiesVX()
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.cvx());
+  }
+
+  auto getControlVelocitiesVY()
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.cvy());
+  }
+
+  auto getControlVelocitiesVY() const
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.cvy());
+  }
+
+  auto getControlVelocitiesWZ() const
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.cwz());
+  }
+
+  auto getControlVelocitiesWZ()
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.cwz());
+  }
+
+  auto getTimeIntervals()
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.dt());
+  }
+
+  auto getTimeIntervals() const
+  {
+    return xt::view(data, xt::all(), xt::all(), idx.dt());
+  }
+
+  auto getControls() const
+  {
+    return xt::view(data, xt::all(), xt::all(), xt::range(idx.cbegin(), idx.cend()));
+  }
+
+  auto getControls()
+  {
+    return xt::view(data, xt::all(), xt::all(), xt::range(idx.cbegin(), idx.cend()));
+  }
+
+  auto getVelocities() const
+  {
+    return xt::view(data, xt::all(), xt::all(), xt::range(idx.vbegin(), idx.vend()));
+  }
+
+  auto getVelocities()
+  {
+    return xt::view(data, xt::all(), xt::all(), xt::range(idx.vbegin(), idx.vend()));
+  }
 };
 
 } // namespace mppi::optimization

@@ -13,8 +13,7 @@
 #include <xtensor/xtensor.hpp>
 
 #include "mppic/optimization/scoring/CriticFunction.hpp"
-#include "mppic/utils/common.hpp"
-#include "mppic/utils/geometry.hpp"
+#include "mppic/utils.hpp"
 
 namespace mppi::optimization {
 
@@ -97,7 +96,7 @@ public:
       return costs;
     }
 
-    xt::xtensor<T, 2> path = std::move(geometry::toTensor<T>(global_plan));
+    xt::xtensor<T, 2> path = std::move(utils::toTensor<T>(global_plan));
 
     for (size_t q = 0; q < critics_.size(); q++) {
       critics_[q]->score(robot_pose, trajectories, path, costs);
