@@ -14,6 +14,7 @@ void PathHandler::initialize(
   tf_buffer_ = buffer;
 
   auto node = parent.lock();
+  logger_ = node->get_logger();
   auto getParam = utils::getParamGetter(node, node_name_);
   getParam(lookahead_dist_, "lookahead_dist", 1.0);
   getParam(transform_tolerance_, "transform_tolerance", 1);

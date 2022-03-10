@@ -34,6 +34,7 @@ void Optimizer::initialize(
 void Optimizer::getParams()
 {
   auto node = parent_.lock();
+  logger_ = node->get_logger();
   auto getParam = utils::getParamGetter(node, node_name_);
 
   getParam(model_dt_, "model_dt", 0.1);

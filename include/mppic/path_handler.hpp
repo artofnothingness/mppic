@@ -61,7 +61,7 @@ protected:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
   nav_msgs::msg::Path global_plan_;
-  rclcpp::Logger logger_{rclcpp::get_logger("MPPI PathHandler")};
+  rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 
   double lookahead_dist_{0};
   double transform_tolerance_{0};

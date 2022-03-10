@@ -40,6 +40,7 @@ template<typename T>
 void CriticScorer<T>::getParams()
 {
   auto node = parent_.lock();
+  logger_ = node->get_logger();
   auto getParam = utils::getParamGetter(node, node_name_);
   getParam(critics_names_, "critics_names", std::vector<std::string>{});
   getParam(critics_type_, "critics_type", std::string("float"));

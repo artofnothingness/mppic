@@ -135,7 +135,7 @@ protected:
   std::function<model_t> model_;
 
   xt::xtensor<double, 3> generated_trajectories_{};
-  rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
+  rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
 
 } // namespace mppi

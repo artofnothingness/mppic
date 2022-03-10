@@ -61,7 +61,7 @@ protected:
   std::unique_ptr<pluginlib::ClassLoader<critics::CriticFunction<T>>> loader_;
   std::vector<std::unique_ptr<critics::CriticFunction<T>>> critics_;
 
-  rclcpp::Logger logger_{rclcpp::get_logger("MPPI CriticScorer")};
+  rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
 
 } // namespace mppi
