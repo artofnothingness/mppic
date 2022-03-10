@@ -4,7 +4,7 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/optimization/scoring/CriticFunction.hpp"
+#include "mppic/critics/CriticFunction.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi::optimization {
@@ -16,9 +16,10 @@ public:
   using CriticFunction<T>::parent_;
   using CriticFunction<T>::node_name_;
 
-  void getParams() final
+  void getParams() override
   {
-    auto getParam = utils::getParamGetter(parent_, node_name_);
+    auto node = parent_.lock();
+    auto getParam = utils::getParamGetter(node, node_name_);
     getParam(power_, "goal_angle_cost_power", 1);
     getParam(weight_, "goal_angle_cost_weight", 15);
     getParam(threshold_to_consider_goal_angle_, "threshold_to_consider_goal_angle", 0.30);
@@ -32,7 +33,7 @@ public:
    */
   virtual void score(
     const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
-    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
+    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) override
   {
     xt::xtensor<T, 1> tensor_pose = {
       static_cast<T>(robot_pose.pose.position.x), static_cast<T>(robot_pose.pose.position.y)};
@@ -49,7 +50,7 @@ public:
     }
   }
 
-private:
+protected:
   double threshold_to_consider_goal_angle_{0};
   unsigned int power_{0};
   double weight_{0};
