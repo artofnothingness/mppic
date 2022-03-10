@@ -1,45 +1,27 @@
 <class_libraries>
   <library path="critics">
 
-    <class type="mppi::optimization::ObstaclesCritic<float>" base_class_type="mppi::optimization::CriticFunction<float>">
-      <description>mppi</description>
-    </class>
-    <class type="mppi::optimization::ObstaclesCritic<double>" base_class_type="mppi::optimization::CriticFunction<double>">
+    <class type="mppi::optimization::ObstaclesCritic" base_class_type="mppi::optimization::CriticFunction">
       <description>mppi</description>
     </class>
 
-    <class type="mppi::optimization::GoalCritic<float>" base_class_type="mppi::optimization::CriticFunction<float>">
-      <description>mppi</description>
-    </class>
-    <class type="mppi::optimization::GoalCritic<double>" base_class_type="mppi::optimization::CriticFunction<double>">
+    <class type="mppi::optimization::GoalCritic" base_class_type="mppi::optimization::CriticFunction">
       <description>mppi</description>
     </class>
 
-    <class type="mppi::optimization::ReferenceTrajectoryCritic<float>" base_class_type="mppi::optimization::CriticFunction<float>">
-      <description>mppi</description>
-    </class>
-    <class type="mppi::optimization::ReferenceTrajectoryCritic<double>" base_class_type="mppi::optimization::CriticFunction<double>">
+    <class type="mppi::optimization::ReferenceTrajectoryCritic" base_class_type="mppi::optimization::CriticFunction">
       <description>mppi</description>
     </class>
 
-    <class type="mppi::optimization::ApproxReferenceTrajectoryCritic<float>" base_class_type="mppi::optimization::CriticFunction<float>">
-      <description>mppi</description>
-    </class>
-    <class type="mppi::optimization::ApproxReferenceTrajectoryCritic<double>" base_class_type="mppi::optimization::CriticFunction<double>">
+    <class type="mppi::optimization::ApproxReferenceTrajectoryCritic" base_class_type="mppi::optimization::CriticFunction">
       <description>mppi</description>
     </class>
 
-    <class type="mppi::optimization::GoalAngleCritic<float>" base_class_type="mppi::optimization::CriticFunction<float>">
-      <description>mppi</description>
-    </class>
-    <class type="mppi::optimization::GoalAngleCritic<double>" base_class_type="mppi::optimization::CriticFunction<double>">
+    <class type="mppi::optimization::GoalAngleCritic" base_class_type="mppi::optimization::CriticFunction">
       <description>mppi</description>
     </class>
 
-    <class type="mppi::optimization::AngleToGoalCritic<float>" base_class_type="mppi::optimization::CriticFunction<float>">
-      <description>mppi</description>
-    </class>
-    <class type="mppi::optimization::AngleToGoalCritic<double>" base_class_type="mppi::optimization::CriticFunction<double>">
+    <class type="mppi::optimization::AngleToGoalCritic" base_class_type="mppi::optimization::CriticFunction">
       <description>mppi</description>
     </class>
 

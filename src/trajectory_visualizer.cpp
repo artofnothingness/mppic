@@ -1,5 +1,3 @@
-#pragma once
-
 #include <memory>
 
 #include "mppic/trajectory_visualizer.hpp"
@@ -42,51 +40,6 @@ void TrajectoryVisualizer::reset()
 {
   marker_id_ = 0;
   points_ = std::make_unique<visualization_msgs::msg::MarkerArray>();
-}
-
-template <typename Container>
-void TrajectoryVisualizer::add(Container && trajectory)
-{
-  auto & size = trajectory.shape()[0];
-  if (!size) {
-    return;
-  }
-
-  for (size_t i = 0; i < size; i++) {
-    float red_component = static_cast<float>(i) / static_cast<float>(size);
-
-    auto pose = createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
-    auto scale = i != size - 1 ? createScale(0.03, 0.03, 0.07) : createScale(0.10, 0.10, 0.10);
-
-    auto color = createColor(red_component, 0, 0, 1);
-    auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
-
-    points_->markers.push_back(std::move(marker));
-  }
-}
-
-template <typename Container>
-void TrajectoryVisualizer::add(Container && trajectories, size_t batch_step, size_t time_step)
-{
-  if (!trajectories.shape()[0]) {
-    return;
-  }
-
-  auto & shape = trajectories.shape();
-
-  for (size_t i = 0; i < shape[0]; i += batch_step) {
-    for (size_t j = 0; j < shape[1]; j += time_step) {
-      float blue_component = 1.0f - static_cast<float>(j) / static_cast<float>(shape[1]);
-      float green_component = static_cast<float>(j) / static_cast<float>(shape[1]);
-
-      auto pose = createPose(trajectories(i, j, 0), trajectories(i, j, 1), 0.03);
-      auto scale = createScale(0.03, 0.03, 0.03);
-      auto color = createColor(0, green_component, blue_component, 1);
-      auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
-
-      points_->markers.push_back(std::move(marker));
-    }
-  }
 }
 
 void TrajectoryVisualizer::visualize(nav_msgs::msg::Path & plan)
