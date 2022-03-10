@@ -1,5 +1,5 @@
-#include "mppic/Controller.hpp"
-#include "mppic/optimization/StateModels.hpp"
+#include "mppic/controller.hpp"
+#include "mppic/optimization/state_models.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi {

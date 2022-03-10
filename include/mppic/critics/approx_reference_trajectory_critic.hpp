@@ -5,14 +5,13 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/critics/CriticFunction.hpp"
-
+#include "mppic/critics/critic_function.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi::optimization {
 
 template <typename T>
-class GoalCritic : public CriticFunction<T>
+class ApproxReferenceTrajectoryCritic : public CriticFunction<T>
 {
 public:
   using CriticFunction<T>::parent_;
@@ -22,12 +21,13 @@ public:
   {
     auto node = parent_.lock();
     auto getParam = utils::getParamGetter(node, node_name_);
-    getParam(power_, "goal_cost_power", 1);
-    getParam(weight_, "goal_cost_weight", 20);
+    getParam(power_, "reference_cost_power", 1);
+    getParam(weight_, "reference_cost_weight", 15);
   }
 
   /**
-   * @brief Evaluate cost related to goal following
+   * @brief Evaluate cost related to trajectories path alignment using
+   * approximate path to segment function
    *
    * @param costs [out] add reference cost values to this tensor
    */
@@ -37,16 +37,14 @@ public:
   {
     (void)robot_pose;
 
-    const auto goal_points = xt::view(path, -1, xt::range(0, 2));
+    auto path_points = xt::view(path, xt::all(), xt::range(0, 2));
+    auto trajectories_points_extended =
+      xt::view(trajectories, xt::all(), xt::all(), xt::newaxis(), xt::range(0, 2));
 
-    auto trajectories_end = xt::view(trajectories, xt::all(), -1, xt::range(0, 2));
-
-    auto dim = trajectories_end.dimension() - 1;
-
-    auto && dists_trajectories_end_to_goal =
-      xt::norm_l2(std::move(trajectories_end) - goal_points, {dim});
-
-    costs += xt::pow(std::move(dists_trajectories_end_to_goal) * weight_, power_);
+    auto dists = xt::norm_l2(
+      path_points - trajectories_points_extended, {trajectories_points_extended.dimension() - 1});
+    auto && cost = xt::mean(xt::amin(std::move(dists), 1), 1);
+    costs += xt::pow(std::move(cost) * weight_, power_);
   }
 
 protected:

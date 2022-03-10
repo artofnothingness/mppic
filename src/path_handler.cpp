@@ -1,5 +1,5 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
-#include "mppic/PathHandler.hpp"
+#include "mppic/path_handler.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi::handlers {

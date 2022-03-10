@@ -12,11 +12,11 @@
 
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
-#include "mppic/optimization/MotionModel.hpp"
-#include "mppic/CriticScorer.hpp"
+#include "mppic/optimization/motion_model.hpp"
+#include "mppic/critic_scorer.hpp"
 
-#include "mppic/optimization/tensor_wrappers/ControlSequence.hpp"
-#include "mppic/optimization/tensor_wrappers/State.hpp"
+#include "mppic/optimization/tensor_wrappers/control_sequence.hpp"
+#include "mppic/optimization/tensor_wrappers/state.hpp"
 
 namespace mppi::optimization {
 class Optimizer
