@@ -1,4 +1,4 @@
-#include "mppic/optimization/scoring/critics/GoalCritic.hpp"
+#include "mppic/optimization/scoring/critics/goal_critic.hpp"
 
 #include <pluginlib/class_list_macros.hpp>
 

@@ -1,5 +1,5 @@
-#include "mppic/Controller.hpp"
-#include "mppic/optimization/StateModels.hpp"
+#include "mppic/controller.hpp"
+#include "mppic/optimization/state_models.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi {
@@ -10,13 +10,16 @@ void Controller::configure(
   const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros)
 {
   // Set inputs
-  parent_ = parent.lock().get();
-  costmap_ros_ = costmap_ros.get();
-  tf_buffer_ = tf.get();
-  node_name_ = std::move(node_name);
+  parent_ = parent;
+  auto node = parent.lock();
+  logger_ = node->get_logger();
 
-  // Get high level controller parameters
-  auto getParam = utils::getParamGetter(parent_, node_name_);
+  costmap_ros_ = costmap_ros;
+  tf_buffer_ = tf;
+  node_name_ = node_name;
+
+  // Get high-level controller parameters
+  auto getParam = utils::getParamGetter(node, node_name_);
   getParam(visualize_, "visualize", true);
 
   // Configure composed objects
@@ -50,17 +53,18 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   geometry_msgs::msg::TwistStamped cmd =
     optimizer_.evalControl(robot_pose, robot_speed, transformed_plan);
 
-  if (visualize_) {
-    handleVisualizations(robot_pose, robot_speed, transformed_plan);
-  }
-
+  visualize(robot_pose, robot_speed, transformed_plan);
   return cmd;
 }
 
-void Controller::handleVisualizations(
+void Controller::visualize(
   const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed,
   nav_msgs::msg::Path & transformed_plan)
 {
+  if (!visualize_) {
+    return;
+  }
+
   trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories(), 5, 2);
   trajectory_visualizer_.add(optimizer_.evalTrajectoryFromControlSequence(robot_pose, robot_speed));
   trajectory_visualizer_.visualize(transformed_plan);
@@ -73,7 +77,7 @@ void Controller::setPlan(const nav_msgs::msg::Path & path)
 
 void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {
-  RCLCPP_ERROR(parent_->get_logger(), "MPPI's dynamic speed limit adjustment callback is not yet implemented!");
+  RCLCPP_ERROR(logger_, "MPPI's dynamic speed limit adjustment callback is not yet implemented!");
 }
 
 } // namespace mppi
