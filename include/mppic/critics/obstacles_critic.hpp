@@ -4,10 +4,10 @@
 
 #include "nav2_costmap_2d/footprint_collision_checker.hpp"
 
-#include "mppic/critics/critic_function.hpp"
+#include "mppic/critic_function.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::optimization {
+namespace mppi::critics {
 
 template <typename T>
 class ObstaclesCritic : public CriticFunction<T>
@@ -125,4 +125,4 @@ protected:
   double weight_{0};
 };
 
-} // namespace mppi::optimization
+} // namespace mppi::critics

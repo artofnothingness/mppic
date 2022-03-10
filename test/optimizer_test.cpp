@@ -16,8 +16,8 @@
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/optimization/Optimizer.hpp"
-#include "mppic/optimization/StateModels.hpp"
+#include "mppic/optimizer.hpp"
+#include "mppic/optimization/state_models.hpp"
 #include "utils/config.hpp"
 #include "utils/factory.hpp"
 #include "utils/utils.hpp"

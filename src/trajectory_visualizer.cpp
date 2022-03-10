@@ -4,7 +4,8 @@
 
 #include "mppic/trajectory_visualizer.hpp"
 
-namespace mppi::visualization {
+namespace mppi
+{
 
 void TrajectoryVisualizer::on_configure(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & frame_id)
@@ -44,8 +45,7 @@ void TrajectoryVisualizer::reset()
   points_ = std::make_unique<visualization_msgs::msg::MarkerArray>();
 }
 
-template <typename Container>
-void TrajectoryVisualizer::add(Container && trajectory)
+void TrajectoryVisualizer::add(xt::xtensor<double, 2> trajectory)
 {
   auto & size = trajectory.shape()[0];
   if (!size) {
@@ -65,8 +65,7 @@ void TrajectoryVisualizer::add(Container && trajectory)
   }
 }
 
-template <typename Container>
-void TrajectoryVisualizer::add(Container && trajectories, size_t batch_step, size_t time_step)
+void TrajectoryVisualizer::add(xt::xtensor<double, 3> trajectories, size_t batch_step, size_t time_step)
 {
   if (!trajectories.shape()[0]) {
     return;
@@ -150,4 +149,4 @@ std_msgs::msg::ColorRGBA TrajectoryVisualizer::createColor(float r, float g, flo
   return color;
 }
 
-} // namespace mppi::visualization
+} // namespace mppi

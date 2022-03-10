@@ -16,7 +16,8 @@
 #include "nav2_util/node_utils.hpp"
 #include "mppic/optimization/tensor_wrappers/control_sequence.hpp"
 
-namespace mppi::utils {
+namespace mppi::utils
+{
 
 template <typename NodeT>
 auto getParamGetter(NodeT node, const std::string & node_name_)

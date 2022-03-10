@@ -4,7 +4,8 @@
 
 #include "mppic/optimization/tensor_wrappers/state.hpp"
 
-namespace mppi::optimization::models {
+namespace mppi
+{
 /**
  * @brief Predict velocities for given trajectories the next time step
  *
@@ -14,9 +15,9 @@ namespace mppi::optimization::models {
  * @return predicted velocities of the robot: tensor of shape [batch_size, ... ]
  * where last dim could be 2 or 3 depending on motion model used
  */
-xt::xtensor<double, 2> NaiveModel(const xt::xtensor<double, 2> & state, const StateIdxes & idx)
+xt::xtensor<double, 2> NaiveModel(const xt::xtensor<double, 2> & state, const optimization::StateIdxes & idx)
 {
   return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
 }
 
-} // namespace mppi::optimization::models
+} // namespace mppi
