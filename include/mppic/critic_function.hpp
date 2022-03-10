@@ -24,6 +24,7 @@ public:
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
   {
     parent_ = parent;
+    logger_ = parent_.lock()->get_logger();
     node_name_ = node_name;
     costmap_ros_ = costmap_ros;
     costmap_ = costmap_ros_->getCostmap();
@@ -42,6 +43,7 @@ protected:
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_{nullptr};
+  rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
 
 } // namespace mppi::critics
