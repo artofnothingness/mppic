@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <xtensor/xtensor.hpp>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -8,7 +9,9 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "nav_msgs/msg/path.hpp"
 
-namespace mppi::visualization {
+namespace mppi
+{
+
 class TrajectoryVisualizer
 {
 public:
@@ -21,9 +24,9 @@ public:
 
   void reset();
 
-  template <typename Container> void add(Container && trajectory);
+  void add(xt::xtensor<double, 2> trajectory);
 
-  template <typename Container> void add(Container && trajectories, size_t batch_step, size_t time_step);
+  void add(xt::xtensor<double, 3> trajectories, size_t batch_step, size_t time_step);
 
   void visualize(nav_msgs::msg::Path & plan);
 
@@ -51,4 +54,4 @@ protected:
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI Trajectory Visualizer")};
 };
 
-} // namespace mppi::visualization
+} // namespace mppi

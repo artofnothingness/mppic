@@ -7,7 +7,8 @@
 
 #include "mppic/optimization/motion_model.hpp"
 
-namespace mppi::optimization {
+namespace mppi::optimization
+{
 
 class ControlSequnceIdxes
 {

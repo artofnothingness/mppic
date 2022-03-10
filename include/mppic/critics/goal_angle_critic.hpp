@@ -4,10 +4,10 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/critics/critic_function.hpp"
+#include "mppic/critic_function.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::optimization {
+namespace mppi::critics {
 
 template <typename T>
 class GoalAngleCritic : public CriticFunction<T>
@@ -56,4 +56,4 @@ protected:
   double weight_{0};
 };
 
-} // namespace mppi::optimization
+} // namespace mppi::critics

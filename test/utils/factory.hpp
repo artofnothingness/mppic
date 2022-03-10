@@ -60,7 +60,7 @@ std::shared_ptr<nav2_costmap_2d::Costmap2DROS> getDummyCostmapRos(
 
 auto getDummyModel()
 {
-  auto model = mppi::optimization::models::NaiveModel;
+  auto model = mppi::NaiveModel;
   return model;
 }
 
@@ -72,7 +72,7 @@ auto getDummyNode(rclcpp::NodeOptions options, std::string node_name = std::stri
 
 auto getDummyOptimizer(auto node, auto costmap_ros, auto model)
 {
-  auto optimizer = mppi::optimization::Optimizer();
+  auto optimizer = mppi::Optimizer();
   std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node;
   weak_ptr_node = node;
   optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros, model);

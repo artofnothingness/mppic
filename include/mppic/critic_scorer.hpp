@@ -14,7 +14,8 @@
 #include "mppic/critic_function.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::optimization {
+namespace mppi
+{
 
 template <typename T>
 class CriticScorer
@@ -57,10 +58,10 @@ protected:
   std::string critics_type_;
   const std::string base_name_ = "CriticFunction";
 
-  std::unique_ptr<pluginlib::ClassLoader<optimization::CriticFunction<T>>> loader_;
-  std::vector<std::unique_ptr<CriticFunction<T>>> critics_;
+  std::unique_ptr<pluginlib::ClassLoader<critics::CriticFunction<T>>> loader_;
+  std::vector<std::unique_ptr<critics::CriticFunction<T>>> critics_;
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI CriticScorer")};
 };
 
-} // namespace mppi::optimization
+} // namespace mppi

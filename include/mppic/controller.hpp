@@ -8,7 +8,9 @@
 #include "nav2_core/goal_checker.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-namespace mppi {
+namespace mppi
+{
+
 class Controller : public nav2_core::Controller
 {
 public:
@@ -44,9 +46,9 @@ protected:
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
-  optimization::Optimizer optimizer_;
-  handlers::PathHandler path_handler_;
-  visualization::TrajectoryVisualizer trajectory_visualizer_;
+  Optimizer optimizer_;
+  PathHandler path_handler_;
+  TrajectoryVisualizer trajectory_visualizer_;
 
   bool visualize_;
 };

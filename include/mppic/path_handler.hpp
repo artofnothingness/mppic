@@ -9,7 +9,9 @@
 
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
-namespace mppi::handlers {
+namespace mppi
+{
+
 using PathIterator = std::vector<geometry_msgs::msg::PoseStamped>::iterator;
 using StampType = decltype(std::declval<std_msgs::msg::Header>().stamp);
 
@@ -65,4 +67,4 @@ protected:
   double lookahead_dist_{0};
   double transform_tolerance_{0};
 };
-} // namespace mppi::handlers
+} // namespace mppi
