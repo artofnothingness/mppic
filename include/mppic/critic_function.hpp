@@ -7,7 +7,8 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
-namespace mppi::optimization {
+namespace mppi::critics
+{
 
 template <typename T>
 class CriticFunction
@@ -42,4 +43,4 @@ protected:
   nav2_costmap_2d::Costmap2D * costmap_{nullptr};
 };
 
-} // namespace mppi::optimization
+} // namespace mppi::critics

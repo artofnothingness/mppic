@@ -13,7 +13,8 @@
 #include "mppic/optimizer.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::optimization {
+namespace mppi
+{
 
 void Optimizer::initialize(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & node_name,
@@ -111,7 +112,7 @@ xt::xtensor<double, 3> Optimizer::generateNoisedControls() const
 
 bool Optimizer::isHolonomic() const
 {
-  return mppi::optimization::isHolonomic(getMotionModel());
+  return mppi::isHolonomic(getMotionModel());
 }
 
 void Optimizer::applyControlConstraints()
@@ -163,7 +164,7 @@ xt::xtensor<double, 2> Optimizer::evalTrajectoryFromControlSequence(
   const geometry_msgs::msg::PoseStamped & robot_pose,
   const geometry_msgs::msg::Twist & robot_speed) const
 {
-  State state;
+  optimization::State state;
   state.idx.setLayout(getMotionModel());
   state.reset(1U, time_steps_);
   state.getControls() = control_sequence_.data;
@@ -247,4 +248,4 @@ void Optimizer::setMotionModel(MotionModel motion_model)
   control_sequence_.idx.setLayout(motion_model);
 }
 
-} // namespace mppi::optimization
+} // namespace mppi

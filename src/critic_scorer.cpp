@@ -2,7 +2,8 @@
 
 #include "mppic/critic_scorer.hpp"
 
-namespace mppi::optimization {
+namespace mppi
+{
 
 template<typename T>
 void CriticScorer<T>::on_configure(
@@ -26,7 +27,7 @@ template<typename T>
 void CriticScorer<T>::setLoader()
 {
   if (!loader_) {
-    loader_ = std::make_unique<pluginlib::ClassLoader<optimization::CriticFunction<T>>>(
+    loader_ = std::make_unique<pluginlib::ClassLoader<critics::CriticFunction<T>>>(
       "mppic", getFullName(base_name_));
   }
 }
@@ -34,7 +35,7 @@ void CriticScorer<T>::setLoader()
 template<typename T>
 std::string CriticScorer<T>::getFullName(const std::string & name)
 {
-  return "mppi::optimization::" + name + "<" + critics_type_ + ">";
+  return "mppi::critics::" + name + "<" + critics_type_ + ">";
 }
 
 template<typename T>
@@ -52,7 +53,7 @@ void CriticScorer<T>::loadCritics()
   critics_.clear();
   for (auto name : critics_names_) {
     std::string fullname = getFullName(name);
-    auto instance = std::unique_ptr<optimization::CriticFunction<T>>(
+    auto instance = std::unique_ptr<critics::CriticFunction<T>>(
       loader_->createUnmanagedInstance(fullname));
     critics_.push_back(std::move(instance));
     RCLCPP_INFO(logger_, "Critic loaded : %s", fullname.c_str());
@@ -88,4 +89,4 @@ xt::xtensor<T, 1> CriticScorer<T>::evalTrajectoriesScores(
   return costs;
 }
 
-} // namespace mppi::optimization
+} // namespace mppi

@@ -18,11 +18,13 @@
 #include "mppic/optimization/tensor_wrappers/control_sequence.hpp"
 #include "mppic/optimization/tensor_wrappers/state.hpp"
 
-namespace mppi::optimization {
+namespace mppi
+{
+
 class Optimizer
 {
 public:
-  using model_t = xt::xtensor<double, 2>(const xt::xtensor<double, 2> & state, const StateIdxes & idx);
+  using model_t = xt::xtensor<double, 2>(const xt::xtensor<double, 2> & state, const optimization::StateIdxes & idx);
 
   Optimizer() = default;
 
@@ -127,8 +129,8 @@ protected:
   double vy_std_{0};
   double wz_std_{0};
 
-  State state_;
-  ControlSequence control_sequence_;
+  optimization::State state_;
+  optimization::ControlSequence control_sequence_;
   MotionModel motion_model_t_{MotionModel::DiffDrive};
 
   CriticScorer<double> critic_scorer_;
@@ -138,4 +140,4 @@ protected:
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
 };
 
-} // namespace mppi::optimization
+} // namespace mppi

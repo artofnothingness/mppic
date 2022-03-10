@@ -2,7 +2,8 @@
 #include "mppic/path_handler.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::handlers {
+namespace mppi
+{
 
 void PathHandler::initialize(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & node_name,
@@ -126,4 +127,4 @@ nav_msgs::msg::Path PathHandler::transformPlanPosesToCostmapFrame(
   return plan;
 }
 
-} // namespace mppi::handlers
+} // namespace mppi

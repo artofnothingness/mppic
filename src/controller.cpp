@@ -2,7 +2,8 @@
 #include "mppic/optimization/state_models.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi {
+namespace mppi
+{
 
 void Controller::configure(
   const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
@@ -23,8 +24,7 @@ void Controller::configure(
   getParam(visualize_, "visualize", true);
 
   // Configure composed objects
-  auto & model = optimization::models::NaiveModel;
-  optimizer_.initialize(parent_, node_name_, costmap_ros_, model);
+  optimizer_.initialize(parent_, node_name_, costmap_ros_, NaiveModel);
   path_handler_.initialize(parent_, node_name_, costmap_ros_, tf_buffer_);
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 }
