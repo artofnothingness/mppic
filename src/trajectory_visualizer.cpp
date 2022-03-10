@@ -9,6 +9,7 @@ void TrajectoryVisualizer::on_configure(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & frame_id)
 {
   auto node = parent.lock();
+  logger_ = node->get_logger();
   frame_id_ = frame_id;
   trajectories_publisher_ =
     node->create_publisher<visualization_msgs::msg::MarkerArray>("/trajectories", 1);
