@@ -63,7 +63,9 @@ set(critics_sources
 set(mppic_sources
   src/Controller.cpp
   src/PathHandler.cpp
+  src/TrajectoryVisualizer.cpp
   src/Optimizer.cpp
+  src/CriticScorer.cpp
 )
 
 
