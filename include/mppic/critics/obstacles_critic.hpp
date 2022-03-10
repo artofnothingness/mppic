@@ -2,9 +2,9 @@
 
 #include <xtensor/xtensor.hpp>
 
-#include <nav2_costmap_2d/footprint_collision_checker.hpp>
+#include "nav2_costmap_2d/footprint_collision_checker.hpp"
 
-#include "mppic/optimization/scoring/CriticFunction.hpp"
+#include "mppic/critics/critic_function.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi::optimization {
@@ -18,9 +18,10 @@ public:
   using CriticFunction<T>::parent_;
   using CriticFunction<T>::node_name_;
 
-  void getParams() final
+  void getParams() override
   {
-    auto getParam = utils::getParamGetter(parent_, node_name_);
+    auto node = parent_.lock();
+    auto getParam = utils::getParamGetter(node, node_name_);
     getParam(consider_footprint_, "consider_footprint", true);
     getParam(power_, "obstacle_cost_power", 1);
     getParam(weight_, "obstacle_cost_weight", 20);
@@ -38,7 +39,7 @@ public:
    */
   virtual void score(
     const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
-    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
+    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) override
   {
     (void)robot_pose;
     (void)path;
@@ -72,7 +73,7 @@ public:
     }
   }
 
-private:
+protected:
   unsigned char costAtPose(const auto & point)
   {
     unsigned char cost;
