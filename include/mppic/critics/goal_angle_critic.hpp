@@ -4,13 +4,13 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/critics/CriticFunction.hpp"
+#include "mppic/critics/critic_function.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi::optimization {
 
 template <typename T>
-class AngleToGoalCritic : public CriticFunction<T>
+class GoalAngleCritic : public CriticFunction<T>
 {
 public:
   using CriticFunction<T>::parent_;
@@ -20,8 +20,9 @@ public:
   {
     auto node = parent_.lock();
     auto getParam = utils::getParamGetter(node, node_name_);
-    getParam(power_, "angle_to_goal_cost_power", 1);
-    getParam(weight_, "angle_to_goal_cost_weight", 15);
+    getParam(power_, "goal_angle_cost_power", 1);
+    getParam(weight_, "goal_angle_cost_weight", 15);
+    getParam(threshold_to_consider_goal_angle_, "threshold_to_consider_goal_angle", 0.30);
   }
 
   /**
@@ -34,22 +35,23 @@ public:
     const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
     const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) override
   {
-    (void)robot_pose;
-    auto init_yaw = tf2::getYaw(robot_pose.pose.orientation);
+    xt::xtensor<T, 1> tensor_pose = {
+      static_cast<T>(robot_pose.pose.position.x), static_cast<T>(robot_pose.pose.position.y)};
 
-    auto goal_x = xt::view(path, -1, 0);
-    auto goal_y = xt::view(path, -1, 1);
-    auto traj_xs = xt::view(trajectories, xt::all(), xt::all(), 0);
-    auto traj_ys = xt::view(trajectories, xt::all(), xt::all(), 1);
-    auto traj_yaws = xt::view(trajectories, xt::all(), xt::all(), 2);
+    auto path_points = xt::view(path, -1, xt::range(0, 2));
 
-    auto yaws_between_points = atan2(goal_y - traj_ys, goal_x - traj_xs);
-    auto yaws = xt::abs(traj_yaws - yaws_between_points);
+    double points_to_goal_dists = xt::norm_l2(tensor_pose - path_points, {0})();
 
-    costs += xt::pow(xt::mean(yaws, {1}) * weight_, power_);
+    if (points_to_goal_dists < threshold_to_consider_goal_angle_) {
+      auto yaws = xt::view(trajectories, xt::all(), xt::all(), 2);
+      auto goal_yaw = xt::view(path, -1, 2);
+
+      costs += xt::pow(xt::mean(xt::abs(yaws - goal_yaw), {1}) * weight_, power_);
+    }
   }
 
 protected:
+  double threshold_to_consider_goal_angle_{0};
   unsigned int power_{0};
   double weight_{0};
 };

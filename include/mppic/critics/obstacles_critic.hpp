@@ -4,7 +4,7 @@
 
 #include "nav2_costmap_2d/footprint_collision_checker.hpp"
 
-#include "mppic/critics/CriticFunction.hpp"
+#include "mppic/critics/critic_function.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi::optimization {

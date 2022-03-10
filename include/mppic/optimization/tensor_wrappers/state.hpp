@@ -7,7 +7,7 @@
 #include <xtensor/xview.hpp>
 #include <xtensor/xarray.hpp>
 
-#include "mppic/optimization/MotionModel.hpp"
+#include "mppic/optimization/motion_model.hpp"
 
 namespace mppi::optimization {
 

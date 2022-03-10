@@ -1,4 +1,4 @@
-#include "mppic/optimization/scoring/critics/ObstaclesCritic.hpp"
+#include "mppic/optimization/scoring/critics/obstacles_critic.hpp"
 
 #include <pluginlib/class_list_macros.hpp>
 

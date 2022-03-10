@@ -11,7 +11,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 
-#include "mppic/CriticFunction.hpp"
+#include "mppic/critic_function.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi::optimization {

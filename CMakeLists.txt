@@ -52,20 +52,20 @@ set(dependencies_libs
 )
 
 set(critics_sources
-  src/critics/ApproxReferenceTrajectoryCritic.cpp
-  src/critics/ReferenceTrajectoryCritic.cpp
-  src/critics/GoalAngleCritic.cpp
-  src/critics/AngleToGoalCritic.cpp
-  src/critics/GoalCritic.cpp
-  src/critics/ObstaclesCritic.cpp
+  src/critics/approx_reference_trajectory_critic.cpp
+  src/critics/reference_trajectory_critic.cpp
+  src/critics/goal_angle_critic.cpp
+  src/critics/angle_to_goal_critic.cpp
+  src/critics/goal_critic.cpp
+  src/critics/obstacles_critic.cpp
 )
 
 set(mppic_sources
-  src/Controller.cpp
-  src/PathHandler.cpp
-  src/TrajectoryVisualizer.cpp
-  src/Optimizer.cpp
-  src/CriticScorer.cpp
+  src/controller.cpp
+  src/path_handler.cpp
+  src/trajectory_visualizer.cpp
+  src/optimizer.cpp
+  src/critic_scorer.cpp
 )
 
 

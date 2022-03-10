@@ -9,8 +9,8 @@
 #include "nav2_core/exceptions.hpp"
 #include "nav2_costmap_2d/cost_values.hpp"
 
-#include "mppic/optimization/MotionModel.hpp"
-#include "mppic/Optimizer.hpp"
+#include "mppic/optimization/motion_model.hpp"
+#include "mppic/optimizer.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi::optimization {

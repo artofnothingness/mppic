@@ -1,4 +1,4 @@
-#include "mppic/optimization/scoring/critics/ReferenceTrajectoryCritic.hpp"
+#include "mppic/optimization/scoring/critics/reference_trajectory_critic.hpp"
 
 #include <pluginlib/class_list_macros.hpp>
 

@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "mppic/TrajectoryVisualizer.hpp"
+#include "mppic/trajectory_visualizer.hpp"
 
 namespace mppi::visualization {
 

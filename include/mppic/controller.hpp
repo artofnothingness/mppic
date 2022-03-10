@@ -1,8 +1,8 @@
 #pragma once
 
-#include "mppic/PathHandler.hpp"
-#include "mppic/Optimizer.hpp"
-#include "mppic/TrajectoryVisualizer.hpp"
+#include "mppic/path_handler.hpp"
+#include "mppic/optimizer.hpp"
+#include "mppic/trajectory_visualizer.hpp"
 
 #include "nav2_core/controller.hpp"
 #include "nav2_core/goal_checker.hpp"

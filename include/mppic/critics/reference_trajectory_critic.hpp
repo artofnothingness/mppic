@@ -2,7 +2,7 @@
 
 #include <xtensor/xtensor.hpp>
 
-#include "mppic/critics/CriticFunction.hpp"
+#include "mppic/critics/critic_function.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi::optimization {
