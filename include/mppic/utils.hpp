@@ -19,7 +19,7 @@
 namespace mppi::utils {
 
 template <typename NodeT>
-auto getParamGetter(NodeT * node, const std::string & node_name_)
+auto getParamGetter(NodeT node, const std::string & node_name_)
 {
   return [=](auto & param, const std::string & param_name, auto default_value) {
     using OutType = std::decay_t<decltype(param)>;
