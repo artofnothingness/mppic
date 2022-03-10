@@ -1,27 +1,19 @@
-#include <nav2_costmap_2d/costmap_2d_ros.hpp>
-
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "mppic/PathHandler.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi::handlers {
 
 void PathHandler::initialize(
-  rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
-  nav2_costmap_2d::Costmap2DROS * costmap, tf2_ros::Buffer * buffer)
+  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & node_name,
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap, std::shared_ptr<tf2_ros::Buffer> buffer)
 {
-  parent_ = parent;
   node_name_ = node_name;
   costmap_ = costmap;
   tf_buffer_ = buffer;
 
-  getParams();
-  RCLCPP_INFO(logger_, "Configured");
-}
-
-void PathHandler::getParams()
-{
-  auto getParam = utils::getParamGetter(parent_, node_name_);
-
+  auto node = parent.lock();
+  auto getParam = utils::getParamGetter(node, node_name_);
   getParam(lookahead_dist_, "lookahead_dist", 1.0);
   getParam(transform_tolerance_, "transform_tolerance", 1);
 }
