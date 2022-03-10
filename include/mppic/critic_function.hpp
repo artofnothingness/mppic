@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MPPIC__CRITIC_FUNCTION_HPP_
+#define MPPIC__CRITIC_FUNCTION_HPP_
 
 #include <string>
 #include <xtensor/xtensor.hpp>
@@ -44,3 +45,5 @@ protected:
 };
 
 } // namespace mppi::critics
+
+#endif  // MPPIC__CRITIC_FUNCTION_HPP_

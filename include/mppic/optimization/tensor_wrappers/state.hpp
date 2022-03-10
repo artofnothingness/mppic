@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MPPIC__OPTIMIZATION__TENSOR_WRAPPERS__STATE_HPP_
+#define MPPIC__OPTIMIZATION__TENSOR_WRAPPERS__STATE_HPP_
 
 #include <array>
 #include <cstdint>
@@ -172,3 +173,5 @@ struct State
 };
 
 } // namespace mppi::optimization
+
+#endif  // MPPIC__OPTIMIZATION__TENSOR_WRAPPERS__STATE_HPP_

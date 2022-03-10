@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MPPIC__OPTIMIZATION__STATE_MODELS_HPP_
+#define MPPIC__OPTIMIZATION__STATE_MODELS_HPP_
 
 #include <xtensor/xview.hpp>
 
@@ -21,3 +22,5 @@ xt::xtensor<double, 2> NaiveModel(const xt::xtensor<double, 2> & state, const op
 }
 
 } // namespace mppi
+
+#endif  // MPPIC__OPTIMIZATION__STATE_MODELS_HPP_
