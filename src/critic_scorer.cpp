@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mppic/CriticScorer.hpp"
+#include "mppic/critic_scorer.hpp"
 
 namespace mppi::optimization {
 

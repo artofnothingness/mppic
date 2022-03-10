@@ -1,4 +1,4 @@
-#include "mppic/optimization/scoring/critics/GoalAngleCritic.hpp"
+#include "mppic/optimization/scoring/critics/goal_angle_critic.hpp"
 
 #include <pluginlib/class_list_macros.hpp>
 

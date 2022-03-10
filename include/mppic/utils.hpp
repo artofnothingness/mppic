@@ -14,7 +14,7 @@
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "nav2_util/node_utils.hpp"
-#include "mppic/optimization/tensor_wrappers/ControlSequence.hpp"
+#include "mppic/optimization/tensor_wrappers/control_sequence.hpp"
 
 namespace mppi::utils {
 

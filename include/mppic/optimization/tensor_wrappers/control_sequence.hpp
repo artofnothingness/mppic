@@ -5,7 +5,7 @@
 
 #include <xtensor/xtensor.hpp>
 
-#include "mppic/optimization/MotionModel.hpp"
+#include "mppic/optimization/motion_model.hpp"
 
 namespace mppi::optimization {
 
