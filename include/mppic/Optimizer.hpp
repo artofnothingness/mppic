@@ -13,7 +13,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 #include "mppic/optimization/MotionModel.hpp"
-#include "mppic/optimization/scoring/CriticScorer.hpp"
+#include "mppic/CriticScorer.hpp"
 
 #include "mppic/optimization/tensor_wrappers/ControlSequence.hpp"
 #include "mppic/optimization/tensor_wrappers/State.hpp"
@@ -27,8 +27,8 @@ public:
   Optimizer() = default;
 
   void initialize(
-    rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
-    nav2_costmap_2d::Costmap2DROS * costmap_ros, model_t model);
+    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & node_name,
+    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros, model_t model);
 
   geometry_msgs::msg::TwistStamped evalControl(
     const geometry_msgs::msg::PoseStamped & robot_pose,
@@ -40,7 +40,7 @@ public:
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed) const;
 
-private:
+protected:
   void getParams();
   void reset();
   void configureComponents();
@@ -109,9 +109,9 @@ private:
 
   bool isHolonomic() const;
 
-  rclcpp_lifecycle::LifecycleNode * parent_{nullptr};
-  nav2_costmap_2d::Costmap2DROS * costmap_ros_{nullptr};
-  nav2_costmap_2d::Costmap2D * costmap_{nullptr};
+  rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
+  nav2_costmap_2d::Costmap2D * costmap_;
 
   std::string node_name_;
 
