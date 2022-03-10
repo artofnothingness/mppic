@@ -20,8 +20,8 @@ public:
   ~PathHandler() = default;
 
   void initialize(
-    rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
-    nav2_costmap_2d::Costmap2DROS * costmap, tf2_ros::Buffer * buffer);
+    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & node_name,
+    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap, std::shared_ptr<tf2_ros::Buffer> buffer);
 
   void setPath(const nav_msgs::msg::Path & plan) { global_plan_ = plan; }
 
@@ -35,9 +35,7 @@ public:
    */
   nav_msgs::msg::Path transformPath(const geometry_msgs::msg::PoseStamped & robot_pose);
 
-private:
-  void getParams();
-
+protected:
   bool transformPose(
     const std::string & frame, const geometry_msgs::msg::PoseStamped & in_pose,
     geometry_msgs::msg::PoseStamped & out_pose) const;
@@ -58,9 +56,8 @@ private:
   }
 
   std::string node_name_;
-  rclcpp_lifecycle::LifecycleNode * parent_{nullptr};
-  nav2_costmap_2d::Costmap2DROS * costmap_{nullptr};
-  tf2_ros::Buffer * tf_buffer_{nullptr};
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
   nav_msgs::msg::Path global_plan_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPI PathHandler")};

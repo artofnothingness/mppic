@@ -1,8 +1,8 @@
 #pragma once
 
-#include "mppic/PathHandler.hpp"
-#include "mppic/optimization/Optimizer.hpp"
-#include "mppic/TrajectoryVisualizer.hpp"
+#include "mppic/path_handler.hpp"
+#include "mppic/optimizer.hpp"
+#include "mppic/trajectory_visualizer.hpp"
 
 #include "nav2_core/controller.hpp"
 #include "nav2_core/goal_checker.hpp"
@@ -32,17 +32,17 @@ public:
 
   void setSpeedLimit(const double & speed_limit, const bool & percentage) override;
 
-private:
-
-  void handleVisualizations(
+protected:
+  void visualize(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed,
     nav_msgs::msg::Path & transformed_plan);
 
   std::string node_name_;
-  rclcpp_lifecycle::LifecycleNode * parent_;
-  nav2_costmap_2d::Costmap2DROS * costmap_ros_{nullptr};
-  tf2_ros::Buffer * tf_buffer_{nullptr};
+  rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
+  rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
   optimization::Optimizer optimizer_;
   handlers::PathHandler path_handler_;

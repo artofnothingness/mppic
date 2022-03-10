@@ -3,9 +3,9 @@
 #include <string>
 #include <xtensor/xtensor.hpp>
 
-#include <geometry_msgs/msg/pose_stamped.hpp>
-#include <nav2_costmap_2d/costmap_2d_ros.hpp>
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 namespace mppi::optimization {
 
@@ -17,8 +17,9 @@ public:
   virtual ~CriticFunction() = default;
 
   void on_configure(
-    rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
-    nav2_costmap_2d::Costmap2DROS * costmap_ros)
+    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, 
+    const std::string & node_name,
+    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
   {
     parent_ = parent;
     node_name_ = node_name;
@@ -36,8 +37,8 @@ public:
 
 protected:
   std::string node_name_;
-  rclcpp_lifecycle::LifecycleNode * parent_{nullptr};
-  nav2_costmap_2d::Costmap2DROS * costmap_ros_{nullptr};
+  rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_{nullptr};
 };
 

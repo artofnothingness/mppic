@@ -3,22 +3,21 @@
 #include <string>
 #include <vector>
 
-#include <nav2_core/exceptions.hpp>
-#include <nav2_costmap_2d/cost_values.hpp>
-
 #include <xtensor/xmath.hpp>
 #include <xtensor/xrandom.hpp>
 
-#include "mppic/optimization/MotionModel.hpp"
-#include "mppic/optimization/Optimizer.hpp"
+#include "nav2_core/exceptions.hpp"
+#include "nav2_costmap_2d/cost_values.hpp"
 
+#include "mppic/optimization/motion_model.hpp"
+#include "mppic/optimizer.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi::optimization {
 
 void Optimizer::initialize(
-  rclcpp_lifecycle::LifecycleNode * parent, const std::string & node_name,
-  nav2_costmap_2d::Costmap2DROS * costmap_ros, model_t model)
+  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & node_name,
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros, model_t model)
 {
   parent_ = parent;
   node_name_ = node_name;
@@ -29,12 +28,12 @@ void Optimizer::initialize(
   getParams();
   configureComponents();
   reset();
-  RCLCPP_INFO(logger_, "Configured");
 }
 
 void Optimizer::getParams()
 {
-  auto getParam = utils::getParamGetter(parent_, node_name_);
+  auto node = parent_.lock();
+  auto getParam = utils::getParamGetter(node, node_name_);
 
   getParam(model_dt_, "model_dt", 0.1);
   getParam(time_steps_, "time_steps", 15);
@@ -112,7 +111,7 @@ xt::xtensor<double, 3> Optimizer::generateNoisedControls() const
 
 bool Optimizer::isHolonomic() const
 {
-  return mppi::optimization::isHolonomic(motion_model_t_);
+  return mppi::optimization::isHolonomic(getMotionModel());
 }
 
 void Optimizer::applyControlConstraints()

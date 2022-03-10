@@ -2,7 +2,7 @@
 
 #include <xtensor/xview.hpp>
 
-#include "mppic/optimization/tensor_wrappers/State.hpp"
+#include "mppic/optimization/tensor_wrappers/state.hpp"
 
 namespace mppi::optimization::models {
 /**
