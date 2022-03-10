@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MPPIC__CONTROLLER_HPP_
+#define MPPIC__CONTROLLER_HPP_
 
 #include "mppic/path_handler.hpp"
 #include "mppic/optimizer.hpp"
@@ -54,3 +55,5 @@ protected:
 };
 
 } // namespace mppi
+
+#endif  // MPPIC__CONTROLLER_HPP_

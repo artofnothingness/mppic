@@ -1,7 +1,8 @@
-#pragma once
+#ifndef MPPIC__CRITIC_SCORER_HPP_
+#define MPPIC__CRITIC_SCORER_HPP_
 
-#include <pluginlib/class_loader.hpp>
 #include <xtensor/xtensor.hpp>
+#include <pluginlib/class_loader.hpp>
 
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -9,7 +10,6 @@
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
-
 
 #include "mppic/critic_function.hpp"
 #include "mppic/utils.hpp"
@@ -65,3 +65,5 @@ protected:
 };
 
 } // namespace mppi
+
+#endif  // MPPIC__CRITIC_SCORER_HPP_
