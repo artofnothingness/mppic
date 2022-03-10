@@ -5,7 +5,7 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/optimization/scoring/CriticFunction.hpp"
+#include "mppic/critics/CriticFunction.hpp"
 
 #include "mppic/utils.hpp"
 
@@ -18,9 +18,10 @@ public:
   using CriticFunction<T>::parent_;
   using CriticFunction<T>::node_name_;
 
-  void getParams() final
+  void getParams() override
   {
-    auto getParam = utils::getParamGetter(parent_, node_name_);
+    auto node = parent_.lock();
+    auto getParam = utils::getParamGetter(node, node_name_);
     getParam(power_, "goal_cost_power", 1);
     getParam(weight_, "goal_cost_weight", 20);
   }
@@ -32,7 +33,7 @@ public:
    */
   virtual void score(
     const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
-    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) final
+    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) override
   {
     (void)robot_pose;
 
@@ -48,7 +49,7 @@ public:
     costs += xt::pow(std::move(dists_trajectories_end_to_goal) * weight_, power_);
   }
 
-private:
+protected:
   unsigned int power_{0};
   double weight_{0};
 };
