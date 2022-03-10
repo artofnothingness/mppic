@@ -1,5 +1,3 @@
-#pragma once
-
 #include "mppic/critic_scorer.hpp"
 
 namespace mppi

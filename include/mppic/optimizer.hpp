@@ -1,20 +1,18 @@
-#pragma once
+#ifndef MPPIC__OPTIMIZER_HPP_
+#define MPPIC__OPTIMIZER_HPP_
 
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
-
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 #include "mppic/optimization/motion_model.hpp"
 #include "mppic/critic_scorer.hpp"
-
 #include "mppic/optimization/tensor_wrappers/control_sequence.hpp"
 #include "mppic/optimization/tensor_wrappers/state.hpp"
 
@@ -141,3 +139,5 @@ protected:
 };
 
 } // namespace mppi
+
+#endif  // MPPIC__OPTIMIZER_HPP_

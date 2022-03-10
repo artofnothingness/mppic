@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MPPIC__UTILS_HPP_
+#define MPPIC__UTILS_HPP_
 
 #include <algorithm>
 #include <chrono>
@@ -187,3 +188,5 @@ auto distPointsToLineSegments2D(P && path, L && batch_of_segments_points)
 }
 
 } // namespace mppi::utils
+
+#endif  // MPPIC__UTILS_HPP_

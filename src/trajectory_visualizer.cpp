@@ -1,5 +1,3 @@
-#pragma once
-
 #include <memory>
 
 #include "mppic/trajectory_visualizer.hpp"

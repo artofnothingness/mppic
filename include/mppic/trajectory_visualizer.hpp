@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MPPIC__TRAJECTORY_VISUALIZER_HPP_
+#define MPPIC__TRAJECTORY_VISUALIZER_HPP_
 
 #include <memory>
 #include <xtensor/xtensor.hpp>
@@ -55,3 +56,5 @@ protected:
 };
 
 } // namespace mppi
+
+#endif  // MPPIC__TRAJECTORY_VISUALIZER_HPP_

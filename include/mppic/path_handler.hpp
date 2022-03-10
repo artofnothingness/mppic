@@ -1,12 +1,11 @@
-#pragma once
+#ifndef MPPIC__PATH_HANDLER_HPP_
+#define MPPIC__PATH_HANDLER_HPP_
 
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "tf2_ros/buffer.h"
-
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "std_msgs/msg/header.hpp"
-
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 namespace mppi
@@ -68,3 +67,5 @@ protected:
   double transform_tolerance_{0};
 };
 } // namespace mppi
+
+#endif  // MPPIC__PATH_HANDLER_HPP_

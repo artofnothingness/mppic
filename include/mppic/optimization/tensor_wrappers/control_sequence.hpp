@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MPPIC__OPTIMIZATION__TENSOR_WRAPPERS__CONTROL_SEQUENCE_HPP_
+#define MPPIC__OPTIMIZATION__TENSOR_WRAPPERS__CONTROL_SEQUENCE_HPP_
 
 #include <array>
 #include <cstdint>
@@ -49,3 +50,5 @@ struct ControlSequence
 };
 
 } // namespace mppi::optimization
+
+#endif  // MPPIC__OPTIMIZATION__TENSOR_WRAPPERS__CONTROL_SEQUENCE_HPP_
