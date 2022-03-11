@@ -1,5 +1,3 @@
-#pragma once
-
 #include <memory>
 
 #include "mppic/trajectory_visualizer.hpp"
@@ -38,14 +36,7 @@ void TrajectoryVisualizer::on_deactivate()
   transformed_path_pub_->on_deactivate();
 }
 
-void TrajectoryVisualizer::reset()
-{
-  marker_id_ = 0;
-  points_ = std::make_unique<visualization_msgs::msg::MarkerArray>();
-}
-
-template <typename Container>
-void TrajectoryVisualizer::add(Container && trajectory)
+void TrajectoryVisualizer::add(const xt::xtensor<double, 1> & trajectory)
 {
   auto & size = trajectory.shape()[0];
   if (!size) {
@@ -65,8 +56,7 @@ void TrajectoryVisualizer::add(Container && trajectory)
   }
 }
 
-template <typename Container>
-void TrajectoryVisualizer::add(Container && trajectories, size_t batch_step, size_t time_step)
+void TrajectoryVisualizer::add(const xt::xtensor<double, 1> & trajectories, size_t batch_step, size_t time_step)
 {
   if (!trajectories.shape()[0]) {
     return;
@@ -87,6 +77,12 @@ void TrajectoryVisualizer::add(Container && trajectories, size_t batch_step, siz
       points_->markers.push_back(std::move(marker));
     }
   }
+}
+
+void TrajectoryVisualizer::reset()
+{
+  marker_id_ = 0;
+  points_ = std::make_unique<visualization_msgs::msg::MarkerArray>();
 }
 
 void TrajectoryVisualizer::visualize(nav_msgs::msg::Path & plan)
