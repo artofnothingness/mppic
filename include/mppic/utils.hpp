@@ -73,7 +73,7 @@ geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
-xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
+inline xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
 {
   size_t path_size = path.poses.size();
   static constexpr size_t last_dim_size = 3;
