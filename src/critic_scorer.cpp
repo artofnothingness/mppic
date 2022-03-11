@@ -3,10 +3,9 @@
 namespace mppi
 {
 
-template<typename T>
-void CriticScorer<T>::on_configure(
-  rclcpp_lifecycle::LifecycleNode::WeakPtr parent,
-  const std::string & name,
+
+void CriticScorer::on_configure(
+  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
 {
   parent_ = parent;
@@ -17,24 +16,30 @@ void CriticScorer<T>::on_configure(
   loadCritics();
 }
 
-template<typename T>
-void CriticScorer<T>::getParams()
+void CriticScorer::setLoader()
+{
+  if (!loader_) {
+    loader_ = std::make_unique<pluginlib::ClassLoader<optimization::CriticFunction>>(
+      "mppic", getFullName(base_name_));
+  }
+}
+
+std::string CriticScorer::getFullName(const std::string & name)
+{
+
+  return "mppi::optimization::" + name;
+}
+
+void CriticScorer::getParams()
 {
   auto node = parent_.lock();
   logger_ = node->get_logger();
-  auto getParam = utils::getParamGetter(node, name_);
+  
+  auto getParam = utils::getParamGetter(node, node_name_);
   getParam(critics_names_, "critics_names", std::vector<std::string>{});
-  getParam(critics_type_, "critics_type", std::string("float"));
 }
 
-template<typename T>
-std::string CriticScorer<T>::getFullName(const std::string & name)
-{
-  return "mppi::critics::" + name + "<" + critics_type_ + ">";
-}
-
-template<typename T>
-void CriticScorer<T>::loadCritics()
+void CriticScorer::loadCritics()
 {
   loader_ = std::make_unique<pluginlib::ClassLoader<critics::CriticFunction<T>>>(
     "mppic", getFullName(base_name_));
@@ -44,27 +49,34 @@ void CriticScorer<T>::loadCritics()
     std::string fullname = getFullName(name);
     auto instance = std::unique_ptr<critics::CriticFunction<T>>(
       loader_->createUnmanagedInstance(fullname));
+    
     critics_.push_back(std::move(instance));
     critics_.back()->on_configure(parent_, name_ + "." + name, costmap_ros_);
     RCLCPP_INFO(logger_, "Critic loaded : %s", fullname.c_str());
   }
 }
 
-template<typename T>
-xt::xtensor<T, 1> CriticScorer<T>::evalTrajectoriesScores(
-  const xt::xtensor<T, 3> & trajectories, const nav_msgs::msg::Path & global_plan,
+void CriticScorer::configureCritics()
+{
+  for (size_t q = 0; q < critics_.size(); q++) {
+    critics_[q]->on_configure(parent_, name_ + "." + critics_names_[q], costmap_ros_);
+  }
+}
+
+xt::xtensor<double, 1> CriticScorer::evalTrajectoriesScores(
+  const xt::xtensor<double, 3> & trajectories, const nav_msgs::msg::Path & global_plan,
   const geometry_msgs::msg::PoseStamped & robot_pose) const
 {
   // Create evalated costs tensor 
   size_t trajectories_count = trajectories.shape()[0];
-  xt::xtensor<T, 1> costs = xt::zeros<T>({trajectories_count});
+  xt::xtensor<double, 1> costs = xt::zeros<double>({trajectories_count});
 
   if (global_plan.poses.empty()) {
     return costs;
   }
 
   // Transform path into tensor for evaluation
-  xt::xtensor<T, 2> path = utils::toTensor<T>(global_plan);
+  xt::xtensor<double, 2> path = utils::toTensor<double>(global_plan);
 
   // Evaluate each trajectory by the critics
   for (size_t q = 0; q < critics_.size(); q++) {

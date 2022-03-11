@@ -11,18 +11,15 @@
 namespace mppi::critics
 {
 
-template <typename T>
-class GoalCritic : public CriticFunction<T>
+class GoalCritic : public CriticFunction
 {
 public:
-  using CriticFunction<T>::parent_;
-  using CriticFunction<T>::name_;
-  using CriticFunction<T>::logger_;
 
-  void getParams() override
+  void initialize() override
   {
     auto node = parent_.lock();
     auto getParam = utils::getParamGetter(node, name_);
+    
     getParam(power_, "goal_cost_power", 1);
     getParam(weight_, "goal_cost_weight", 20);
     RCLCPP_INFO(
@@ -35,8 +32,8 @@ public:
    * @param costs [out] add reference cost values to this tensor
    */
   virtual void score(
-    const geometry_msgs::msg::PoseStamped & /*robot_pose*/, const xt::xtensor<T, 3> & trajectories,
-    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) override
+    const geometry_msgs::msg::PoseStamped & /*robot_pose*/, const xt::xtensor<double, 3> & trajectories,
+    const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs) override
   {
     const auto goal_points = xt::view(path, -1, xt::range(0, 2));
 
