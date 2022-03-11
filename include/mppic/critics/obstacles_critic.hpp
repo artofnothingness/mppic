@@ -7,15 +7,17 @@
 #include "mppic/critic_function.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::optimization {
+namespace mppi::critics
+{
 
 class ObstaclesCritic : public CriticFunction
 {
 public:
+
   void initialize() override
   {
     auto node = parent_.lock();
-    auto getParam = utils::getParamGetter(node, node_name_);
+    auto getParam = utils::getParamGetter(node, name_);
     getParam(consider_footprint_, "consider_footprint", true);
     getParam(power_, "obstacle_cost_power", 1);
     getParam(weight_, "obstacle_cost_weight", 20);
@@ -24,6 +26,13 @@ public:
 
     inscribed_radius_ = costmap_ros_->getLayeredCostmap()->getInscribedRadius();
     collision_checker_.setCostmap(costmap_);
+    RCLCPP_INFO(
+      logger_,
+      "ObstaclesCritic instantiated with %d power and %f weight. "
+      "It is using %f inflation scale and %f inflation radius to compute distances."
+      "Critic will collision check based on %s cost.",
+      power_, weight_, inflation_cost_scaling_factor_,
+      inflation_radius_, consider_footprint_ ? "footprint" : "circular");
   }
 
   /**
@@ -32,13 +41,11 @@ public:
    * @param costs [out] add obstacle cost values to this tensor
    */
   virtual void score(
-    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<double, 3> & trajectories,
-    const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs) override
+    const geometry_msgs::msg::PoseStamped & /*robot_pose*/, const xt::xtensor<double, 3> & trajectories,
+    const xt::xtensor<double, 2> & /*path*/, xt::xtensor<double, 1> & costs) override
   {
-    (void)robot_pose;
-    (void)path;
-
     constexpr double collision_cost_value = std::numeric_limits<double>::max() / 2;
+
 
     enum TrajectoryState : uint8_t { Collision, Inflated, Free };
 
@@ -119,4 +126,4 @@ protected:
   double weight_{0};
 };
 
-} // namespace mppi::optimization
+} // namespace mppi::critics

@@ -2,12 +2,14 @@
 
 #include "mppic/trajectory_visualizer.hpp"
 
-namespace mppi::visualization {
+namespace mppi
+{
 
 void TrajectoryVisualizer::on_configure(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & frame_id)
 {
   auto node = parent.lock();
+  logger_ = node->get_logger();
   frame_id_ = frame_id;
   trajectories_publisher_ =
     node->create_publisher<visualization_msgs::msg::MarkerArray>("/trajectories", 1);
@@ -15,7 +17,6 @@ void TrajectoryVisualizer::on_configure(
     node->create_publisher<nav_msgs::msg::Path>("transformed_global_plan", 1);
 
   reset();
-  RCLCPP_INFO(logger_, "Configured");
 }
 
 void TrajectoryVisualizer::on_cleanup()
@@ -36,7 +37,7 @@ void TrajectoryVisualizer::on_deactivate()
   transformed_path_pub_->on_deactivate();
 }
 
-void TrajectoryVisualizer::add(const xt::xtensor<double, 1> & trajectory)
+void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
 {
   auto & size = trajectory.shape()[0];
   if (!size) {
@@ -52,11 +53,12 @@ void TrajectoryVisualizer::add(const xt::xtensor<double, 1> & trajectory)
     auto color = createColor(red_component, 0, 0, 1);
     auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
 
-    points_->markers.push_back(std::move(marker));
+    points_->markers.push_back(marker);
   }
 }
 
-void TrajectoryVisualizer::add(const xt::xtensor<double, 1> & trajectories, size_t batch_step, size_t time_step)
+
+void TrajectoryVisualizer::add(const xt::xtensor<double, 3> & trajectories, size_t batch_step, size_t time_step)
 {
   if (!trajectories.shape()[0]) {
     return;
@@ -74,7 +76,7 @@ void TrajectoryVisualizer::add(const xt::xtensor<double, 1> & trajectories, size
       auto color = createColor(0, green_component, blue_component, 1);
       auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
 
-      points_->markers.push_back(std::move(marker));
+      points_->markers.push_back(marker);
     }
   }
 }
@@ -89,6 +91,7 @@ void TrajectoryVisualizer::visualize(nav_msgs::msg::Path & plan)
 {
   trajectories_publisher_->publish(std::move(points_));
   reset();
+
   std::unique_ptr<nav_msgs::msg::Path> plan_ptr = std::make_unique<nav_msgs::msg::Path>(plan);
   transformed_path_pub_->publish(std::move(plan_ptr));
 }
@@ -146,4 +149,4 @@ std_msgs::msg::ColorRGBA TrajectoryVisualizer::createColor(float r, float g, flo
   return color;
 }
 
-} // namespace mppi::visualization
+} // namespace mppi

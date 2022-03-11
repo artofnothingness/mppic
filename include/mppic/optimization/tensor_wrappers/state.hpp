@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MPPIC__OPTIMIZATION__TENSOR_WRAPPERS__STATE_HPP_
+#define MPPIC__OPTIMIZATION__TENSOR_WRAPPERS__STATE_HPP_
 
 #include <array>
 #include <cstdint>
@@ -9,7 +10,8 @@
 
 #include "mppic/optimization/motion_model.hpp"
 
-namespace mppi::optimization {
+namespace mppi::optimization
+{
 
 class StateIdxes
 {
@@ -31,6 +33,7 @@ public:
 
   void setLayout(MotionModel motion_model)
   {
+    // Layout changes to include "Y" components if holonomic
     if (isHolonomic(motion_model)) {
       vx_ = 0;
       vy_ = 1;
@@ -171,3 +174,5 @@ struct State
 };
 
 } // namespace mppi::optimization
+
+#endif  // MPPIC__OPTIMIZATION__TENSOR_WRAPPERS__STATE_HPP_

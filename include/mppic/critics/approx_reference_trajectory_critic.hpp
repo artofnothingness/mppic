@@ -8,7 +8,8 @@
 #include "mppic/critic_function.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::optimization {
+namespace mppi::critics
+{
 
 class ApproxReferenceTrajectoryCritic : public CriticFunction
 {
@@ -17,10 +18,14 @@ public:
   void initialize() override
   {
     auto node = parent_.lock();
+    auto getParam = utils::getParamGetter(node, name_);
 
-    auto getParam = utils::getParamGetter(node, node_name_);
     getParam(power_, "reference_cost_power", 1);
     getParam(weight_, "reference_cost_weight", 15);
+    RCLCPP_INFO(
+      logger_,
+      "ApproxReferenceTrajectoryCritic instantiated with %d power and %f weight.",
+      power_, weight_);
   }
 
   /**
@@ -30,11 +35,9 @@ public:
    * @param costs [out] add reference cost values to this tensor
    */
   virtual void score(
-    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<double, 3> & trajectories,
+    const geometry_msgs::msg::PoseStamped & /*robot_pose*/, const xt::xtensor<double, 3> & trajectories,
     const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs) override
   {
-    (void)robot_pose;
-
     auto path_points = xt::view(path, xt::all(), xt::range(0, 2));
     auto trajectories_points_extended =
       xt::view(trajectories, xt::all(), xt::all(), xt::newaxis(), xt::range(0, 2));
@@ -50,4 +53,4 @@ protected:
   double weight_{0};
 };
 
-} // namespace mppi::optimization
+} // namespace mppi::critics
