@@ -10,10 +10,8 @@ void Controller::configure(
   std::string name, const std::shared_ptr<tf2_ros::Buffer> & tf,
   const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros)
 {
-  // Set inputs
-  parent_ = parent;
   auto node = parent.lock();
-  logger_ = node->get_logger();
+
 
   costmap_ros_ = costmap_ros;
   tf_buffer_ = tf;
@@ -50,8 +48,7 @@ void Controller::deactivate()
 }
 
 geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
-  const geometry_msgs::msg::PoseStamped & robot_pose,
-  const geometry_msgs::msg::Twist & robot_speed,
+  const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * /*goal_checker*/)
 {
   geometry_msgs::msg::TwistStamped cmd;
@@ -74,10 +71,7 @@ void Controller::visualize(
   trajectory_visualizer_.visualize(transformed_plan);
 }
 
-void Controller::setPlan(const nav_msgs::msg::Path & path)
-{
-  path_handler_.setPath(path);
-}
+void Controller::setPlan(const nav_msgs::msg::Path & path) { path_handler_.setPath(path); }
 
 void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {

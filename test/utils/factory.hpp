@@ -1,4 +1,7 @@
 #pragma once
+
+#include <memory>
+
 #include "nav2_costmap_2d/costmap_2d.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
@@ -9,7 +12,7 @@
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 namespace factory {
-using T = float;
+
 namespace detail {
 auto setHeader(auto && msg, auto node, std::string frame)
 {
@@ -28,7 +31,7 @@ geometry_msgs::msg::Point getDummyPoint(double x, double y)
 
   return point;
 }
-auto getDummyCostmapRos()
+std::shared_ptr<nav2_costmap_2d::Costmap2DROS> getDummyCostmapRos()
 {
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("cost_map_node");
   costmap_ros->on_configure(rclcpp_lifecycle::State{});
@@ -64,17 +67,19 @@ auto getDummyModel()
   return model;
 }
 
-auto getDummyNode(rclcpp::NodeOptions options, std::string node_name = std::string("dummy"))
+std::shared_ptr<rclcpp_lifecycle::LifecycleNode>
+getDummyNode(rclcpp::NodeOptions options, std::string node_name = std::string("dummy"))
 {
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name, options);
   return node;
 }
 
-auto getDummyOptimizer(auto node, auto costmap_ros, auto model)
+mppi::optimization::Optimizer getDummyOptimizer(auto node, auto costmap_ros, auto model)
 {
-  auto optimizer = mppi::Optimizer();
-  std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node;
-  weak_ptr_node = node;
+
+  auto optimizer = mppi::optimization::Optimizer();
+  std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
+
   optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros, model);
 
   return optimizer;
@@ -86,7 +91,8 @@ auto getDummyTwist()
   return twist;
 }
 
-auto getDummyPointStamped(auto node, std::string frame = std::string("odom"))
+geometry_msgs::msg::PoseStamped
+getDummyPointStamped(auto & node, std::string frame = std::string("odom"))
 {
   geometry_msgs::msg::PoseStamped point;
   detail::setHeader(point, node, frame);
@@ -94,16 +100,16 @@ auto getDummyPointStamped(auto node, std::string frame = std::string("odom"))
   return point;
 }
 
-auto getDummyPointStamped(auto node, double x, double y)
+geometry_msgs::msg::PoseStamped getDummyPointStamped(auto & node, double x, double y)
 {
-  auto point = getDummyPointStamped(node);
+  geometry_msgs::msg::PoseStamped point = getDummyPointStamped(node);
   point.pose.position.x = x;
   point.pose.position.y = y;
 
   return point;
 }
 
-auto getDummyPath(auto node, std::string frame = std::string("odom"))
+nav_msgs::msg::Path getDummyPath(auto node, std::string frame = std::string("odom"))
 {
   nav_msgs::msg::Path path;
   detail::setHeader(path, node, frame);
@@ -121,7 +127,7 @@ auto getDummyPath(size_t points_count, auto node)
   return path;
 }
 
-auto getIncrementalDummyPath(
+nav_msgs::msg::Path getIncrementalDummyPath(
   double start_x, double start_y, double step_x, double step_y, unsigned int points_count,
   auto node)
 {
@@ -136,10 +142,9 @@ auto getIncrementalDummyPath(
   return path;
 }
 
-auto getDummySquareFootprint(double a)
+std::vector<geometry_msgs::msg::Point> getDummySquareFootprint(double a)
 {
-  return std::vector{
-    getDummyPoint(a, a), getDummyPoint(-a, -a), getDummyPoint(a, -a), getDummyPoint(-a, a)};
+  return {getDummyPoint(a, a), getDummyPoint(-a, -a), getDummyPoint(a, -a), getDummyPoint(-a, a)};
 }
 
 } // namespace factory

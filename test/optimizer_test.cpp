@@ -16,8 +16,10 @@
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
+
 #include "mppic/optimizer.hpp"
 #include "mppic/optimization/state_models.hpp"
+
 #include "utils/config.hpp"
 #include "utils/factory.hpp"
 #include "utils/utils.hpp"
@@ -43,14 +45,16 @@ TEST_CASE("Optimizer doesn't fail", "[]")
   auto model = factory::getDummyModel();
 
   auto create_node =
-    [](int iteration_count, int time_steps, double lookahead_distance, std::string motion_model) {
-      std::vector<rclcpp::Parameter> params;
-      rclcpp::NodeOptions options;
-      config::setUpOptimizerParams(
-        iteration_count, time_steps, lookahead_distance, motion_model, params);
-      options.parameter_overrides(params);
-      return factory::getDummyNode(options);
-    };
+    [](
+      int iteration_count, int time_steps, double lookahead_distance,
+      std::string motion_model) -> std::shared_ptr<rclcpp_lifecycle::LifecycleNode> {
+    std::vector<rclcpp::Parameter> params;
+    rclcpp::NodeOptions options;
+    config::setUpOptimizerParams(
+      iteration_count, time_steps, lookahead_distance, motion_model, params);
+    options.parameter_overrides(params);
+    return factory::getDummyNode(options);
+  };
 
 #ifdef DO_BENCHMARKS
   SECTION("Benchmarks")
@@ -62,7 +66,9 @@ TEST_CASE("Optimizer doesn't fail", "[]")
     auto motion_model = GENERATE(as<std::string>{}, "diff", "omni");
     unsigned int poses_count = GENERATE(10U, 30U, 100U);
 
-    auto node = create_node(iteration_count, time_steps, lookahead_distance, motion_model);
+    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node =
+      create_node(iteration_count, time_steps, lookahead_distance, motion_model);
+
     auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
     auto path = factory::getDummyPath(poses_count, node);
     auto pose = factory::getDummyPointStamped(node, start_x, start_y);

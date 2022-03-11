@@ -2,7 +2,4 @@
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(
-  mppi::critics::AngleToGoalCritic<float>, mppi::critics::CriticFunction<float>)
-PLUGINLIB_EXPORT_CLASS(
-  mppi::critics::AngleToGoalCritic<double>, mppi::critics::CriticFunction<double>)
+PLUGINLIB_EXPORT_CLASS(mppi::critics::AngleToGoalCritic, mppi::critics::CriticFunction)
