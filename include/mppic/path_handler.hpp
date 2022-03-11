@@ -21,12 +21,12 @@ public:
   ~PathHandler() = default;
 
   void initialize(
-    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & node_name,
+    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap, std::shared_ptr<tf2_ros::Buffer> buffer);
 
-  void setPath(const nav_msgs::msg::Path & plan) { global_plan_ = plan; }
+  void setPath(const nav_msgs::msg::Path & plan);
 
-  nav_msgs::msg::Path & getPath() { return global_plan_; }
+  nav_msgs::msg::Path & getPath();
 
   /**
    * @brief transform global plan to local applying constraints,
@@ -51,12 +51,9 @@ protected:
 
   auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped & global_pose);
 
-  void pruneGlobalPlan(const PathIterator & end)
-  {
-    global_plan_.poses.erase(global_plan_.poses.begin(), end);
-  }
+  void pruneGlobalPlan(const PathIterator & end);
 
-  std::string node_name_;
+  std::string name_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 

@@ -7,7 +7,8 @@
 #include "mppic/critic_function.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::critics {
+namespace mppi::critics
+{
 
 template <typename T>
 class GoalAngleCritic : public CriticFunction<T>
@@ -15,6 +16,7 @@ class GoalAngleCritic : public CriticFunction<T>
 public:
   using CriticFunction<T>::parent_;
   using CriticFunction<T>::node_name_;
+  using CriticFunction<T>::logger_;
 
   void getParams() override
   {
@@ -23,6 +25,10 @@ public:
     getParam(power_, "goal_angle_cost_power", 1);
     getParam(weight_, "goal_angle_cost_weight", 15);
     getParam(threshold_to_consider_goal_angle_, "threshold_to_consider_goal_angle", 0.30);
+    RCLCPP_INFO(
+      logger_,
+      "GoalAngleCritic instantiated with %d power, %f weight, and %f angular threshold.",
+      power_, weight_, threshold_to_consider_goal_angle_);
   }
 
   /**

@@ -19,7 +19,7 @@ public:
 
   void configure(
     const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
-    std::string node_name, const std::shared_ptr<tf2_ros::Buffer> & tf,
+    std::string name, const std::shared_ptr<tf2_ros::Buffer> & tf,
     const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros) override;
 
   void cleanup() override;
@@ -41,7 +41,7 @@ protected:
     const geometry_msgs::msg::Twist & robot_speed,
     nav_msgs::msg::Path & transformed_plan);
 
-  std::string node_name_;
+  std::string name_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;

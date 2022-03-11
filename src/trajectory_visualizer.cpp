@@ -17,7 +17,6 @@ void TrajectoryVisualizer::on_configure(
     node->create_publisher<nav_msgs::msg::Path>("transformed_global_plan", 1);
 
   reset();
-  RCLCPP_INFO(logger_, "Configured");
 }
 
 void TrajectoryVisualizer::on_cleanup()
@@ -60,7 +59,7 @@ void TrajectoryVisualizer::add(xt::xtensor<double, 2> trajectory)
     auto color = createColor(red_component, 0, 0, 1);
     auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
 
-    points_->markers.push_back(std::move(marker));
+    points_->markers.push_back(marker);
   }
 }
 
@@ -82,7 +81,7 @@ void TrajectoryVisualizer::add(xt::xtensor<double, 3> trajectories, size_t batch
       auto color = createColor(0, green_component, blue_component, 1);
       auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
 
-      points_->markers.push_back(std::move(marker));
+      points_->markers.push_back(marker);
     }
   }
 }
@@ -91,6 +90,7 @@ void TrajectoryVisualizer::visualize(nav_msgs::msg::Path & plan)
 {
   trajectories_publisher_->publish(std::move(points_));
   reset();
+
   std::unique_ptr<nav_msgs::msg::Path> plan_ptr = std::make_unique<nav_msgs::msg::Path>(plan);
   transformed_path_pub_->publish(std::move(plan_ptr));
 }

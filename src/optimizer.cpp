@@ -17,17 +17,20 @@ namespace mppi
 {
 
 void Optimizer::initialize(
-  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & node_name,
+  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros, model_t model)
 {
   parent_ = parent;
-  node_name_ = node_name;
+  name_ = name;
   costmap_ros_ = costmap_ros;
   model_ = model;
   costmap_ = costmap_ros_->getCostmap();
 
   getParams();
-  configureComponents();
+
+  std::string component_name = name_ + ".CriticScorer";
+  critic_scorer_.on_configure(parent_, component_name, costmap_ros_);
+
   reset();
 }
 
@@ -35,7 +38,7 @@ void Optimizer::getParams()
 {
   auto node = parent_.lock();
   logger_ = node->get_logger();
-  auto getParam = utils::getParamGetter(node, node_name_);
+  auto getParam = utils::getParamGetter(node, name_);
 
   getParam(model_dt_, "model_dt", 0.1);
   getParam(time_steps_, "time_steps", 15);
@@ -54,19 +57,11 @@ void Optimizer::getParams()
   getParam(name, "motion_model", std::string("diff"));
 
   const auto & nmap = MOTION_MODEL_NAMES_MAP;
-
   if (auto it = nmap.find(name); it != nmap.end()) {
     setMotionModel(it->second);
   } else {
     RCLCPP_INFO(logger_, "Motion model is unknown, use default/previous");
   }
-}
-
-// TODO pluginize
-void Optimizer::configureComponents()
-{
-  std::string component_name = node_name_ + ".CriticScorer";
-  critic_scorer_.on_configure(parent_, component_name, costmap_ros_);
 }
 
 void Optimizer::reset()
@@ -248,5 +243,11 @@ void Optimizer::setMotionModel(MotionModel motion_model)
   state_.idx.setLayout(motion_model);
   control_sequence_.idx.setLayout(motion_model);
 }
+
+xt::xtensor<double, 3> Optimizer::getGeneratedTrajectories() const
+{
+  return generated_trajectories_;
+}
+
 
 } // namespace mppi

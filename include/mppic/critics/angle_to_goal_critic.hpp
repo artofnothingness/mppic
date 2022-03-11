@@ -7,7 +7,8 @@
 #include "mppic/critic_function.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::critics {
+namespace mppi::critics
+{
 
 template <typename T>
 class AngleToGoalCritic : public CriticFunction<T>
@@ -15,6 +16,7 @@ class AngleToGoalCritic : public CriticFunction<T>
 public:
   using CriticFunction<T>::parent_;
   using CriticFunction<T>::node_name_;
+  using CriticFunction<T>::logger_;
 
   void getParams() override
   {
@@ -22,6 +24,8 @@ public:
     auto getParam = utils::getParamGetter(node, node_name_);
     getParam(power_, "angle_to_goal_cost_power", 1);
     getParam(weight_, "angle_to_goal_cost_weight", 15);
+    RCLCPP_INFO(
+      logger_, "AngleToGoalCritic instantiated with %d power and %f weight.", power_, weight_);
   }
 
   /**
@@ -34,7 +38,6 @@ public:
     const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
     const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) override
   {
-    (void)robot_pose;
     auto init_yaw = tf2::getYaw(robot_pose.pose.orientation);
 
     auto goal_x = xt::view(path, -1, 0);
