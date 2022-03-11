@@ -27,7 +27,7 @@ void CriticScorer::setLoader()
 std::string CriticScorer::getFullName(const std::string & name)
 {
 
-  return "mppi::optimization::" + name;
+  return "mppi::critics::" + name;
 }
 
 void CriticScorer::getParams()
