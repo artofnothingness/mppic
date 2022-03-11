@@ -4,21 +4,17 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/critics/critic_function.hpp"
+#include "mppic/critic_function.hpp"
 #include "mppic/utils.hpp"
-
 namespace mppi::optimization {
 
-template <typename T>
-class AngleToGoalCritic : public CriticFunction<T>
+class AngleToGoalCritic : public CriticFunction
 {
 public:
-  using CriticFunction<T>::parent_;
-  using CriticFunction<T>::node_name_;
-
-  void getParams() override
+  void initialize() override
   {
     auto node = parent_.lock();
+
     auto getParam = utils::getParamGetter(node, node_name_);
     getParam(power_, "angle_to_goal_cost_power", 1);
     getParam(weight_, "angle_to_goal_cost_weight", 15);
@@ -31,8 +27,8 @@ public:
    * @param costs [out] add goal angle cost values to this tensor
    */
   virtual void score(
-    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
-    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) override
+    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<double, 3> & trajectories,
+    const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs) override
   {
     (void)robot_pose;
     auto init_yaw = tf2::getYaw(robot_pose.pose.orientation);

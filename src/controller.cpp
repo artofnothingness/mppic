@@ -5,48 +5,41 @@
 namespace mppi {
 
 void Controller::configure(
-  const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
-  std::string node_name, const std::shared_ptr<tf2_ros::Buffer> & tf,
+  const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string node_name,
+  const std::shared_ptr<tf2_ros::Buffer> & tf,
   const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros)
 {
-  // Set inputs
-  parent_ = parent;
   auto node = parent.lock();
-  logger_ = node->get_logger();
 
-  costmap_ros_ = costmap_ros;
-  tf_buffer_ = tf;
-  node_name_ = node_name;
+  { // Set inputs
+    parent_ = parent;
+    logger_ = node->get_logger();
+    costmap_ros_ = costmap_ros;
+    tf_buffer_ = tf;
+    node_name_ = node_name;
+  }
 
-  // Get high-level controller parameters
-  auto getParam = utils::getParamGetter(node, node_name_);
-  getParam(visualize_, "visualize", true);
+  { // Get high-level controller parameters
+    auto getParam = utils::getParamGetter(node, node_name_);
+    getParam(visualize_, "visualize", true);
+  }
 
-  // Configure composed objects
-  auto & model = optimization::models::NaiveModel;
-  optimizer_.initialize(parent_, node_name_, costmap_ros_, model);
-  path_handler_.initialize(parent_, node_name_, costmap_ros_, tf_buffer_);
-  trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
+  { // Configure composed objects
+    auto & model = optimization::models::NaiveModel;
+    optimizer_.initialize(parent_, node_name_, costmap_ros_, model);
+    path_handler_.initialize(parent_, node_name_, costmap_ros_, tf_buffer_);
+    trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
+  }
 }
 
-void Controller::cleanup()
-{
-  trajectory_visualizer_.on_cleanup();
-}
+void Controller::cleanup() { trajectory_visualizer_.on_cleanup(); }
 
-void Controller::activate()
-{
-  trajectory_visualizer_.on_activate();
-}
+void Controller::activate() { trajectory_visualizer_.on_activate(); }
 
-void Controller::deactivate()
-{
-  trajectory_visualizer_.on_deactivate();
-}
+void Controller::deactivate() { trajectory_visualizer_.on_deactivate(); }
 
 geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
-  const geometry_msgs::msg::PoseStamped & robot_pose,
-  const geometry_msgs::msg::Twist & robot_speed,
+  const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * /*goal_checker*/)
 {
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
@@ -70,10 +63,7 @@ void Controller::visualize(
   trajectory_visualizer_.visualize(transformed_plan);
 }
 
-void Controller::setPlan(const nav_msgs::msg::Path & path)
-{
-  path_handler_.setPath(path);
-}
+void Controller::setPlan(const nav_msgs::msg::Path & path) { path_handler_.setPath(path); }
 
 void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {
