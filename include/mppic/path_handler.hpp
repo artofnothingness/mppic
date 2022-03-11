@@ -47,7 +47,7 @@ protected:
   transformToGlobalPlanFrame(const geometry_msgs::msg::PoseStamped & pose);
 
   nav_msgs::msg::Path
-  transformPlanPosesToCostmapFrame(PathIterator begin, PathIterator end, const StampType & stamp);
+  transformPlanPosesToCostmapFrame(PathIterator & begin, PathIterator & end, const StampType & stamp);
 
   auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped & global_pose);
 

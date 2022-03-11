@@ -72,22 +72,28 @@ unsigned char ObstaclesCritic::costAtPose(const auto & point)
   return cost;
 }
 
-bool ObstaclesCritic::inCollision(unsigned char cost) const
+bool ObstaclesCritic::inCollision(unsigned char & cost) const
 {
-  if (costmap_ros_->getLayeredCostmap()->isTrackingUnknown()) {
-    return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE &&
-           cost != nav2_costmap_2d::NO_INFORMATION;
+  unsigned char max_valid_cost;
+  if (consider_footprint_) {
+    max_valid_cost = nav2_costmap_2d::LETHAL_OBSTACLE;
+  } else {
+    max_valid_cost = nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
   }
 
-  return cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
+  if (costmap_ros_->getLayeredCostmap()->isTrackingUnknown()) {
+    return cost >= max_valid_cost && cost != nav2_costmap_2d::NO_INFORMATION;
+  }
+
+  return cost >= max_valid_cost;
 }
 
-bool ObstaclesCritic::isFree(unsigned char cost) const
+bool ObstaclesCritic::isFree(unsigned char & cost) const
 {
 	return cost == nav2_costmap_2d::FREE_SPACE;
 }
 
-double ObstaclesCritic::toDist(unsigned char cost)
+double ObstaclesCritic::toDist(unsigned char & cost)
 {
   return (-1.0 / inflation_cost_scaling_factor_) *
            std::log(
@@ -96,7 +102,7 @@ double ObstaclesCritic::toDist(unsigned char cost)
          inscribed_radius_;
 }
 
-double ObstaclesCritic::scoreDistance(double min_dist)
+double ObstaclesCritic::scoreDistance(double & min_dist)
 {
   return static_cast<double>(pow((1.01 * inflation_radius_ - min_dist) * weight_, power_));
 }
