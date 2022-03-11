@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MPPIC__CONTROLLER_HPP_
+#define MPPIC__CONTROLLER_HPP_
 
 #include "mppic/path_handler.hpp"
 #include "mppic/optimizer.hpp"
@@ -8,7 +9,9 @@
 #include "nav2_core/goal_checker.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-namespace mppi {
+namespace mppi
+{
+
 class Controller : public nav2_core::Controller
 {
 public:
@@ -16,7 +19,7 @@ public:
 
   void configure(
     const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
-    std::string node_name, const std::shared_ptr<tf2_ros::Buffer> & tf,
+    std::string name, const std::shared_ptr<tf2_ros::Buffer> & tf,
     const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros) override;
 
   void cleanup() override;
@@ -38,17 +41,19 @@ protected:
     const geometry_msgs::msg::Twist & robot_speed,
     nav_msgs::msg::Path & transformed_plan);
 
-  std::string node_name_;
+  std::string name_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
-  optimization::Optimizer optimizer_;
-  handlers::PathHandler path_handler_;
-  visualization::TrajectoryVisualizer trajectory_visualizer_;
+  Optimizer optimizer_;
+  PathHandler path_handler_;
+  TrajectoryVisualizer trajectory_visualizer_;
 
   bool visualize_;
 };
 
 } // namespace mppi
+
+#endif  // MPPIC__CONTROLLER_HPP_

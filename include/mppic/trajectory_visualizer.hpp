@@ -1,6 +1,8 @@
-#pragma once
+#ifndef MPPIC__TRAJECTORY_VISUALIZER_HPP_
+#define MPPIC__TRAJECTORY_VISUALIZER_HPP_
 
 #include <memory>
+#include <xtensor/xtensor.hpp>
 
 #include "nav_msgs/msg/path.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -8,7 +10,9 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 
-namespace mppi::visualization {
+namespace mppi
+{
+
 class TrajectoryVisualizer
 {
 public:
@@ -43,7 +47,9 @@ protected:
   std::unique_ptr<visualization_msgs::msg::MarkerArray> points_;
   int marker_id_ = 0;
 
-  rclcpp::Logger logger_{rclcpp::get_logger("MPPI Trajectory Visualizer")};
+  rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
 
-} // namespace mppi::visualization
+} // namespace mppi
+
+#endif  // MPPIC__TRAJECTORY_VISUALIZER_HPP_

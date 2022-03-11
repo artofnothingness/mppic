@@ -1,7 +1,8 @@
-#pragma once
+#ifndef MPPIC__CRITIC_SCORER_HPP_
+#define MPPIC__CRITIC_SCORER_HPP_
 
-#include <pluginlib/class_loader.hpp>
 #include <xtensor/xtensor.hpp>
+#include <pluginlib/class_loader.hpp>
 
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -10,11 +11,11 @@
 #include "nav_msgs/msg/path.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
-
 #include "mppic/critic_function.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::optimization {
+namespace mppi
+{
 
 class CriticScorer
 {
@@ -23,18 +24,14 @@ public:
 
   void on_configure(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent,
-    const std::string & node_name,
+    const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros);
-
-  void setLoader();
 
   std::string getFullName(const std::string & name);
 
   void getParams();
 
   void loadCritics();
-
-  void configureCritics();
 
   /**
    * @brief Evaluate cost for each trajectory
@@ -49,16 +46,18 @@ public:
 protected:
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
-  std::string node_name_;
+  std::string name_;
 
   std::vector<std::string> critics_names_;
   std::string critics_type_;
   const std::string base_name_ = "CriticFunction";
 
-  std::unique_ptr<pluginlib::ClassLoader<optimization::CriticFunction>> loader_;
-  std::vector<std::unique_ptr<CriticFunction>> critics_;
+  std::unique_ptr<pluginlib::ClassLoader<critics::CriticFunction>> loader_;
+  std::vector<std::unique_ptr<critics::CriticFunction>> critics_;
 
-  rclcpp::Logger logger_{rclcpp::get_logger("MPPI CriticScorer")};
+  rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
 
-} // namespace mppi::optimization
+} // namespace mppi
+
+#endif  // MPPIC__CRITIC_SCORER_HPP_
