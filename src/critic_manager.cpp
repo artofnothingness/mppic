@@ -1,11 +1,11 @@
-#include "mppic/critic_scorer.hpp"
+#include "mppic/critic_manager.hpp"
 
 namespace mppi
 {
 
-
-void CriticScorer::on_configure(
-  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
+void CriticManager::on_configure(
+  rclcpp_lifecycle::LifecycleNode::WeakPtr parent,
+  const std::string & name,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
 {
   parent_ = parent;
@@ -16,22 +16,20 @@ void CriticScorer::on_configure(
   loadCritics();
 }
 
-std::string CriticScorer::getFullName(const std::string & name)
-{
-
-  return "mppi::critics::" + name;
-}
-
-void CriticScorer::getParams()
+void CriticManager::getParams()
 {
   auto node = parent_.lock();
   logger_ = node->get_logger();
-  
   auto getParam = utils::getParamGetter(node, name_);
   getParam(critics_names_, "critics_names", std::vector<std::string>{});
 }
 
-void CriticScorer::loadCritics()
+std::string CriticManager::getFullName(const std::string & name)
+{
+  return "mppi::critics::" + name;
+}
+
+void CriticManager::loadCritics()
 {
   loader_ = std::make_unique<pluginlib::ClassLoader<critics::CriticFunction>>(
     "mppic", getFullName(base_name_));
@@ -47,7 +45,7 @@ void CriticScorer::loadCritics()
   }
 }
 
-xt::xtensor<double, 1> CriticScorer::evalTrajectoriesScores(
+xt::xtensor<double, 1> CriticManager::evalTrajectoriesScores(
   const xt::xtensor<double, 3> & trajectories, const nav_msgs::msg::Path & global_plan,
   const geometry_msgs::msg::PoseStamped & robot_pose) const
 {
@@ -60,7 +58,7 @@ xt::xtensor<double, 1> CriticScorer::evalTrajectoriesScores(
   }
 
   // Transform path into tensor for evaluation
-  xt::xtensor<double, 2> path = utils::toTensor<double>(global_plan);
+  xt::xtensor<double, 2> path = utils::toTensor(global_plan);
 
   // Evaluate each trajectory by the critics
   for (size_t q = 0; q < critics_.size(); q++) {
