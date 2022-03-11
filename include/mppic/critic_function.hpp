@@ -8,10 +8,9 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
+
 namespace mppi::critics
 {
-
-template <typename T>
 class CriticFunction
 {
 public:
@@ -29,14 +28,14 @@ public:
     costmap_ros_ = costmap_ros;
     costmap_ = costmap_ros_->getCostmap();
 
-    getParams();
+    initialize();
   }
 
-  virtual void getParams() = 0;
+  virtual void initialize() = 0;
 
   virtual void score(
-    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<T, 3> & trajectories,
-    const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) = 0;
+    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<double, 3> & trajectories,
+    const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs) = 0;
 
 protected:
   std::string name_;

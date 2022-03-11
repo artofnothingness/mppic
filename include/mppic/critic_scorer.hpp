@@ -17,7 +17,6 @@
 namespace mppi
 {
 
-template <typename T>
 class CriticScorer
 {
 public:
@@ -37,12 +36,11 @@ public:
   /**
    * @brief Evaluate cost for each trajectory
    *
-   * @param trajectories: tensor of shape [ ..., ..., 3 ]
-   * where 3 stands for x, y, yaw
+   * @param trajectories: tensor of shape [ ..., ..., 3 ] * where 3 stands for x, y, yaw
    * @return Cost for each trajectory
    */
-  xt::xtensor<T, 1> evalTrajectoriesScores(
-    const xt::xtensor<T, 3> & trajectories, const nav_msgs::msg::Path & global_plan,
+  xt::xtensor<double, 1> evalTrajectoriesScores(
+    const xt::xtensor<double, 3> & trajectories, const nav_msgs::msg::Path & global_plan,
     const geometry_msgs::msg::PoseStamped & robot_pose) const;
 
 protected:
@@ -54,8 +52,8 @@ protected:
   std::string critics_type_;
   const std::string base_name_ = "CriticFunction";
 
-  std::unique_ptr<pluginlib::ClassLoader<critics::CriticFunction<T>>> loader_;
-  std::vector<std::unique_ptr<critics::CriticFunction<T>>> critics_;
+  std::unique_ptr<pluginlib::ClassLoader<critics::CriticFunction>> loader_;
+  std::vector<std::unique_ptr<CriticFunction>> critics_;
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
