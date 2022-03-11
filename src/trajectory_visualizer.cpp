@@ -47,18 +47,19 @@ void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
   for (size_t i = 0; i < size; i++) {
     float red_component = static_cast<float>(i) / static_cast<float>(size);
 
-    auto pose = createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
-    auto scale = i != size - 1 ? createScale(0.03, 0.03, 0.07) : createScale(0.10, 0.10, 0.10);
+    auto && pose = createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
+    auto && scale = i != size - 1 ? createScale(0.03, 0.03, 0.07) : createScale(0.10, 0.10, 0.10);
 
-    auto color = createColor(red_component, 0, 0, 1);
-    auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
+    auto && color = createColor(red_component, 0, 0, 1);
+    auto && marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
 
     points_->markers.push_back(marker);
   }
 }
 
-
-void TrajectoryVisualizer::add(const xt::xtensor<double, 3> & trajectories, size_t batch_step, size_t time_step)
+void TrajectoryVisualizer::add(
+  const xt::xtensor<double, 3> & trajectories,
+  const size_t & batch_step, const size_t & time_step)
 {
   if (!trajectories.shape()[0]) {
     return;
@@ -117,7 +118,8 @@ visualization_msgs::msg::Marker TrajectoryVisualizer::createMarker(
   return marker;
 }
 
-geometry_msgs::msg::Pose TrajectoryVisualizer::createPose(double x, double y, double z)
+geometry_msgs::msg::Pose TrajectoryVisualizer::createPose(
+  const double & x, const double & y, const double & z)
 {
   geometry_msgs::msg::Pose pose;
   pose.position.x = x;
@@ -130,7 +132,8 @@ geometry_msgs::msg::Pose TrajectoryVisualizer::createPose(double x, double y, do
   return pose;
 }
 
-geometry_msgs::msg::Vector3 TrajectoryVisualizer::createScale(double x, double y, double z)
+geometry_msgs::msg::Vector3 TrajectoryVisualizer::createScale(
+  const double & x, const double & y, const double & z)
 {
   geometry_msgs::msg::Vector3 scale;
   scale.x = x;
@@ -139,7 +142,8 @@ geometry_msgs::msg::Vector3 TrajectoryVisualizer::createScale(double x, double y
   return scale;
 }
 
-std_msgs::msg::ColorRGBA TrajectoryVisualizer::createColor(float r, float g, float b, float a)
+std_msgs::msg::ColorRGBA TrajectoryVisualizer::createColor(
+  const float & r, const float & g, const float & b, const float & a)
 {
   std_msgs::msg::ColorRGBA color;
   color.r = r;

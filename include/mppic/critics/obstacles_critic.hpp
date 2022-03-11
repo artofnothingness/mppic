@@ -28,16 +28,15 @@ public:
 protected:
   unsigned char costAtPose(const auto & point);
 
-  bool inCollision(unsigned char cost) const;
+  bool inCollision(unsigned char & cost) const;
 
-  bool isFree(unsigned char cost) const;
+  bool isFree(unsigned char & cost) const;
 
-  double toDist(unsigned char cost);
+  double toDist(unsigned char & cost);
 
-  double scoreDistance(double min_dist);
+  double scoreDistance(double & min_dist);
 
-  nav2_costmap_2d::FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *> collision_checker_{
-    nullptr};
+  nav2_costmap_2d::FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *> collision_checker_;
 
   bool consider_footprint_{true};
   double inflation_cost_scaling_factor_{0};

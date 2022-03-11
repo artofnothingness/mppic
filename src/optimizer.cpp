@@ -77,7 +77,7 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
 {
   for (size_t i = 0; i < iteration_count_; ++i) {
     generated_trajectories_ = generateNoisedTrajectories(robot_pose, robot_speed);
-    auto costs = critic_scorer_.evalTrajectoriesScores(generated_trajectories_, plan, robot_pose);
+    auto && costs = critic_scorer_.evalTrajectoriesScores(generated_trajectories_, plan, robot_pose);
     updateControlSequence(costs);
   }
 
@@ -220,14 +220,14 @@ void Optimizer::updateControlSequence(const xt::xtensor<double, 1> & costs)
 }
 
 geometry_msgs::msg::TwistStamped
-Optimizer::getControlFromSequenceAsTwist(unsigned int offset, const auto & stamp)
+Optimizer::getControlFromSequenceAsTwist(const unsigned int & offset, const auto & stamp)
 {
   return utils::toTwistStamped(
     getControlFromSequence(offset), control_sequence_.idx, isHolonomic(), stamp,
     costmap_ros_->getBaseFrameID());
 }
 
-auto Optimizer::getControlFromSequence(unsigned int offset)
+auto Optimizer::getControlFromSequence(const unsigned int & offset)
 {
   return xt::view(control_sequence_.data, offset);
 }
@@ -237,14 +237,14 @@ MotionModel Optimizer::getMotionModel() const
   return motion_model_t_;
 }
 
-void Optimizer::setMotionModel(MotionModel motion_model)
+void Optimizer::setMotionModel(const MotionModel & motion_model)
 {
   motion_model_t_ = motion_model;
   state_.idx.setLayout(motion_model);
   control_sequence_.idx.setLayout(motion_model);
 }
 
-xt::xtensor<double, 3> Optimizer::getGeneratedTrajectories() const
+xt::xtensor<double, 3> & Optimizer::getGeneratedTrajectories()
 {
   return generated_trajectories_;
 }

@@ -19,7 +19,7 @@ void Controller::configure(
 
   // Get high-level controller parameters
   auto getParam = utils::getParamGetter(node, name_);
-  getParam(visualize_, "visualize", true);
+  getParam(visualize_, "visualize", false);
 
   // Configure composed objects
   optimizer_.initialize(parent_, name_, costmap_ros_, NaiveModel);
@@ -51,9 +51,9 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * /*goal_checker*/)
 {
-  geometry_msgs::msg::TwistStamped cmd;
-  nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
-  cmd = optimizer_.evalControl(robot_pose, robot_speed, transformed_plan);
+  nav_msgs::msg::Path && transformed_plan = path_handler_.transformPath(robot_pose);
+  geometry_msgs::msg::TwistStamped && cmd =
+    optimizer_.evalControl(robot_pose, robot_speed, transformed_plan);
   visualize(robot_pose, robot_speed, transformed_plan);
   return cmd;
 }

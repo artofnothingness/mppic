@@ -22,7 +22,7 @@ void ReferenceTrajectoryCritic::score(
 {
   using xt::evaluation_strategy::immediate;
 
-  xt::xtensor<double, 3> dists_path_to_trajectories =
+  xt::xtensor<double, 3> && dists_path_to_trajectories =
     utils::distPointsToLineSegments2D(path, trajectories);
 
   xt::xtensor<double, 1> cost =
