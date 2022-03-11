@@ -33,6 +33,7 @@ public:
 
   void setLayout(MotionModel motion_model)
   {
+    // Layout changes to include "Y" components if holonomic
     if (isHolonomic(motion_model)) {
       vx_ = 0;
       vy_ = 1;

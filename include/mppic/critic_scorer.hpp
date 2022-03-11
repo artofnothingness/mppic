@@ -28,15 +28,11 @@ public:
     const std::string & node_name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros);
 
-  void setLoader();
-
   std::string getFullName(const std::string & name);
 
   void getParams();
 
   void loadCritics();
-
-  void configureCritics();
 
   /**
    * @brief Evaluate cost for each trajectory

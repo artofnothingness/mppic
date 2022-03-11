@@ -7,7 +7,7 @@ namespace mppi
 
 void Controller::configure(
   const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
-  std::string node_name, const std::shared_ptr<tf2_ros::Buffer> & tf,
+  std::string name, const std::shared_ptr<tf2_ros::Buffer> & tf,
   const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros)
 {
   // Set inputs
@@ -17,31 +17,36 @@ void Controller::configure(
 
   costmap_ros_ = costmap_ros;
   tf_buffer_ = tf;
-  node_name_ = node_name;
+  name_ = name;
 
   // Get high-level controller parameters
-  auto getParam = utils::getParamGetter(node, node_name_);
+  auto getParam = utils::getParamGetter(node, name_);
   getParam(visualize_, "visualize", true);
 
   // Configure composed objects
-  optimizer_.initialize(parent_, node_name_, costmap_ros_, NaiveModel);
-  path_handler_.initialize(parent_, node_name_, costmap_ros_, tf_buffer_);
+  optimizer_.initialize(parent_, name_, costmap_ros_, NaiveModel);
+  path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_);
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
+
+  RCLCPP_INFO(logger_, "Configured MPPI Controller: %s", name_.c_str());
 }
 
 void Controller::cleanup()
 {
   trajectory_visualizer_.on_cleanup();
+  RCLCPP_INFO(logger_, "Cleaned up MPPI Controller: %s", name_.c_str());
 }
 
 void Controller::activate()
 {
   trajectory_visualizer_.on_activate();
+  RCLCPP_INFO(logger_, "Activated MPPI Controller: %s", name_.c_str());
 }
 
 void Controller::deactivate()
 {
   trajectory_visualizer_.on_deactivate();
+  RCLCPP_INFO(logger_, "Deactivated MPPI Controller: %s", name_.c_str());
 }
 
 geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
@@ -49,10 +54,9 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * /*goal_checker*/)
 {
+  geometry_msgs::msg::TwistStamped cmd;
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
-  geometry_msgs::msg::TwistStamped cmd =
-    optimizer_.evalControl(robot_pose, robot_speed, transformed_plan);
-
+  cmd = optimizer_.evalControl(robot_pose, robot_speed, transformed_plan);
   visualize(robot_pose, robot_speed, transformed_plan);
   return cmd;
 }

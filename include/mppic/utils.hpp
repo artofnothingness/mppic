@@ -96,7 +96,6 @@ auto hypot(const T & p1, const T & p2)
   double dx = p1.x - p2.x;
   double dy = p1.y - p2.y;
   double dz = p1.z - p2.z;
-
   return std::hypot(dx, dy, dz);
 }
 
@@ -113,9 +112,9 @@ hypot(const geometry_msgs::msg::PoseStamped & lhs, const geometry_msgs::msg::Pos
   return hypot(lhs.pose, rhs.pose);
 }
 
-// http://paulbourke.net/geometry/pointlineplane/
 /**
  * @brief Calculate closest points on batches segments to path points
+ * http://paulbourke.net/geometry/pointlineplane/
  *
  * @param batch_of_segments_points batches of sequences of points. Sequences considering as lines
  * @param path 2D data structure with last dim size stands for x, y
