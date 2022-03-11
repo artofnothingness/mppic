@@ -33,22 +33,23 @@ pip install conan
 ## Configuration
 
 ### Controller params
- | Parameter       | Type   | Definition                                                                                                                                                                                                                                                        |
- | --------------- | ------ | -----------------------------------------------------------------------------------------------------------                                                                                                                                                       |
- | iteration_count | int    | Iteration count in MPPI algorithm                                                                                                                                                                                                                                 |
- | lookahead_dist  | double | Max lenght of the global plan that considered by local planner                                                                                                                                                                                                    |
- | batch_size      | int    | Count of randomly sampled trajectories                                                                                                                                                                                                                            |
- | time_steps      | int    | Number of time steps (points) in each sampled trajectory                                                                                                                                                                                                          |
- | model_dt        | double | Time interval between two sampled points in trajectories                                                                                                                                                                                                          |
- | vx_std          | double | Sampling standart deviation for VX
- | vy_std          | double | Sampling standart deviation for VY
- | wx_std          | double | Sampling standart deviation for WX
- | vx_max          | double | Max VX
- | vy_max          | double | Max VY
- | wz_max          | double | Max WZ
- | temperature     | double | Selectiveness of trajectories by their costs (The closer this value to 0, the "more" we take in considiration controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories withou cost consideration |
- | visualize       | bool   | Use visualization                                                                                                                                                                                                                                                 |
- | motion_model    | string | Type of model [diff, omni, carlike]                                                                                                                                                                                                                               |
+ | Parameter             | Type   | Definition                                                                                                                                                                                                                                                        |
+ | ----------      ----- | ------ | -----------------------------------------------------------------------------------------------------------                                                                                                                                                       |
+ | iteration_count       | int    | Iteration count in MPPI algorithm                                                                                                                                                                                                                                 |
+ | lookahead_dist        | double | Max lenght of the global plan that considered by local planner                                                                                                                                                                                                    |
+  | transform_tolerance  | double | TF tolerance to transform poses                                                                                                                                                                                                                                 |
+ | batch_size            | int    | Count of randomly sampled trajectories                                                                                                                                                                                                                            |
+ | time_steps            | int    | Number of time steps (points) in each sampled trajectory                                                                                                                                                                                                          |
+ | model_dt              | double | Time interval between two sampled points in trajectories                                                                                                                                                                                                          |
+ | vx_std                | double | Sampling standart deviation for VX
+ | vy_std                | double | Sampling standart deviation for VY
+ | wx_std                | double | Sampling standart deviation for WX
+ | vx_max                | double | Max VX
+ | vy_max                | double | Max VY
+ | wz_max                | double | Max WZ
+ | temperature           | double | Selectiveness of trajectories by their costs (The closer this value to 0, the "more" we take in considiration controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories withou cost consideration |
+ | visualize             | bool   | Use visualization                                                                                                                                                                                                                                                 |
+ | motion_model          | string | Type of model [diff, omni, carlike]                                                                                                                                                                                                                               |
 
 #### CriticScorer params
 

@@ -17,7 +17,7 @@ void PathHandler::initialize(
   logger_ = node->get_logger();
   auto getParam = utils::getParamGetter(node, name_);
   getParam(lookahead_dist_, "lookahead_dist", 1.0);
-  getParam(transform_tolerance_, "transform_tolerance", 1);
+  getParam(transform_tolerance_, "transform_tolerance", 0.1);
 }
 
 auto PathHandler::getGlobalPlanConsideringBounds(
