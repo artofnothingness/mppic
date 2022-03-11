@@ -37,7 +37,7 @@ void TrajectoryVisualizer::on_deactivate()
   transformed_path_pub_->on_deactivate();
 }
 
-void TrajectoryVisualizer::add(const xt::xtensor<double, 1> & trajectory)
+void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
 {
   auto & size = trajectory.shape()[0];
   if (!size) {
@@ -58,7 +58,7 @@ void TrajectoryVisualizer::add(const xt::xtensor<double, 1> & trajectory)
 }
 
 
-void TrajectoryVisualizer::add(const xt::xtensor<double, 1> & trajectories, size_t batch_step, size_t time_step)
+void TrajectoryVisualizer::add(const xt::xtensor<double, 3> & trajectories, size_t batch_step, size_t time_step)
 {
   if (!trajectories.shape()[0]) {
     return;
