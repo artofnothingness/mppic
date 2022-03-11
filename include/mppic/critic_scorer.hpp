@@ -53,7 +53,7 @@ protected:
   const std::string base_name_ = "CriticFunction";
 
   std::unique_ptr<pluginlib::ClassLoader<critics::CriticFunction>> loader_;
-  std::vector<std::unique_ptr<CriticFunction>> critics_;
+  std::vector<std::unique_ptr<critics::CriticFunction>> critics_;
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
