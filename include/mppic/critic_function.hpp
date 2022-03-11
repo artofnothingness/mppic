@@ -20,12 +20,12 @@ public:
 
   void on_configure(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, 
-    const std::string & node_name,
+    const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
   {
     parent_ = parent;
     logger_ = parent_.lock()->get_logger();
-    node_name_ = node_name;
+    name_ = name;
     costmap_ros_ = costmap_ros;
     costmap_ = costmap_ros_->getCostmap();
 
@@ -39,7 +39,7 @@ public:
     const xt::xtensor<T, 2> & path, xt::xtensor<T, 1> & costs) = 0;
 
 protected:
-  std::string node_name_;
+  std::string name_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_{nullptr};

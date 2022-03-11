@@ -6,12 +6,12 @@ namespace mppi
 template<typename T>
 void CriticScorer<T>::on_configure(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent,
-  const std::string & node_name,
+  const std::string & name,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
 {
   parent_ = parent;
   costmap_ros_ = costmap_ros;
-  node_name_ = node_name;
+  name_ = name;
 
   getParams();
   loadCritics();
@@ -22,7 +22,7 @@ void CriticScorer<T>::getParams()
 {
   auto node = parent_.lock();
   logger_ = node->get_logger();
-  auto getParam = utils::getParamGetter(node, node_name_);
+  auto getParam = utils::getParamGetter(node, name_);
   getParam(critics_names_, "critics_names", std::vector<std::string>{});
   getParam(critics_type_, "critics_type", std::string("float"));
 }
@@ -45,7 +45,7 @@ void CriticScorer<T>::loadCritics()
     auto instance = std::unique_ptr<critics::CriticFunction<T>>(
       loader_->createUnmanagedInstance(fullname));
     critics_.push_back(std::move(instance));
-    critics_.back()->on_configure(parent_, node_name_ + "." + name, costmap_ros_);
+    critics_.back()->on_configure(parent_, name_ + "." + name, costmap_ros_);
     RCLCPP_INFO(logger_, "Critic loaded : %s", fullname.c_str());
   }
 }
