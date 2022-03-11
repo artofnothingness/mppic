@@ -73,18 +73,17 @@ geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
-template <typename T>
-xt::xtensor<T, 2> toTensor(const nav_msgs::msg::Path & path)
+xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
 {
   size_t path_size = path.poses.size();
   static constexpr size_t last_dim_size = 3;
 
-  xt::xtensor<T, 2> points = xt::empty<T>({path_size, last_dim_size});
+  xt::xtensor<double, 2> points = xt::empty<double>({path_size, last_dim_size});
 
   for (size_t i = 0; i < path_size; ++i) {
-    points(i, 0) = static_cast<T>(path.poses[i].pose.position.x);
-    points(i, 1) = static_cast<T>(path.poses[i].pose.position.y);
-    points(i, 2) = static_cast<T>(tf2::getYaw(path.poses[i].pose.orientation));
+    points(i, 0) = static_cast<double>(path.poses[i].pose.position.x);
+    points(i, 1) = static_cast<double>(path.poses[i].pose.position.y);
+    points(i, 2) = static_cast<double>(tf2::getYaw(path.poses[i].pose.orientation));
   }
 
   return points;
