@@ -1,8 +1,5 @@
-#include "mppic/optimization/scoring/critics/goal_critic.hpp"
+#include "mppic/critics/goal_critic.hpp"
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(
-  mppi::optimization::GoalCritic<float>, mppi::optimization::CriticFunction<float>)
-PLUGINLIB_EXPORT_CLASS(
-  mppi::optimization::GoalCritic<double>, mppi::optimization::CriticFunction<double>)
+PLUGINLIB_EXPORT_CLASS(mppi::optimization::GoalCritic, mppi::optimization::CriticFunction)

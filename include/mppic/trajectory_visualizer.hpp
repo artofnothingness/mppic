@@ -2,11 +2,11 @@
 
 #include <memory>
 
+#include "nav_msgs/msg/path.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-#include "visualization_msgs/msg/marker_array.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-#include "nav_msgs/msg/path.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
 
 namespace mppi::visualization {
 class TrajectoryVisualizer
@@ -19,20 +19,15 @@ public:
   void on_activate();
   void on_deactivate();
 
-  void reset();
-
-  template <typename Container> void add(Container && trajectory);
-
-  template <typename Container> void add(Container && trajectories, size_t batch_step, size_t time_step);
-
+  void add(const xt::xtensor<double, 1> & trajectory);
+  void add(const xt::xtensor<double, 1> & trajectories, size_t batch_step, size_t time_step);
   void visualize(nav_msgs::msg::Path & plan);
+  void reset();
 
 protected:
   visualization_msgs::msg::Marker createMarker(
-    int id, const geometry_msgs::msg::Pose & pose,
-    const geometry_msgs::msg::Vector3 & scale,
-    const std_msgs::msg::ColorRGBA & color,
-    const std::string & frame_id);
+    int id, const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & scale,
+    const std_msgs::msg::ColorRGBA & color, const std::string & frame_id);
 
   geometry_msgs::msg::Pose createPose(double x, double y, double z);
 
