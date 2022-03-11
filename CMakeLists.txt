@@ -61,10 +61,10 @@ set(critics_sources
 
 set(mppic_sources
   src/controller.cpp
+  src/critic_manager.cpp
   src/path_handler.cpp
   src/trajectory_visualizer.cpp
   src/optimizer.cpp
-  src/critic_scorer.cpp
 )
 
 

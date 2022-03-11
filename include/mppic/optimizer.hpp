@@ -12,7 +12,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 #include "mppic/optimization/motion_model.hpp"
-#include "mppic/critic_scorer.hpp"
+#include "mppic/critic_manager.hpp"
 #include "mppic/optimization/tensor_wrappers/control_sequence.hpp"
 #include "mppic/optimization/tensor_wrappers/state.hpp"
 
@@ -130,7 +130,7 @@ protected:
   optimization::ControlSequence control_sequence_;
   MotionModel motion_model_t_{MotionModel::DiffDrive};
 
-  CriticScorer critic_scorer_;
+  CriticManager critic_scorer_;
   std::function<model_t> model_;
 
   xt::xtensor<double, 3> generated_trajectories_{};
