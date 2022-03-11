@@ -16,13 +16,13 @@ class ApproxReferenceTrajectoryCritic : public CriticFunction<T>
 {
 public:
   using CriticFunction<T>::parent_;
-  using CriticFunction<T>::node_name_;
+  using CriticFunction<T>::name_;
   using CriticFunction<T>::logger_;
 
   void getParams() override
   {
     auto node = parent_.lock();
-    auto getParam = utils::getParamGetter(node, node_name_);
+    auto getParam = utils::getParamGetter(node, name_);
     getParam(power_, "reference_cost_power", 1);
     getParam(weight_, "reference_cost_weight", 15);
     RCLCPP_INFO(

@@ -17,13 +17,13 @@ public:
   using CriticFunction<T>::costmap_ros_;
   using CriticFunction<T>::costmap_;
   using CriticFunction<T>::parent_;
-  using CriticFunction<T>::node_name_;
+  using CriticFunction<T>::name_;
   using CriticFunction<T>::logger_;
 
   void getParams() override
   {
     auto node = parent_.lock();
-    auto getParam = utils::getParamGetter(node, node_name_);
+    auto getParam = utils::getParamGetter(node, name_);
     getParam(consider_footprint_, "consider_footprint", true);
     getParam(power_, "obstacle_cost_power", 1);
     getParam(weight_, "obstacle_cost_weight", 20);

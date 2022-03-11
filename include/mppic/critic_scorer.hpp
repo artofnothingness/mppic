@@ -25,7 +25,7 @@ public:
 
   void on_configure(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent,
-    const std::string & node_name,
+    const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros);
 
   std::string getFullName(const std::string & name);
@@ -48,7 +48,7 @@ public:
 protected:
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
-  std::string node_name_;
+  std::string name_;
 
   std::vector<std::string> critics_names_;
   std::string critics_type_;
