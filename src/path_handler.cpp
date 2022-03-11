@@ -2,20 +2,22 @@
 #include "mppic/path_handler.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::handlers {
+namespace mppi
+{
 
 void PathHandler::initialize(
-  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & node_name,
+  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap, std::shared_ptr<tf2_ros::Buffer> buffer)
 {
-  node_name_ = node_name;
+  name_ = name;
   costmap_ = costmap;
   tf_buffer_ = buffer;
 
   auto node = parent.lock();
-  auto getParam = utils::getParamGetter(node, node_name_);
+  logger_ = node->get_logger();
+  auto getParam = utils::getParamGetter(node, name_);
   getParam(lookahead_dist_, "lookahead_dist", 1.0);
-  getParam(transform_tolerance_, "transform_tolerance", 1);
+  getParam(transform_tolerance_, "transform_tolerance", 0.1);
 }
 
 auto PathHandler::getGlobalPlanConsideringBounds(
@@ -24,6 +26,7 @@ auto PathHandler::getGlobalPlanConsideringBounds(
   auto begin = global_plan_.poses.begin();
   auto end = global_plan_.poses.end();
 
+  // Find closest point to the robot
   auto closest_point = std::min_element(
     begin, end,
     [&global_pose](
@@ -31,6 +34,7 @@ auto PathHandler::getGlobalPlanConsideringBounds(
       return utils::hypot(lhs, global_pose) < utils::hypot(rhs, global_pose);
     });
 
+  // Find the furthest relevent point on the path to consider within costmap bounds
   auto max_costmap_dist = getMaxCostmapDist();
   auto last_point =
     std::find_if(closest_point, end, [&](const geometry_msgs::msg::PoseStamped & global_plan_pose) {
@@ -58,12 +62,12 @@ PathHandler::transformToGlobalPlanFrame(const geometry_msgs::msg::PoseStamped & 
 
 nav_msgs::msg::Path PathHandler::transformPath(const geometry_msgs::msg::PoseStamped & robot_pose)
 {
-
+  // Find relevent bounds of path to use
   geometry_msgs::msg::PoseStamped global_pose = transformToGlobalPlanFrame(robot_pose);
   auto [lower_bound, upper_bound] = getGlobalPlanConsideringBounds(global_pose);
 
+  // Transform these bounds into the local costmap frame and prune older points
   const auto & stamp = global_pose.header.stamp;
-
   nav_msgs::msg::Path transformed_plan = transformPlanPosesToCostmapFrame(lower_bound, upper_bound, stamp);
 
   pruneGlobalPlan(lower_bound);
@@ -126,4 +130,19 @@ nav_msgs::msg::Path PathHandler::transformPlanPosesToCostmapFrame(
   return plan;
 }
 
-} // namespace mppi::handlers
+void PathHandler::setPath(const nav_msgs::msg::Path & plan)
+{
+  global_plan_ = plan;
+}
+
+nav_msgs::msg::Path & PathHandler::getPath()
+{
+  return global_plan_;
+}
+
+void PathHandler::pruneGlobalPlan(const PathIterator & end)
+{
+  global_plan_.poses.erase(global_plan_.poses.begin(), end);
+}
+
+} // namespace mppi

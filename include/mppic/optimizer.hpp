@@ -1,40 +1,40 @@
-#pragma once
+#ifndef MPPIC__OPTIMIZER_HPP_
+#define MPPIC__OPTIMIZER_HPP_
 
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
-
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 #include "mppic/optimization/motion_model.hpp"
 #include "mppic/critic_scorer.hpp"
-
 #include "mppic/optimization/tensor_wrappers/control_sequence.hpp"
 #include "mppic/optimization/tensor_wrappers/state.hpp"
 
-namespace mppi::optimization {
+namespace mppi
+{
+
 class Optimizer
 {
 public:
-  using model_t = xt::xtensor<double, 2>(const xt::xtensor<double, 2> & state, const StateIdxes & idx);
+  using model_t = xt::xtensor<double, 2>(const xt::xtensor<double, 2> & state, const optimization::StateIdxes & idx);
 
   Optimizer() = default;
 
   void initialize(
-    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & node_name,
+    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros, model_t model);
 
   geometry_msgs::msg::TwistStamped evalControl(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan);
 
-  xt::xtensor<double, 3> getGeneratedTrajectories() const { return generated_trajectories_; }
+  xt::xtensor<double, 3> getGeneratedTrajectories() const;
 
   xt::xtensor<double, 2> evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::PoseStamped & robot_pose,
@@ -43,7 +43,6 @@ public:
 protected:
   void getParams();
   void reset();
-  void configureComponents();
 
   MotionModel getMotionModel() const;
   void setMotionModel(MotionModel);
@@ -113,7 +112,7 @@ protected:
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_;
 
-  std::string node_name_;
+  std::string name_;
 
   unsigned int batch_size_{0};
   unsigned int time_steps_{0};
@@ -127,15 +126,17 @@ protected:
   double vy_std_{0};
   double wz_std_{0};
 
-  State state_;
-  ControlSequence control_sequence_;
+  optimization::State state_;
+  optimization::ControlSequence control_sequence_;
   MotionModel motion_model_t_{MotionModel::DiffDrive};
 
   CriticScorer critic_scorer_;
   std::function<model_t> model_;
 
   xt::xtensor<double, 3> generated_trajectories_{};
-  rclcpp::Logger logger_{rclcpp::get_logger("MPPI Optimizer")};
+  rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
 
-} // namespace mppi::optimization
+} // namespace mppi
+
+#endif  // MPPIC__OPTIMIZER_HPP_

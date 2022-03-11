@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MPPIC__UTILS_HPP_
+#define MPPIC__UTILS_HPP_
 
 #include <algorithm>
 #include <chrono>
@@ -16,16 +17,17 @@
 #include "nav2_util/node_utils.hpp"
 #include "mppic/optimization/tensor_wrappers/control_sequence.hpp"
 
-namespace mppi::utils {
+namespace mppi::utils
+{
 
 template <typename NodeT>
-auto getParamGetter(NodeT node, const std::string & node_name_)
+auto getParamGetter(NodeT node, const std::string & name)
 {
   return [=](auto & param, const std::string & param_name, auto default_value) {
     using OutType = std::decay_t<decltype(param)>;
     using InType = std::decay_t<decltype(default_value)>;
 
-    std::string name = node_name_ + '.' + param_name;
+    std::string name = name + '.' + param_name;
     nav2_util::declare_parameter_if_not_declared(node, name, rclcpp::ParameterValue(default_value));
 
     InType param_in;
@@ -94,7 +96,6 @@ auto hypot(const T & p1, const T & p2)
   double dx = p1.x - p2.x;
   double dy = p1.y - p2.y;
   double dz = p1.z - p2.z;
-
   return std::hypot(dx, dy, dz);
 }
 
@@ -111,9 +112,9 @@ hypot(const geometry_msgs::msg::PoseStamped & lhs, const geometry_msgs::msg::Pos
   return hypot(lhs.pose, rhs.pose);
 }
 
-// http://paulbourke.net/geometry/pointlineplane/
 /**
  * @brief Calculate closest points on batches segments to path points
+ * http://paulbourke.net/geometry/pointlineplane/
  *
  * @param batch_of_segments_points batches of sequences of points. Sequences considering as lines
  * @param path 2D data structure with last dim size stands for x, y
@@ -186,3 +187,5 @@ auto distPointsToLineSegments2D(P && path, L && batch_of_segments_points)
 }
 
 } // namespace mppi::utils
+
+#endif  // MPPIC__UTILS_HPP_

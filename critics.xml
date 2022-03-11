@@ -1,27 +1,27 @@
 <class_libraries>
   <library path="critics">
 
-    <class type="mppi::optimization::ObstaclesCritic" base_class_type="mppi::optimization::CriticFunction">
+    <class type="mppi::critics::ObstaclesCritic" base_class_type="mppi::critics::CriticFunction">
       <description>mppi</description>
     </class>
 
-    <class type="mppi::optimization::GoalCritic" base_class_type="mppi::optimization::CriticFunction">
+    <class type="mppi::critics::GoalCritic" base_class_type="mppi::critics::CriticFunction">
       <description>mppi</description>
     </class>
 
-    <class type="mppi::optimization::ReferenceTrajectoryCritic" base_class_type="mppi::optimization::CriticFunction">
+    <class type="mppi::critics::ReferenceTrajectoryCritic" base_class_type="mppi::critics::CriticFunction">
       <description>mppi</description>
     </class>
 
-    <class type="mppi::optimization::ApproxReferenceTrajectoryCritic" base_class_type="mppi::optimization::CriticFunction">
+    <class type="mppi::critics::ApproxReferenceTrajectoryCritic" base_class_type="mppi::critics::CriticFunction">
       <description>mppi</description>
     </class>
 
-    <class type="mppi::optimization::GoalAngleCritic" base_class_type="mppi::optimization::CriticFunction">
+    <class type="mppi::critics::GoalAngleCritic" base_class_type="mppi::critics::CriticFunction">
       <description>mppi</description>
     </class>
 
-    <class type="mppi::optimization::AngleToGoalCritic" base_class_type="mppi::optimization::CriticFunction">
+    <class type="mppi::critics::AngleToGoalCritic" base_class_type="mppi::critics::CriticFunction">
       <description>mppi</description>
     </class>
 

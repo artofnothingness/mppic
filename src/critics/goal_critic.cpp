@@ -2,4 +2,4 @@
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(mppi::optimization::GoalCritic, mppi::optimization::CriticFunction)
+PLUGINLIB_EXPORT_CLASS(mppi::critics::GoalCritic, mppi::critics::CriticFunction)

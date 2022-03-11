@@ -2,5 +2,4 @@
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(
-  mppi::optimization::ApproxReferenceTrajectoryCritic, mppi::optimization::CriticFunction)
+PLUGINLIB_EXPORT_CLASS(mppi::critics::ApproxReferenceTrajectoryCritic, mppi::critics::CriticFunction)
