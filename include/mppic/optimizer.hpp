@@ -45,7 +45,7 @@ protected:
   void reset();
 
   MotionModel getMotionModel() const;
-  void setMotionModel(const MotionModel &);
+  void setMotionModel(const MotionModel);
 
   /**
    *
@@ -99,8 +99,8 @@ protected:
    * @brief Get offseted control from control_sequence_
    *
    */
-  auto getControlFromSequence(const unsigned int & offset);
-  geometry_msgs::msg::TwistStamped getControlFromSequenceAsTwist(const unsigned int & offset, const auto & stamp);
+  auto getControlFromSequence(const unsigned int offset);
+  geometry_msgs::msg::TwistStamped getControlFromSequenceAsTwist(const unsigned int offset, const auto & stamp);
 
   bool isHolonomic() const;
 
