@@ -16,8 +16,7 @@ void setUpOptimizerParams(
   params_.emplace_back(rclcpp::Parameter(node_name + ".lookahead_dist", lookahead_dist));
   params_.emplace_back(rclcpp::Parameter(node_name + ".motion_model", motion_model));
 
-  std::string critic_scorer_name = node_name + "." + "CriticScorer";
-  params_.emplace_back(rclcpp::Parameter(critic_scorer_name + ".critics_type", "float"));
+  std::string critic_scorer_name = node_name;
   params_.emplace_back(rclcpp::Parameter(
     critic_scorer_name + ".critics_names",
     std::vector<std::string>{

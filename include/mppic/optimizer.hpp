@@ -126,7 +126,7 @@ protected:
   optimization::ControlSequence control_sequence_;
   MotionModel motion_model_t_{MotionModel::DiffDrive};
 
-  CriticManager critic_scorer_;
+  CriticManager critic_manager_;
   std::function<model_t> model_;
 
   xt::xtensor<double, 3> generated_trajectories_{};

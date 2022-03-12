@@ -32,7 +32,7 @@ std::string CriticManager::getFullName(const std::string & name)
 void CriticManager::loadCritics()
 {
   loader_ = std::make_unique<pluginlib::ClassLoader<critics::CriticFunction>>(
-    "mppic", getFullName(base_name_));
+    "mppic", "mppi::critics::CriticFunction");
 
   critics_.clear();
   for (auto name : critics_names_) {

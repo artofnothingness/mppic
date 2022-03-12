@@ -113,28 +113,26 @@ controller_server:
       temperature: 0.25
       motion_model: "diff"
       visualize: true
-      CriticScorer:
-        critics_type: "float"
-        critics_names: [ "GoalCritic", "GoalAngleCritic", "AngleToGoalCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
-        GoalCritic:
-          goal_cost_power: 1
-          goal_cost_weight: 15
-        GoalAngleCritic:
-          goal_angle_cost_power: 1
-          goal_angle_cost_weight: 15 
-          threshold_to_consider_goal_angle: 0.20
-        AngleToGoalCritic:
-          angle_to_goal_cost_power: 2
-          angle_to_goal_cost_weight: 2
-        ReferenceTrajectoryCritic:
-          reference_cost_power: 1
-          reference_cost_weight: 5
-        ObstaclesCritic:
-          consider_footprint: true
-          obstacle_cost_power: 1
-          obstacle_cost_weight: 20
-          inflation_cost_scaling_factor: 3.0
-          inflation_radius: 0.75
+      critics_names: [ "GoalCritic", "GoalAngleCritic", "AngleToGoalCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
+      GoalCritic:
+        goal_cost_power: 1
+        goal_cost_weight: 15
+      GoalAngleCritic:
+        goal_angle_cost_power: 1
+        goal_angle_cost_weight: 15 
+        threshold_to_consider_goal_angle: 0.20
+      AngleToGoalCritic:
+        angle_to_goal_cost_power: 2
+        angle_to_goal_cost_weight: 2
+      ReferenceTrajectoryCritic:
+        reference_cost_power: 1
+        reference_cost_weight: 5
+      ObstaclesCritic:
+        consider_footprint: true
+        obstacle_cost_power: 1
+        obstacle_cost_weight: 20
+        inflation_cost_scaling_factor: 3.0
+        inflation_radius: 0.75
 ```
 
 ## Topics
