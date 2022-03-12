@@ -63,12 +63,12 @@ PathHandler::transformToGlobalPlanFrame(const geometry_msgs::msg::PoseStamped & 
 nav_msgs::msg::Path PathHandler::transformPath(const geometry_msgs::msg::PoseStamped & robot_pose)
 {
   // Find relevent bounds of path to use
-  geometry_msgs::msg::PoseStamped && global_pose = transformToGlobalPlanFrame(robot_pose);
+  geometry_msgs::msg::PoseStamped global_pose = transformToGlobalPlanFrame(robot_pose);
   auto [lower_bound, upper_bound] = getGlobalPlanConsideringBounds(global_pose);
 
   // Transform these bounds into the local costmap frame and prune older points
   const auto & stamp = global_pose.header.stamp;
-  nav_msgs::msg::Path && transformed_plan = transformPlanPosesToCostmapFrame(lower_bound, upper_bound, stamp);
+  nav_msgs::msg::Path transformed_plan = transformPlanPosesToCostmapFrame(lower_bound, upper_bound, stamp);
 
   pruneGlobalPlan(lower_bound);
 
