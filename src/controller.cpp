@@ -51,8 +51,8 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * /*goal_checker*/)
 {
-  nav_msgs::msg::Path && transformed_plan = path_handler_.transformPath(robot_pose);
-  geometry_msgs::msg::TwistStamped && cmd =
+  nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
+  geometry_msgs::msg::TwistStamped cmd =
     optimizer_.evalControl(robot_pose, robot_speed, transformed_plan);
   visualize(robot_pose, robot_speed, transformed_plan);
   return cmd;

@@ -24,7 +24,7 @@ public:
   void on_deactivate();
 
   void add(const xt::xtensor<double, 2> & trajectory);
-  void add(const xt::xtensor<double, 3> & trajectories, const size_t & batch_step, const size_t & time_step);
+  void add(const xt::xtensor<double, 3> & trajectories, const size_t batch_step, const size_t time_step);
   void visualize(nav_msgs::msg::Path & plan);
   void reset();
 
@@ -37,7 +37,7 @@ protected:
 
   geometry_msgs::msg::Vector3 createScale(const double & x, const double & y, const double & z);
 
-  std_msgs::msg::ColorRGBA createColor(const float & r, const float & g, const float & b, const float & a);
+  std_msgs::msg::ColorRGBA createColor(const float r, const float g, const float b, const float a);
 
   std::string frame_id_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<visualization_msgs::msg::MarkerArray>>

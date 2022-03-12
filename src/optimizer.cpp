@@ -219,14 +219,14 @@ void Optimizer::updateControlSequence(const xt::xtensor<double, 1> & costs)
 }
 
 geometry_msgs::msg::TwistStamped
-Optimizer::getControlFromSequenceAsTwist(const unsigned int & offset, const auto & stamp)
+Optimizer::getControlFromSequenceAsTwist(const unsigned int offset, const auto & stamp)
 {
   return utils::toTwistStamped(
     getControlFromSequence(offset), control_sequence_.idx, isHolonomic(), stamp,
     costmap_ros_->getBaseFrameID());
 }
 
-auto Optimizer::getControlFromSequence(const unsigned int & offset)
+auto Optimizer::getControlFromSequence(const unsigned int offset)
 {
   return xt::view(control_sequence_.data, offset);
 }
@@ -236,7 +236,7 @@ MotionModel Optimizer::getMotionModel() const
   return motion_model_t_;
 }
 
-void Optimizer::setMotionModel(const MotionModel & motion_model)
+void Optimizer::setMotionModel(const MotionModel motion_model)
 {
   motion_model_t_ = motion_model;
   state_.idx.setLayout(motion_model);
