@@ -106,7 +106,7 @@ double PathHandler::getMaxCostmapDist()
 }
 
 nav_msgs::msg::Path PathHandler::transformPlanPosesToCostmapFrame(
-  PathIterator & begin, PathIterator & end, const StampType & stamp)
+  PathIterator begin, PathIterator end, const StampType & stamp)
 {
   std::string frame = costmap_->getGlobalFrameID();
   auto transformToFrame = [&](const auto & global_plan_pose) {
@@ -140,7 +140,7 @@ nav_msgs::msg::Path & PathHandler::getPath()
   return global_plan_;
 }
 
-void PathHandler::pruneGlobalPlan(const PathIterator & end)
+void PathHandler::pruneGlobalPlan(const PathIterator end)
 {
   global_plan_.poses.erase(global_plan_.poses.begin(), end);
 }
