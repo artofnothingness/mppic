@@ -50,9 +50,6 @@ protected:
   std::string name_;
 
   std::vector<std::string> critics_names_;
-  std::string critics_type_;
-  const std::string base_name_ = "CriticFunction";
-
   std::unique_ptr<pluginlib::ClassLoader<critics::CriticFunction>> loader_;
   std::vector<std::unique_ptr<critics::CriticFunction>> critics_;
 

@@ -28,8 +28,7 @@ void Optimizer::initialize(
 
   getParams();
 
-  std::string component_name = name_ + ".CriticScorer";
-  critic_scorer_.on_configure(parent_, component_name, costmap_ros_);
+  critic_manager_.on_configure(parent_, name_, costmap_ros_);
 
   reset();
 }
@@ -77,7 +76,7 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
 {
   for (size_t i = 0; i < iteration_count_; ++i) {
     generated_trajectories_ = generateNoisedTrajectories(robot_pose, robot_speed);
-    auto && costs = critic_scorer_.evalTrajectoriesScores(generated_trajectories_, plan, robot_pose);
+    auto && costs = critic_manager_.evalTrajectoriesScores(generated_trajectories_, plan, robot_pose);
     updateControlSequence(costs);
   }
 
