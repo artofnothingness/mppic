@@ -16,7 +16,9 @@ namespace mppi
  * @return predicted velocities of the robot: tensor of shape [batch_size, ... ]
  * where last dim could be 2 or 3 depending on motion model used
  */
-xt::xtensor<double, 2> NaiveModel(const xt::xtensor<double, 2> & state, const optimization::StateIdxes & idx)
+xt::xtensor<double, 2> NaiveModel(
+  const xt::xtensor<double, 2> & state,
+  const optimization::StateIdxes & idx)
 {
   return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
 }

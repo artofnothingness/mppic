@@ -4,15 +4,15 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
-#include "nav_msgs/msg/path.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
+#include "nav_msgs/msg/path.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 
-#include "mppic/optimization/motion_model.hpp"
 #include "mppic/critic_manager.hpp"
+#include "mppic/optimization/motion_model.hpp"
 #include "mppic/optimization/tensor_wrappers/control_sequence.hpp"
 #include "mppic/optimization/tensor_wrappers/state.hpp"
 
@@ -22,7 +22,8 @@ namespace mppi
 class Optimizer
 {
 public:
-  using model_t = xt::xtensor<double, 2>(const xt::xtensor<double, 2> & state, const optimization::StateIdxes & idx);
+  using model_t = xt::xtensor<double, 2>(
+    const xt::xtensor<double, 2> & state, const optimization::StateIdxes & idx);
 
   Optimizer() = default;
 
@@ -46,6 +47,8 @@ protected:
 
   MotionModel getMotionModel() const;
   void setMotionModel(const MotionModel);
+
+  void shiftControlSequence();
 
   /**
    *
@@ -100,9 +103,12 @@ protected:
    *
    */
   auto getControlFromSequence(const unsigned int offset);
-  geometry_msgs::msg::TwistStamped getControlFromSequenceAsTwist(const unsigned int offset, const auto & stamp);
+  geometry_msgs::msg::TwistStamped
+  getControlFromSequenceAsTwist(const unsigned int offset, const auto & stamp);
 
   bool isHolonomic() const;
+
+  void setOffset();
 
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
@@ -115,12 +121,18 @@ protected:
   unsigned int iteration_count_{0};
   double model_dt_{0};
   double temperature_{0};
+
+  // Constraints
   double vx_max_{0};
   double vy_max_{0};
   double wz_max_{0};
+
   double vx_std_{0};
   double vy_std_{0};
   double wz_std_{0};
+
+  double controller_frequency_{0};
+  int control_sequence_shift_offset_{0};
 
   optimization::State state_;
   optimization::ControlSequence control_sequence_;
@@ -135,4 +147,4 @@ protected:
 
 } // namespace mppi
 
-#endif  // MPPIC__OPTIMIZER_HPP_
+#endif // MPPIC__OPTIMIZER_HPP_

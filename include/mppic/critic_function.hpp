@@ -18,7 +18,7 @@ public:
   virtual ~CriticFunction() = default;
 
   void on_configure(
-    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, 
+    rclcpp_lifecycle::LifecycleNode::WeakPtr parent,
     const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
   {

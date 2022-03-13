@@ -39,7 +39,7 @@ protected:
   void visualize(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed,
-    nav_msgs::msg::Path & transformed_plan);
+    nav_msgs::msg::Path transformed_plan);
 
   std::string name_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;

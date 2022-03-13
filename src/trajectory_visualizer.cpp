@@ -13,8 +13,7 @@ void TrajectoryVisualizer::on_configure(
   frame_id_ = frame_id;
   trajectories_publisher_ =
     node->create_publisher<visualization_msgs::msg::MarkerArray>("/trajectories", 1);
-  transformed_path_pub_ =
-    node->create_publisher<nav_msgs::msg::Path>("transformed_global_plan", 1);
+  transformed_path_pub_ = node->create_publisher<nav_msgs::msg::Path>("transformed_global_plan", 1);
 
   reset();
 }
@@ -58,8 +57,7 @@ void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
 }
 
 void TrajectoryVisualizer::add(
-  const xt::xtensor<double, 3> & trajectories,
-  const size_t batch_step, const size_t time_step)
+  const xt::xtensor<double, 3> & trajectories, const size_t batch_step, const size_t time_step)
 {
   if (!trajectories.shape()[0]) {
     return;
@@ -88,20 +86,18 @@ void TrajectoryVisualizer::reset()
   points_ = std::make_unique<visualization_msgs::msg::MarkerArray>();
 }
 
-void TrajectoryVisualizer::visualize(nav_msgs::msg::Path & plan)
+void TrajectoryVisualizer::visualize(nav_msgs::msg::Path plan)
 {
   trajectories_publisher_->publish(std::move(points_));
   reset();
 
-  std::unique_ptr<nav_msgs::msg::Path> plan_ptr = std::make_unique<nav_msgs::msg::Path>(plan);
+  auto plan_ptr = std::make_unique<nav_msgs::msg::Path>(std::move(plan));
   transformed_path_pub_->publish(std::move(plan_ptr));
 }
 
 visualization_msgs::msg::Marker TrajectoryVisualizer::createMarker(
-  int id, const geometry_msgs::msg::Pose & pose,
-  const geometry_msgs::msg::Vector3 & scale,
-  const std_msgs::msg::ColorRGBA & color,
-  const std::string & frame_id)
+  int id, const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & scale,
+  const std_msgs::msg::ColorRGBA & color, const std::string & frame_id)
 {
   using visualization_msgs::msg::Marker;
   Marker marker;
@@ -118,8 +114,7 @@ visualization_msgs::msg::Marker TrajectoryVisualizer::createMarker(
   return marker;
 }
 
-geometry_msgs::msg::Pose TrajectoryVisualizer::createPose(
-  const double & x, const double & y, const double & z)
+geometry_msgs::msg::Pose TrajectoryVisualizer::createPose(double x, double y, double z)
 {
   geometry_msgs::msg::Pose pose;
   pose.position.x = x;
@@ -132,8 +127,7 @@ geometry_msgs::msg::Pose TrajectoryVisualizer::createPose(
   return pose;
 }
 
-geometry_msgs::msg::Vector3 TrajectoryVisualizer::createScale(
-  const double & x, const double & y, const double & z)
+geometry_msgs::msg::Vector3 TrajectoryVisualizer::createScale(double x, double y, double z)
 {
   geometry_msgs::msg::Vector3 scale;
   scale.x = x;
@@ -142,8 +136,7 @@ geometry_msgs::msg::Vector3 TrajectoryVisualizer::createScale(
   return scale;
 }
 
-std_msgs::msg::ColorRGBA TrajectoryVisualizer::createColor(
-  const float r, const float g, const float b, const float a)
+std_msgs::msg::ColorRGBA TrajectoryVisualizer::createColor(float r, float g, float b, float a)
 {
   std_msgs::msg::ColorRGBA color;
   color.r = r;
