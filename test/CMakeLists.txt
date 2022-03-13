@@ -15,7 +15,7 @@ endif()
 
 set(TEST_NAMES 
   optimizer_test
-  geometry_test
+  controller_test
 )
 
 foreach(name IN LISTS TEST_NAMES)
