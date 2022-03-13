@@ -140,7 +140,7 @@ nav_msgs::msg::Path & PathHandler::getPath()
   return global_plan_;
 }
 
-void PathHandler::pruneGlobalPlan(const PathIterator & end)
+void PathHandler::pruneGlobalPlan(const PathIterator end)
 {
   global_plan_.poses.erase(global_plan_.poses.begin(), end);
 }

@@ -12,7 +12,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 #include "mppic/optimization/motion_model.hpp"
-#include "mppic/critic_scorer.hpp"
+#include "mppic/critic_manager.hpp"
 #include "mppic/optimization/tensor_wrappers/control_sequence.hpp"
 #include "mppic/optimization/tensor_wrappers/state.hpp"
 
@@ -34,7 +34,7 @@ public:
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan);
 
-  xt::xtensor<double, 3> getGeneratedTrajectories() const;
+  xt::xtensor<double, 3> & getGeneratedTrajectories();
 
   xt::xtensor<double, 2> evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::PoseStamped & robot_pose,
@@ -45,7 +45,7 @@ protected:
   void reset();
 
   MotionModel getMotionModel() const;
-  void setMotionModel(MotionModel);
+  void setMotionModel(const MotionModel);
 
   /**
    *
@@ -95,16 +95,12 @@ protected:
    */
   void updateControlSequence(const xt::xtensor<double, 1> & costs);
 
-  std::vector<geometry_msgs::msg::Point> getOrientedFootprint(
-    const std::array<double, 3> & robot_pose,
-    const std::vector<geometry_msgs::msg::Point> & footprint_spec) const;
-
   /**
    * @brief Get offseted control from control_sequence_
    *
    */
-  auto getControlFromSequence(unsigned int offset);
-  geometry_msgs::msg::TwistStamped getControlFromSequenceAsTwist(unsigned int offset, const auto & stamp);
+  auto getControlFromSequence(const unsigned int offset);
+  geometry_msgs::msg::TwistStamped getControlFromSequenceAsTwist(const unsigned int offset, const auto & stamp);
 
   bool isHolonomic() const;
 
@@ -130,7 +126,7 @@ protected:
   optimization::ControlSequence control_sequence_;
   MotionModel motion_model_t_{MotionModel::DiffDrive};
 
-  CriticScorer critic_scorer_;
+  CriticManager critic_manager_;
   std::function<model_t> model_;
 
   xt::xtensor<double, 3> generated_trajectories_{};

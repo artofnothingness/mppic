@@ -38,7 +38,7 @@ auto getParamGetter(NodeT node, const std::string & name)
 
 template <typename T, typename H>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, const optimization::ControlSequnceIdxes & idx, bool is_holonomic,
+  const T & velocities, const optimization::ControlSequnceIdxes & idx, const bool & is_holonomic,
   const H & header)
 {
   geometry_msgs::msg::TwistStamped twist;
@@ -57,7 +57,7 @@ geometry_msgs::msg::TwistStamped toTwistStamped(
 
 template <typename T, typename S>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, optimization::ControlSequnceIdxes idx, bool is_holonomic, const S & stamp,
+  const T & velocities, optimization::ControlSequnceIdxes idx, const bool & is_holonomic, const S & stamp,
   const std::string & frame)
 {
   geometry_msgs::msg::TwistStamped twist;
@@ -73,25 +73,24 @@ geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
-template <typename T>
-xt::xtensor<T, 2> toTensor(const nav_msgs::msg::Path & path)
+inline xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
 {
   size_t path_size = path.poses.size();
   static constexpr size_t last_dim_size = 3;
 
-  xt::xtensor<T, 2> points = xt::empty<T>({path_size, last_dim_size});
+  xt::xtensor<double, 2> points = xt::empty<double>({path_size, last_dim_size});
 
   for (size_t i = 0; i < path_size; ++i) {
-    points(i, 0) = static_cast<T>(path.poses[i].pose.position.x);
-    points(i, 1) = static_cast<T>(path.poses[i].pose.position.y);
-    points(i, 2) = static_cast<T>(tf2::getYaw(path.poses[i].pose.orientation));
+    points(i, 0) = static_cast<double>(path.poses[i].pose.position.x);
+    points(i, 1) = static_cast<double>(path.poses[i].pose.position.y);
+    points(i, 2) = static_cast<double>(tf2::getYaw(path.poses[i].pose.orientation));
   }
 
   return points;
 }
 
 template <typename T>
-auto hypot(const T & p1, const T & p2)
+double hypot(const T & p1, const T & p2)
 {
   double dx = p1.x - p2.x;
   double dy = p1.y - p2.y;
@@ -100,13 +99,13 @@ auto hypot(const T & p1, const T & p2)
 }
 
 template <>
-inline auto hypot(const geometry_msgs::msg::Pose & lhs, const geometry_msgs::msg::Pose & rhs)
+inline double hypot(const geometry_msgs::msg::Pose & lhs, const geometry_msgs::msg::Pose & rhs)
 {
   return hypot(lhs.position, rhs.position);
 }
 
 template <>
-inline auto
+inline double
 hypot(const geometry_msgs::msg::PoseStamped & lhs, const geometry_msgs::msg::PoseStamped & rhs)
 {
   return hypot(lhs.pose, rhs.pose);
