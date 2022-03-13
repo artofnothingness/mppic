@@ -51,7 +51,7 @@ protected:
 
   auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped & global_pose);
 
-  void pruneGlobalPlan(const PathIterator & end);
+  void pruneGlobalPlan(const PathIterator end);
 
   std::string name_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_;
