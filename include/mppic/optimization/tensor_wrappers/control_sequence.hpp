@@ -14,11 +14,11 @@ namespace mppi::optimization
 class ControlSequnceIdxes
 {
 public:
-  unsigned int dim() const { return dim_; }
+  unsigned int dim() const {return dim_;}
 
-  uint8_t vx() const { return vx_; }
-  uint8_t vy() const { return vy_; }
-  uint8_t wz() const { return wz_; }
+  uint8_t vx() const {return vx_;}
+  uint8_t vy() const {return vy_;}
+  uint8_t wz() const {return wz_;}
 
   void setLayout(MotionModel motion_model)
   {
@@ -47,7 +47,7 @@ struct ControlSequence
   xt::xtensor<double, 2> data;
   ControlSequnceIdxes idx;
 
-  void reset(unsigned int time_steps) { data = xt::zeros<double>({time_steps, idx.dim()}); }
+  void reset(unsigned int time_steps) {data = xt::zeros<double>({time_steps, idx.dim()});}
 };
 
 } // namespace mppi::optimization

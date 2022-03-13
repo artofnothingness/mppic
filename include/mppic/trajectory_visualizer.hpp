@@ -24,8 +24,10 @@ public:
   void on_deactivate();
 
   void add(const xt::xtensor<double, 2> & trajectory);
-  void add(const xt::xtensor<double, 3> & trajectories, const size_t batch_step, const size_t time_step);
-  void visualize(nav_msgs::msg::Path & plan);
+  void add(
+    const xt::xtensor<double, 3> & trajectories, const size_t batch_step,
+    const size_t time_step);
+  void visualize(nav_msgs::msg::Path plan);
   void reset();
 
 protected:
@@ -33,15 +35,15 @@ protected:
     int id, const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & scale,
     const std_msgs::msg::ColorRGBA & color, const std::string & frame_id);
 
-  geometry_msgs::msg::Pose createPose(const double & x, const double & y, const double & z);
+  geometry_msgs::msg::Pose createPose(double x, double y, double z);
 
-  geometry_msgs::msg::Vector3 createScale(const double & x, const double & y, const double & z);
+  geometry_msgs::msg::Vector3 createScale(double x, double y, double z);
 
-  std_msgs::msg::ColorRGBA createColor(const float r, const float g, const float b, const float a);
+  std_msgs::msg::ColorRGBA createColor(float r, float g, float b, float a);
 
   std::string frame_id_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<visualization_msgs::msg::MarkerArray>>
-    trajectories_publisher_;
+  trajectories_publisher_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>> transformed_path_pub_;
 
   std::unique_ptr<visualization_msgs::msg::MarkerArray> points_;
