@@ -15,18 +15,7 @@ class ApproxReferenceTrajectoryCritic : public CriticFunction
 {
 public:
 
-  void initialize() override
-  {
-    auto node = parent_.lock();
-    auto getParam = utils::getParamGetter(node, name_);
-
-    getParam(power_, "reference_cost_power", 1);
-    getParam(weight_, "reference_cost_weight", 15);
-    RCLCPP_INFO(
-      logger_,
-      "ApproxReferenceTrajectoryCritic instantiated with %d power and %f weight.",
-      power_, weight_);
-  }
+  void initialize() override;
 
   /**
    * @brief Evaluate cost related to trajectories path alignment using
@@ -36,17 +25,7 @@ public:
    */
   virtual void score(
     const geometry_msgs::msg::PoseStamped & /*robot_pose*/, const xt::xtensor<double, 3> & trajectories,
-    const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs) override
-  {
-    auto path_points = xt::view(path, xt::all(), xt::range(0, 2));
-    auto trajectories_points_extended =
-      xt::view(trajectories, xt::all(), xt::all(), xt::newaxis(), xt::range(0, 2));
-
-    auto dists = xt::norm_l2(
-      path_points - trajectories_points_extended, {trajectories_points_extended.dimension() - 1});
-    auto && cost = xt::mean(xt::amin(std::move(dists), 1), 1);
-    costs += xt::pow(std::move(cost) * weight_, power_);
-  }
+    const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs) override;
 
 protected:
   unsigned int power_{0};

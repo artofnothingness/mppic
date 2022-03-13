@@ -1,5 +1,5 @@
-#ifndef MPPIC__CRITIC_SCORER_HPP_
-#define MPPIC__CRITIC_SCORER_HPP_
+#ifndef MPPIC__CRITIC_MANAGER_HPP_
+#define MPPIC__CRITIC_MANAGER_HPP_
 
 #include <xtensor/xtensor.hpp>
 #include <pluginlib/class_loader.hpp>
@@ -17,10 +17,10 @@
 namespace mppi
 {
 
-class CriticScorer
+class CriticManager
 {
 public:
-  CriticScorer() = default;
+  CriticManager() = default;
 
   void on_configure(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent,
@@ -36,7 +36,8 @@ public:
   /**
    * @brief Evaluate cost for each trajectory
    *
-   * @param trajectories: tensor of shape [ ..., ..., 3 ] * where 3 stands for x, y, yaw
+   * @param trajectories: tensor of shape [ ..., ..., 3 ]
+   * where 3 stands for x, y, yaw
    * @return Cost for each trajectory
    */
   xt::xtensor<double, 1> evalTrajectoriesScores(
@@ -49,9 +50,6 @@ protected:
   std::string name_;
 
   std::vector<std::string> critics_names_;
-  std::string critics_type_;
-  const std::string base_name_ = "CriticFunction";
-
   std::unique_ptr<pluginlib::ClassLoader<critics::CriticFunction>> loader_;
   std::vector<std::unique_ptr<critics::CriticFunction>> critics_;
 
@@ -60,4 +58,4 @@ protected:
 
 } // namespace mppi
 
-#endif  // MPPIC__CRITIC_SCORER_HPP_
+#endif  // MPPIC__CRITIC_MANAGER_HPP_
