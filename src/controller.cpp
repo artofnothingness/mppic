@@ -1,5 +1,7 @@
+#include <stdint.h>
+#include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
 #include "mppic/controller.hpp"
-#include "mppic/optimization/state_models.hpp"
+#include "mppic/motion_models.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi
@@ -22,9 +24,14 @@ void Controller::configure(
   getParam(visualize_, "visualize", false);
 
   // Configure composed objects
-  optimizer_.initialize(parent_, name_, costmap_ros_, NaiveModel);
+  optimizer_.initialize(parent_, name_, costmap_ros_);
   path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_);
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
+
+  auto vels = optimizer_.getMaxVelocities();
+  base_x_vel_ = vels[0];
+  base_y_vel_ = vels[1];
+  base_theta_vel_ = vels[2];
 
   RCLCPP_INFO(logger_, "Configured MPPI Controller: %s", name_.c_str());
 }
@@ -75,7 +82,29 @@ void Controller::setPlan(const nav_msgs::msg::Path & path) { path_handler_.setPa
 
 void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {
-  RCLCPP_ERROR(logger_, "MPPI's dynamic speed limit adjustment callback is not yet implemented!");
+  double x_vel_, y_vel_, theta_vel_;
+
+  if (speed_limit == nav2_costmap_2d::NO_SPEED_LIMIT) {
+    // Restore default value
+    x_vel_ = base_x_vel_;
+    y_vel_ = base_y_vel_;
+    theta_vel_ = base_theta_vel_;
+  } else {
+    if (percentage) {
+      // Speed limit is expressed in % from maximum speed of robot
+      x_vel_ = base_x_vel_ * speed_limit / 100.0;
+      y_vel_ = base_y_vel_ * speed_limit / 100.0;
+      theta_vel_ = base_theta_vel_ * speed_limit / 100.0;
+    } else {
+      // Speed limit is expressed in absolute value
+      double ratio = speed_limit / base_x_vel_;
+      x_vel_ = speed_limit;
+      y_vel_ = base_y_vel_ * ratio;
+      theta_vel_ = base_theta_vel_ * ratio;
+    }
+  }
+
+  optimizer_.setMaxVelocities(x_vel_, y_vel_, theta_vel_);
 }
 
 } // namespace mppi
