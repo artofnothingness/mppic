@@ -52,6 +52,7 @@ protected:
   TrajectoryVisualizer trajectory_visualizer_;
 
   bool visualize_;
+  double base_x_vel_, base_y_vel_, base_theta_vel_;
 };
 
 } // namespace mppi

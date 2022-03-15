@@ -8,10 +8,12 @@
 #include <xtensor/xview.hpp>
 #include <xtensor/xarray.hpp>
 
-#include "mppic/optimization/motion_model.hpp"
+#include "mppic/motion_models.hpp"
 
 namespace mppi::optimization
 {
+
+class MotionModel;
 
 class StateIdxes
 {
@@ -31,10 +33,10 @@ public:
   uint8_t dt() const { return dt_; };
   unsigned int dim() const { return dim_; }
 
-  void setLayout(MotionModel motion_model)
+  void setLayout(const bool is_holonomic)
   {
     // Layout changes to include "Y" components if holonomic
-    if (isHolonomic(motion_model)) {
+    if (is_holonomic) {
       vx_ = 0;
       vy_ = 1;
       wz_ = 2;
@@ -56,6 +58,11 @@ public:
     vrange_[1] = cvx_;
     crange_[0] = cvx_;
     crange_[1] = dt_;
+  }
+
+  std::array<uint8_t, 2> getControlRange()
+  {
+    return crange_;
   }
 
 private:

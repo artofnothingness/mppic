@@ -18,7 +18,7 @@
 
 
 #include "mppic/optimizer.hpp"
-#include "mppic/optimization/state_models.hpp"
+#include "mppic/motion_models.hpp"
 
 #include "utils/config.hpp"
 #include "utils/factory.hpp"
@@ -42,7 +42,6 @@ TEST_CASE("Optimizer doesn't fail", "[]")
     cells_x, cells_y, origin_x, origin_y, resolution, cost_map_default_value);
   costmap_ros->setRobotFootprint(factory::getDummySquareFootprint(0.01));
   auto costmap = costmap_ros->getCostmap();
-  auto model = factory::getDummyModel();
 
   auto create_node =
     [](
@@ -69,7 +68,7 @@ TEST_CASE("Optimizer doesn't fail", "[]")
     std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node =
       create_node(iteration_count, time_steps, lookahead_distance, motion_model);
 
-    auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
+    auto optimizer = factory::getDummyOptimizer(node, costmap_ros);
     auto path = factory::getDummyPath(poses_count, node);
     auto pose = factory::getDummyPointStamped(node, start_x, start_y);
     auto velocity = factory::getDummyTwist();
@@ -115,7 +114,7 @@ TEST_CASE("Optimizer doesn't fail", "[]")
                         << "\ntime_steps " << time_steps << "\nMotion model : " << motion_model);
 
     auto node = create_node(iteration_count, time_steps, lookahead_distance, motion_model);
-    auto optimizer = factory::getDummyOptimizer(node, costmap_ros, model);
+    auto optimizer = factory::getDummyOptimizer(node, costmap_ros);
 
     auto pose = factory::getDummyPointStamped(node, start_x, start_y);
     auto velocity = factory::getDummyTwist();
