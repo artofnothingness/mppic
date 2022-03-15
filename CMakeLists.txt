@@ -54,7 +54,7 @@ set(critics_sources
   src/critics/approx_reference_trajectory_critic.cpp
   src/critics/reference_trajectory_critic.cpp
   src/critics/goal_angle_critic.cpp
-  src/critics/angle_to_goal_critic.cpp
+  src/critics/path_angle_critic.cpp
   src/critics/goal_critic.cpp
   src/critics/obstacles_critic.cpp
 )
