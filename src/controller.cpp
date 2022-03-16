@@ -10,19 +10,18 @@ void Controller::configure(
   std::string name, const std::shared_ptr<tf2_ros::Buffer> & tf,
   const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros)
 {
-  auto node = parent.lock();
-
-
+  parent_ = parent;
   costmap_ros_ = costmap_ros;
   tf_buffer_ = tf;
   name_ = name;
 
+  auto node = parent_.lock();
   // Get high-level controller parameters
   auto getParam = utils::getParamGetter(node, name_);
   getParam(visualize_, "visualize", false);
 
   // Configure composed objects
-  optimizer_.initialize(parent_, name_, costmap_ros_, NaiveModel);
+  optimizer_.initialize(parent_, name_, costmap_ros_, &NaiveModel);
   path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_);
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 
@@ -54,13 +53,14 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
   geometry_msgs::msg::TwistStamped cmd =
     optimizer_.evalControl(robot_pose, robot_speed, transformed_plan);
-  visualize(robot_pose, robot_speed, transformed_plan);
+
+  visualize(robot_pose, robot_speed, std::move(transformed_plan));
   return cmd;
 }
 
 void Controller::visualize(
   const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed,
-  nav_msgs::msg::Path & transformed_plan)
+  nav_msgs::msg::Path transformed_plan)
 {
   if (!visualize_) {
     return;
@@ -71,7 +71,7 @@ void Controller::visualize(
   trajectory_visualizer_.visualize(transformed_plan);
 }
 
-void Controller::setPlan(const nav_msgs::msg::Path & path) { path_handler_.setPath(path); }
+void Controller::setPlan(const nav_msgs::msg::Path & path) {path_handler_.setPath(path);}
 
 void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {

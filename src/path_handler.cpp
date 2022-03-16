@@ -12,9 +12,9 @@ void PathHandler::initialize(
   name_ = name;
   costmap_ = costmap;
   tf_buffer_ = buffer;
-
   auto node = parent.lock();
   logger_ = node->get_logger();
+
   auto getParam = utils::getParamGetter(node, name_);
   getParam(lookahead_dist_, "lookahead_dist", 1.0);
   getParam(transform_tolerance_, "transform_tolerance", 0.1);
@@ -37,7 +37,8 @@ auto PathHandler::getGlobalPlanConsideringBounds(
   // Find the furthest relevent point on the path to consider within costmap bounds
   auto max_costmap_dist = getMaxCostmapDist();
   auto last_point =
-    std::find_if(closest_point, end, [&](const geometry_msgs::msg::PoseStamped & global_plan_pose) {
+    std::find_if(
+    closest_point, end, [&](const geometry_msgs::msg::PoseStamped & global_plan_pose) {
       auto dist = utils::hypot(global_pose, global_plan_pose);
       return dist > max_costmap_dist || dist > lookahead_dist_;
     });
@@ -68,7 +69,9 @@ nav_msgs::msg::Path PathHandler::transformPath(const geometry_msgs::msg::PoseSta
 
   // Transform these bounds into the local costmap frame and prune older points
   const auto & stamp = global_pose.header.stamp;
-  nav_msgs::msg::Path transformed_plan = transformPlanPosesToCostmapFrame(lower_bound, upper_bound, stamp);
+  nav_msgs::msg::Path transformed_plan = transformPlanPosesToCostmapFrame(
+    lower_bound, upper_bound,
+    stamp);
 
   pruneGlobalPlan(lower_bound);
 
@@ -110,16 +113,16 @@ nav_msgs::msg::Path PathHandler::transformPlanPosesToCostmapFrame(
 {
   std::string frame = costmap_->getGlobalFrameID();
   auto transformToFrame = [&](const auto & global_plan_pose) {
-    geometry_msgs::msg::PoseStamped from_pose;
-    geometry_msgs::msg::PoseStamped to_pose;
+      geometry_msgs::msg::PoseStamped from_pose;
+      geometry_msgs::msg::PoseStamped to_pose;
 
-    from_pose.header.frame_id = global_plan_.header.frame_id;
-    from_pose.header.stamp = stamp;
-    from_pose.pose = global_plan_pose.pose;
+      from_pose.header.frame_id = global_plan_.header.frame_id;
+      from_pose.header.stamp = stamp;
+      from_pose.pose = global_plan_pose.pose;
 
-    transformPose(frame, from_pose, to_pose);
-    return to_pose;
-  };
+      transformPose(frame, from_pose, to_pose);
+      return to_pose;
+    };
 
   nav_msgs::msg::Path plan;
   plan.header.frame_id = frame;

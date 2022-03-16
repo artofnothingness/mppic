@@ -13,7 +13,6 @@ namespace mppi::critics
 class ObstaclesCritic : public CriticFunction
 {
 public:
-
   void initialize() override;
 
   /**
@@ -22,20 +21,28 @@ public:
    * @param costs [out] add obstacle cost values to this tensor
    */
   virtual void score(
-    const geometry_msgs::msg::PoseStamped & /*robot_pose*/, const xt::xtensor<double, 3> & trajectories,
-    const xt::xtensor<double, 2> & /*path*/, xt::xtensor<double, 1> & costs) override;
+    const geometry_msgs::msg::PoseStamped & /*robot_pose*/,
+    const xt::xtensor<double, 3> & trajectories, const xt::xtensor<double, 2> & /*path*/,
+    xt::xtensor<double, 1> & costs) override;
 
 protected:
-  unsigned char costAtPose(const auto & point);
+  bool inCollision(unsigned char cost) const;
+  double scoreCost(unsigned char cost);
+  unsigned char maxCost();
 
-  bool inCollision(unsigned char & cost) const;
+  unsigned char costAtPose(const auto & point)
+  {
+    unsigned char cost;
+    if (consider_footprint_) {
+      cost = static_cast<unsigned char>(collision_checker_.footprintCostAtPose(
+          point(0), point(1), point(2), costmap_ros_->getRobotFootprint()));
+    } else {
+      cost = static_cast<unsigned char>(collision_checker_.pointCost(point(0), point(1)));
+    }
+    return cost;
+  }
 
-  bool isFree(unsigned char & cost) const;
-
-  double toDist(unsigned char & cost);
-
-  double scoreDistance(double & min_dist);
-
+protected:
   nav2_costmap_2d::FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *> collision_checker_;
 
   bool consider_footprint_{true};

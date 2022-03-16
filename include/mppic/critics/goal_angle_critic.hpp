@@ -13,7 +13,6 @@ namespace mppi::critics
 class GoalAngleCritic : public CriticFunction
 {
 public:
-
   void initialize() override;
 
   /**

@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "nav2_costmap_2d/costmap_2d.hpp"
@@ -8,7 +7,9 @@
 #include <iostream>
 #include <rclcpp/executors.hpp>
 
-namespace utils {
+#include "config.hpp"
+#include "factory.hpp"
+
 /**
  * Print costmap to stdout.
  * @param costmap map to be printed.
@@ -74,14 +75,39 @@ void printMapWithTrajectoryAndGoal(
  * @param cost obstacle value on costmap.
  */
 void addObstacle(
-  nav2_costmap_2d::Costmap2D & costmap, unsigned int upper_left_corner_x,
+  nav2_costmap_2d::Costmap2D * costmap, unsigned int upper_left_corner_x,
   unsigned int upper_left_corner_y, unsigned int size, unsigned char cost)
 {
   for (unsigned int i = upper_left_corner_x; i < upper_left_corner_x + size; i++) {
     for (unsigned int j = upper_left_corner_y; j < upper_left_corner_y + size; j++) {
-      costmap.setCost(i, j, cost);
+      costmap->setCost(i, j, cost);
     }
   }
+}
+
+void print_info(TestOptimizerSettings os, TestPathSettings ps)
+{
+  WARN(
+    "Parameters of MPPI Planner:" <<
+      "Points in path " << ps.poses_count << "\n" <<
+      "Iteration_count " << os.iteration_count << "\n" <<
+      "Time_steps " << os.time_steps << "\n" <<
+      "Motion model " << os.motion_model << "\n"
+      "Is footprint considering " << os.consider_footprint << "\n"
+  );
+}
+
+void print_info(TestOptimizerSettings os, unsigned int poses_count)
+{
+  WARN(
+    "Points in path " << poses_count << "\niteration_count " << os.iteration_count
+                      << "\ntime_steps " << os.time_steps
+                      << "\nMotion model : " << os.motion_model);
+}
+
+void addObstacle(nav2_costmap_2d::Costmap2D * costmap, TestObstaclesSettings s)
+{
+  addObstacle(costmap, s.center_cells_x, s.center_cells_y, s.obstacle_size, s.obstacle_cost);
 }
 
 /**
@@ -118,15 +144,14 @@ bool isGoalReached(
   costmap.worldToMap(goal.pose.position.x, goal.pose.position.y, goal_j, goal_i);
 
   auto match = [](unsigned int i, unsigned int j, unsigned int i_dst, unsigned int j_dst) {
-    if (i == i_dst && j == j_dst) {
-      return true;
-    }
-    return false;
-  };
+      if (i == i_dst && j == j_dst) {
+        return true;
+      }
+      return false;
+    };
 
-  // clang-format off
   auto match_near = [&](unsigned int i, unsigned int j) {
-    if (match(i, j, goal_i, goal_j) || 
+      if (match(i, j, goal_i, goal_j) ||
         match(i, j, goal_i + 1, goal_j) ||
         match(i, j, goal_i - 1, goal_j) ||
         match(i, j, goal_i, goal_j + 1) ||
@@ -134,11 +159,12 @@ bool isGoalReached(
         match(i, j, goal_i + 1, goal_j + 1) ||
         match(i, j, goal_i + 1, goal_j - 1) ||
         match(i, j, goal_i - 1, goal_j + 1) ||
-        match(i, j, goal_i - 1, goal_j - 1)) {
-      return true;
-    }
-    return false;
-  };
+        match(i, j, goal_i - 1, goal_j - 1))
+      {
+        return true;
+      }
+      return false;
+    };
   // clang-format on
 
   for (size_t i = 0; i < trajectory.shape()[0]; ++i) {
@@ -150,5 +176,3 @@ bool isGoalReached(
 
   return false;
 }
-
-} // namespace utils
