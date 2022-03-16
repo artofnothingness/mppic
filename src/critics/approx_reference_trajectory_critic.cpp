@@ -17,10 +17,15 @@ void ApproxReferenceTrajectoryCritic::initialize()
 }
 
 void ApproxReferenceTrajectoryCritic::score(
-  const geometry_msgs::msg::PoseStamped & /*robot_pose*/, const xt::xtensor<double,
+  const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<double,
   3> & trajectories,
-  const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs)
+  const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs,
+  nav2_core::GoalChecker * goal_checker)
 {
+  if (withinPositionGoalTolerance(goal_checker, robot_pose, path)) {
+    return;
+  }
+
   auto path_points = xt::view(path, xt::all(), xt::range(0, 2));
   auto trajectories_points_extended =
     xt::view(trajectories, xt::all(), xt::all(), xt::newaxis(), xt::range(0, 2));
