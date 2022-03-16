@@ -10,7 +10,7 @@
 class RosLockGuard
 {
 public:
-  RosLockGuard() { rclcpp::init(0, nullptr); }
-  ~RosLockGuard() { rclcpp::shutdown(); }
+  RosLockGuard() {rclcpp::init(0, nullptr);}
+  ~RosLockGuard() {rclcpp::shutdown();}
 };
 RosLockGuard g_rclcpp;

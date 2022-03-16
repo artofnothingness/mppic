@@ -20,23 +20,25 @@
 namespace mppi::utils
 {
 
-template <typename NodeT>
+template<typename NodeT>
 auto getParamGetter(NodeT node, const std::string & name)
 {
-  return [=](auto & param, const std::string & param_name, auto default_value) {
-    using OutType = std::decay_t<decltype(param)>;
-    using InType = std::decay_t<decltype(default_value)>;
+  return [ = ](auto & param, const std::string & param_name, auto default_value) {
+           using OutType = std::decay_t<decltype(param)>;
+           using InType = std::decay_t<decltype(default_value)>;
 
-    std::string name = name + '.' + param_name;
-    nav2_util::declare_parameter_if_not_declared(node, name, rclcpp::ParameterValue(default_value));
+           std::string full_name = name + '.' + param_name;
+           nav2_util::declare_parameter_if_not_declared(
+             node, full_name,
+             rclcpp::ParameterValue(default_value));
 
-    InType param_in;
-    node->get_parameter(name, param_in);
-    param = static_cast<OutType>(param_in);
-  };
+           InType param_in;
+           node->get_parameter(full_name, param_in);
+           param = static_cast<OutType>(param_in);
+         };
 }
 
-template <typename T, typename H>
+template<typename T, typename H>
 geometry_msgs::msg::TwistStamped toTwistStamped(
   const T & velocities, const optimization::ControlSequnceIdxes & idx, const bool & is_holonomic,
   const H & header)
@@ -55,9 +57,10 @@ geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
-template <typename T, typename S>
+template<typename T, typename S>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, optimization::ControlSequnceIdxes idx, const bool & is_holonomic, const S & stamp,
+  const T & velocities, optimization::ControlSequnceIdxes idx, const bool & is_holonomic,
+  const S & stamp,
   const std::string & frame)
 {
   geometry_msgs::msg::TwistStamped twist;
@@ -89,7 +92,7 @@ inline xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
   return points;
 }
 
-template <typename T>
+template<typename T>
 double hypot(const T & p1, const T & p2)
 {
   double dx = p1.x - p2.x;
@@ -98,91 +101,17 @@ double hypot(const T & p1, const T & p2)
   return std::hypot(dx, dy, dz);
 }
 
-template <>
+template<>
 inline double hypot(const geometry_msgs::msg::Pose & lhs, const geometry_msgs::msg::Pose & rhs)
 {
   return hypot(lhs.position, rhs.position);
 }
 
-template <>
+template<>
 inline double
 hypot(const geometry_msgs::msg::PoseStamped & lhs, const geometry_msgs::msg::PoseStamped & rhs)
 {
   return hypot(lhs.pose, rhs.pose);
-}
-
-/**
- * @brief Calculate closest points on batches segments to path points
- * http://paulbourke.net/geometry/pointlineplane/
- *
- * @param batch_of_segments_points batches of sequences of points. Sequences considering as lines
- * @param path 2D data structure with last dim size stands for x, y
- * @return points on line segments closest to batches sequences points
- *      4D data structre of shape [ batch_of_segments_points.shape[0],
- * batch_of_segments_points.shape()[1] - 1, path.shape()[0], path.shape()[1] ]
- */
-template <typename P, typename L>
-auto closestPointsOnLinesSegment2D(P && path, L && batch_of_segments_points)
-{
-  using namespace xt::placeholders;
-  using T = typename std::decay_t<P>::value_type;
-
-  auto closest_points = xt::xtensor<T, 4>::from_shape(
-    {batch_of_segments_points.shape()[0], batch_of_segments_points.shape()[1] - 1, path.shape()[0],
-     path.shape()[1]});
-
-  auto start_line_points = xt::view(batch_of_segments_points, xt::all(), xt::range(_, -1));
-  auto end_line_points = xt::view(batch_of_segments_points, xt::all(), xt::range(1, _));
-
-  xt::xtensor<T, 3> diff = end_line_points - start_line_points;
-  xt::xtensor<T, 2> sq_norm =
-    xt::norm_sq(diff, {diff.dimension() - 1}, xt::evaluation_strategy::immediate);
-
-  static constexpr T eps = static_cast<T>(1e-3);
-  for (size_t b = 0; b < closest_points.shape()[0]; ++b) {
-    for (size_t t = 0; t < closest_points.shape()[1]; ++t) {
-      if (abs(sq_norm(b, t)) < eps) {
-        xt::view(closest_points, b, t) = xt::view(start_line_points, b, t);
-        continue;
-      }
-      for (size_t p = 0; p < closest_points.shape()[2]; ++p) {
-        T u = ((path(p, 0) - start_line_points(b, t, 0)) * diff(b, t, 0) +
-               (path(p, 1) - start_line_points(b, t, 1)) * diff(b, t, 1)) /
-              sq_norm(b, t);
-        if (u <= 0) {
-          closest_points(b, t, p, 0) = start_line_points(b, t, 0);
-          closest_points(b, t, p, 1) = start_line_points(b, t, 1);
-        } else if (u >= 1) {
-          closest_points(b, t, p, 0) = end_line_points(b, t, 0);
-          closest_points(b, t, p, 1) = end_line_points(b, t, 1);
-        } else {
-          closest_points(b, t, p, 0) = start_line_points(b, t, 0) + u * diff(b, t, 0);
-          closest_points(b, t, p, 1) = start_line_points(b, t, 1) + u * diff(b, t, 1);
-        }
-      }
-    }
-  }
-  return closest_points;
-}
-
-/**
- * @brief Calculate nearest distances between path points and batches segments
- *
- * @param batch_of_segments_points batches of line segments. last dim must have at least 2 dim
- * @param path 2D data structure with last dim must have at least 2 dim
- * @return distances from batches sequences points to line segments
- *      3D data structre of shape [ batch_of_segments_points.shape[0],
- * batch_of_segments_points.shape()[1] - 1, path.shape()[0] ]
- */
-template <typename P, typename L>
-auto distPointsToLineSegments2D(P && path, L && batch_of_segments_points)
-{
-  auto path_points = xt::view(path, xt::all(), xt::range(0, 2));
-  auto batch_of_lines = xt::view(batch_of_segments_points, xt::all(), xt::all(), xt::range(0, 2));
-  auto && closest_points = closestPointsOnLinesSegment2D(path_points, batch_of_lines);
-
-  auto diff = path_points - closest_points;
-  return xt::norm_l2(diff, {diff.dimension() - 1}, xt::evaluation_strategy::immediate);
 }
 
 } // namespace mppi::utils
