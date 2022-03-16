@@ -9,7 +9,8 @@ void PathAngleCritic::initialize()
 
   auto getParam = utils::getParamGetter(node, name_);
   getParam(power_, "angle_to_goal_cost_power", 1);
-  getParam(weight_, "angle_to_goal_cost_weight", 15);
+  getParam(weight_, "angle_to_goal_cost_weight", 15.0);
+
   RCLCPP_INFO(
     logger_, "PathAngleCritic instantiated with %d power and %f weight.", power_, weight_);
 }
