@@ -13,6 +13,7 @@ namespace mppi::critics
 class PathAngleCritic : public CriticFunction
 {
 public:
+
   void initialize() override;
 
   /**
