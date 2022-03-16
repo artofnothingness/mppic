@@ -7,9 +7,9 @@ void GoalAngleCritic::initialize()
 {
   auto node = parent_.lock();
   auto getParam = utils::getParamGetter(node, name_);
-  
+
   getParam(power_, "goal_angle_cost_power", 1);
-  getParam(weight_, "goal_angle_cost_weight", 15);
+  getParam(weight_, "goal_angle_cost_weight", 15.0);
   getParam(threshold_to_consider_goal_angle_, "threshold_to_consider_goal_angle", 0.30);
   RCLCPP_INFO(
     logger_,
@@ -22,7 +22,8 @@ void GoalAngleCritic::score(
   const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs)
 {
   xt::xtensor<double, 1> tensor_pose = {
-    static_cast<double>(robot_pose.pose.position.x), static_cast<double>(robot_pose.pose.position.y)};
+    static_cast<double>(robot_pose.pose.position.x),
+    static_cast<double>(robot_pose.pose.position.y)};
 
   auto path_points = xt::view(path, -1, xt::range(0, 2));
 

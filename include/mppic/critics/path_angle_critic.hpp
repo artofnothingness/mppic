@@ -10,7 +10,7 @@
 namespace mppi::critics
 {
 
-class AngleToGoalCritic : public CriticFunction
+class PathAngleCritic : public CriticFunction
 {
 public:
 

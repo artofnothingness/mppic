@@ -21,7 +21,7 @@
       <description>mppi</description>
     </class>
 
-    <class type="mppi::critics::AngleToGoalCritic" base_class_type="mppi::critics::CriticFunction">
+    <class type="mppi::critics::PathAngleCritic" base_class_type="mppi::critics::CriticFunction">
       <description>mppi</description>
     </class>
 

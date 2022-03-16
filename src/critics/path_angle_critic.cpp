@@ -1,20 +1,21 @@
-#include "mppic/critics/angle_to_goal_critic.hpp"
+#include "mppic/critics/path_angle_critic.hpp"
 
 namespace mppi::critics
 {
 
-void AngleToGoalCritic::initialize()
+void PathAngleCritic::initialize()
 {
   auto node = parent_.lock();
 
   auto getParam = utils::getParamGetter(node, name_);
   getParam(power_, "angle_to_goal_cost_power", 1);
-  getParam(weight_, "angle_to_goal_cost_weight", 15);
+  getParam(weight_, "angle_to_goal_cost_weight", 15.0);
+
   RCLCPP_INFO(
-    logger_, "AngleToGoalCritic instantiated with %d power and %f weight.", power_, weight_);
+    logger_, "PathAngleCritic instantiated with %d power and %f weight.", power_, weight_);
 }
 
-void AngleToGoalCritic::score(
+void PathAngleCritic::score(
 const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<double, 3> & trajectories,
 const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs)
 {
@@ -36,4 +37,4 @@ const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs)
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(mppi::critics::AngleToGoalCritic, mppi::critics::CriticFunction)
+PLUGINLIB_EXPORT_CLASS(mppi::critics::PathAngleCritic, mppi::critics::CriticFunction)
