@@ -82,29 +82,29 @@ void Controller::setPlan(const nav_msgs::msg::Path & path) { path_handler_.setPa
 
 void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {
-  double x_vel_, y_vel_, theta_vel_;
+  double x_vel, y_vel, theta_vel;
 
   if (speed_limit == nav2_costmap_2d::NO_SPEED_LIMIT) {
     // Restore default value
-    x_vel_ = base_x_vel_;
-    y_vel_ = base_y_vel_;
-    theta_vel_ = base_theta_vel_;
+    x_vel = base_x_vel_;
+    y_vel = base_y_vel_;
+    theta_vel = base_theta_vel_;
   } else {
     if (percentage) {
       // Speed limit is expressed in % from maximum speed of robot
-      x_vel_ = base_x_vel_ * speed_limit / 100.0;
-      y_vel_ = base_y_vel_ * speed_limit / 100.0;
-      theta_vel_ = base_theta_vel_ * speed_limit / 100.0;
+      x_vel = base_x_vel_ * speed_limit / 100.0;
+      y_vel = base_y_vel_ * speed_limit / 100.0;
+      theta_vel = base_theta_vel_ * speed_limit / 100.0;
     } else {
       // Speed limit is expressed in absolute value
       double ratio = speed_limit / base_x_vel_;
-      x_vel_ = speed_limit;
-      y_vel_ = base_y_vel_ * ratio;
-      theta_vel_ = base_theta_vel_ * ratio;
+      x_vel = speed_limit;
+      y_vel = base_y_vel_ * ratio;
+      theta_vel = base_theta_vel_ * ratio;
     }
   }
 
-  optimizer_.setMaxVelocities(x_vel_, y_vel_, theta_vel_);
+  optimizer_.setMaxVelocities(x_vel, y_vel, theta_vel);
 }
 
 } // namespace mppi

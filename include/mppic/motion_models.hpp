@@ -2,8 +2,6 @@
 #define MPPIC__OPTIMIZATION__MOTION_MODELS_HPP_
 
 #include <cstdint>
-#include <string>
-#include <unordered_map>
 
 namespace mppi
 {
