@@ -16,10 +16,13 @@ void PathAngleCritic::initialize()
 }
 
 void PathAngleCritic::score(
-const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<double, 3> & trajectories,
-const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs)
+  const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<double, 3> & trajectories,
+  const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs,
+  nav2_core::GoalChecker * goal_checker)
 {
-  auto init_yaw = tf2::getYaw(robot_pose.pose.orientation);
+  if (withinPositionGoalTolerance(goal_checker, robot_pose, path)) {
+    return;
+  }
 
   auto goal_x = xt::view(path, -1, 0);
   auto goal_y = xt::view(path, -1, 1);
