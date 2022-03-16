@@ -99,16 +99,16 @@ pip install conan
 controller_server:
   ros__parameters:
     FollowPath:
-      plugin: "mppi::Controller<float>"
+      plugin: "mppi::Controller"
       time_steps: 15
       model_dt: 0.1
       batch_size: 300
       vx_std: 0.1
       vy_std: 0.1
-      wz_std: 0.40
+      wz_std: 0.3
       vx_max: 0.5
       vy_max: 0.5
-      wz_max: 1.3
+      wz_max: 1.0
       iteration_count: 2
       temperature: 0.25
       motion_model: "diff"
@@ -116,23 +116,21 @@ controller_server:
       critics_names: [ "GoalCritic", "GoalAngleCritic", "AngleToGoalCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
       GoalCritic:
         goal_cost_power: 1
-        goal_cost_weight: 15
+        goal_cost_weight: 15.0
       GoalAngleCritic:
         goal_angle_cost_power: 1
-        goal_angle_cost_weight: 15 
+        goal_angle_cost_weight: 15.0
         threshold_to_consider_goal_angle: 0.20
-      AngleToGoalCritic:
-        angle_to_goal_cost_power: 2
-        angle_to_goal_cost_weight: 2
       ReferenceTrajectoryCritic:
         reference_cost_power: 1
-        reference_cost_weight: 5
+        reference_cost_weight: 5.0
       ObstaclesCritic:
         consider_footprint: true
-        obstacle_cost_power: 1
-        obstacle_cost_weight: 20
-        inflation_cost_scaling_factor: 3.0
-        inflation_radius: 0.75
+        obstacle_cost_power: 2
+        obstacle_cost_weight: 2.0
+      AngleToGoalCritic:
+        angle_to_goal_cost_power: 1
+        angle_to_goal_cost_weight: 0.5
 ```
 
 ## Topics

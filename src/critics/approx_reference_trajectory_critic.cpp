@@ -9,7 +9,7 @@ void ApproxReferenceTrajectoryCritic::initialize()
   auto getParam = utils::getParamGetter(node, name_);
 
   getParam(power_, "reference_cost_power", 1);
-  getParam(weight_, "reference_cost_weight", 15);
+  getParam(weight_, "reference_cost_weight", 15.0);
   RCLCPP_INFO(
     logger_,
     "ApproxReferenceTrajectoryCritic instantiated with %d power and %f weight.",
@@ -17,8 +17,9 @@ void ApproxReferenceTrajectoryCritic::initialize()
 }
 
 void ApproxReferenceTrajectoryCritic::score(
-const geometry_msgs::msg::PoseStamped & /*robot_pose*/, const xt::xtensor<double, 3> & trajectories,
-const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs)
+  const geometry_msgs::msg::PoseStamped & /*robot_pose*/, const xt::xtensor<double,
+  3> & trajectories,
+  const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs)
 {
   auto path_points = xt::view(path, xt::all(), xt::range(0, 2));
   auto trajectories_points_extended =
@@ -34,4 +35,6 @@ const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs)
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(mppi::critics::ApproxReferenceTrajectoryCritic, mppi::critics::CriticFunction)
+PLUGINLIB_EXPORT_CLASS(
+  mppi::critics::ApproxReferenceTrajectoryCritic,
+  mppi::critics::CriticFunction)

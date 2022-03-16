@@ -11,9 +11,14 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
-namespace factory {
+#include "mppic/motion_models.hpp"
+#include "mppic/optimizer.hpp"
+#include "mppic/controller.hpp"
 
-namespace detail {
+#include "config.hpp"
+
+namespace detail
+{
 auto setHeader(auto && msg, auto node, std::string frame)
 {
   auto time = node->get_clock()->now();
@@ -21,6 +26,17 @@ auto setHeader(auto && msg, auto node, std::string frame)
   msg.header.stamp = time;
 }
 } // namespace detail
+
+rclcpp::NodeOptions getOptimizerOptions(TestOptimizerSettings s)
+{
+  std::vector<rclcpp::Parameter> params;
+  rclcpp::NodeOptions options;
+  setUpOptimizerParams(
+    s.iteration_count, s.time_steps, s.lookahead_distance, s.motion_model, s.consider_footprint,
+    params);
+  options.parameter_overrides(params);
+  return options;
+}
 
 geometry_msgs::msg::Point getDummyPoint(double x, double y)
 {
@@ -38,27 +54,29 @@ std::shared_ptr<nav2_costmap_2d::Costmap2DROS> getDummyCostmapRos()
   return costmap_ros;
 }
 
-std::shared_ptr<nav2_costmap_2d::Costmap2D> getDummyCostmap(
-  unsigned int cells_x, unsigned int cells_y, double origin_x, double origin_y, double resolution,
-  unsigned char default_value)
+std::shared_ptr<nav2_costmap_2d::Costmap2D> getDummyCostmap(TestCostmapSettings s)
 {
   auto costmap = std::make_shared<nav2_costmap_2d::Costmap2D>(
-    cells_x, cells_y, resolution, origin_x, origin_y, default_value);
+    s.cells_x, s.cells_y, s.resolution, s.origin_x, s.origin_y, s.cost_map_default_value);
 
   return costmap;
 }
 
-std::shared_ptr<nav2_costmap_2d::Costmap2DROS> getDummyCostmapRos(
-  unsigned int cells_x, unsigned int cells_y, double origin_x, double origin_y, double resolution,
-  unsigned char default_value)
+std::shared_ptr<nav2_costmap_2d::Costmap2DROS> getDummyCostmapRos(TestCostmapSettings s)
 {
-  auto costmap_ros = factory::getDummyCostmapRos();
+  auto costmap_ros = getDummyCostmapRos();
   auto costmap_ptr = costmap_ros->getCostmap();
-  auto costmap =
-    factory::getDummyCostmap(cells_x, cells_y, origin_x, origin_y, resolution, default_value);
+  auto costmap = getDummyCostmap(s);
   *(costmap_ptr) = *costmap;
 
   return costmap_ros;
+}
+
+std::shared_ptr<rclcpp_lifecycle::LifecycleNode>
+getDummyNode(TestOptimizerSettings s, std::string node_name = std::string("dummy"))
+{
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name, getOptimizerOptions(s));
+  return node;
 }
 
 std::shared_ptr<rclcpp_lifecycle::LifecycleNode>
@@ -70,13 +88,23 @@ getDummyNode(rclcpp::NodeOptions options, std::string node_name = std::string("d
 
 mppi::Optimizer getDummyOptimizer(auto node, auto costmap_ros)
 {
-
   auto optimizer = mppi::Optimizer();
   std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
 
   optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros);
 
   return optimizer;
+}
+
+mppi::Controller getDummyController(auto node, auto tf_buffer, auto costmap_ros)
+{
+
+  auto controller = mppi::Controller();
+  std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
+
+  controller.configure(weak_ptr_node, node->get_name(), tf_buffer, costmap_ros);
+  controller.activate();
+  return controller;
 }
 
 auto getDummyTwist()
@@ -94,11 +122,11 @@ getDummyPointStamped(auto & node, std::string frame = std::string("odom"))
   return point;
 }
 
-geometry_msgs::msg::PoseStamped getDummyPointStamped(auto & node, double x, double y)
+geometry_msgs::msg::PoseStamped getDummyPointStamped(auto & node, TestPose pose)
 {
   geometry_msgs::msg::PoseStamped point = getDummyPointStamped(node);
-  point.pose.position.x = x;
-  point.pose.position.y = y;
+  point.pose.position.x = pose.x;
+  point.pose.position.y = pose.y;
 
   return point;
 }
@@ -121,16 +149,14 @@ auto getDummyPath(size_t points_count, auto node)
   return path;
 }
 
-nav_msgs::msg::Path getIncrementalDummyPath(
-  double start_x, double start_y, double step_x, double step_y, unsigned int points_count,
-  auto node)
+nav_msgs::msg::Path getIncrementalDummyPath(auto node, TestPathSettings s)
 {
   auto path = getDummyPath(node);
 
-  for (size_t i = 0; i < points_count; i++) {
-    double x = start_x + static_cast<double>(i) * step_x;
-    double y = start_y + static_cast<double>(i) * step_y;
-    path.poses.push_back(getDummyPointStamped(node, x, y));
+  for (size_t i = 0; i < s.poses_count; i++) {
+    double x = s.start_pose.x + static_cast<double>(i) * s.step_x;
+    double y = s.start_pose.y + static_cast<double>(i) * s.step_y;
+    path.poses.push_back(getDummyPointStamped(node, TestPose{x, y}));
   }
 
   return path;
@@ -140,5 +166,3 @@ std::vector<geometry_msgs::msg::Point> getDummySquareFootprint(double a)
 {
   return {getDummyPoint(a, a), getDummyPoint(-a, -a), getDummyPoint(a, -a), getDummyPoint(-a, a)};
 }
-
-} // namespace factory
