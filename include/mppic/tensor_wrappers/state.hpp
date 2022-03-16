@@ -18,20 +18,20 @@ class MotionModel;
 class StateIdxes
 {
 public:
-  uint8_t vbegin() const { return velocity_range_[0]; }
-  uint8_t vend() const { return velocity_range_[1]; }
-  uint8_t vx() const { return vx_; }
-  uint8_t vy() const { return vy_; }
-  uint8_t wz() const { return wz_; }
+  uint8_t vbegin() const {return velocity_range_[0];}
+  uint8_t vend() const {return velocity_range_[1];}
+  uint8_t vx() const {return vx_;}
+  uint8_t vy() const {return vy_;}
+  uint8_t wz() const {return wz_;}
 
-  uint8_t cbegin() const { return control_range_[0]; }
-  uint8_t cend() const { return control_range_[1]; }
-  uint8_t cvx() const { return cvx_; }
-  uint8_t cvy() const { return cvy_; }
-  uint8_t cwz() const { return cwz_; }
+  uint8_t cbegin() const {return control_range_[0];}
+  uint8_t cend() const {return control_range_[1];}
+  uint8_t cvx() const {return cvx_;}
+  uint8_t cvy() const {return cvy_;}
+  uint8_t cwz() const {return cwz_;}
 
-  uint8_t dt() const { return dt_; };
-  unsigned int dim() const { return dim_; }
+  uint8_t dt() const {return dt_;}
+  unsigned int dim() const {return dim_;}
 
   void setLayout(const bool is_holonomic)
   {

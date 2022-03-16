@@ -22,7 +22,8 @@ public:
 
   void initialize(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
-    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap, std::shared_ptr<tf2_ros::Buffer> buffer);
+    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap,
+    std::shared_ptr<tf2_ros::Buffer> buffer);
 
   void setPath(const nav_msgs::msg::Path & plan);
 

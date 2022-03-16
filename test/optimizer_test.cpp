@@ -16,121 +16,92 @@
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
-
 #include "mppic/optimizer.hpp"
 #include "mppic/motion_models.hpp"
 
-#include "utils/config.hpp"
-#include "utils/factory.hpp"
 #include "utils/utils.hpp"
+
+#ifdef DO_BENCHMARKS
+TEST_CASE("Optimizer Benchmarks", "[]")
+{
+
+  SECTION("Benchmarks")
+  {
+    auto motion_model = GENERATE(as<std::string>{}, "DiffDrive", "Omni");
+    auto poses_count = GENERATE(10U, 30U, 100U);
+
+    TestOptimizerSettings optimizer_settings{10, 10, 2.0, motion_model};
+    TestCostmapSettings cost_map_settings{};
+
+    auto costmap_ros = getDummyCostmapRos(cost_map_settings);
+    auto costmap = costmap_ros->getCostmap();
+    costmap_ros->setRobotFootprint(getDummySquareFootprint(0.01));
+
+    TestPose start_pose = cost_map_settings.getCenterPose();
+
+    print_info(optimizer_settings, poses_count);
+
+    auto node = getDummyNode(optimizer_settings);
+    auto optimizer = getDummyOptimizer(node, costmap_ros, getDummyModel());
+
+    auto path = getDummyPath(poses_count, node);
+    auto pose = getDummyPointStamped(node, start_pose);
+    auto velocity = getDummyTwist();
+
+    BENCHMARK("evalControl Benchmark") {
+      return optimizer.evalControl(pose, velocity, path);
+    };
+  }
+}
+#endif
 
 TEST_CASE("Optimizer doesn't fail", "[]")
 {
-  // costmap
-  const unsigned int cells_x = 40;
-  const unsigned int cells_y = 40;
-  const double origin_x = 0.0;
-  const double origin_y = 0.0;
-  const double resolution = 0.1;
-  const unsigned char cost_map_default_value = 0;
-
-  // start pose
-  double start_x = static_cast<double>(cells_x) * resolution / 2.0;
-  double start_y = static_cast<double>(cells_y) * resolution / 2.0;
-
-  auto costmap_ros = factory::getDummyCostmapRos(
-    cells_x, cells_y, origin_x, origin_y, resolution, cost_map_default_value);
-  costmap_ros->setRobotFootprint(factory::getDummySquareFootprint(0.01));
-  auto costmap = costmap_ros->getCostmap();
-
-  auto create_node =
-    [](
-      int iteration_count, int time_steps, double lookahead_distance,
-      std::string motion_model) -> std::shared_ptr<rclcpp_lifecycle::LifecycleNode> {
-    std::vector<rclcpp::Parameter> params;
-    rclcpp::NodeOptions options;
-    config::setUpOptimizerParams(
-      iteration_count, time_steps, lookahead_distance, motion_model, params);
-    options.parameter_overrides(params);
-    return factory::getDummyNode(options);
-  };
-
-#ifdef DO_BENCHMARKS
-  SECTION("Benchmarks")
-  {
-    // node
-    const int iteration_count = 10;
-    const int time_steps = 10;
-    const double lookahead_distance = 2.0;
-    auto motion_model = GENERATE(as<std::string>{}, "diff", "omni");
-    unsigned int poses_count = GENERATE(10U, 30U, 100U);
-
-    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node =
-      create_node(iteration_count, time_steps, lookahead_distance, motion_model);
-
-    auto optimizer = factory::getDummyOptimizer(node, costmap_ros);
-    auto path = factory::getDummyPath(poses_count, node);
-    auto pose = factory::getDummyPointStamped(node, start_x, start_y);
-    auto velocity = factory::getDummyTwist();
-
-    WARN(
-      "Points in path " << poses_count << "\niteration_count " << iteration_count << "\ntime_steps "
-                        << time_steps << "\nMotion model : " << motion_model);
-    BENCHMARK("evalControl Benchmark") { return optimizer.evalControl(pose, velocity, path); };
-  }
-#endif
-
   SECTION("Collision avoidance works, goal reached")
   {
-    // node
-    const int iteration_count = 10;
-    const int time_steps = 70;
-    const double lookahead_distance = 5.0;
-    auto motion_model = GENERATE(as<std::string>{}, "diff", "omni");
+    auto consider_footprint = GENERATE(true, false);
+    auto motion_model = GENERATE(as<std::string>{}, "DiffDrive", "Omni");
 
-    // obstacle
-    unsigned int obstacle_size = 3;
-    unsigned char obstacle_cost = 255;
+    // Settings
+    TestCostmapSettings cost_map_settings{};
+    TestOptimizerSettings optimizer_settings{12, 80, 5.0, motion_model, consider_footprint};
 
-    // path
-    unsigned int path_points_count = 7;
-    double step_x = resolution;
-    double step_y = resolution;
+    const double path_step = cost_map_settings.resolution;
+    TestPose start_pose = cost_map_settings.getCenterPose();
+    TestPathSettings path_settings{start_pose, 8, path_step, path_step};
 
-    unsigned int center_cells_x = cells_x / 2;
-    unsigned int center_cells_y = cells_y / 2;
-    unsigned int y_offset = 2;
-    unsigned int x_offset = 4;
-    utils::addObstacle(
-      *costmap, center_cells_x - x_offset, center_cells_y + y_offset, obstacle_size, obstacle_cost);
-    utils::addObstacle(
-      *costmap, center_cells_x + x_offset, center_cells_y + y_offset, obstacle_size, obstacle_cost);
-    utils::addObstacle(
-      *costmap, center_cells_x + 3 * x_offset, center_cells_y + y_offset, obstacle_size,
-      obstacle_cost);
+    print_info(optimizer_settings, path_settings);
 
-    WARN(
-      "Points in path " << path_points_count << "\niteration_count " << iteration_count
-                        << "\ntime_steps " << time_steps << "\nMotion model : " << motion_model);
+    auto costmap_ros = getDummyCostmapRos(cost_map_settings);
+    auto node = getDummyNode(optimizer_settings);
+    auto optimizer = getDummyOptimizer(node, costmap_ros);
 
-    auto node = create_node(iteration_count, time_steps, lookahead_distance, motion_model);
-    auto optimizer = factory::getDummyOptimizer(node, costmap_ros);
+    // setup costmap
+    auto costmap = costmap_ros->getCostmap();
+    {
+      costmap_ros->setRobotFootprint(getDummySquareFootprint(0.01));
+      const unsigned int obst_center_x = cost_map_settings.cells_x / 2;
+      const unsigned int obst_center_y = cost_map_settings.cells_y / 2 + 1;
+      TestObstaclesSettings obs_settings_1{obst_center_x - 4, obst_center_y, 4, 255};
+      TestObstaclesSettings obs_settings_2{obst_center_x + 4, obst_center_y, 4, 255};
+      TestObstaclesSettings obs_settings_3{obst_center_x + 12, obst_center_y, 4, 255};
+      addObstacle(costmap, obs_settings_1);
+      addObstacle(costmap, obs_settings_2);
+      addObstacle(costmap, obs_settings_3);
+    }
 
-    auto pose = factory::getDummyPointStamped(node, start_x, start_y);
-    auto velocity = factory::getDummyTwist();
-    auto path =
-      factory::getIncrementalDummyPath(start_x, start_y, step_x, step_y, path_points_count, node);
+    // evalControl args
+    auto pose = getDummyPointStamped(node, start_pose);
+    auto velocity = getDummyTwist();
+    auto path = getIncrementalDummyPath(node, path_settings);
 
     CHECK_NOTHROW(optimizer.evalControl(pose, velocity, path));
     auto trajectory = optimizer.evalTrajectoryFromControlSequence(pose, velocity);
-
     auto goal_point = path.poses.back();
 #ifdef TEST_DEBUG_INFO
-    utils::printMapWithTrajectoryAndGoal(*costmap, trajectory, goal_point);
+    printMapWithTrajectoryAndGoal(*costmap, trajectory, goal_point);
 #endif
-    CHECK(!utils::inCollision(trajectory, *costmap));
-    CHECK(utils::isGoalReached(trajectory, *costmap, goal_point));
+    CHECK(!inCollision(trajectory, *costmap));
+    CHECK(isGoalReached(trajectory, *costmap, goal_point));
   }
-
-  costmap_ros->on_cleanup(rclcpp_lifecycle::State{});
 }
