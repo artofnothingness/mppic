@@ -186,7 +186,7 @@ void Optimizer::propagateStateVelocitiesFromInitials(auto& state) const {
         xt::view(state.data, xt::all(), i + 1,
                  xt::range(state.idx.vbegin(), state.idx.vend()));
 
-    next_velocities = motion_model_->predict(curr_state, state.idx.getControlRange());
+    next_velocities = motion_model_->predict(curr_state, state.idx);
   }
 }
 
