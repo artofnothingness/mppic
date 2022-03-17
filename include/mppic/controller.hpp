@@ -4,6 +4,7 @@
 #include "mppic/path_handler.hpp"
 #include "mppic/optimizer.hpp"
 #include "mppic/trajectory_visualizer.hpp"
+#include "mppic/utils.hpp"
 
 #include "nav2_core/controller.hpp"
 #include "nav2_core/goal_checker.hpp"
@@ -52,6 +53,7 @@ protected:
   TrajectoryVisualizer trajectory_visualizer_;
 
   bool visualize_;
+  double base_x_vel_, base_y_vel_, base_theta_vel_;
 };
 
 } // namespace mppi

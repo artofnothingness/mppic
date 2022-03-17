@@ -49,7 +49,7 @@ pip install conan
  | wz_max                | double | Max WZ                                                                                                                                                                                                                                                            |
  | temperature           | double | Selectiveness of trajectories by their costs (The closer this value to 0, the "more" we take in considiration controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories withou cost consideration |
  | visualize             | bool   | Use visualization                                                                                                                                                                                                                                                 |
- | motion_model          | string | Type of model [diff, omni, carlike]                                                                                                                                                                                                                               |
+ | motion_model          | string | Type of model [DiffDrive, Omni, Ackermann]                                                                                                                                                                                                                               |
 
 #### CriticScorer params
 

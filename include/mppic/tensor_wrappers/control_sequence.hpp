@@ -6,7 +6,7 @@
 
 #include <xtensor/xtensor.hpp>
 
-#include "mppic/optimization/motion_model.hpp"
+#include "mppic/motion_models.hpp"
 
 namespace mppi::optimization
 {
@@ -20,10 +20,10 @@ public:
   uint8_t vy() const {return vy_;}
   uint8_t wz() const {return wz_;}
 
-  void setLayout(MotionModel motion_model)
+  void setLayout(const bool is_holonomic)
   {
     // Layout changes to include "Y" components if holonomic
-    if (isHolonomic(motion_model)) {
+    if (is_holonomic) {
       vx_ = 0;
       vy_ = 1;
       wz_ = 2;
