@@ -27,7 +27,7 @@ void Controller::configure(
   path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_);
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 
-  auto vels = optimizer_.getMaxVelocities();
+  auto vels = optimizer_.getVelocityConstraints();
   base_x_vel_ = vels[0];
   base_y_vel_ = vels[1];
   base_theta_vel_ = vels[2];
@@ -104,7 +104,7 @@ void Controller::setSpeedLimit(const double & speed_limit, const bool & percenta
     }
   }
 
-  optimizer_.setMaxVelocities(x_vel, y_vel, theta_vel);
+  optimizer_.setVelocityConstraints(x_vel, y_vel, theta_vel);
 }
 
 } // namespace mppi
