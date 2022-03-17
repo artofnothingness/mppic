@@ -27,7 +27,7 @@ void Controller::configure(
   path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_);
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 
-  auto vels = optimizer_.getVelocityConstraints();
+  auto vels = optimizer_.getControlConstraints();
   base_x_vel_ = vels.vx;
   base_y_vel_ = vels.vy;
   base_theta_vel_ = vels.vw;
@@ -82,11 +82,11 @@ void Controller::setPlan(const nav_msgs::msg::Path & path) {path_handler_.setPat
 
 void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {
-  utils::VelocityConstraints constraints;
+  utils::ControlConstraints constraints;
 
   if (speed_limit == nav2_costmap_2d::NO_SPEED_LIMIT) {
     // Restore default value
-    constraints = utils::VelocityConstraints(base_x_vel_, base_y_vel_, base_theta_vel_);
+    constraints = utils::ControlConstraints(base_x_vel_, base_y_vel_, base_theta_vel_);
   } else {
     if (percentage) {
       // Speed limit is expressed in % from maximum speed of robot
@@ -102,7 +102,7 @@ void Controller::setSpeedLimit(const double & speed_limit, const bool & percenta
     }
   }
 
-  optimizer_.setVelocityConstraints(constraints);
+  optimizer_.setControlConstraints(constraints);
 }
 
 } // namespace mppi

@@ -20,13 +20,13 @@
 namespace mppi::utils
 {
 
-struct VelocityConstraints
+struct ControlConstraints
 {
-  VelocityConstraints(const double x, const double y, const double w)
+  ControlConstraints(const double x, const double y, const double w)
   : vx(x), vy(y), vw(w)
   {}
 
-  VelocityConstraints() {}
+  ControlConstraints() {}
 
   double vx, vy, vw;
 };
