@@ -4,6 +4,7 @@
 #include "mppic/path_handler.hpp"
 #include "mppic/optimizer.hpp"
 #include "mppic/trajectory_visualizer.hpp"
+#include "mppic/utils.hpp"
 
 #include "nav2_core/controller.hpp"
 #include "nav2_core/goal_checker.hpp"

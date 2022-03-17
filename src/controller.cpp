@@ -28,9 +28,9 @@ void Controller::configure(
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 
   auto vels = optimizer_.getVelocityConstraints();
-  base_x_vel_ = vels[0];
-  base_y_vel_ = vels[1];
-  base_theta_vel_ = vels[2];
+  base_x_vel_ = vels.vx;
+  base_y_vel_ = vels.vy;
+  base_theta_vel_ = vels.vw;
 
   RCLCPP_INFO(logger_, "Configured MPPI Controller: %s", name_.c_str());
 }
@@ -82,29 +82,27 @@ void Controller::setPlan(const nav_msgs::msg::Path & path) {path_handler_.setPat
 
 void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {
-  double x_vel, y_vel, theta_vel;
+  utils::VelocityConstraints constraints;
 
   if (speed_limit == nav2_costmap_2d::NO_SPEED_LIMIT) {
     // Restore default value
-    x_vel = base_x_vel_;
-    y_vel = base_y_vel_;
-    theta_vel = base_theta_vel_;
+    constraints = utils::VelocityConstraints(base_x_vel_, base_y_vel_, base_theta_vel_);
   } else {
     if (percentage) {
       // Speed limit is expressed in % from maximum speed of robot
-      x_vel = base_x_vel_ * speed_limit / 100.0;
-      y_vel = base_y_vel_ * speed_limit / 100.0;
-      theta_vel = base_theta_vel_ * speed_limit / 100.0;
+      constraints.vx = base_x_vel_ * speed_limit / 100.0;
+      constraints.vy = base_y_vel_ * speed_limit / 100.0;
+      constraints.vw = base_theta_vel_ * speed_limit / 100.0;
     } else {
       // Speed limit is expressed in absolute value
       double ratio = speed_limit / base_x_vel_;
-      x_vel = speed_limit;
-      y_vel = base_y_vel_ * ratio;
-      theta_vel = base_theta_vel_ * ratio;
+      constraints.vx = speed_limit;
+      constraints.vy = base_y_vel_ * ratio;
+      constraints.vw = base_theta_vel_ * ratio;
     }
   }
 
-  optimizer_.setVelocityConstraints(x_vel, y_vel, theta_vel);
+  optimizer_.setVelocityConstraints(constraints);
 }
 
 } // namespace mppi

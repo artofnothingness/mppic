@@ -284,16 +284,16 @@ xt::xtensor<double, 3>& Optimizer::getGeneratedTrajectories() {
   return generated_trajectories_;
 }
 
-void Optimizer::setVelocityConstraints(const double vx, const double vy, const double vtheta)
+void Optimizer::setVelocityConstraints(const utils::VelocityConstraints & constraints)
 {
-  vx_max_ = vx;
-  vy_max_ = vy;
-  wz_max_ = vtheta;
+  vx_max_ = constraints.vx;
+  vy_max_ = constraints.vy;
+  wz_max_ = constraints.vw;
 }
 
-std::array<double, 3> Optimizer::getVelocityConstraints()
+utils::VelocityConstraints Optimizer::getVelocityConstraints()
 {
-  return {vx_max_, vy_max_, wz_max_};
+  return utils::VelocityConstraints(vx_max_, vy_max_, wz_max_);
 }
 
 }  // namespace mppi
