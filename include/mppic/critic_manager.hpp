@@ -35,7 +35,8 @@ public:
    */
   xt::xtensor<double, 1> evalTrajectoriesScores(
     const xt::xtensor<double, 3> & trajectories, const nav_msgs::msg::Path & global_plan,
-    const geometry_msgs::msg::PoseStamped & robot_pose) const;
+    const geometry_msgs::msg::PoseStamped & robot_pose,
+    nav2_core::GoalChecker * goal_checker) const;
 
 protected:
   void getParams();
