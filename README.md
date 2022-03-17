@@ -18,7 +18,7 @@ The MPPI algorithm finds a control velocity for the robot using an iterative app
 
 Next, these trajectories are scored using a set of plugin-based critic functions to find the best trajectory in the batch. The output scores are used to set the best control with a soft max function.
 
-This process is then repeated a number of times and returning a converged solution. This solution is then used as the basis of the next time step's initial control.
+This process is then repeated a number of times and returns a converged solution. This solution is then used as the basis of the next time step's initial control.
 
 ## Dependencies 
 
