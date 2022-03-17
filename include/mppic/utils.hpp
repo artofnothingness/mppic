@@ -20,6 +20,17 @@
 namespace mppi::utils
 {
 
+struct VelocityConstraints
+{
+  VelocityConstraints(const double x, const double y, const double w)
+  : vx(x), vy(y), vw(w)
+  {}
+
+  VelocityConstraints() {}
+
+  double vx, vy, vw;
+};
+
 template<typename NodeT>
 auto getParamGetter(NodeT node, const std::string & name)
 {
