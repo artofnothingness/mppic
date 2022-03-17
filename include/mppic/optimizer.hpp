@@ -11,10 +11,11 @@
 #include "nav_msgs/msg/path.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
+#include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
-#include "mppic/optimization/motion_model.hpp"
-#include "mppic/optimization/tensor_wrappers/control_sequence.hpp"
-#include "mppic/optimization/tensor_wrappers/state.hpp"
+#include "mppic/tensor_wrappers/control_sequence.hpp"
+#include "mppic/tensor_wrappers/state.hpp"
+#include "mppic/utils.hpp"
 
 namespace mppi
 {
@@ -29,7 +30,7 @@ public:
 
   void initialize(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
-    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros, model_t model);
+    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros);
 
   geometry_msgs::msg::TwistStamped evalControl(
     const geometry_msgs::msg::PoseStamped & robot_pose,
@@ -41,12 +42,15 @@ public:
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed) const;
 
+  void setControlConstraints(const utils::ControlConstraints & constraints);
+
+  utils::ControlConstraints getControlConstraints();
+
 protected:
   void getParams();
   void reset();
 
-  MotionModel getMotionModel() const;
-  void setMotionModel(const MotionModel);
+  void setMotionModel(const std::string & model);
 
   void shiftControlSequence();
 
@@ -123,10 +127,7 @@ protected:
   double temperature_{0};
 
   // Constraints
-  double vx_max_{0};
-  double vy_max_{0};
-  double wz_max_{0};
-
+  utils::ControlConstraints constraints_{0, 0, 0};
   double vx_std_{0};
   double vy_std_{0};
   double wz_std_{0};
@@ -136,12 +137,9 @@ protected:
 
   optimization::State state_;
   optimization::ControlSequence control_sequence_;
-  MotionModel motion_model_t_{MotionModel::DiffDrive};
-
+  std::unique_ptr<MotionModel> motion_model_;
   CriticManager critic_manager_;
-  std::function<model_t> model_;
-
-  xt::xtensor<double, 3> generated_trajectories_{};
+  xt::xtensor<double, 3> generated_trajectories_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
 
