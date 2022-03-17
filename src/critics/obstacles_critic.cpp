@@ -24,7 +24,7 @@ void ObstaclesCritic::initialize()
 void ObstaclesCritic::score(
   const geometry_msgs::msg::PoseStamped & /*robot_pose*/,
   const xt::xtensor<double, 3> & trajectories, const xt::xtensor<double, 2> & /*path*/,
-  xt::xtensor<double, 1> & costs)
+  xt::xtensor<double, 1> & costs, nav2_core::GoalChecker * /*goal_checker*/)
 {
   constexpr double COLLISION_COST = std::numeric_limits<double>::max() / 4;
 
@@ -45,6 +45,18 @@ void ObstaclesCritic::score(
 
     costs[i] += trajectory_collide ? COLLISION_COST : scoreCost(trajectory_cost);
   }
+}
+
+unsigned char ObstaclesCritic::costAtPose(const auto & point)
+{
+  unsigned char cost;
+  if (consider_footprint_) {
+    cost = static_cast<unsigned char>(collision_checker_.footprintCostAtPose(
+        point(0), point(1), point(2), costmap_ros_->getRobotFootprint()));
+  } else {
+    cost = static_cast<unsigned char>(collision_checker_.pointCost(point(0), point(1)));
+  }
+  return cost;
 }
 
 bool ObstaclesCritic::inCollision(unsigned char cost) const

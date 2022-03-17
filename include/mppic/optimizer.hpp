@@ -10,6 +10,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "nav2_core/goal_checker.hpp"
 
 #include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
@@ -34,7 +35,8 @@ public:
 
   geometry_msgs::msg::TwistStamped evalControl(
     const geometry_msgs::msg::PoseStamped & robot_pose,
-    const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan);
+    const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan,
+    nav2_core::GoalChecker * goal_checker);
 
   xt::xtensor<double, 3> & getGeneratedTrajectories();
 

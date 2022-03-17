@@ -46,7 +46,8 @@ std::string CriticManager::getFullName(const std::string & name)
 
 xt::xtensor<double, 1> CriticManager::evalTrajectoriesScores(
   const xt::xtensor<double, 3> & trajectories, const nav_msgs::msg::Path & global_plan,
-  const geometry_msgs::msg::PoseStamped & robot_pose) const
+  const geometry_msgs::msg::PoseStamped & robot_pose,
+  nav2_core::GoalChecker * goal_checker) const
 {
   // Create evalated costs tensor
   size_t trajectories_count = trajectories.shape()[0];
@@ -61,7 +62,7 @@ xt::xtensor<double, 1> CriticManager::evalTrajectoriesScores(
 
   // Evaluate each trajectory by the critics
   for (size_t q = 0; q < critics_.size(); q++) {
-    critics_[q]->score(robot_pose, trajectories, path, costs);
+    critics_[q]->score(robot_pose, trajectories, path, costs, goal_checker);
   }
 
   return costs;

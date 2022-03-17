@@ -88,14 +88,15 @@ void Optimizer::reset() {
 }
 
 geometry_msgs::msg::TwistStamped Optimizer::evalControl(
-    const geometry_msgs::msg::PoseStamped& robot_pose,
-    const geometry_msgs::msg::Twist& robot_speed,
-    const nav_msgs::msg::Path& plan) {
+    const geometry_msgs::msg::PoseStamped & robot_pose,
+    const geometry_msgs::msg::Twist & robot_speed,
+    const nav_msgs::msg::Path& plan,
+    nav2_core::GoalChecker* goal_checker) {
   for (size_t i = 0; i < iteration_count_; ++i) {
     generated_trajectories_ =
         generateNoisedTrajectories(robot_pose, robot_speed);
     auto&& costs = critic_manager_.evalTrajectoriesScores(
-        generated_trajectories_, plan, robot_pose);
+        generated_trajectories_, plan, robot_pose, goal_checker);
     updateControlSequence(costs);
   }
 
