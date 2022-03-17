@@ -293,11 +293,7 @@ void Optimizer::setVelocityConstraints(const double vx, const double vy, const d
 
 std::array<double, 3> Optimizer::getVelocityConstraints()
 {
-  std::array<double, 3> velocities;
-  velocities[0] = vx_max_;
-  velocities[1] = vy_max_;
-  velocities[2] = wz_max_;
-  return velocities;
+  return {vx_max_, vy_max_, wz_max_};
 }
 
 }  // namespace mppi
