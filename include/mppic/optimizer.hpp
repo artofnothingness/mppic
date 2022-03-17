@@ -42,9 +42,9 @@ public:
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed) const;
 
-  void setVelocityConstraints(const double vx, const double vy, const double vtheta);
+  void setVelocityConstraints(const utils::VelocityConstraints & constraints);
 
-  std::array<double, 3> getVelocityConstraints();
+  utils::VelocityConstraints getVelocityConstraints();
 
 protected:
   void getParams();
