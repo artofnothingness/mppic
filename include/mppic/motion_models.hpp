@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include "mppic/tensor_wrappers/state.hpp"
+
 namespace mppi
 {
 
@@ -22,9 +24,9 @@ public:
    * where last dim could be 2 or 3 depending on motion model used
    */
   virtual xt::xtensor<double, 2> predict(
-    const xt::xtensor<double, 2> & state, const std::array<uint8_t, 2> & idx)
+    const xt::xtensor<double, 2> & state, const optimization::StateIdxes & idx)
   {
-    return xt::view(state, xt::all(), xt::range(idx[0], idx[1]));
+    return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
   }
 
   virtual bool isHolonomic() const = 0;
@@ -46,7 +48,7 @@ class AckermannMotionModel : public MotionModel
 {
 public:
   virtual xt::xtensor<double, 2> predict(
-    const xt::xtensor<double, 2> & state, const std::array<uint8_t, 2> & idx) override
+    const xt::xtensor<double, 2> & state, const optimization::StateIdxes & idx) override
   {
     throw std::runtime_error("Ackermann motion model not yet implemented");
   }
