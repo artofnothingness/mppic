@@ -18,10 +18,14 @@ void ReferenceTrajectoryCritic::initialize()
 }
 
 void ReferenceTrajectoryCritic::score(
-  const geometry_msgs::msg::PoseStamped & /*robot_pose*/,
+  const geometry_msgs::msg::PoseStamped & robot_pose,
   const xt::xtensor<double, 3> & trajectories, const xt::xtensor<double, 2> & path,
-  xt::xtensor<double, 1> & costs)
+  xt::xtensor<double, 1> & costs, nav2_core::GoalChecker * goal_checker)
 {
+  if (withinPositionGoalTolerance(goal_checker, robot_pose, path)) {
+    return;
+  }
+
   auto && distances = meanDistancesFromTrajectoriesPointsToReferenceSegments(trajectories, path);
   costs += xt::pow(std::move(distances) * weight_, power_);
 }

@@ -11,6 +11,7 @@
 #include <nav2_costmap_2d/cost_values.hpp>
 #include <nav2_costmap_2d/costmap_2d.hpp>
 #include <nav2_costmap_2d/costmap_2d_ros.hpp>
+#include <nav2_core/goal_checker.hpp>
 
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
@@ -49,7 +50,8 @@ TEST_CASE("Optimizer Benchmarks", "[]")
     auto velocity = getDummyTwist();
 
     BENCHMARK("evalControl Benchmark") {
-      return optimizer.evalControl(pose, velocity, path);
+      nav2_core::GoalChecker * dummy_goal_checker{nullptr};
+      return optimizer.evalControl(pose, velocity, path, dummy_goal_checker);
     };
   }
 }
@@ -95,7 +97,8 @@ TEST_CASE("Optimizer doesn't fail", "[]")
     auto velocity = getDummyTwist();
     auto path = getIncrementalDummyPath(node, path_settings);
 
-    CHECK_NOTHROW(optimizer.evalControl(pose, velocity, path));
+    nav2_core::GoalChecker * dummy_goal_checker{nullptr};
+    CHECK_NOTHROW(optimizer.evalControl(pose, velocity, path, dummy_goal_checker));
     auto trajectory = optimizer.evalTrajectoryFromControlSequence(pose, velocity);
     auto goal_point = path.poses.back();
 #ifdef TEST_DEBUG_INFO
