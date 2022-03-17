@@ -48,9 +48,9 @@ void Optimizer::getParams() {
   getParam(iteration_count_, "iteration_count", 2);
   getParam(temperature_, "temperature", 0.25);
 
-  getParam(vx_max_, "vx_max", 0.5);
-  getParam(vy_max_, "vy_max", 1.3);
-  getParam(wz_max_, "wz_max", 1.3);
+  getParam(constraints_.vx, "vx_max", 0.5);
+  getParam(constraints_.vy, "vy_max", 1.3);
+  getParam(constraints_.vw, "wz_max", 1.3);
   getParam(vx_std_, "vx_std", 0.1);
   getParam(vy_std_, "vy_std", 0.1);
   getParam(wz_std_, "wz_std", 0.3);
@@ -154,11 +154,11 @@ void Optimizer::applyControlConstraints() {
 
   if (isHolonomic()) {
     auto vy = state_.getControlVelocitiesVY();
-    vy = xt::clip(vy, -vy_max_, vy_max_);
+    vy = xt::clip(vy, -constraints_.vy, constraints_.vy);
   }
 
-  vx = xt::clip(vx, -vx_max_, vx_max_);
-  wz = xt::clip(wz, -wz_max_, wz_max_);
+  vx = xt::clip(vx, -constraints_.vx, constraints_.vx);
+  wz = xt::clip(wz, -constraints_.vw, constraints_.vw);
 }
 
 void Optimizer::updateStateVelocities(
@@ -286,14 +286,12 @@ xt::xtensor<double, 3>& Optimizer::getGeneratedTrajectories() {
 
 void Optimizer::setControlConstraints(const utils::ControlConstraints & constraints)
 {
-  vx_max_ = constraints.vx;
-  vy_max_ = constraints.vy;
-  wz_max_ = constraints.vw;
+  constraints_ = constraints;
 }
 
 utils::ControlConstraints Optimizer::getControlConstraints()
 {
-  return utils::ControlConstraints(vx_max_, vy_max_, wz_max_);
+  return constraints_;
 }
 
 }  // namespace mppi

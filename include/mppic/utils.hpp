@@ -22,12 +22,6 @@ namespace mppi::utils
 
 struct ControlConstraints
 {
-  ControlConstraints(const double x, const double y, const double w)
-  : vx(x), vy(y), vw(w)
-  {}
-
-  ControlConstraints() {}
-
   double vx, vy, vw;
 };
 

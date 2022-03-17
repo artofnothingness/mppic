@@ -127,10 +127,7 @@ protected:
   double temperature_{0};
 
   // Constraints
-  double vx_max_{0};
-  double vy_max_{0};
-  double wz_max_{0};
-
+  utils::ControlConstraints constraints_{0, 0, 0};
   double vx_std_{0};
   double vy_std_{0};
   double wz_std_{0};
