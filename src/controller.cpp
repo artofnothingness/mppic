@@ -86,7 +86,7 @@ void Controller::setSpeedLimit(const double & speed_limit, const bool & percenta
 
   if (speed_limit == nav2_costmap_2d::NO_SPEED_LIMIT) {
     // Restore default value
-    constraints = utils::ControlConstraints(base_x_vel_, base_y_vel_, base_theta_vel_);
+    constraints = utils::ControlConstraints{base_x_vel_, base_y_vel_, base_theta_vel_};
   } else {
     if (percentage) {
       // Speed limit is expressed in % from maximum speed of robot
