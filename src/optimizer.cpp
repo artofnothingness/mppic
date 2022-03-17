@@ -284,14 +284,14 @@ xt::xtensor<double, 3>& Optimizer::getGeneratedTrajectories() {
   return generated_trajectories_;
 }
 
-void Optimizer::setMaxVelocities(const double vx, const double vy, const double vtheta)
+void Optimizer::setVelocityConstraints(const double vx, const double vy, const double vtheta)
 {
   vx_max_ = vx;
   vy_max_ = vy;
   wz_max_ = vtheta;
 }
 
-std::array<double, 3> Optimizer::getMaxVelocities()
+std::array<double, 3> Optimizer::getVelocityConstraints()
 {
   std::array<double, 3> velocities;
   velocities[0] = vx_max_;

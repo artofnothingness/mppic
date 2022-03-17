@@ -42,9 +42,9 @@ public:
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed) const;
 
-  void setMaxVelocities(const double vx, const double vy, const double vtheta);
+  void setVelocityConstraints(const double vx, const double vy, const double vtheta);
 
-  std::array<double, 3> getMaxVelocities();
+  std::array<double, 3> getVelocityConstraints();
 
 protected:
   void getParams();
