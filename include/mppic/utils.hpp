@@ -15,10 +15,15 @@
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "nav2_util/node_utils.hpp"
-#include "mppic/optimization/tensor_wrappers/control_sequence.hpp"
+#include "mppic/tensor_wrappers/control_sequence.hpp"
 
 namespace mppi::utils
 {
+
+struct ControlConstraints
+{
+  double vx, vy, vw;
+};
 
 template<typename NodeT>
 auto getParamGetter(NodeT node, const std::string & name)

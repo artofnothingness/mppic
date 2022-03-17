@@ -9,21 +9,20 @@
 #include <xtensor/xmath.hpp>
 #include <xtensor/xrandom.hpp>
 
-#include "magic_enum.hpp"
-#include "mppic/optimization/motion_model.hpp"
-#include "mppic/utils.hpp"
 #include "nav2_core/exceptions.hpp"
 #include "nav2_costmap_2d/cost_values.hpp"
+
+#include "mppic/optimizer.hpp"
 
 namespace mppi {
 
 void Optimizer::initialize(
-    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string& name,
-    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros, model_t model) {
+  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
+{
   parent_ = parent;
   name_ = name;
   costmap_ros_ = costmap_ros;
-  model_ = model;
   costmap_ = costmap_ros_->getCostmap();
 
   auto node = parent_.lock();
@@ -49,25 +48,18 @@ void Optimizer::getParams() {
   getParam(iteration_count_, "iteration_count", 2);
   getParam(temperature_, "temperature", 0.25);
 
-  getParam(vx_max_, "vx_max", 0.5);
-  getParam(vy_max_, "vy_max", 1.3);
-  getParam(wz_max_, "wz_max", 1.3);
+  getParam(constraints_.vx, "vx_max", 0.5);
+  getParam(constraints_.vy, "vy_max", 1.3);
+  getParam(constraints_.vw, "wz_max", 1.3);
   getParam(vx_std_, "vx_std", 0.1);
   getParam(vy_std_, "vy_std", 0.1);
   getParam(wz_std_, "wz_std", 0.3);
   getParam(control_sequence_shift_offset_, "control_sequence_shift_offset", 1);
-
   getParentParam(controller_frequency_, "controller_frequency", 0.0);
 
   std::string motion_model_name;
   getParam(motion_model_name, "motion_model", std::string("DiffDrive"));
-  auto motion_model = magic_enum::enum_cast<MotionModel>(motion_model_name);
-
-  if (motion_model.has_value()) {
-    setMotionModel(motion_model.value());
-  } else {
-    RCLCPP_WARN(logger_, "Motion model is unknown, use default/previous");
-  }
+  setMotionModel(motion_model_name);
 }
 
 void Optimizer::setOffset() {
@@ -151,8 +143,9 @@ xt::xtensor<double, 3> Optimizer::generateNoisedControls() const {
          xt::concatenate(xt::xtuple(vx_noises, wz_noises), 2);
 }
 
-bool Optimizer::isHolonomic() const {
-  return mppi::isHolonomic(getMotionModel());
+bool Optimizer::isHolonomic() const
+{
+  return motion_model_->isHolonomic();
 }
 
 void Optimizer::applyControlConstraints() {
@@ -161,11 +154,11 @@ void Optimizer::applyControlConstraints() {
 
   if (isHolonomic()) {
     auto vy = state_.getControlVelocitiesVY();
-    vy = xt::clip(vy, -vy_max_, vy_max_);
+    vy = xt::clip(vy, -constraints_.vy, constraints_.vy);
   }
 
-  vx = xt::clip(vx, -vx_max_, vx_max_);
-  wz = xt::clip(wz, -wz_max_, wz_max_);
+  vx = xt::clip(vx, -constraints_.vx, constraints_.vx);
+  wz = xt::clip(wz, -constraints_.vw, constraints_.vw);
 }
 
 void Optimizer::updateStateVelocities(
@@ -193,7 +186,7 @@ void Optimizer::propagateStateVelocitiesFromInitials(auto& state) const {
         xt::view(state.data, xt::all(), i + 1,
                  xt::range(state.idx.vbegin(), state.idx.vend()));
 
-    next_velocities = model_(curr_state, state.idx);
+    next_velocities = motion_model_->predict(curr_state, state.idx);
   }
 }
 
@@ -201,7 +194,7 @@ xt::xtensor<double, 2> Optimizer::evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::PoseStamped& robot_pose,
     const geometry_msgs::msg::Twist& robot_speed) const {
   optimization::State state;
-  state.idx.setLayout(getMotionModel());
+  state.idx.setLayout(motion_model_->isHolonomic());
   state.reset(1U, time_steps_);
   state.getControls() = control_sequence_.data;
   state.getTimeIntervals() = model_dt_;
@@ -270,16 +263,35 @@ auto Optimizer::getControlFromSequence(const unsigned int offset) {
   return xt::view(control_sequence_.data, offset);
 }
 
-MotionModel Optimizer::getMotionModel() const { return motion_model_t_; }
+void Optimizer::setMotionModel(const std::string & model)
+{
+  if (model == "DiffDrive") {
+    motion_model_ = std::make_unique<DiffDriveMotionModel>();
+  } else if (model == "Omni") {
+    motion_model_ = std::make_unique<OmniMotionModel>();
+  } else if (model == "Ackermann") {
+    motion_model_ = std::make_unique<AckermannMotionModel>();
+  } else {
+    throw std::runtime_error(std::string(
+        "Model %s is not valid! Valid options are DiffDrive, Omni, or Ackermann", model.c_str()));
+  }
 
-void Optimizer::setMotionModel(const MotionModel motion_model) {
-  motion_model_t_ = motion_model;
-  state_.idx.setLayout(motion_model);
-  control_sequence_.idx.setLayout(motion_model);
+  state_.idx.setLayout(motion_model_->isHolonomic());
+  control_sequence_.idx.setLayout(motion_model_->isHolonomic());
 }
 
 xt::xtensor<double, 3>& Optimizer::getGeneratedTrajectories() {
   return generated_trajectories_;
+}
+
+void Optimizer::setControlConstraints(const utils::ControlConstraints & constraints)
+{
+  constraints_ = constraints;
+}
+
+utils::ControlConstraints Optimizer::getControlConstraints()
+{
+  return constraints_;
 }
 
 }  // namespace mppi

@@ -72,7 +72,6 @@ foreach(pkg IN LISTS dependencies_pkgs)
 endforeach()
 
 find_package(xtensor REQUIRED)
-find_package(magic_enum CONFIG REQUIRED)
 
 add_library(mppic SHARED ${mppic_sources})
 add_library(critics SHARED ${critics_sources})
@@ -82,7 +81,7 @@ set(libraries mppic critics)
 foreach(lib IN LISTS libraries)
   target_compile_options(${lib} PUBLIC -fconcepts)
   target_include_directories(${lib} PUBLIC include)
-  target_link_libraries(${lib} project_options magic_enum::magic_enum xtensor)
+  target_link_libraries(${lib} project_options xtensor)
   ament_target_dependencies(${lib} ${dependencies_pkgs})
 endforeach()
 

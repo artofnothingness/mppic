@@ -8,22 +8,20 @@
 #include <xtensor/xview.hpp>
 #include <xtensor/xarray.hpp>
 
-#include "mppic/optimization/motion_model.hpp"
-
 namespace mppi::optimization
 {
 
 class StateIdxes
 {
 public:
-  uint8_t vbegin() const {return vrange_[0];}
-  uint8_t vend() const {return vrange_[1];}
+  uint8_t vbegin() const {return velocity_range_[0];}
+  uint8_t vend() const {return velocity_range_[1];}
   uint8_t vx() const {return vx_;}
   uint8_t vy() const {return vy_;}
   uint8_t wz() const {return wz_;}
 
-  uint8_t cbegin() const {return crange_[0];}
-  uint8_t cend() const {return crange_[1];}
+  uint8_t cbegin() const {return control_range_[0];}
+  uint8_t cend() const {return control_range_[1];}
   uint8_t cvx() const {return cvx_;}
   uint8_t cvy() const {return cvy_;}
   uint8_t cwz() const {return cwz_;}
@@ -31,10 +29,10 @@ public:
   uint8_t dt() const {return dt_;}
   unsigned int dim() const {return dim_;}
 
-  void setLayout(MotionModel motion_model)
+  void setLayout(const bool is_holonomic)
   {
     // Layout changes to include "Y" components if holonomic
-    if (isHolonomic(motion_model)) {
+    if (is_holonomic) {
       vx_ = 0;
       vy_ = 1;
       wz_ = 2;
@@ -52,10 +50,10 @@ public:
       dim_ = 5;
     }
 
-    vrange_[0] = vx_;
-    vrange_[1] = cvx_;
-    crange_[0] = cvx_;
-    crange_[1] = dt_;
+    velocity_range_[0] = vx_;
+    velocity_range_[1] = cvx_;
+    control_range_[0] = cvx_;
+    control_range_[1] = dt_;
   }
 
 private:
@@ -66,8 +64,8 @@ private:
   uint8_t cvy_{0};
   uint8_t cwz_{0};
   uint8_t dt_{0};
-  std::array<uint8_t, 2> vrange_{0, 0};
-  std::array<uint8_t, 2> crange_{0, 0};
+  std::array<uint8_t, 2> velocity_range_{0, 0};
+  std::array<uint8_t, 2> control_range_{0, 0};
 
   unsigned int dim_{0};
 };

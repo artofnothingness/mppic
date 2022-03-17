@@ -11,7 +11,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
-#include "mppic/optimization/state_models.hpp"
+#include "mppic/motion_models.hpp"
 #include "mppic/optimizer.hpp"
 #include "mppic/controller.hpp"
 
@@ -72,12 +72,6 @@ std::shared_ptr<nav2_costmap_2d::Costmap2DROS> getDummyCostmapRos(TestCostmapSet
   return costmap_ros;
 }
 
-auto getDummyModel()
-{
-  auto model = mppi::NaiveModel;
-  return model;
-}
-
 std::shared_ptr<rclcpp_lifecycle::LifecycleNode>
 getDummyNode(TestOptimizerSettings s, std::string node_name = std::string("dummy"))
 {
@@ -92,6 +86,16 @@ getDummyNode(rclcpp::NodeOptions options, std::string node_name = std::string("d
   return node;
 }
 
+mppi::Optimizer getDummyOptimizer(auto node, auto costmap_ros)
+{
+  auto optimizer = mppi::Optimizer();
+  std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
+
+  optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros);
+
+  return optimizer;
+}
+
 mppi::Controller getDummyController(auto node, auto tf_buffer, auto costmap_ros)
 {
 
@@ -102,18 +106,6 @@ mppi::Controller getDummyController(auto node, auto tf_buffer, auto costmap_ros)
   controller.activate();
   return controller;
 }
-
-mppi::Optimizer getDummyOptimizer(auto node, auto costmap_ros, auto model)
-{
-
-  auto optimizer = mppi::Optimizer();
-  std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
-
-  optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros, model);
-
-  return optimizer;
-}
-
 
 auto getDummyTwist()
 {

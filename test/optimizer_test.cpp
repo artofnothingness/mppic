@@ -16,8 +16,8 @@
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/optimization/state_models.hpp"
 #include "mppic/optimizer.hpp"
+#include "mppic/motion_models.hpp"
 
 #include "utils/utils.hpp"
 
@@ -74,7 +74,7 @@ TEST_CASE("Optimizer doesn't fail", "[]")
 
     auto costmap_ros = getDummyCostmapRos(cost_map_settings);
     auto node = getDummyNode(optimizer_settings);
-    auto optimizer = getDummyOptimizer(node, costmap_ros, getDummyModel());
+    auto optimizer = getDummyOptimizer(node, costmap_ros);
 
     // setup costmap
     auto costmap = costmap_ros->getCostmap();
