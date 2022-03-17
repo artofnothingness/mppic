@@ -8,12 +8,8 @@
 #include <xtensor/xview.hpp>
 #include <xtensor/xarray.hpp>
 
-#include "mppic/motion_models.hpp"
-
 namespace mppi::optimization
 {
-
-class MotionModel;
 
 class StateIdxes
 {
@@ -58,11 +54,6 @@ public:
     velocity_range_[1] = cvx_;
     control_range_[0] = cvx_;
     control_range_[1] = dt_;
-  }
-
-  std::array<uint8_t, 2> getControlRange()
-  {
-    return control_range_;
   }
 
 private:
