@@ -54,7 +54,6 @@ void Optimizer::getParams() {
   getParam(vx_std_, "vx_std", 0.1);
   getParam(vy_std_, "vy_std", 0.1);
   getParam(wz_std_, "wz_std", 0.3);
-  getParam(control_sequence_shift_offset_, "control_sequence_shift_offset", 1);
   getParentParam(controller_frequency_, "controller_frequency", 0.0);
 
   std::string motion_model_name;

@@ -1,42 +1,34 @@
 # Model Predictive Path Integral Controller
 
-## Differential drive  
-![](.resources/demo-diff.gif)
-
-## Omni
-![](.resources/demo-omni.gif)
+Differential                  |  Omnidirectional 
+:----------------------------:|:-------------------------:
+![](.resources/demo-diff.gif) | ![](.resources/demo-omni.gif)
 
 ## Overview
 
-Navigation2 Controller plugin. Currently testing on ros2 foxy.
+This is a controller (local trajectory planner) that implements the [Model Predictive Path Integral (MPPI)](https://ieeexplore.ieee.org/document/7487277) algorithm to track a path with adaptive collision avoidance. It contains plugin-based critic functions to impact the behavior of the algorithm. It was created by Aleksei Budyakov and adapted for Nav2 by [Steve Macenski](https://www.linkedin.com/in/steve-macenski-41a985101/).
 
-This is a controller (local trajectory planner) that implements model predictive 
-path integral control to track a path with collision avoidance. 
+This plugin implements the ``nav2_core::Controller`` interface allowing it to be used across the navigation stack as a local trajectory planner in the controller server's action server (``controller_server``).
 
-The main idea of the algorithm is to sample batch of control sequences with specified time step for each control, 
-Having inital state of robot (pose, velocity) and batch of controls use iteratively "model" to predict real velocities for each time step in batch.
+This controller is measured to run at 45 Hz on a modest Intel processor (4th gen i5). See its Configuration Guide Page for additional parameter descriptions.
 
-this can be explained as follows V(t+1) = M(t), where 
+## MPPI Description
 
-  - V(t+1) - predicted velocities of batch at time step t + 1
-  - M(T) - Function that predicts real velocities at t + 1 step, by given velocities and control actions at t step.
+The MPPI algorithm finds a control velocity for the robot using an iterative approach. Using the previous time step's best control solution and the robot's current state, a set of randomly sampled perturbations from a Gaussian distribution are applied. These noised controls are forward simulated to generate a set of trajectories within the robot's motion model.
 
-Then velocities integrated to get trajectories. For each trajectory, the cost function is calculated. 
-All control sequences are weighted by trajectories costs using softmax function to get final control sequence.
+Next, these trajectories are scored using a set of plugin-based critic functions to find the best trajectory in the batch. The output scores are used to set the best control with a soft max function.
 
-## Dependencies 
-MPPIc package requires a modern C++ compiler supporting C++17, and Conan C++ package manager:
-```
-pip install conan
-```
+This process is then repeated a number of times and returning a converged solution. This solution is then used as the basis of the next time step's initial control.
 
 ## Configuration
 
 ### Controller params
  | Parameter             | Type   | Definition                                                                                                                                                                                                                                                        |
  | --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+ | motion_model | string | Type of model [DiffDrive, Omni, Ackermann]                                                                                                                                                                                                                                                                 |            
+ | critics_names| string | Critics (plugins) names                                                                                                                                                                                                                                                    |
  | iteration_count       | int    | Iteration count in MPPI algorithm                                                                                                                                                                                                                                 |
- | lookahead_dist        | double | Max lenght of the global plan that considered by local planner                                                                                                                                                                                                    |
+ | lookahead_dist        | double | Max length of the global plan that considered by local planner                                                                                                                                                                                                    |
  | transform_tolerance   | double | TF tolerance to transform poses                                                                                                                                                                                                                                   |
  | batch_size            | int    | Count of randomly sampled trajectories                                                                                                                                                                                                                            |
  | time_steps            | int    | Number of time steps (points) in each sampled trajectory                                                                                                                                                                                                          |
@@ -47,22 +39,14 @@ pip install conan
  | vx_max                | double | Max VX                                                                                                                                                                                                                                                            |
  | vy_max                | double | Max VY                                                                                                                                                                                                                                                            |
  | wz_max                | double | Max WZ                                                                                                                                                                                                                                                            |
- | temperature           | double | Selectiveness of trajectories by their costs (The closer this value to 0, the "more" we take in considiration controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories withou cost consideration |
+ | temperature           | double | Selectiveness of trajectories by their costs (The closer this value to 0, the "more" we take in considiration controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories without cost consideration |
  | visualize             | bool   | Use visualization                                                                                                                                                                                                                                                 |
- | motion_model          | string | Type of model [DiffDrive, Omni, Ackermann]                                                                                                                                                                                                                               |
-
-#### CriticScorer params
-
- | Parameter       | Type   | Definition                                                                                                  |
- | --------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
- | critics_type    | string | Type of controller [float, double]                                                                          |
- | critics_names   | string | Critics (plugins) names
 
 #### GoalCritic params
- | Parameter       | Type   | Definition                                                                                                  |
- | --------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
- | goal_weight     | double |                                                                                                             |
- | goal_power      | int    |                                                                                                             |
+ | Parameter            | Type   | Definition                                                                                                  |
+ | -------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+ | goal_goal_cost_weight| double |                                                                                                             |
+ | goal_cost_power      | int    |                                                                                                             |
 
 #### GoalAngleCritic params
  | Parameter                        | Type   | Definition                                                                                                  |
@@ -71,13 +55,13 @@ pip install conan
  | goal_angle_cost_power            | int    |                                                                                                             |
  | threshold_to_consider_goal_angle | double | Minimal distance between robot and goal above which angle goal cost considered                              |
 
-#### AngleToGoalCritic params
+#### PathAngleCritic params
  | Parameter                 | Type   | Definition                                                                                                  |
  | ---------------           | ------ | ----------------------------------------------------------------------------------------------------------- |
- | angle_to_goal_cost_weight | double |                                                                                                             |
- | angle_to_goal_cost_power  | int    |                                                                                                             |
+ | path_angle_cost_weight    | double |                                                                                                             |
+ | path_angle_cost_power     | int    |                                                                                                             |
 
-#### [Approx]ReferenceTrajectoryCritic params
+#### ApproxReferenceTrajectoryCritic and ReferenceTrajectoryCritic params
  | Parameter             | Type   | Definition                                                                                                  |
  | ---------------       | ------ | ----------------------------------------------------------------------------------------------------------- |
  | reference_cost_weight | double |                                                                                                             |
@@ -89,9 +73,6 @@ pip install conan
  | consider_footprint            | bool   |                                                                                                             |
  | obstacle_cost_weight          | double |                                                                                                             |
  | obstacle_cost_power           | int    |                                                                                                             |
- | inflation_cost_scaling_factor | int    | Must be set accurately according to inflation layer params                                                  |
- | inflation_radius              | double | Must be set accurately according to inflation layer params                                                  |
-
 
 
 ### XML configuration example
@@ -128,9 +109,9 @@ controller_server:
         consider_footprint: true
         obstacle_cost_power: 2
         obstacle_cost_weight: 2.0
-      AngleToGoalCritic:
-        angle_to_goal_cost_power: 1
-        angle_to_goal_cost_weight: 0.5
+      PathAngleCritic:
+        path_angle_cost_power: 1
+        path_angle_cost_weight: 0.5
 ```
 
 ## Topics
@@ -140,5 +121,9 @@ controller_server:
 | `trajectories`            | `visualization_msgs/MarkerArray` | Randomly generated trajectories, including resulting control sequence |
 | `transformed_global_plan` | `nav_msgs/Path`                  | Part of global plan considered by local planner                       |
 
-## References
-[AutoRally](https://github.com/AutoRally/autorally)
+## Notes to Users
+
+The `model_dt` parameter generally should be set to the duration of your control frequency. So if your control frequency is 20hz, this should be `0.05`. However, you may also set it lower **but not larger**.
+
+Visualization of the trajectories using `visualize` uses compute resources to back out trajectories for visualization and therefore slows compute time. It is not suggested that this parameter is set to `true` during a deployed use, but is a useful debug instrument while tuning the system.
+
