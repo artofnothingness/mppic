@@ -3,51 +3,52 @@
 
 #include <algorithm>
 #include <chrono>
-
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
 #include <xtensor/xview.hpp>
 
+#include "geometry_msgs/msg/twist_stamped.hpp"
+#include "mppic/tensor_wrappers/control_sequence.hpp"
+#include "nav2_util/node_utils.hpp"
+#include "nav_msgs/msg/path.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "tf2/utils.h"
-#include "geometry_msgs/msg/twist_stamped.hpp"
-#include "nav_msgs/msg/path.hpp"
-#include "nav2_util/node_utils.hpp"
-#include "mppic/tensor_wrappers/control_sequence.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
-namespace mppi::utils
-{
+namespace mppi::utils {
 
-struct ControlConstraints
-{
+struct ControlConstraints {
   double vx, vy, vw;
 };
 
-template<typename NodeT>
-auto getParamGetter(NodeT node, const std::string & name)
-{
-  return [ = ](auto & param, const std::string & param_name, auto default_value) {
-           using OutType = std::decay_t<decltype(param)>;
-           using InType = std::decay_t<decltype(default_value)>;
+template <typename NodeT>
+auto getParamGetter(NodeT node, const std::string& name) {
+  return [=](auto& param, const std::string& param_name, auto default_value) {
+    using OutType = std::decay_t<decltype(param)>;
+    using InType = std::decay_t<decltype(default_value)>;
 
-           std::string full_name = name + '.' + param_name;
-           nav2_util::declare_parameter_if_not_declared(
-             node, full_name,
-             rclcpp::ParameterValue(default_value));
+    std::string full_name;
 
-           InType param_in;
-           node->get_parameter(full_name, param_in);
-           param = static_cast<OutType>(param_in);
-         };
+    if (name != "") {
+      full_name = name + '.' + param_name;
+    } else {
+      full_name = param_name;
+    }
+
+    nav2_util::declare_parameter_if_not_declared(
+        node, full_name, rclcpp::ParameterValue(default_value));
+
+    InType param_in;
+    node->get_parameter(full_name, param_in);
+    param = static_cast<OutType>(param_in);
+  };
 }
 
-template<typename T, typename H>
+template <typename T, typename H>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, const optimization::ControlSequnceIdxes & idx, const bool & is_holonomic,
-  const H & header)
-{
+    const T& velocities, const optimization::ControlSequnceIdxes& idx,
+    const bool& is_holonomic, const H& header) {
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = header.frame_id;
   twist.header.stamp = header.stamp;
@@ -62,12 +63,10 @@ geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
-template<typename T, typename S>
+template <typename T, typename S>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, optimization::ControlSequnceIdxes idx, const bool & is_holonomic,
-  const S & stamp,
-  const std::string & frame)
-{
+    const T& velocities, optimization::ControlSequnceIdxes idx,
+    const bool& is_holonomic, const S& stamp, const std::string& frame) {
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = frame;
   twist.header.stamp = stamp;
@@ -81,8 +80,7 @@ geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
-inline xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
-{
+inline xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path& path) {
   size_t path_size = path.poses.size();
   static constexpr size_t last_dim_size = 3;
 
@@ -91,34 +89,33 @@ inline xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
   for (size_t i = 0; i < path_size; ++i) {
     points(i, 0) = static_cast<double>(path.poses[i].pose.position.x);
     points(i, 1) = static_cast<double>(path.poses[i].pose.position.y);
-    points(i, 2) = static_cast<double>(tf2::getYaw(path.poses[i].pose.orientation));
+    points(i, 2) =
+        static_cast<double>(tf2::getYaw(path.poses[i].pose.orientation));
   }
 
   return points;
 }
 
-template<typename T>
-double hypot(const T & p1, const T & p2)
-{
+template <typename T>
+double hypot(const T& p1, const T& p2) {
   double dx = p1.x - p2.x;
   double dy = p1.y - p2.y;
   double dz = p1.z - p2.z;
   return std::hypot(dx, dy, dz);
 }
 
-template<>
-inline double hypot(const geometry_msgs::msg::Pose & lhs, const geometry_msgs::msg::Pose & rhs)
-{
+template <>
+inline double hypot(const geometry_msgs::msg::Pose& lhs,
+                    const geometry_msgs::msg::Pose& rhs) {
   return hypot(lhs.position, rhs.position);
 }
 
-template<>
-inline double
-hypot(const geometry_msgs::msg::PoseStamped & lhs, const geometry_msgs::msg::PoseStamped & rhs)
-{
+template <>
+inline double hypot(const geometry_msgs::msg::PoseStamped& lhs,
+                    const geometry_msgs::msg::PoseStamped& rhs) {
   return hypot(lhs.pose, rhs.pose);
 }
 
-} // namespace mppi::utils
+}  // namespace mppi::utils
 
 #endif  // MPPIC__UTILS_HPP_
