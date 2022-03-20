@@ -11,6 +11,9 @@
 namespace mppi::optimization
 {
 
+/**
+ * @brief Keeps named indexes of state last dimension variables
+ */
 class StateIdxes
 {
 public:
@@ -70,6 +73,10 @@ private:
   unsigned int dim_{0};
 };
 
+/**
+ * struct State - combined data with it's named indexes of last dimension variables
+ * plus access methods 
+ **/
 struct State
 {
   xt::xtensor<double, 3> data;
