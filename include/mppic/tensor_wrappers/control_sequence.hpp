@@ -11,6 +11,9 @@
 namespace mppi::optimization
 {
 
+/**
+ * @brief Keeps named indexes of control sequence last dimension variables
+ */
 class ControlSequnceIdxes
 {
 public:
@@ -42,6 +45,9 @@ private:
   unsigned int dim_{0};
 };
 
+/**
+ * struct ControlSequence - combined data with it's named indexes of last dimension variables
+ */
 struct ControlSequence
 {
   xt::xtensor<double, 2> data;
