@@ -5,6 +5,8 @@
 namespace mppi
 {
 
+using nav2_util::geometry_utils::euclidean_distance;
+
 void PathHandler::initialize(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap, std::shared_ptr<tf2_ros::Buffer> buffer)
@@ -16,7 +18,7 @@ void PathHandler::initialize(
   logger_ = node->get_logger();
 
   auto getParam = utils::getParamGetter(node, name_);
-  getParam(lookahead_dist_, "lookahead_dist", 1.0);
+  getParam(max_robot_pose_search_dist_, "max_robot_pose_search_dist", getMaxCostmapDist());
   getParam(transform_tolerance_, "transform_tolerance", 0.1);
 }
 
@@ -26,12 +28,15 @@ auto PathHandler::getGlobalPlanConsideringBounds(
   auto begin = global_plan_.poses.begin();
   auto end = global_plan_.poses.end();
 
+  auto closest_pose_upper_bound =
+    nav2_util::geometry_utils::first_after_integrated_distance(
+    global_plan_.poses.begin(), global_plan_.poses.end(), max_robot_pose_search_dist_);
+
   // Find closest point to the robot
-  auto closest_point = std::min_element(
-    begin, end,
-    [&global_pose](
-      const geometry_msgs::msg::PoseStamped & lhs, const geometry_msgs::msg::PoseStamped & rhs) {
-      return utils::hypot(lhs, global_pose) < utils::hypot(rhs, global_pose);
+  auto closest_point = nav2_util::geometry_utils::min_by(
+    begin, closest_pose_upper_bound,
+    [&global_pose](const geometry_msgs::msg::PoseStamped & ps) {
+      return euclidean_distance(global_pose, ps);
     });
 
   // Find the furthest relevent point on the path to consider within costmap bounds
@@ -39,8 +44,7 @@ auto PathHandler::getGlobalPlanConsideringBounds(
   auto last_point =
     std::find_if(
     closest_point, end, [&](const geometry_msgs::msg::PoseStamped & global_plan_pose) {
-      auto dist = utils::hypot(global_pose, global_plan_pose);
-      return dist > max_costmap_dist || dist > lookahead_dist_;
+      return euclidean_distance(global_pose, global_plan_pose) > max_costmap_dist;
     });
 
   return std::tuple{closest_point, last_point};
