@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -80,20 +80,6 @@ foreach(lib IN LISTS libraries)
   ament_target_dependencies(${lib} ${dependencies_pkgs})
 endforeach()
 
-# <<<< Critics
-if(ENABLE_TESTING)
-  enable_testing()
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-  add_subdirectory(test)
-endif()
-
-ament_export_libraries(${libraries})
-ament_export_dependencies(${dependencies_pkgs})
-ament_export_include_directories(include)
-pluginlib_export_plugin_description_file(nav2_core mppic.xml)
-pluginlib_export_plugin_description_file(mppic critics.xml)
-
 install(TARGETS mppic critics
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -103,5 +89,19 @@ install(TARGETS mppic critics
 install(DIRECTORY include/
   DESTINATION include/
 )
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
+  set(ament_cmake_copyright_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+  add_subdirectory(test)
+endif()
+
+ament_export_libraries(${libraries})
+ament_export_dependencies(${dependencies_pkgs})
+ament_export_include_directories(include)
+pluginlib_export_plugin_description_file(nav2_core mppic.xml)
+pluginlib_export_plugin_description_file(mppic critics.xml)
 
 ament_package()
