@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+project(mppic)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -7,22 +8,10 @@ FetchContent_Declare(_project_options URL https://github.com/cpp-best-practices/
 FetchContent_MakeAvailable(_project_options)
 include(${_project_options_SOURCE_DIR}/Index.cmake)
 
-project(mppic CXX)
-
 project_options(
   ENABLE_CONAN
   WARNINGS_AS_ERRORS
-  # ENABLE_DOXYGEN
-  # ENABLE_COVERAGE
-  # ENABLE_SANITIZER_ADDRESS
-  # ENABLE_SANITIZER_LEAK
-  # ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
-  # ENABLE_SANITIZER_THREAD
-  # ENABLE_SANITIZER_MEMORY
-  # CONAN_OPTIONS
 )
-
-option(ENABLE_TESTING "Enable Test Builds" ON)
 
 if(ENABLE_CONAN)
   run_conan()
@@ -31,7 +20,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 
 set(dependencies_pkgs
-  rclcpp 
+  rclcpp
+  nav2_common
   pluginlib 
   tf2 
   geometry_msgs 
@@ -45,16 +35,15 @@ set(dependencies_pkgs
   tf2_ros
 )
 
-set(critics_sources
-  src/critics/approx_reference_trajectory_critic.cpp
-  src/critics/reference_trajectory_critic.cpp
-  src/critics/goal_angle_critic.cpp
-  src/critics/path_angle_critic.cpp
-  src/critics/goal_critic.cpp
-  src/critics/obstacles_critic.cpp
-)
+foreach(pkg IN LISTS dependencies_pkgs)
+  find_package(${pkg} REQUIRED)
+endforeach()
 
-set(mppic_sources
+nav2_package()
+
+find_package(xtensor REQUIRED)
+
+add_library(mppic SHARED 
   src/controller.cpp
   src/critic_manager.cpp
   src/path_handler.cpp
@@ -62,14 +51,14 @@ set(mppic_sources
   src/optimizer.cpp
 )
 
-foreach(pkg IN LISTS dependencies_pkgs)
-  find_package(${pkg} REQUIRED)
-endforeach()
-
-find_package(xtensor REQUIRED)
-
-add_library(mppic SHARED ${mppic_sources})
-add_library(critics SHARED ${critics_sources})
+add_library(critics SHARED 
+  src/critics/approx_reference_trajectory_critic.cpp
+  src/critics/reference_trajectory_critic.cpp
+  src/critics/goal_angle_critic.cpp
+  src/critics/path_angle_critic.cpp
+  src/critics/goal_critic.cpp
+  src/critics/obstacles_critic.cpp
+)
 
 set(libraries mppic critics)
 
