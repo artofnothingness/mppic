@@ -18,6 +18,7 @@ if(ENABLE_CONAN)
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(xtensor REQUIRED)
 
 set(dependencies_pkgs
   rclcpp
@@ -41,8 +42,6 @@ endforeach()
 
 nav2_package()
 
-find_package(xtensor REQUIRED)
-
 add_library(mppic SHARED 
   src/controller.cpp
   src/critic_manager.cpp
@@ -65,7 +64,7 @@ set(libraries mppic critics)
 foreach(lib IN LISTS libraries)
   target_compile_options(${lib} PUBLIC -fconcepts)
   target_include_directories(${lib} PUBLIC include)
-  target_link_libraries(${lib} project_options xtensor)
+  target_link_libraries(${lib} xtensor)
   ament_target_dependencies(${lib} ${dependencies_pkgs})
 endforeach()
 

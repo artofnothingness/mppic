@@ -6,7 +6,7 @@ ament_target_dependencies(controller_test
   ${dependencies_pkgs}
 )
 target_link_libraries(controller_test
-  mppic xtensor project_options
+  mppic
 )
 
 ament_add_gtest(optimizer_test
@@ -16,5 +16,5 @@ ament_target_dependencies(optimizer_test
   ${dependencies_pkgs}
 )
 target_link_libraries(optimizer_test
-  mppic xtensor project_options
+  mppic
 )
