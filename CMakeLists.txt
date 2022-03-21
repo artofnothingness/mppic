@@ -28,10 +28,6 @@ if(ENABLE_CONAN)
   run_conan()
 endif()
 
-find_package(ament_lint_auto REQUIRED)
-ament_lint_auto_find_test_dependencies()
-
-
 find_package(ament_cmake REQUIRED)
 
 set(dependencies_pkgs
@@ -65,7 +61,6 @@ set(mppic_sources
   src/trajectory_visualizer.cpp
   src/optimizer.cpp
 )
-
 
 foreach(pkg IN LISTS dependencies_pkgs)
   find_package(${pkg} REQUIRED)
