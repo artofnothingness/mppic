@@ -25,10 +25,27 @@ Then velocities integrated to get trajectories. For each trajectory, the cost fu
 All control sequences are weighted by trajectories costs using softmax function to get final control sequence.
 
 ## Dependencies 
-MPPIc package requires a modern C++ compiler supporting C++17, and Conan C++ package manager:
+
+This uses the usual ROS tools for dependency management, so please use ``rosdep`` to install the dependencies. 
+
+Note: If running on Ubuntu 20.04 or other OS's that `xtensor` is not released in in binary form, please manually install `xtensor` v 0.24.0 and `xtl` v 0.7.0. These are simply headers so the install process is trivially short, unfortunately the `xtensor` project isn't available in package managers in some common-place operating systems (albeit, all necessary ROS OS versions) so you may be required to do this yourself if building from source.
+
 ```
-pip install conan
+git clone git@github.com:xtensor-stack/xtensor.git -b 0.24.0
+cd xtensor
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+make install
+
+git clone git@github.com:xtensor-stack/xtl.git -b 0.7.0
+cd xtl
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+make install
 ```
+
 
 ## Configuration
 
