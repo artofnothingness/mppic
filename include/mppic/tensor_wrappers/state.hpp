@@ -11,6 +11,9 @@
 namespace mppi::optimization
 {
 
+/**
+ * @brief Keeps named indexes of state last dimension variables
+ */
 class StateIdxes
 {
 public:
@@ -70,6 +73,14 @@ private:
   unsigned int dim_{0};
 };
 
+/**
+ * @brief State represent current the state of optimization problem.
+ *
+ * State stores state of the system for each trajectory. It has shape [ batch_size x time_steps x dim ].
+ * Last dimension described by StateIdxes and consists of velocities, controls,
+ * and amount of time between time steps (vx, [vy], wz, cvx, [cvy], cwz, dt)
+ *
+ **/
 struct State
 {
   xt::xtensor<double, 3> data;
