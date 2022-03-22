@@ -126,10 +126,9 @@ TEST(MPPIOptimizer, OptimizerTestOmniCircle)
 
 TEST(MPPIOptimizer, AckermannException)
 {
-  mppi::MotionModel * model = new mppi::AckermannMotionModel();
+  mppi::AckermannMotionModel model;
   xt::xtensor<double, 2> in;
   mppi::optimization::StateIdxes idx;
-  EXPECT_FALSE(model->isHolonomic());
-  EXPECT_THROW(model->predict(in, idx), std::runtime_error);
-  delete model;
+  EXPECT_FALSE(model.isHolonomic());
+  EXPECT_THROW(model.predict(in, idx), std::runtime_error);
 }
