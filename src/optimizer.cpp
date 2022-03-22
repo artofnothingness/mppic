@@ -41,7 +41,6 @@ void Optimizer::getParams()
   auto node = parent_.lock();
 
   auto getParam = utils::getParamGetter(node, name_);
-  auto getParentParam = utils::getParamGetter(node, "");
 
   getParam(model_dt_, "model_dt", 0.1);
   getParam(time_steps_, "time_steps", 15);
@@ -56,7 +55,10 @@ void Optimizer::getParams()
   getParam(vy_std_, "vy_std", 0.1);
   getParam(wz_std_, "wz_std", 0.3);
   getParam(control_sequence_shift_offset_, "control_sequence_shift_offset", 1);
-  getParentParam(controller_frequency_, "controller_frequency", 0.0);
+
+  nav2_util::declare_parameter_if_not_declared(
+    node, "controller_frequency", rclcpp::ParameterValue(0.0));
+  node->get_parameter("controller_frequency", controller_frequency_);
 
   std::string motion_model_name;
   getParam(motion_model_name, "motion_model", std::string("DiffDrive"));
