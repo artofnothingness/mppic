@@ -3,19 +3,12 @@ project(mppic)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# Downloads xtensor and related headers from conanfile.txt
 include(FetchContent)
 FetchContent_Declare(_project_options URL https://github.com/cpp-best-practices/project_options/archive/refs/tags/v0.18.1.zip)
 FetchContent_MakeAvailable(_project_options)
 include(${_project_options_SOURCE_DIR}/Index.cmake)
-
-project_options(
-  ENABLE_CONAN
-  WARNINGS_AS_ERRORS
-)
-
-if(ENABLE_CONAN)
-  run_conan()
-endif()
+project_options(ENABLE_CONAN)
 
 find_package(ament_cmake REQUIRED)
 find_package(xtensor REQUIRED)
@@ -25,7 +18,7 @@ set(dependencies_pkgs
   nav2_common
   pluginlib 
   tf2 
-  geometry_msgs 
+  geometry_msgs
   visualization_msgs
   nav_msgs 
   nav2_core 
