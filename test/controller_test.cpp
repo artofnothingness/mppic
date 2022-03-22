@@ -1,9 +1,4 @@
-#ifdef DO_BENCHMARKS
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-#endif
-
-#include <catch2/catch.hpp>
-
+#include "gtest/gtest.h"
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/path.hpp>
@@ -16,7 +11,15 @@
 
 #include "utils/utils.hpp"
 
-TEST_CASE("Controller doesn't fail", "[]")
+class RosLockGuard
+{
+public:
+  RosLockGuard() {rclcpp::init(0, nullptr);}
+  ~RosLockGuard() {rclcpp::shutdown();}
+};
+RosLockGuard g_rclcpp;
+
+TEST(MPPIController, ControllerTest)
 {
   const bool visualize = true;
 
@@ -35,20 +38,17 @@ TEST_CASE("Controller doesn't fail", "[]")
 
   auto controller = getDummyController(node, tf_buffer, costmap_ros);
 
-  SECTION("computeVelocityCommands does't fail")
-  {
-    TestPose start_pose = cost_map_settings.getCenterPose();
-    const double path_step = cost_map_settings.resolution;
-    TestPathSettings path_settings{start_pose, 8, path_step, path_step};
+  TestPose start_pose = cost_map_settings.getCenterPose();
+  const double path_step = cost_map_settings.resolution;
+  TestPathSettings path_settings{start_pose, 8, path_step, path_step};
 
-    // evalControl args
-    auto pose = getDummyPointStamped(node, start_pose);
-    auto velocity = getDummyTwist();
-    auto path = getIncrementalDummyPath(node, path_settings);
+  // evalControl args
+  auto pose = getDummyPointStamped(node, start_pose);
+  auto velocity = getDummyTwist();
+  auto path = getIncrementalDummyPath(node, path_settings);
 
-    controller.setPlan(path);
-    controller.computeVelocityCommands(pose, velocity, {});
+  controller.setPlan(path);
+  controller.computeVelocityCommands(pose, velocity, {});
 
-    CHECK_NOTHROW(controller.computeVelocityCommands(pose, velocity, {}));
-  }
+  EXPECT_NO_THROW(controller.computeVelocityCommands(pose, velocity, {}));
 }

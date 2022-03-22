@@ -55,7 +55,7 @@ struct TestPathSettings
  */
 void setUpOptimizerParams(
   int iter, int time_steps, double lookahead_dist, std::string motion_model,
-  bool consider_footprint, std::vector<rclcpp::Parameter> & params_,
+  bool /*consider_footprint*/, std::vector<rclcpp::Parameter> & params_,
   std::string node_name = std::string("dummy"))
 {
   params_.emplace_back(rclcpp::Parameter(node_name + ".iteration_count", iter));

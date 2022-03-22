@@ -5,6 +5,7 @@
   <version>0.2.1</version>
   <description>mppic</description>
   <maintainer email="budyakov.aleksei@gmail.com">Aleksei Budyakov</maintainer>
+  <maintainer email="stevenmacenski@gmail.com">Steve Macenski</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -23,13 +24,18 @@
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_ros</depend>
+  <depend>conan</depend>
+  <depend>std_msgs</depend>
 
   <exec_depend>nav2_bringup</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
   <export>
     <build_type>ament_cmake</build_type>
+    <nav2_core plugin="${prefix}/mppic.xml" />
+    <mppic plugin="${prefix}/critics.xml" />
   </export>
 
 </package>
