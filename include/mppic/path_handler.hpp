@@ -7,6 +7,7 @@
 #include "nav_msgs/msg/path.hpp"
 #include "std_msgs/msg/header.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
+#include "nav2_util/geometry_utils.hpp"
 
 namespace mppi
 {
@@ -62,7 +63,7 @@ protected:
   nav_msgs::msg::Path global_plan_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 
-  double lookahead_dist_{0};
+  double max_robot_pose_search_dist_{0};
   double transform_tolerance_{0};
 };
 } // namespace mppi

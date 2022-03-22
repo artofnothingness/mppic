@@ -48,7 +48,7 @@ class AckermannMotionModel : public MotionModel
 {
 public:
   virtual xt::xtensor<double, 2> predict(
-    const xt::xtensor<double, 2> & state, const optimization::StateIdxes & idx) override
+    const xt::xtensor<double, 2> & /*state*/, const optimization::StateIdxes & /*idx*/) override
   {
     throw std::runtime_error("Ackermann motion model not yet implemented");
   }

@@ -25,10 +25,27 @@ Then velocities integrated to get trajectories. For each trajectory, the cost fu
 All control sequences are weighted by trajectories costs using softmax function to get final control sequence.
 
 ## Dependencies 
-MPPIc package requires a modern C++ compiler supporting C++17, and Conan C++ package manager:
+
+This uses the usual ROS tools for dependency management, so please use ``rosdep`` to install the dependencies. 
+
+Note: If running on Ubuntu 20.04 or other OS's that `xtensor` is not released in in binary form, please manually install `xtensor` v 0.24.0 and `xtl` v 0.7.0. These are simply headers so the install process is trivially short, unfortunately the `xtensor` project isn't available in package managers in some common-place operating systems (albeit, all necessary ROS OS versions) so you may be required to do this yourself if building from source.
+
 ```
-pip install conan
+git clone git@github.com:xtensor-stack/xtensor.git -b 0.24.0
+cd xtensor
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+make install
+
+git clone git@github.com:xtensor-stack/xtl.git -b 0.7.0
+cd xtl
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+make install
 ```
+
 
 ## Configuration
 
@@ -36,7 +53,7 @@ pip install conan
  | Parameter             | Type   | Definition                                                                                                                                                                                                                                                        |
  | --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
  | iteration_count       | int    | Iteration count in MPPI algorithm                                                                                                                                                                                                                                 |
- | lookahead_dist        | double | Max lenght of the global plan that considered by local planner                                                                                                                                                                                                    |
+ | max_robot_pose_search_dist | double | Upper bound on integrated distance along the global plan to search for the closest pose to the robot pose. This should be left as the default unless there are paths with loops and intersections that do not leave the local costmap, in which case making this value smaller is necessary to prevent shortcutting. |
  | transform_tolerance   | double | TF tolerance to transform poses                                                                                                                                                                                                                                   |
  | batch_size            | int    | Count of randomly sampled trajectories                                                                                                                                                                                                                            |
  | time_steps            | int    | Number of time steps (points) in each sampled trajectory                                                                                                                                                                                                          |

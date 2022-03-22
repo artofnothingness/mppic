@@ -1,9 +1,0 @@
-# Docs at https://docs.conan.io/en/latest/reference/conanfile_txt.html
-
-[requires]
-xtensor/0.24.0
-catch2/2.13.8
-magic_enum/0.7.3
-
-[generators]
-cmake_find_package_multi
