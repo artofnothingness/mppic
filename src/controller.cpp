@@ -54,7 +54,8 @@ void Controller::deactivate()
 }
 
 geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
-  const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed,
+  const geometry_msgs::msg::PoseStamped & robot_pose,
+  const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * goal_checker)
 {
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
@@ -66,7 +67,8 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
 }
 
 void Controller::visualize(
-  const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed,
+  const geometry_msgs::msg::PoseStamped & robot_pose,
+  const geometry_msgs::msg::Twist & robot_speed,
   nav_msgs::msg::Path transformed_plan)
 {
   if (!visualize_) {
@@ -78,7 +80,10 @@ void Controller::visualize(
   trajectory_visualizer_.visualize(transformed_plan);
 }
 
-void Controller::setPlan(const nav_msgs::msg::Path & path) {path_handler_.setPath(path);}
+void Controller::setPlan(const nav_msgs::msg::Path & path)
+{
+  path_handler_.setPath(path);
+}
 
 void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {
