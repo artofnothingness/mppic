@@ -1,44 +1,15 @@
-cmake_minimum_required(VERSION 3.16)
-
-set(CMAKE_CXX_STANDARD 17)
-
-include(FetchContent)
-FetchContent_Declare(_project_options URL https://github.com/cpp-best-practices/project_options/archive/refs/tags/v0.18.1.zip)
-FetchContent_MakeAvailable(_project_options)
-include(${_project_options_SOURCE_DIR}/Index.cmake)
-
-project(mppic CXX)
-
-project_options(
-  ENABLE_CONAN
-  WARNINGS_AS_ERRORS
-  # ENABLE_DOXYGEN
-  # ENABLE_COVERAGE
-  # ENABLE_SANITIZER_ADDRESS
-  # ENABLE_SANITIZER_LEAK
-  # ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
-  # ENABLE_SANITIZER_THREAD
-  # ENABLE_SANITIZER_MEMORY
-  # CONAN_OPTIONS
-)
-
-option(ENABLE_TESTING "Enable Test Builds" ON)
-
-if(ENABLE_CONAN)
-  run_conan()
-endif()
-
-find_package(ament_lint_auto REQUIRED)
-ament_lint_auto_find_test_dependencies()
-
+cmake_minimum_required(VERSION 3.5)
+project(mppic)
 
 find_package(ament_cmake REQUIRED)
+find_package(xtensor REQUIRED)
 
 set(dependencies_pkgs
-  rclcpp 
+  rclcpp
+  nav2_common
   pluginlib 
   tf2 
-  geometry_msgs 
+  geometry_msgs
   visualization_msgs
   nav_msgs 
   nav2_core 
@@ -49,7 +20,21 @@ set(dependencies_pkgs
   tf2_ros
 )
 
-set(critics_sources
+foreach(pkg IN LISTS dependencies_pkgs)
+  find_package(${pkg} REQUIRED)
+endforeach()
+
+nav2_package()
+
+add_library(mppic SHARED 
+  src/controller.cpp
+  src/critic_manager.cpp
+  src/path_handler.cpp
+  src/trajectory_visualizer.cpp
+  src/optimizer.cpp
+)
+
+add_library(critics SHARED 
   src/critics/approx_reference_trajectory_critic.cpp
   src/critics/reference_trajectory_critic.cpp
   src/critics/goal_angle_critic.cpp
@@ -58,46 +43,14 @@ set(critics_sources
   src/critics/obstacles_critic.cpp
 )
 
-set(mppic_sources
-  src/controller.cpp
-  src/critic_manager.cpp
-  src/path_handler.cpp
-  src/trajectory_visualizer.cpp
-  src/optimizer.cpp
-)
-
-
-foreach(pkg IN LISTS dependencies_pkgs)
-  find_package(${pkg} REQUIRED)
-endforeach()
-
-find_package(xtensor REQUIRED)
-
-add_library(mppic SHARED ${mppic_sources})
-add_library(critics SHARED ${critics_sources})
-
 set(libraries mppic critics)
 
 foreach(lib IN LISTS libraries)
   target_compile_options(${lib} PUBLIC -fconcepts)
   target_include_directories(${lib} PUBLIC include)
-  target_link_libraries(${lib} project_options xtensor)
+  target_link_libraries(${lib} xtensor)
   ament_target_dependencies(${lib} ${dependencies_pkgs})
 endforeach()
-
-# <<<< Critics
-if(ENABLE_TESTING)
-  enable_testing()
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-  add_subdirectory(test)
-endif()
-
-ament_export_libraries(${libraries})
-ament_export_dependencies(${dependencies_pkgs})
-ament_export_include_directories(include)
-pluginlib_export_plugin_description_file(nav2_core mppic.xml)
-pluginlib_export_plugin_description_file(mppic critics.xml)
 
 install(TARGETS mppic critics
   ARCHIVE DESTINATION lib
@@ -108,5 +61,19 @@ install(TARGETS mppic critics
 install(DIRECTORY include/
   DESTINATION include/
 )
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
+  set(ament_cmake_copyright_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+  add_subdirectory(test)
+endif()
+
+ament_export_libraries(${libraries})
+ament_export_dependencies(${dependencies_pkgs})
+ament_export_include_directories(include)
+pluginlib_export_plugin_description_file(nav2_core mppic.xml)
+pluginlib_export_plugin_description_file(mppic critics.xml)
 
 ament_package()
