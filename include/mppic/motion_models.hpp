@@ -13,7 +13,7 @@ class MotionModel
 {
 public:
   MotionModel() = default;
-  ~MotionModel() = default;
+  virtual ~MotionModel() = default;
 
   /**
    * @brief Predict velocities for given trajectories the next time step

@@ -72,7 +72,7 @@ TEST(MPPIOptimizer, OptimizerTestDiffFootprint)
   printMapWithTrajectoryAndGoal(*costmap, trajectory, goal_point);
 #endif
   EXPECT_TRUE(!inCollision(trajectory, *costmap));
-  EXPECT_FALSE(isGoalReached(trajectory, *costmap, goal_point));
+  EXPECT_TRUE(isGoalReached(trajectory, *costmap, goal_point));
 }
 
 TEST(MPPIOptimizer, OptimizerTestOmniCircle)
@@ -121,5 +121,15 @@ TEST(MPPIOptimizer, OptimizerTestOmniCircle)
   printMapWithTrajectoryAndGoal(*costmap, trajectory, goal_point);
 #endif
   EXPECT_TRUE(!inCollision(trajectory, *costmap));
-  EXPECT_FALSE(isGoalReached(trajectory, *costmap, goal_point));
+  EXPECT_TRUE(isGoalReached(trajectory, *costmap, goal_point));
+}
+
+TEST(MPPIOptimizer, AckermannException)
+{
+  mppi::MotionModel * model = new mppi::AckermannMotionModel();
+  xt::xtensor<double, 2> in;
+  mppi::optimization::StateIdxes idx;
+  EXPECT_FALSE(model->isHolonomic());
+  EXPECT_THROW(model->predict(in, idx), std::runtime_error);
+  delete model;
 }

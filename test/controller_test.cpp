@@ -52,4 +52,10 @@ TEST(MPPIController, ControllerTest)
   controller.computeVelocityCommands(pose, velocity, {});
 
   EXPECT_NO_THROW(controller.computeVelocityCommands(pose, velocity, {}));
+
+  controller.setSpeedLimit(0.5, true);
+  controller.setSpeedLimit(0.5, false);
+  controller.setSpeedLimit(1.0, true);
+  controller.deactivate();
+  controller.cleanup();
 }
