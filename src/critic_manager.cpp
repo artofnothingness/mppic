@@ -1,3 +1,4 @@
+// Copyright 2022 FastSense, Samsung Research
 #include "mppic/critic_manager.hpp"
 
 namespace mppi
@@ -21,15 +22,16 @@ void CriticManager::getParams()
 {
   auto node = parent_.lock();
   auto getParam = utils::getParamGetter(node, name_);
-  getParam(critics_names_, "critics_names", std::vector<std::string>{});
+  getParam(critic_names_, "critics", std::vector<std::string>{});
 }
+
 void CriticManager::loadCritics()
 {
   loader_ = std::make_unique<pluginlib::ClassLoader<critics::CriticFunction>>(
     "mppic", "mppi::critics::CriticFunction");
 
   critics_.clear();
-  for (auto name : critics_names_) {
+  for (auto name : critic_names_) {
     std::string fullname = getFullName(name);
     auto instance =
       std::unique_ptr<critics::CriticFunction>(loader_->createUnmanagedInstance(fullname));
@@ -45,7 +47,8 @@ std::string CriticManager::getFullName(const std::string & name)
 }
 
 xt::xtensor<double, 1> CriticManager::evalTrajectoriesScores(
-  const xt::xtensor<double, 3> & trajectories, const nav_msgs::msg::Path & global_plan,
+  const xt::xtensor<double, 3> & trajectories,
+  const nav_msgs::msg::Path & global_plan,
   const geometry_msgs::msg::PoseStamped & robot_pose,
   nav2_core::GoalChecker * goal_checker) const
 {
@@ -68,4 +71,4 @@ xt::xtensor<double, 1> CriticManager::evalTrajectoriesScores(
   return costs;
 }
 
-} // namespace mppi
+}  // namespace mppi

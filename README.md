@@ -70,10 +70,9 @@ make install
 
 #### CriticScorer params
 
- | Parameter       | Type   | Definition                                                                                                  |
- | --------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
- | critics_type    | string | Type of controller [float, double]                                                                          |
- | critics_names   | string | Critics (plugins) names
+ | Parameter       | Type        | Definition                                                                                                  |
+ | --------------- | ----------- | ----------------------------------------------------------------------------------------------------------- |
+ | critics         | string list | Critics (plugins) names
 
 #### GoalCritic params
  | Parameter       | Type   | Definition                                                                                                  |
@@ -130,7 +129,7 @@ controller_server:
       temperature: 0.25
       motion_model: "DiffDrive"
       visualize: false
-      critics_names: [ "GoalCritic", "GoalAngleCritic", "PathAngleCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
+      critics: [ "GoalCritic", "GoalAngleCritic", "PathAngleCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
       GoalCritic:
         goal_cost_power: 1
         goal_cost_weight: 8.0

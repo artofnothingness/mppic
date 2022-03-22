@@ -1,3 +1,4 @@
+// Copyright 2022 FastSense, Samsung Research
 #include <stdint.h>
 #include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
 #include "mppic/controller.hpp"
@@ -54,7 +55,8 @@ void Controller::deactivate()
 }
 
 geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
-  const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed,
+  const geometry_msgs::msg::PoseStamped & robot_pose,
+  const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * goal_checker)
 {
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
@@ -66,7 +68,8 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
 }
 
 void Controller::visualize(
-  const geometry_msgs::msg::PoseStamped & robot_pose, const geometry_msgs::msg::Twist & robot_speed,
+  const geometry_msgs::msg::PoseStamped & robot_pose,
+  const geometry_msgs::msg::Twist & robot_speed,
   nav_msgs::msg::Path transformed_plan)
 {
   if (!visualize_) {
@@ -78,7 +81,10 @@ void Controller::visualize(
   trajectory_visualizer_.visualize(transformed_plan);
 }
 
-void Controller::setPlan(const nav_msgs::msg::Path & path) {path_handler_.setPath(path);}
+void Controller::setPlan(const nav_msgs::msg::Path & path)
+{
+  path_handler_.setPath(path);
+}
 
 void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {
@@ -105,7 +111,7 @@ void Controller::setSpeedLimit(const double & speed_limit, const bool & percenta
   optimizer_.setControlConstraints(constraints);
 }
 
-} // namespace mppi
+}  // namespace mppi
 
 #include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(mppi::Controller, nav2_core::Controller)
