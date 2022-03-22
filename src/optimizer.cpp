@@ -1,5 +1,4 @@
-#include "mppic/optimizer.hpp"
-
+// Copyright 2022 FastSense, Samsung Research
 #include <limits>
 #include <memory>
 #include <string>
@@ -118,7 +117,7 @@ void Optimizer::shiftControlSequence()
     return;
   }
 
-  using namespace xt::placeholders;
+  using namespace xt::placeholders;  // NOLINT
   xt::view(
     control_sequence_.data,
     xt::range(_, -control_sequence_shift_offset_), xt::all()) =
@@ -194,7 +193,7 @@ void Optimizer::updateInitialStateVelocities(
 
 void Optimizer::propagateStateVelocitiesFromInitials(auto & state) const
 {
-  using namespace xt::placeholders;
+  using namespace xt::placeholders;  // NOLINT
 
   for (size_t i = 0; i < time_steps_ - 1; i++) {
     auto curr_state = xt::view(state.data, xt::all(), i);
@@ -224,7 +223,7 @@ xt::xtensor<double, 2> Optimizer::evalTrajectoryFromControlSequence(
 xt::xtensor<double, 3> Optimizer::integrateStateVelocities(
   const auto & state, const geometry_msgs::msg::PoseStamped & pose) const
 {
-  using namespace xt::placeholders;
+  using namespace xt::placeholders;  // NOLINT
 
   auto w = state.getVelocitiesWZ();
   double initial_yaw = tf2::getYaw(pose.pose.orientation);
