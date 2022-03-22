@@ -46,7 +46,8 @@ private:
 };
 
 /**
- * struct ControlSequence - combined data with it's named indexes of last dimension variables
+ * @brief Contains trajectory controls (in data) for each time step (vx, wz, [vy])
+ * last dimension layout described by ControlSequnceIdxes
  */
 struct ControlSequence
 {
