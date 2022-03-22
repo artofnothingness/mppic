@@ -1,3 +1,4 @@
+// Copyright 2022 FastSense, Samsung Research
 #include "gtest/gtest.h"
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -51,4 +52,10 @@ TEST(MPPIController, ControllerTest)
   controller.computeVelocityCommands(pose, velocity, {});
 
   EXPECT_NO_THROW(controller.computeVelocityCommands(pose, velocity, {}));
+
+  controller.setSpeedLimit(0.5, true);
+  controller.setSpeedLimit(0.5, false);
+  controller.setSpeedLimit(1.0, true);
+  controller.deactivate();
+  controller.cleanup();
 }

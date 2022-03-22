@@ -1,5 +1,10 @@
+// Copyright 2022 FastSense, Samsung Research
 #ifndef MPPIC__CRITIC_MANAGER_HPP_
 #define MPPIC__CRITIC_MANAGER_HPP_
+
+#include <string>
+#include <vector>
+#include <memory>
 
 #include <pluginlib/class_loader.hpp>
 #include <xtensor/xtensor.hpp>
@@ -48,13 +53,13 @@ protected:
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   std::string name_;
 
-  std::vector<std::string> critics_names_;
+  std::vector<std::string> critic_names_;
   std::unique_ptr<pluginlib::ClassLoader<critics::CriticFunction>> loader_;
   std::vector<std::unique_ptr<critics::CriticFunction>> critics_;
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
 
-} // namespace mppi
+}  // namespace mppi
 
-#endif // MPPIC__CRITIC_MANAGER_HPP_
+#endif  // MPPIC__CRITIC_MANAGER_HPP_
