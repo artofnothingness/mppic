@@ -74,8 +74,12 @@ private:
 };
 
 /**
- * struct State - combined data with it's named indexes of last dimension variables
- * plus access methods 
+ * @brief State represent current the state of optimization problem.
+ *
+ * State stores state of the system for each trajectory. It has shape [ batch_size x time_steps x dim ].
+ * Last dimension described by StateIdxes and consists of velocities, controls, 
+ * and amount of time between time steps (vx, [vy], wz, cvx, [cvy], cwz, dt)
+ * 
  **/
 struct State
 {
