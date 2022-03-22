@@ -35,13 +35,13 @@ public:
 class DiffDriveMotionModel : public MotionModel
 {
 public:
-  virtual bool isHolonomic() const override {return false;};
+  virtual bool isHolonomic() const override {return false;}
 };
 
 class OmniMotionModel : public MotionModel
 {
 public:
-  virtual bool isHolonomic() const override {return true;};
+  virtual bool isHolonomic() const override {return true;}
 };
 
 class AckermannMotionModel : public MotionModel
@@ -53,7 +53,7 @@ public:
     throw std::runtime_error("Ackermann motion model not yet implemented");
   }
 
-  virtual bool isHolonomic() const override {return false;};
+  virtual bool isHolonomic() const override {return false;}
 };
 
 } // namespace mppi

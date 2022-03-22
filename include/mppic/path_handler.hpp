@@ -14,6 +14,7 @@ namespace mppi
 
 using PathIterator = std::vector<geometry_msgs::msg::PoseStamped>::iterator;
 using StampType = decltype(std::declval<std_msgs::msg::Header>().stamp);
+using PathRange = std::pair<PathIterator, PathIterator>;
 
 class PathHandler
 {
@@ -51,7 +52,7 @@ protected:
   nav_msgs::msg::Path
   transformPlanPosesToCostmapFrame(PathIterator begin, PathIterator end, const StampType & stamp);
 
-  auto getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped & global_pose);
+  PathRange getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped & global_pose);
 
   void pruneGlobalPlan(const PathIterator end);
 
