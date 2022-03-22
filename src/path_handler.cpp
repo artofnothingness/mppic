@@ -1,6 +1,7 @@
-#include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "mppic/path_handler.hpp"
+
 #include "mppic/utils.hpp"
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 namespace mppi
 {
@@ -9,7 +10,8 @@ using nav2_util::geometry_utils::euclidean_distance;
 
 void PathHandler::initialize(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
-  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap, std::shared_ptr<tf2_ros::Buffer> buffer)
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap,
+  std::shared_ptr<tf2_ros::Buffer> buffer)
 {
   name_ = name;
   costmap_ = costmap;
@@ -22,7 +24,7 @@ void PathHandler::initialize(
   getParam(transform_tolerance_, "transform_tolerance", 0.1);
 }
 
-auto PathHandler::getGlobalPlanConsideringBounds(
+PathRange PathHandler::getGlobalPlanConsideringBounds(
   const geometry_msgs::msg::PoseStamped & global_pose)
 {
   auto begin = global_plan_.poses.begin();
@@ -33,25 +35,28 @@ auto PathHandler::getGlobalPlanConsideringBounds(
     global_plan_.poses.begin(), global_plan_.poses.end(), max_robot_pose_search_dist_);
 
   // Find closest point to the robot
+
   auto closest_point = nav2_util::geometry_utils::min_by(
     begin, closest_pose_upper_bound,
     [&global_pose](const geometry_msgs::msg::PoseStamped & ps) {
       return euclidean_distance(global_pose, ps);
     });
 
-  // Find the furthest relevent point on the path to consider within costmap bounds
+  // Find the furthest relevent point on the path to consider within costmap
+  // bounds
   auto max_costmap_dist = getMaxCostmapDist();
+
   auto last_point =
     std::find_if(
     closest_point, end, [&](const geometry_msgs::msg::PoseStamped & global_plan_pose) {
       return euclidean_distance(global_pose, global_plan_pose) > max_costmap_dist;
     });
 
-  return std::tuple{closest_point, last_point};
+  return {closest_point, last_point};
 }
 
-geometry_msgs::msg::PoseStamped
-PathHandler::transformToGlobalPlanFrame(const geometry_msgs::msg::PoseStamped & pose)
+geometry_msgs::msg::PoseStamped PathHandler::transformToGlobalPlanFrame(
+  const geometry_msgs::msg::PoseStamped & pose)
 {
   if (global_plan_.poses.empty()) {
     throw std::runtime_error("Received plan with zero length");
@@ -59,23 +64,25 @@ PathHandler::transformToGlobalPlanFrame(const geometry_msgs::msg::PoseStamped & 
 
   geometry_msgs::msg::PoseStamped robot_pose;
   if (!transformPose(global_plan_.header.frame_id, pose, robot_pose)) {
-    throw std::runtime_error("Unable to transform robot pose into global plan's frame");
+    throw std::runtime_error(
+            "Unable to transform robot pose into global plan's frame");
   }
 
   return robot_pose;
 }
 
-nav_msgs::msg::Path PathHandler::transformPath(const geometry_msgs::msg::PoseStamped & robot_pose)
+nav_msgs::msg::Path PathHandler::transformPath(
+  const geometry_msgs::msg::PoseStamped & robot_pose)
 {
   // Find relevent bounds of path to use
-  geometry_msgs::msg::PoseStamped global_pose = transformToGlobalPlanFrame(robot_pose);
+  geometry_msgs::msg::PoseStamped global_pose =
+    transformToGlobalPlanFrame(robot_pose);
   auto [lower_bound, upper_bound] = getGlobalPlanConsideringBounds(global_pose);
 
   // Transform these bounds into the local costmap frame and prune older points
   const auto & stamp = global_pose.header.stamp;
-  nav_msgs::msg::Path transformed_plan = transformPlanPosesToCostmapFrame(
-    lower_bound, upper_bound,
-    stamp);
+  nav_msgs::msg::Path transformed_plan =
+    transformPlanPosesToCostmapFrame(lower_bound, upper_bound, stamp);
 
   pruneGlobalPlan(lower_bound);
 
@@ -96,7 +103,9 @@ bool PathHandler::transformPose(
   }
 
   try {
-    tf_buffer_->transform(in_pose, out_pose, frame, tf2::durationFromSec(transform_tolerance_));
+    tf_buffer_->transform(
+      in_pose, out_pose, frame,
+      tf2::durationFromSec(transform_tolerance_));
     out_pose.header.frame_id = frame;
     return true;
   } catch (tf2::TransformException & ex) {
@@ -142,14 +151,11 @@ void PathHandler::setPath(const nav_msgs::msg::Path & plan)
   global_plan_ = plan;
 }
 
-nav_msgs::msg::Path & PathHandler::getPath()
-{
-  return global_plan_;
-}
+nav_msgs::msg::Path & PathHandler::getPath() {return global_plan_;}
 
 void PathHandler::pruneGlobalPlan(const PathIterator end)
 {
   global_plan_.poses.erase(global_plan_.poses.begin(), end);
 }
 
-} // namespace mppi
+}  // namespace mppi
