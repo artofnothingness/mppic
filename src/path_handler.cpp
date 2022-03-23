@@ -53,7 +53,7 @@ PathRange PathHandler::getGlobalPlanConsideringBounds(
       return euclidean_distance(global_pose, global_plan_pose) > max_costmap_dist;
     });
 
-  return {closest_point, last_point};
+  return PathRange{closest_point, last_point};
 }
 
 geometry_msgs::msg::PoseStamped PathHandler::transformToGlobalPlanFrame(
