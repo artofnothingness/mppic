@@ -1,11 +1,5 @@
 # Model Predictive Path Integral Controller
 
-## Differential drive  
-![](.resources/demo-diff.gif)
-
-## Omni
-![](.resources/demo-omni.gif)
-
 ## Overview
 
 Navigation2 Controller plugin. Currently testing on ros2 foxy.
@@ -28,22 +22,29 @@ All control sequences are weighted by trajectories costs using softmax function 
 
 This uses the usual ROS tools for dependency management, so please use ``rosdep`` to install the dependencies. 
 
-Note: If running on Ubuntu 20.04 or other OS's that `xtensor` is not released in in binary form, please manually install `xtensor` v 0.24.0 and `xtl` v 0.7.0. These are simply headers so the install process is trivially short, unfortunately the `xtensor` project isn't available in package managers in some common-place operating systems (albeit, all necessary ROS OS versions) so you may be required to do this yourself if building from source.
+Note: If running on Ubuntu 20.04 or other OS's that `xtensor` is not released in binary form, please manually install `xtensor` v 0.24.0 and `xtl` v 0.7.0. These are simply headers so the install process is trivially short, unfortunately the `xtensor` project isn't available in package managers in some common-place operating systems (albeit, all necessary ROS OS versions) so you may be required to do this yourself if building from source.
 
 ```
 git clone git@github.com:xtensor-stack/xtensor.git -b 0.24.0
 cd xtensor
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-make install
+cmake ..
+sudo make install
 
 git clone git@github.com:xtensor-stack/xtl.git -b 0.7.0
 cd xtl
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-make install
+cmake ..
+sudo make install
+
+# Optional
+git clone git@github.com:xtensor-stack/xsimd.git -b 8.0.5
+cd xsimd
+mkdir build
+cmake ..
+sudo make install
 ```
 
 
@@ -87,11 +88,11 @@ make install
  | goal_angle_cost_power            | int    |                                                                                                             |
  | threshold_to_consider_goal_angle | double | Minimal distance between robot and goal above which angle goal cost considered                              |
 
-#### AngleToGoalCritic params
+#### PathAngleCritic params
  | Parameter                 | Type   | Definition                                                                                                  |
  | ---------------           | ------ | ----------------------------------------------------------------------------------------------------------- |
- | angle_to_goal_cost_weight | double |                                                                                                             |
- | angle_to_goal_cost_power  | int    |                                                                                                             |
+ | path_angle_cost_power     | double |                                                                                                             |
+ | path_angle_cost_weight    | int    |                                                                                                             |
 
 #### [Approx]ReferenceTrajectoryCritic params
  | Parameter             | Type   | Definition                                                                                                  |
