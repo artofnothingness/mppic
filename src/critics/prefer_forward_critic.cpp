@@ -11,7 +11,7 @@ void PreferForwardCritic::initialize()
 
   auto getParam = utils::getParamGetter(node, name_);
   getParam(power_, "prefer_forward_cost_power", 1);
-  getParam(weight_, "prefer_forward_cost_weight", 20.0);
+  getParam(weight_, "prefer_forward_cost_weight", 10.0);
 
   RCLCPP_INFO(
     logger_, "PreferForwardCritic instantiated with %d power and %f weight.", power_, weight_);
@@ -24,17 +24,17 @@ void PreferForwardCritic::score(
 {
   using namespace xt::placeholders;
 
-  xt::xtensor<T, 2> x_diff = xt::view(trajectories, xt::all(), xt::range(1, _), 0) -
+  auto x_diff = xt::view(trajectories, xt::all(), xt::range(1, _), 0) -
               xt::view(trajectories, xt::all(), xt::range(_, -1), 0);
-  xt::xtensor<T, 2> y_diff = xt::view(trajectories, xt::all(), xt::range(1, _), 1) -
+  auto y_diff = xt::view(trajectories, xt::all(), xt::range(1, _), 1) -
               xt::view(trajectories, xt::all(), xt::range(_, -1), 1);
 
-  xt::xtensor<T, 2> yaws = xt::view(trajectories, xt::all(), xt::range(_, -1), 2);
-  xt::xtensor<T, 2> thetas = xt::atan2(y_diff, x_diff) - yaws - M_PI;
-  xt::xtensor<T, 2> v_negative = xt::cos(thetas) * xt::sqrt(x_diff * x_diff + y_diff * y_diff);
-  v_negative = xt::maximum(v_negative, 0);
+  auto yaws = xt::view(trajectories, xt::all(), xt::range(_, -1), 2);
+  auto thetas = xt::eval(xt::atan2(y_diff, x_diff) - yaws);
+  auto forward_translation_reversed = -(xt::cos(thetas) * x_diff + xt::sin(thetas) * y_diff);
+  auto backward_translation = xt::maximum(forward_translation_reversed, 0);
 
-  costs += xt::pow(xt::mean(v_negative, {1}) * weight_, power_);
+  costs += xt::pow(xt::mean(backward_translation, {1}) * weight_, power_);
 }
 
 

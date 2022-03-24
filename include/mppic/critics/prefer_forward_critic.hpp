@@ -1,5 +1,6 @@
-#pragma once
 // Copyright 2022 FastSense, Samsung Research
+
+#pragma once
 
 
 #include "mppic/critic_function.hpp"
