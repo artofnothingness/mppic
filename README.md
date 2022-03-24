@@ -67,7 +67,7 @@ make install
 #### GoalCritic params
  | Parameter            | Type   | Definition                                                                                                  |
  | -------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
- | goal_goal_cost_weight| double |                                                                                                             |
+ | goal_cost_weight     | double |                                                                                                             |
  | goal_cost_power      | int    |                                                                                                             |
 
 #### GoalAngleCritic params
