@@ -25,5 +25,10 @@
       <description>mppi critic for tracking the path in the correct heading</description>
     </class>
 
+    <class type="mppi::critics::PreferForwardCritic" base_class_type="mppi::critics::CriticFunction">
+      <description></description>
+    </class>
+
+
   </library>
 </class_libraries>
