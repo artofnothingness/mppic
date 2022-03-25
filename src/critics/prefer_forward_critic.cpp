@@ -24,17 +24,17 @@ void PreferForwardCritic::score(
 {
   using namespace xt::placeholders;
 
-  auto x_diff = xt::view(trajectories, xt::all(), xt::range(1, _), 0) -
+  auto dx = xt::view(trajectories, xt::all(), xt::range(1, _), 0) -
               xt::view(trajectories, xt::all(), xt::range(_, -1), 0);
-  auto y_diff = xt::view(trajectories, xt::all(), xt::range(1, _), 1) -
+  auto dy = xt::view(trajectories, xt::all(), xt::range(1, _), 1) -
               xt::view(trajectories, xt::all(), xt::range(_, -1), 1);
 
   auto yaws = xt::view(trajectories, xt::all(), xt::range(_, -1), 2);
-  auto thetas = xt::eval(xt::atan2(y_diff, x_diff) - yaws);
-  auto forward_translation_reversed = -(xt::cos(thetas) * x_diff + xt::sin(thetas) * y_diff);
+  auto thetas = xt::eval(xt::atan2(dy, dx) - yaws);
+  auto forward_translation_reversed = -xt::cos(thetas) * xt::hypot(dx, dy);
   auto backward_translation = xt::maximum(forward_translation_reversed, 0);
 
-  costs += xt::pow(xt::mean(backward_translation, {1}) * weight_, power_);
+  costs += xt::pow(xt::sum(backward_translation, {1}) * weight_, power_);
 }
 
 
