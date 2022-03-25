@@ -1,5 +1,6 @@
 // Copyright 2022 FastSense, Samsung Research
 #include "mppic/critics/obstacles_critic.hpp"
+
 #include <xtensor/xaxis_slice_iterator.hpp>
 
 namespace mppi::critics
@@ -24,8 +25,9 @@ void ObstaclesCritic::initialize()
 
 void ObstaclesCritic::score(
   const geometry_msgs::msg::PoseStamped & /*robot_pose*/,
-  const xt::xtensor<double, 3> & trajectories, const xt::xtensor<double, 2> & /*path*/,
-  xt::xtensor<double, 1> & costs, nav2_core::GoalChecker * /*goal_checker*/)
+  const optimization::State & /*state*/, const xt::xtensor<double, 3> & trajectories,
+  const xt::xtensor<double, 2> & /*path*/, xt::xtensor<double, 1> & costs,
+  nav2_core::GoalChecker * /*goal_checker*/)
 {
   constexpr double COLLISION_COST = std::numeric_limits<double>::max() / 4;
 
@@ -44,7 +46,8 @@ void ObstaclesCritic::score(
       }
     }
 
-    costs[i] += trajectory_collide ? COLLISION_COST : scoreCost(trajectory_cost);
+    costs[i] +=
+      trajectory_collide ? COLLISION_COST : scoreCost(trajectory_cost);
   }
 }
 
@@ -55,14 +58,16 @@ unsigned char ObstaclesCritic::costAtPose(const auto & point)
     cost = static_cast<unsigned char>(collision_checker_.footprintCostAtPose(
         point(0), point(1), point(2), costmap_ros_->getRobotFootprint()));
   } else {
-    cost = static_cast<unsigned char>(collision_checker_.pointCost(point(0), point(1)));
+    cost = static_cast<unsigned char>(
+      collision_checker_.pointCost(point(0), point(1)));
   }
   return cost;
 }
 
 bool ObstaclesCritic::inCollision(unsigned char cost) const
 {
-  bool is_tracking_unknown = costmap_ros_->getLayeredCostmap()->isTrackingUnknown();
+  bool is_tracking_unknown =
+    costmap_ros_->getLayeredCostmap()->isTrackingUnknown();
 
   switch (cost) {
     case (nav2_costmap_2d::LETHAL_OBSTACLE):
@@ -95,4 +100,6 @@ double ObstaclesCritic::scoreCost(unsigned char cost_arg)
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(mppi::critics::ObstaclesCritic, mppi::critics::CriticFunction)
+PLUGINLIB_EXPORT_CLASS(
+  mppi::critics::ObstaclesCritic,
+  mppi::critics::CriticFunction)
