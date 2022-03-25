@@ -3,9 +3,9 @@
 #define MPPIC__CRITIC_MANAGER_HPP_
 
 #include <memory>
-#include <pluginlib/class_loader.hpp>
 #include <string>
 #include <vector>
+#include <pluginlib/class_loader.hpp>
 #include <xtensor/xtensor.hpp>
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -27,8 +27,7 @@ public:
   CriticManager() = default;
 
   void on_configure(
-    rclcpp_lifecycle::LifecycleNode::WeakPtr parent,
-    const std::string & name,
+    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros);
 
   /**

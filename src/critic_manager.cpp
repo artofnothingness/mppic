@@ -65,9 +65,7 @@ xt::xtensor<double, 1> CriticManager::evalTrajectoriesScores(
 
   // Evaluate each trajectory by the critics
   for (size_t q = 0; q < critics_.size(); q++) {
-    critics_[q]->score(
-      robot_pose, state, trajectories, path, costs,
-      goal_checker);
+    critics_[q]->score(robot_pose, state, trajectories, path, costs, goal_checker);
   }
 
   return costs;
