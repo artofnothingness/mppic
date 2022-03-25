@@ -30,8 +30,8 @@ void PreferForwardCritic::score(
               xt::view(trajectories, xt::all(), xt::range(_, -1), 1);
 
   auto yaws = xt::view(trajectories, xt::all(), xt::range(_, -1), 2);
-  auto thetas = xt::eval(xt::atan2(dy, dx) - yaws);
-  auto forward_translation_reversed = -xt::cos(thetas) * xt::hypot(dx, dy);
+  auto yaws_local = xt::atan2(dy, dx) - yaws;
+  auto forward_translation_reversed = -xt::cos(yaws_local) * xt::hypot(dx, dy);
   auto backward_translation = xt::maximum(forward_translation_reversed, 0);
 
   costs += xt::pow(xt::sum(backward_translation, {1}) * weight_, power_);
