@@ -2,22 +2,21 @@
 #ifndef MPPIC__CRITIC_MANAGER_HPP_
 #define MPPIC__CRITIC_MANAGER_HPP_
 
+#include <memory>
+#include <pluginlib/class_loader.hpp>
 #include <string>
 #include <vector>
-#include <memory>
-
-#include <pluginlib/class_loader.hpp>
 #include <xtensor/xtensor.hpp>
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
+#include "mppic/critic_function.hpp"
+#include "mppic/tensor_wrappers/state.hpp"
+#include "mppic/utils.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-
-#include "mppic/critic_function.hpp"
-#include "mppic/utils.hpp"
 
 namespace mppi
 {
@@ -28,7 +27,8 @@ public:
   CriticManager() = default;
 
   void on_configure(
-    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
+    rclcpp_lifecycle::LifecycleNode::WeakPtr parent,
+    const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros);
 
   /**
@@ -39,7 +39,9 @@ public:
    * @return Cost for each trajectory
    */
   xt::xtensor<double, 1> evalTrajectoriesScores(
-    const xt::xtensor<double, 3> & trajectories, const nav_msgs::msg::Path & global_plan,
+    const optimization::State & state,
+    const xt::xtensor<double, 3> & trajectories,
+    const nav_msgs::msg::Path & global_plan,
     const geometry_msgs::msg::PoseStamped & robot_pose,
     nav2_core::GoalChecker * goal_checker) const;
 

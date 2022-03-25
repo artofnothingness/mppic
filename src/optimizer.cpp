@@ -103,7 +103,7 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
     generated_trajectories_ =
       generateNoisedTrajectories(robot_pose, robot_speed);
     auto && costs = critic_manager_.evalTrajectoriesScores(
-      generated_trajectories_, plan, robot_pose, goal_checker);
+      state_, generated_trajectories_, plan, robot_pose, goal_checker);
     updateControlSequence(costs);
   }
 

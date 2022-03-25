@@ -14,6 +14,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav2_core/goal_checker.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "mppic/tensor_wrappers/state.hpp"
 
 namespace mppi::critics
 {
@@ -40,8 +41,9 @@ public:
   virtual void initialize() = 0;
 
   virtual void score(
-    const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<double, 3> & trajectories,
-    const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs,
+    const geometry_msgs::msg::PoseStamped & robot_pose, const optimization::State & state,
+    const xt::xtensor<double, 3> & trajectories, const xt::xtensor<double, 2> & path,
+    xt::xtensor<double, 1> & costs,
     nav2_core::GoalChecker * goal_checker) = 0;
 
 protected:
