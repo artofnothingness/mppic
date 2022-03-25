@@ -22,7 +22,7 @@ void PreferForwardCritic::score(
   const xt::xtensor<double, 2> & /* path */, xt::xtensor<double, 1> & costs,
   nav2_core::GoalChecker * /* goal_checker */)
 {
-  using namespace xt::placeholders;
+  using namespace xt::placeholders;  // NOLINT
 
   auto dx = xt::view(trajectories, xt::all(), xt::range(1, _), 0) -
               xt::view(trajectories, xt::all(), xt::range(_, -1), 0);
