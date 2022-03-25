@@ -115,6 +115,12 @@ sudo make install
  | prefer_forward_cost_weight | double |                                                                                                             |
  | prefer_forward_cost_power  | int    |                                                                                                             |
 
+#### TwirlingCritic params
+ | Parameter             | Type   | Definition                                                                                                  |
+ | ---------------       | ------ | ----------------------------------------------------------------------------------------------------------- |
+ | twirling_cost_weight | double |                                                                                                             |
+ | twirling_cost_power  | int    |                                                                                                             |
+
 
 
 ### XML configuration example
