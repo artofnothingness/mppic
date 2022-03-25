@@ -108,6 +108,12 @@ make install
  | inflation_cost_scaling_factor | int    | Must be set accurately according to inflation layer params                                                  |
  | inflation_radius              | double | Must be set accurately according to inflation layer params                                                  |
 
+#### PreferForwardCritic params
+ | Parameter             | Type   | Definition                                                                                                  |
+ | ---------------       | ------ | ----------------------------------------------------------------------------------------------------------- |
+ | prefer_forward_cost_weight | double |                                                                                                             |
+ | prefer_forward_cost_power  | int    |                                                                                                             |
+
 
 
 ### XML configuration example
@@ -129,7 +135,7 @@ controller_server:
       temperature: 0.25
       motion_model: "DiffDrive"
       visualize: false
-      critics: [ "GoalCritic", "GoalAngleCritic", "PathAngleCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
+      critics: [ "GoalCritic", "PreferForwardCritic", GoalAngleCritic", "PathAngleCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
       GoalCritic:
         goal_cost_power: 1
         goal_cost_weight: 8.0
@@ -147,6 +153,9 @@ controller_server:
       PathAngleCritic:
         path_angle_cost_power: 1
         path_angle_cost_weight: 0.5
+      PreferForwardCritic:
+        prefer_forward_cost_power: 1
+        prefer_forward_cost_weight: 50.0
 ```
 
 ## Topics
