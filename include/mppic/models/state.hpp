@@ -9,7 +9,7 @@
 #include <xtensor/xview.hpp>
 #include <xtensor/xarray.hpp>
 
-namespace mppi::optimization
+namespace mppi::models
 {
 
 /**

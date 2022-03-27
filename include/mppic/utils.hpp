@@ -11,7 +11,7 @@
 #include <xtensor/xview.hpp>
 
 #include "geometry_msgs/msg/twist_stamped.hpp"
-#include "mppic/tensor_wrappers/control_sequence.hpp"
+#include "mppic/models/control_sequence.hpp"
 #include "nav2_util/node_utils.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -21,11 +21,6 @@
 
 namespace mppi::utils
 {
-
-struct ControlConstraints
-{
-  double vx, vy, vw;
-};
 
 template<typename NodeT>
 auto getParamGetter(NodeT node, const std::string & name)
@@ -53,7 +48,7 @@ auto getParamGetter(NodeT node, const std::string & name)
 
 template<typename T, typename H>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, const optimization::ControlSequnceIdxes & idx,
+  const T & velocities, const models::ControlSequnceIdxes & idx,
   const bool & is_holonomic, const H & header)
 {
   geometry_msgs::msg::TwistStamped twist;
@@ -72,7 +67,7 @@ geometry_msgs::msg::TwistStamped toTwistStamped(
 
 template<typename T, typename S>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, optimization::ControlSequnceIdxes idx,
+  const T & velocities, models::ControlSequnceIdxes idx,
   const bool & is_holonomic, const S & stamp, const std::string & frame)
 {
   geometry_msgs::msg::TwistStamped twist;

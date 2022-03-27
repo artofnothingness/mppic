@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-#include "mppic/tensor_wrappers/state.hpp"
+#include "mppic/models/state.hpp"
 
 namespace mppi
 {
@@ -25,7 +25,7 @@ public:
    * where last dim could be 2 or 3 depending on motion model used
    */
   virtual xt::xtensor<double, 2> predict(
-    const xt::xtensor<double, 2> & state, const optimization::StateIdxes & idx)
+    const xt::xtensor<double, 2> & state, const models::StateIdxes & idx)
   {
     return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
   }
@@ -49,7 +49,7 @@ class AckermannMotionModel : public MotionModel
 {
 public:
   xt::xtensor<double, 2> predict(
-    const xt::xtensor<double, 2> & /*state*/, const optimization::StateIdxes & /*idx*/) override
+    const xt::xtensor<double, 2> & /*state*/, const models::StateIdxes & /*idx*/) override
   {
     throw std::runtime_error("Ackermann motion model not yet implemented");
   }
