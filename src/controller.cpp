@@ -88,10 +88,10 @@ void Controller::setSpeedLimit(const double & speed_limit, const bool & percenta
   if (speed_limit != nav2_costmap_2d::NO_SPEED_LIMIT) {
     if (percentage) {
       // Speed limit is expressed in % from maximum speed of robot
-      double speed_limit_percentage = speed_limit / 100.0;
-      constraints.vx *= speed_limit_percentage;
-      constraints.vy *= speed_limit_percentage;
-      constraints.vw *= speed_limit_percentage;
+      double ratio = speed_limit / 100.0;
+      constraints.vx *= ratio;
+      constraints.vy *= ratio;
+      constraints.vw *= ratio;
     } else {
       // Speed limit is expressed in absolute value
       double ratio = speed_limit / constraints.vx;
