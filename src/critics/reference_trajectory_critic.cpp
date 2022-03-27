@@ -23,7 +23,7 @@ void ReferenceTrajectoryCritic::score(
   const xt::xtensor<double, 3> & trajectories, const xt::xtensor<double, 2> & path,
   xt::xtensor<double, 1> & costs, nav2_core::GoalChecker * goal_checker)
 {
-  if (withinPositionGoalTolerance(goal_checker, robot_pose, path)) {
+  if (utils::withinPositionGoalTolerance(goal_checker, robot_pose, path)) {
     return;
   }
 

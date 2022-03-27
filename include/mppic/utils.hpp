@@ -13,6 +13,7 @@
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "mppic/models/control_sequence.hpp"
 #include "nav2_util/node_utils.hpp"
+#include "nav2_core/goal_checker.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -80,6 +81,33 @@ inline xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
   }
 
   return points;
+}
+
+inline bool withinPositionGoalTolerance(
+  nav2_core::GoalChecker * goal_checker,
+  const geometry_msgs::msg::PoseStamped & robot_pose_arg,
+  const xt::xtensor<double, 2> & path)
+{
+  if (goal_checker) {
+    geometry_msgs::msg::Pose pose_tol;
+    geometry_msgs::msg::Twist vel_tol;
+    goal_checker->getTolerances(pose_tol, vel_tol);
+
+    const double & goal_tol = pose_tol.position.x;
+
+    xt::xtensor<double, 1> robot_pose = {
+      static_cast<double>(robot_pose_arg.pose.position.x),
+      static_cast<double>(robot_pose_arg.pose.position.y)};
+    auto goal_pose = xt::view(path, -1, xt::range(0, 2));
+
+    double dist_to_goal = xt::norm_l2(robot_pose - goal_pose, {0})();
+
+    if (dist_to_goal < goal_tol) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace mppi::utils
