@@ -8,6 +8,7 @@
 
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
+#include <xtensor/xmath.hpp>
 #include <xtensor/xview.hpp>
 
 #include "geometry_msgs/msg/twist_stamped.hpp"
@@ -102,6 +103,41 @@ inline bool withinPositionGoalTolerance(
   }
 
   return false;
+}
+
+
+/**
+  * @brief normalize
+  *
+  * Normalizes the angle to be -M_PI circle to +M_PI circle
+  * It takes and returns radians.
+  *
+  */
+template<typename T>
+xt::xtensor<double, 2> normalize_angles(const T & angles)
+{
+  xt::xtensor<double, 2> theta = xt::fmod(angles + M_PI, 2.0 * M_PI);
+  return xt::where(theta <= 0.0, theta + M_PI, theta - M_PI);
+}
+
+
+/**
+  * @brief shortest_angular_distance
+  *
+  * Given 2 angles, this returns the shortest angular
+  * difference.  The inputs and ouputs are of course radians.
+  *
+  * The result
+  * would always be -pi <= result <= pi.  Adding the result
+  * to "from" will always get you an equivelent angle to "to".
+  *
+  */
+template<typename F, typename T>
+xt::xtensor<double, 2> shortest_angular_distance(
+  const F & from,
+  const T & to)
+{
+  return normalize_angles(to - from);
 }
 
 }  // namespace mppi::utils
