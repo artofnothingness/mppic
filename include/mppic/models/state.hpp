@@ -1,6 +1,6 @@
 // Copyright 2022 FastSense, Samsung Research
-#ifndef MPPIC__TENSOR_WRAPPERS__STATE_HPP_
-#define MPPIC__TENSOR_WRAPPERS__STATE_HPP_
+#ifndef MPPIC__MODELS__STATE_HPP_
+#define MPPIC__MODELS__STATE_HPP_
 
 #include <array>
 #include <cstdint>
@@ -183,6 +183,6 @@ struct State
   }
 };
 
-}  // namespace mppi::optimization
+}  // namespace mppi::models
 
-#endif  // MPPIC__TENSOR_WRAPPERS__STATE_HPP_
+#endif  // MPPIC__MODELS__STATE_HPP_

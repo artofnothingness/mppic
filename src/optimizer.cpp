@@ -10,6 +10,7 @@
 
 #include "nav2_core/exceptions.hpp"
 #include "nav2_costmap_2d/cost_values.hpp"
+#include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
 
 #include "mppic/optimizer.hpp"
 
@@ -49,10 +50,10 @@ void Optimizer::getParams()
   getParam(iteration_count_, "iteration_count", 2);
   getParam(temperature_, "temperature", 0.25);
 
-  getParam(default_constraints_.vx, "vx_max", 0.5);
-  getParam(default_constraints_.vy, "vy_max", 1.3);
-  getParam(default_constraints_.vw, "wz_max", 1.3);
-  constraints_ = default_constraints_;
+  getParam(base_constraints_.vx, "vx_max", 0.5);
+  getParam(base_constraints_.vy, "vy_max", 1.3);
+  getParam(base_constraints_.wz, "wz_max", 1.3);
+  constraints_ = base_constraints_;
 
   getParam(sampling_std_.vx, "vx_std", 0.1);
   getParam(sampling_std_.vy, "vy_std", 0.1);
@@ -82,6 +83,30 @@ void Optimizer::setOffset()
     control_sequence_shift_offset_ = 1;
   } else {
     throw std::runtime_error("Controller period more then model dt, set it equal to model dt");
+  }
+}
+
+
+void Optimizer::setSpeedLimit(double speed_limit, bool percentage)
+{
+  if (speed_limit == nav2_costmap_2d::NO_SPEED_LIMIT) {
+    constraints_.vx = base_constraints_.vx;
+    constraints_.vy = base_constraints_.vy;
+    constraints_.wz = base_constraints_.wz;
+  } else {
+    if (percentage) {
+      // Speed limit is expressed in % from maximum speed of robot
+      double ratio = speed_limit / 100.0;
+      constraints_.vx = base_constraints_.vx * ratio;
+      constraints_.vy = base_constraints_.vy * ratio;
+      constraints_.wz = base_constraints_.wz * ratio;
+    } else {
+      // Speed limit is expressed in absolute value
+      double ratio = speed_limit / base_constraints_.vx;
+      constraints_.vx = speed_limit;
+      constraints_.vy = base_constraints_.vx * ratio;
+      constraints_.wz = base_constraints_.wz * ratio;
+    }
   }
 }
 
@@ -171,7 +196,7 @@ void Optimizer::applyControlConstraints()
   }
 
   vx = xt::clip(vx, -constraints_.vx, constraints_.vx);
-  wz = xt::clip(wz, -constraints_.vw, constraints_.vw);
+  wz = xt::clip(wz, -constraints_.wz, constraints_.wz);
 }
 
 void Optimizer::updateStateVelocities(
@@ -279,7 +304,7 @@ auto Optimizer::getControlFromSequence(const unsigned int offset)
 }
 
 geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
-  const unsigned int offset, const StampType & stamp)
+  const unsigned int offset, const builtin_interfaces::msg::Time & stamp)
 {
   return utils::toTwistStamped(
     getControlFromSequence(offset),
@@ -311,21 +336,5 @@ xt::xtensor<double, 3> & Optimizer::getGeneratedTrajectories()
 {
   return generated_trajectories_;
 }
-
-void Optimizer::setControlConstraints(const models::ControlConstraints & constraints)
-{
-  constraints_ = constraints;
-}
-
-models::ControlConstraints Optimizer::getControlConstraints()
-{
-  return constraints_;
-}
-
-models::ControlConstraints Optimizer::getDefaultControlConstraints()
-{
-  return default_constraints_;
-}
-
 
 }  // namespace mppi

@@ -7,7 +7,7 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "std_msgs/msg/header.hpp"
+#include "builtin_interfaces/msg/time.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
@@ -19,15 +19,12 @@
 #include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/control_sequence.hpp"
-#include "mppic/models/control_constraints.hpp"
+#include "mppic/models/constraints.hpp"
 #include "mppic/models/state.hpp"
-#include "mppic/models/sampling_std.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi
 {
-
-using StampType = decltype(std::declval<std_msgs::msg::Header>().stamp);
 
 class Optimizer
 {
@@ -52,9 +49,8 @@ public:
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed) const;
 
-  models::ControlConstraints getDefaultControlConstraints();
-  models::ControlConstraints getControlConstraints();
-  void setControlConstraints(const models::ControlConstraints & constraints);
+
+  void setSpeedLimit(double speed_limit, bool percentage);
 
 protected:
   void getParams();
@@ -122,7 +118,9 @@ protected:
    */
   auto getControlFromSequence(const unsigned int offset);
   geometry_msgs::msg::TwistStamped
-  getControlFromSequenceAsTwist(const unsigned int offset, const StampType & stamp);
+  getControlFromSequenceAsTwist(
+    const unsigned int offset,
+    const builtin_interfaces::msg::Time & stamp);
 
   bool isHolonomic() const;
 
@@ -140,8 +138,7 @@ protected:
   double model_dt_{0};
   double temperature_{0};
 
-  // TODO (@artofnothingness) use eigen ?
-  models::ControlConstraints default_constraints_{0, 0, 0};
+  models::ControlConstraints base_constraints_{0, 0, 0};
   models::ControlConstraints constraints_{0, 0, 0};
   models::SamplingStd sampling_std_{0, 0, 0};
   models::State state_;

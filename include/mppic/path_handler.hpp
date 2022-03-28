@@ -11,7 +11,7 @@
 #include "tf2_ros/buffer.h"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
-#include "std_msgs/msg/header.hpp"
+#include "builtin_interfaces/msg/time.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav2_util/geometry_utils.hpp"
 
@@ -19,7 +19,6 @@ namespace mppi
 {
 
 using PathIterator = std::vector<geometry_msgs::msg::PoseStamped>::iterator;
-using StampType = decltype(std::declval<std_msgs::msg::Header>().stamp);
 using PathRange = std::pair<PathIterator, PathIterator>;
 
 class PathHandler
@@ -56,7 +55,9 @@ protected:
   transformToGlobalPlanFrame(const geometry_msgs::msg::PoseStamped & pose);
 
   nav_msgs::msg::Path
-  transformPlanPosesToCostmapFrame(PathIterator begin, PathIterator end, const StampType & stamp);
+  transformPlanPosesToCostmapFrame(
+    PathIterator begin, PathIterator end,
+    const builtin_interfaces::msg::Time & stamp);
 
   PathRange getGlobalPlanConsideringBounds(const geometry_msgs::msg::PoseStamped & global_pose);
 

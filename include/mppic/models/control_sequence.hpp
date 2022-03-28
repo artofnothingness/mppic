@@ -1,6 +1,7 @@
 // Copyright 2022 FastSense, Samsung Research
-#ifndef MPPIC__TENSOR_WRAPPERS__CONTROL_SEQUENCE_HPP_
-#define MPPIC__TENSOR_WRAPPERS__CONTROL_SEQUENCE_HPP_
+
+#ifndef MPPIC__MODELS__CONTROL_SEQUENCE_HPP_
+#define MPPIC__MODELS__CONTROL_SEQUENCE_HPP_
 
 #include <array>
 #include <cstdint>
@@ -58,6 +59,6 @@ struct ControlSequence
   void reset(unsigned int time_steps) {data = xt::zeros<double>({time_steps, idx.dim()});}
 };
 
-}  // namespace mppi::optimization
+}  // namespace mppi::models
 
-#endif  // MPPIC__TENSOR_WRAPPERS__CONTROL_SEQUENCE_HPP_
+#endif  // MPPIC__MODELS__CONTROL_SEQUENCE_HPP_
