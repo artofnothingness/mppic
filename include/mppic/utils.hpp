@@ -8,6 +8,7 @@
 
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
+#include <xtensor/xmath.hpp>
 #include <xtensor/xview.hpp>
 
 #include "geometry_msgs/msg/twist_stamped.hpp"
@@ -102,6 +103,21 @@ inline bool withinPositionGoalTolerance(
   }
 
   return false;
+}
+
+template <typename T>
+xt::xtensor<double, 2> normalize_angles(const T &angles)
+{
+  xt::xtensor<double, 2> theta = xt::fmod(angles + M_PI, 2.0 * M_PI);
+  return xt::where(theta <= 0.0, theta + M_PI, theta - M_PI);
+}
+
+template <typename F, typename T>
+xt::xtensor<double, 2> shortest_angular_distance(
+  const F & from, 
+  const T & to)
+{
+  return normalize_angles(to-from);
 }
 
 }  // namespace mppi::utils
