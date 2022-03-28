@@ -33,8 +33,8 @@ void CriticManager::loadCritics()
   critics_.clear();
   for (auto name : critic_names_) {
     std::string fullname = getFullName(name);
-    auto instance =
-      std::unique_ptr<critics::CriticFunction>(loader_->createUnmanagedInstance(fullname));
+    auto instance = std::unique_ptr<critics::CriticFunction>(
+      loader_->createUnmanagedInstance(fullname));
     critics_.push_back(std::move(instance));
     critics_.back()->on_configure(parent_, name_ + "." + name, costmap_ros_);
     RCLCPP_INFO(logger_, "Critic loaded : %s", fullname.c_str());
@@ -47,7 +47,7 @@ std::string CriticManager::getFullName(const std::string & name)
 }
 
 xt::xtensor<double, 1> CriticManager::evalTrajectoriesScores(
-  const xt::xtensor<double, 3> & trajectories,
+  const models::State & state, const xt::xtensor<double, 3> & trajectories,
   const nav_msgs::msg::Path & global_plan,
   const geometry_msgs::msg::PoseStamped & robot_pose,
   nav2_core::GoalChecker * goal_checker) const
@@ -65,7 +65,7 @@ xt::xtensor<double, 1> CriticManager::evalTrajectoriesScores(
 
   // Evaluate each trajectory by the critics
   for (size_t q = 0; q < critics_.size(); q++) {
-    critics_[q]->score(robot_pose, trajectories, path, costs, goal_checker);
+    critics_[q]->score(robot_pose, state, trajectories, path, costs, goal_checker);
   }
 
   return costs;

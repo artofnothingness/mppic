@@ -13,15 +13,20 @@ void PathAngleCritic::initialize()
   getParam(weight_, "path_angle_cost_weight", 15.0);
 
   RCLCPP_INFO(
-    logger_, "PathAngleCritic instantiated with %d power and %f weight.", power_, weight_);
+    logger_,
+    "PathAngleCritic instantiated with %d power and %f weight.",
+    power_, weight_);
 }
 
 void PathAngleCritic::score(
-  const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<double, 3> & trajectories,
-  const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs,
+  const geometry_msgs::msg::PoseStamped & robot_pose,
+  const models::State & /*state*/,
+  const xt::xtensor<double, 3> & trajectories,
+  const xt::xtensor<double, 2> & path,
+  xt::xtensor<double, 1> & costs,
   nav2_core::GoalChecker * goal_checker)
 {
-  if (withinPositionGoalTolerance(goal_checker, robot_pose, path)) {
+  if (utils::withinPositionGoalTolerance(goal_checker, robot_pose, path)) {
     return;
   }
 
@@ -31,7 +36,7 @@ void PathAngleCritic::score(
   auto traj_ys = xt::view(trajectories, xt::all(), xt::all(), 1);
   auto traj_yaws = xt::view(trajectories, xt::all(), xt::all(), 2);
 
-  auto yaws_between_points = atan2(goal_y - traj_ys, goal_x - traj_xs);
+  auto yaws_between_points = xt::atan2(goal_y - traj_ys, goal_x - traj_xs);
   auto yaws = xt::abs(traj_yaws - yaws_between_points);
 
   costs += xt::pow(xt::mean(yaws, {1}) * weight_, power_);
@@ -41,4 +46,6 @@ void PathAngleCritic::score(
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(mppi::critics::PathAngleCritic, mppi::critics::CriticFunction)
+PLUGINLIB_EXPORT_CLASS(
+  mppi::critics::PathAngleCritic,
+  mppi::critics::CriticFunction)

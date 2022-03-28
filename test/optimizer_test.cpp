@@ -128,7 +128,7 @@ TEST(MPPIOptimizer, AckermannException)
 {
   mppi::AckermannMotionModel model;
   xt::xtensor<double, 2> in;
-  mppi::optimization::StateIdxes idx;
+  mppi::models::StateIdxes idx;
   EXPECT_FALSE(model.isHolonomic());
   EXPECT_THROW(model.predict(in, idx), std::runtime_error);
 }

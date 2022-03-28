@@ -25,5 +25,14 @@
       <description>mppi critic for tracking the path in the correct heading</description>
     </class>
 
+    <class type="mppi::critics::PreferForwardCritic" base_class_type="mppi::critics::CriticFunction">
+      <description></description>
+    </class>
+
+    <class type="mppi::critics::TwirlingCritic" base_class_type="mppi::critics::CriticFunction">
+      <description>mppi critic for preventing twirling behavior when using omnidirectional models</description>
+    </class>
+
+
   </library>
 </class_libraries>

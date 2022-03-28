@@ -1,9 +1,5 @@
 # Model Predictive Path Integral Controller
 
-Differential                  |  Omnidirectional 
-:----------------------------:|:-------------------------:
-![](.resources/demo-diff.gif) | ![](.resources/demo-omni.gif)
-
 ## Overview
 
 This is a controller (local trajectory planner) that implements the [Model Predictive Path Integral (MPPI)](https://ieeexplore.ieee.org/document/7487277) algorithm to track a path with adaptive collision avoidance. It contains plugin-based critic functions to impact the behavior of the algorithm. It was created by Aleksei Budyakov and adapted for Nav2 by [Steve Macenski](https://www.linkedin.com/in/steve-macenski-41a985101/).
@@ -24,22 +20,29 @@ This process is then repeated a number of times and returns a converged solution
 
 This uses the usual ROS tools for dependency management, so please use ``rosdep`` to install the dependencies. 
 
-Note: If running on Ubuntu 20.04 or other OS's that `xtensor` is not released in in binary form, please manually install `xtensor` v 0.24.0 and `xtl` v 0.7.0. These are simply headers so the install process is trivially short, unfortunately the `xtensor` project isn't available in package managers in some common-place operating systems (albeit, all necessary ROS OS versions) so you may be required to do this yourself if building from source.
+Note: If running on Ubuntu 20.04 or other OS's that `xtensor` is not released in binary form, please manually install `xtensor` v 0.24.0 and `xtl` v 0.7.0. These are simply headers so the install process is trivially short, unfortunately the `xtensor` project isn't available in package managers in some common-place operating systems (albeit, all necessary ROS OS versions) so you may be required to do this yourself if building from source.
 
 ```
 git clone git@github.com:xtensor-stack/xtensor.git -b 0.24.0
 cd xtensor
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-make install
+cmake ..
+sudo make install
 
 git clone git@github.com:xtensor-stack/xtl.git -b 0.7.0
 cd xtl
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-make install
+cmake ..
+sudo make install
+
+# Optional
+git clone git@github.com:xtensor-stack/xsimd.git -b 8.0.5
+cd xsimd
+mkdir build
+cmake ..
+sudo make install
 ```
 
 ## Configuration
@@ -96,6 +99,17 @@ make install
  | obstacle_cost_weight          | double |                                                                                                             |
  | obstacle_cost_power           | int    |                                                                                                             |
 
+#### PreferForwardCritic params
+ | Parameter             | Type   | Definition                                                                                                  |
+ | ---------------       | ------ | ----------------------------------------------------------------------------------------------------------- |
+ | prefer_forward_cost_weight | double |                                                                                                             |
+ | prefer_forward_cost_power  | int    |                                                                                                             |
+
+#### TwirlingCritic params
+ | Parameter             | Type   | Definition                                                                                                  |
+ | ---------------       | ------ | ----------------------------------------------------------------------------------------------------------- |
+ | twirling_cost_weight | double |                                                                                                             |
+ | twirling_cost_power  | int    |                                                                                                             |
 
 ### XML configuration example
 ```
@@ -116,7 +130,7 @@ controller_server:
       temperature: 0.25
       motion_model: "DiffDrive"
       visualize: false
-      critics: [ "GoalCritic", "GoalAngleCritic", "PathAngleCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
+      critics: [ "GoalCritic", "PreferForwardCritic", GoalAngleCritic", "PathAngleCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
       GoalCritic:
         goal_cost_power: 1
         goal_cost_weight: 8.0
@@ -134,6 +148,9 @@ controller_server:
       PathAngleCritic:
         path_angle_cost_power: 1
         path_angle_cost_weight: 0.5
+      PreferForwardCritic:
+        prefer_forward_cost_power: 1
+        prefer_forward_cost_weight: 50.0
 ```
 
 ## Topics

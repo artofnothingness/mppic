@@ -7,6 +7,7 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
+#include "std_msgs/msg/header.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
@@ -17,18 +18,22 @@
 
 #include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
-#include "mppic/tensor_wrappers/control_sequence.hpp"
-#include "mppic/tensor_wrappers/state.hpp"
+#include "mppic/models/control_sequence.hpp"
+#include "mppic/models/control_constraints.hpp"
+#include "mppic/models/state.hpp"
+#include "mppic/models/sampling_std.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi
 {
 
+using StampType = decltype(std::declval<std_msgs::msg::Header>().stamp);
+
 class Optimizer
 {
 public:
   using model_t = xt::xtensor<double, 2>(
-    const xt::xtensor<double, 2> & state, const optimization::StateIdxes & idx);
+    const xt::xtensor<double, 2> & state, const models::StateIdxes & idx);
 
   Optimizer() = default;
 
@@ -47,9 +52,9 @@ public:
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed) const;
 
-  void setControlConstraints(const utils::ControlConstraints & constraints);
-
-  utils::ControlConstraints getControlConstraints();
+  models::ControlConstraints getDefaultControlConstraints();
+  models::ControlConstraints getControlConstraints();
+  void setControlConstraints(const models::ControlConstraints & constraints);
 
 protected:
   void getParams();
@@ -85,19 +90,23 @@ protected:
    * @param twist current robot speed
    * @param state[out] fill state with velocities on each step
    */
-  void updateStateVelocities(auto & state, const geometry_msgs::msg::Twist & robot_speed) const;
+  void updateStateVelocities(
+    models::State & state,
+    const geometry_msgs::msg::Twist & robot_speed) const;
 
   void
-  updateInitialStateVelocities(auto & state, const geometry_msgs::msg::Twist & robot_speed) const;
+  updateInitialStateVelocities(
+    models::State & state,
+    const geometry_msgs::msg::Twist & robot_speed) const;
 
   /**
    * @brief predict velocities in state_ using model
    * for time horizont equal to time_steps_
    */
-  void propagateStateVelocitiesFromInitials(auto & state) const;
+  void propagateStateVelocitiesFromInitials(models::State & state) const;
 
   xt::xtensor<double, 3> integrateStateVelocities(
-    const auto & state, const geometry_msgs::msg::PoseStamped & robot_pose) const;
+    const models::State & state, const geometry_msgs::msg::PoseStamped & robot_pose) const;
 
   /**
    * @brief Update control_sequence_ with state controls weighted by costs
@@ -113,7 +122,7 @@ protected:
    */
   auto getControlFromSequence(const unsigned int offset);
   geometry_msgs::msg::TwistStamped
-  getControlFromSequenceAsTwist(const unsigned int offset, const auto & stamp);
+  getControlFromSequenceAsTwist(const unsigned int offset, const StampType & stamp);
 
   bool isHolonomic() const;
 
@@ -131,19 +140,18 @@ protected:
   double model_dt_{0};
   double temperature_{0};
 
-  // Constraints
-  utils::ControlConstraints constraints_{0, 0, 0};
-  double vx_std_{0};
-  double vy_std_{0};
-  double wz_std_{0};
+  // TODO (@artofnothingness) use eigen ?
+  models::ControlConstraints default_constraints_{0, 0, 0};
+  models::ControlConstraints constraints_{0, 0, 0};
+  models::SamplingStd sampling_std_{0, 0, 0};
+  models::State state_;
+  models::ControlSequence control_sequence_;
+
+  std::unique_ptr<MotionModel> motion_model_;
+  CriticManager critic_manager_;
 
   double controller_frequency_{0};
   int control_sequence_shift_offset_{0};
-
-  optimization::State state_;
-  optimization::ControlSequence control_sequence_;
-  std::unique_ptr<MotionModel> motion_model_;
-  CriticManager critic_manager_;
   xt::xtensor<double, 3> generated_trajectories_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };

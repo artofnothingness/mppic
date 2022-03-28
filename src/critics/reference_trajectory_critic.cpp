@@ -14,26 +14,30 @@ void ReferenceTrajectoryCritic::initialize()
   getParam(power_, "reference_cost_power", 1);
   getParam(weight_, "reference_cost_weight", 15.0);
   RCLCPP_INFO(
-    logger_, "ReferenceTrajectoryCritic instantiated with %d power and %f weight.", power_,
-    weight_);
+    logger_,
+    "ReferenceTrajectoryCritic instantiated with %d power and %f weight.",
+    power_, weight_);
 }
 
 void ReferenceTrajectoryCritic::score(
-  const geometry_msgs::msg::PoseStamped & robot_pose,
-  const xt::xtensor<double, 3> & trajectories, const xt::xtensor<double, 2> & path,
-  xt::xtensor<double, 1> & costs, nav2_core::GoalChecker * goal_checker)
+  const geometry_msgs::msg::PoseStamped & robot_pose, const models::State & /*state*/,
+  const xt::xtensor<double, 3> & trajectories,
+  const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs,
+  nav2_core::GoalChecker * goal_checker)
 {
-  if (withinPositionGoalTolerance(goal_checker, robot_pose, path)) {
+  if (utils::withinPositionGoalTolerance(goal_checker, robot_pose, path)) {
     return;
   }
 
-  auto && distances = meanDistancesFromTrajectoriesPointsToReferenceSegments(trajectories, path);
+  auto && distances = meanDistancesFromTrajectoriesPointsToReferenceSegments(
+    trajectories, path);
   costs += xt::pow(std::move(distances) * weight_, power_);
 }
 
-xt::xtensor<double, 1>
-ReferenceTrajectoryCritic::meanDistancesFromTrajectoriesPointsToReferenceSegments(
-  const xt::xtensor<double, 3> & trajectories, const xt::xtensor<double, 2> & reference_path)
+xt::xtensor<double,
+  1> ReferenceTrajectoryCritic::meanDistancesFromTrajectoriesPointsToReferenceSegments(
+  const xt::xtensor<double, 3> & trajectories,
+  const xt::xtensor<double, 2> & reference_path)
 {
   using namespace xt::placeholders;  // NOLINT
 
@@ -49,10 +53,12 @@ ReferenceTrajectoryCritic::meanDistancesFromTrajectoriesPointsToReferenceSegment
   auto P2 = xt::view(reference_path, xt::all(), xt::range(1, _));
   xt::xtensor<double, 2> P2_P1_diff = P2 - P1;
   xt::xtensor<double, 1> P2_P1_norm_sq =
-    xt::norm_sq(P2_P1_diff, {P2_P1_diff.dimension() - 1}, xt::evaluation_strategy::immediate);
+    xt::norm_sq(
+    P2_P1_diff, {P2_P1_diff.dimension() - 1},
+    xt::evaluation_strategy::immediate);
 
-  auto evaluate_u = [&P1, &P2, &P3, &P2_P1_diff,
-      &P2_P1_norm_sq](size_t t, size_t p, size_t s) -> double {
+  auto evaluate_u = [&P1, &P2, &P3, &P2_P1_diff, &P2_P1_norm_sq](
+    size_t t, size_t p, size_t s) -> double {
       return ((P3(t, p, 0) - P1(s, 0)) * (P2_P1_diff(s, 0)) +
              (P3(t, p, 1) - P1(s, 1)) * (P2_P1_diff(s, 1))) /
              P2_P1_norm_sq(s);
@@ -60,7 +66,8 @@ ReferenceTrajectoryCritic::meanDistancesFromTrajectoriesPointsToReferenceSegment
 
   static constexpr double eps = static_cast<double>(1e-3);  // meters
   auto segment_short = P2_P1_norm_sq < eps;
-  auto evaluate_dist = [&P3](xt::xtensor_fixed<double, xt::xshape<2>> P, size_t t, size_t p) {
+  auto evaluate_dist = [&P3](xt::xtensor_fixed<double, xt::xshape<2>> P,
+      size_t t, size_t p) {
       double dx = P(0) - P3(t, p, 0);
       double dy = P(1) - P3(t, p, 1);
       return std::hypot(dx, dy);
@@ -98,4 +105,6 @@ ReferenceTrajectoryCritic::meanDistancesFromTrajectoriesPointsToReferenceSegment
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(mppi::critics::ReferenceTrajectoryCritic, mppi::critics::CriticFunction)
+PLUGINLIB_EXPORT_CLASS(
+  mppi::critics::ReferenceTrajectoryCritic,
+  mppi::critics::CriticFunction)

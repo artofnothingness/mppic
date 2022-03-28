@@ -11,16 +11,22 @@ void GoalAngleCritic::initialize()
 
   getParam(power_, "goal_angle_cost_power", 1);
   getParam(weight_, "goal_angle_cost_weight", 15.0);
-  getParam(threshold_to_consider_goal_angle_, "threshold_to_consider_goal_angle", 0.30);
+  getParam(
+    threshold_to_consider_goal_angle_,
+    "threshold_to_consider_goal_angle", 0.30);
   RCLCPP_INFO(
     logger_,
-    "GoalAngleCritic instantiated with %d power, %f weight, and %f angular threshold.",
+    "GoalAngleCritic instantiated with %d power, %f weight, and %f "
+    "angular threshold.",
     power_, weight_, threshold_to_consider_goal_angle_);
 }
 
 void GoalAngleCritic::score(
-  const geometry_msgs::msg::PoseStamped & robot_pose, const xt::xtensor<double, 3> & trajectories,
-  const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs,
+  const geometry_msgs::msg::PoseStamped & robot_pose,
+  const models::State & /*state*/,
+  const xt::xtensor<double, 3> & trajectories,
+  const xt::xtensor<double, 2> & path,
+  xt::xtensor<double, 1> & costs,
   nav2_core::GoalChecker * /*goal_checker*/)
 {
   xt::xtensor<double, 1> tensor_pose = {
@@ -43,4 +49,6 @@ void GoalAngleCritic::score(
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(mppi::critics::GoalAngleCritic, mppi::critics::CriticFunction)
+PLUGINLIB_EXPORT_CLASS(
+  mppi::critics::GoalAngleCritic,
+  mppi::critics::CriticFunction)
