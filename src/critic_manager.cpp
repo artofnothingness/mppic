@@ -47,7 +47,7 @@ std::string CriticManager::getFullName(const std::string & name)
 }
 
 xt::xtensor<double, 1> CriticManager::evalTrajectoriesScores(
-  const optimization::State & state, const xt::xtensor<double, 3> & trajectories,
+  const models::State & state, const xt::xtensor<double, 3> & trajectories,
   const nav_msgs::msg::Path & global_plan,
   const geometry_msgs::msg::PoseStamped & robot_pose,
   nav2_core::GoalChecker * goal_checker) const

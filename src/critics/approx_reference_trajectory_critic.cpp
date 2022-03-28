@@ -19,7 +19,7 @@ void ApproxReferenceTrajectoryCritic::initialize()
 }
 
 void ApproxReferenceTrajectoryCritic::score(
-  const geometry_msgs::msg::PoseStamped & robot_pose, const optimization::State & /*state*/,
+  const geometry_msgs::msg::PoseStamped & robot_pose, const models::State & /*state*/,
   const xt::xtensor<double, 3> & trajectories,
   const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs,
   nav2_core::GoalChecker * goal_checker)
