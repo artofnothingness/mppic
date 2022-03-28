@@ -2,7 +2,7 @@
 #pragma once
 
 #include "mppic/critic_function.hpp"
-#include "mppic/tensor_wrappers/state.hpp"
+#include "mppic/models/state.hpp"
 #include "mppic/utils.hpp"
 #include "nav2_costmap_2d/footprint_collision_checker.hpp"
 
@@ -21,7 +21,7 @@ public:
    */
   void score(
     const geometry_msgs::msg::PoseStamped & /*robot_pose*/,
-    const optimization::State & state, const xt::xtensor<double, 3> & trajectories,
+    const models::State & state, const xt::xtensor<double, 3> & trajectories,
     const xt::xtensor<double, 2> & /*path*/,
     xt::xtensor<double, 1> & costs,
     nav2_core::GoalChecker * goal_checker) override;

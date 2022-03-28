@@ -29,6 +29,10 @@
       <description></description>
     </class>
 
+    <class type="mppi::critics::TwirlingCritic" base_class_type="mppi::critics::CriticFunction">
+      <description></description>
+    </class>
+
 
   </library>
 </class_libraries>

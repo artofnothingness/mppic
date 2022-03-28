@@ -18,16 +18,18 @@ void PreferForwardCritic::initialize()
 }
 
 void PreferForwardCritic::score(
-  const geometry_msgs::msg::PoseStamped & /* robot_pos */, const xt::xtensor<double, 3> & trajectories,
+  const geometry_msgs::msg::PoseStamped & /* robot_pos */,
+  const models::State & /* state */,
+  const xt::xtensor<double, 3> & trajectories,
   const xt::xtensor<double, 2> & /* path */, xt::xtensor<double, 1> & costs,
   nav2_core::GoalChecker * /* goal_checker */)
 {
   using namespace xt::placeholders;  // NOLINT
 
   auto dx = xt::view(trajectories, xt::all(), xt::range(1, _), 0) -
-              xt::view(trajectories, xt::all(), xt::range(_, -1), 0);
+    xt::view(trajectories, xt::all(), xt::range(_, -1), 0);
   auto dy = xt::view(trajectories, xt::all(), xt::range(1, _), 1) -
-              xt::view(trajectories, xt::all(), xt::range(_, -1), 1);
+    xt::view(trajectories, xt::all(), xt::range(_, -1), 1);
 
   auto yaws = xt::view(trajectories, xt::all(), xt::range(_, -1), 2);
   auto yaws_local = xt::atan2(dy, dx) - yaws;
@@ -43,5 +45,3 @@ void PreferForwardCritic::score(
 #include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mppi::critics::PreferForwardCritic, mppi::critics::CriticFunction)
-
-
