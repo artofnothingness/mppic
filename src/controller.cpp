@@ -1,6 +1,5 @@
 // Copyright 2022 FastSense, Samsung Research
 #include <stdint.h>
-#include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
 #include "mppic/controller.hpp"
 #include "mppic/motion_models.hpp"
 #include "mppic/utils.hpp"
@@ -83,25 +82,7 @@ void Controller::setPlan(const nav_msgs::msg::Path & path)
 
 void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {
-  models::ControlConstraints constraints = optimizer_.getDefaultControlConstraints();
-
-  if (speed_limit != nav2_costmap_2d::NO_SPEED_LIMIT) {
-    if (percentage) {
-      // Speed limit is expressed in % from maximum speed of robot
-      double ratio = speed_limit / 100.0;
-      constraints.vx *= ratio;
-      constraints.vy *= ratio;
-      constraints.vw *= ratio;
-    } else {
-      // Speed limit is expressed in absolute value
-      double ratio = speed_limit / constraints.vx;
-      constraints.vx = speed_limit;
-      constraints.vy *= ratio;
-      constraints.vw *= ratio;
-    }
-  }
-
-  optimizer_.setControlConstraints(constraints);
+  optimizer_.setSpeedLimit(speed_limit, percentage);
 }
 
 }  // namespace mppi

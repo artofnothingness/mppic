@@ -24,19 +24,13 @@ namespace mppi::utils
 {
 
 template<typename NodeT>
-auto getParamGetter(NodeT node, const std::string & name)
+auto getParamGetter(NodeT node, std::string name)
 {
   return [ = ](auto & param, const std::string & param_name, auto default_value) {
            using OutType = std::decay_t<decltype(param)>;
            using InType = std::decay_t<decltype(default_value)>;
 
-           std::string full_name;
-
-           if (name != "") {
-             full_name = name + '.' + param_name;
-           } else {
-             full_name = param_name;
-           }
+           std::string full_name = name.empty() ? param_name : name + "." + param_name;
 
            nav2_util::declare_parameter_if_not_declared(
              node, full_name, rclcpp::ParameterValue(default_value));

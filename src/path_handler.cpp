@@ -122,7 +122,7 @@ double PathHandler::getMaxCostmapDist()
 }
 
 nav_msgs::msg::Path PathHandler::transformPlanPosesToCostmapFrame(
-  PathIterator begin, PathIterator end, const StampType & stamp)
+  PathIterator begin, PathIterator end, const builtin_interfaces::msg::Time & stamp)
 {
   std::string frame = costmap_->getGlobalFrameID();
   auto transformToFrame = [&](const auto & global_plan_pose) {
