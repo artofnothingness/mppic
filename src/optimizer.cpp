@@ -59,7 +59,6 @@ void Optimizer::getParams()
   getParam(sampling_std_.wz, "wz_std", 0.3);
   getParentParam(controller_frequency_, "controller_frequency", 0.0);
 
-
   std::string motion_model_name;
   getParam(motion_model_name, "motion_model", std::string("DiffDrive"));
   setMotionModel(motion_model_name);
