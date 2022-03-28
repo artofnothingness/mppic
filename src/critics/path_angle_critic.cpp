@@ -37,8 +37,8 @@ void PathAngleCritic::score(
   auto traj_yaws = xt::view(trajectories, xt::all(), xt::all(), 2);
 
   auto yaws_between_points = xt::atan2(goal_y - traj_ys, goal_x - traj_xs);
-  auto yaws = xt::abs(traj_yaws - yaws_between_points);
 
+  auto yaws = xt::abs(utils::shortest_angular_distance(traj_yaws, yaws_between_points));
   costs += xt::pow(xt::mean(yaws, {1}) * weight_, power_);
 }
 
