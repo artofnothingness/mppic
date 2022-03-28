@@ -7,7 +7,6 @@
 
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xmath.hpp>
-#include <xtensor/xnorm.hpp>
 #include <xtensor/xview.hpp>
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -47,33 +46,6 @@ public:
     nav2_core::GoalChecker * goal_checker) = 0;
 
 protected:
-  bool withinPositionGoalTolerance(
-    nav2_core::GoalChecker * goal_checker,
-    const geometry_msgs::msg::PoseStamped & robot_pose,
-    const xt::xtensor<double, 2> & path)
-  {
-    if (goal_checker) {
-      geometry_msgs::msg::Pose pose_tol;
-      geometry_msgs::msg::Twist vel_tol;
-      goal_checker->getTolerances(pose_tol, vel_tol);
-
-      const double & goal_tol = pose_tol.position.x;
-
-      xt::xtensor<double, 1> tensor_pose = {
-        static_cast<double>(robot_pose.pose.position.x),
-        static_cast<double>(robot_pose.pose.position.y)};
-      auto path_points = xt::view(path, -1, xt::range(0, 2));
-
-      double dist_to_goal = xt::norm_l2(tensor_pose - path_points, {0})();
-
-      if (dist_to_goal < goal_tol) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
   std::string name_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;

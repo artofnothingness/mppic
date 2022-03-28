@@ -41,6 +41,7 @@ void Optimizer::getParams()
   auto node = parent_.lock();
 
   auto getParam = utils::getParamGetter(node, name_);
+  auto getParentParam = utils::getParamGetter(node, "");
 
   getParam(model_dt_, "model_dt", 0.1);
   getParam(time_steps_, "time_steps", 15);
@@ -48,17 +49,16 @@ void Optimizer::getParams()
   getParam(iteration_count_, "iteration_count", 2);
   getParam(temperature_, "temperature", 0.25);
 
-  getParam(constraints_.vx, "vx_max", 0.5);
-  getParam(constraints_.vy, "vy_max", 1.3);
-  getParam(constraints_.vw, "wz_max", 1.3);
-  getParam(vx_std_, "vx_std", 0.1);
-  getParam(vy_std_, "vy_std", 0.1);
-  getParam(wz_std_, "wz_std", 0.3);
-  getParam(control_sequence_shift_offset_, "control_sequence_shift_offset", 1);
+  getParam(default_constraints_.vx, "vx_max", 0.5);
+  getParam(default_constraints_.vy, "vy_max", 1.3);
+  getParam(default_constraints_.vw, "wz_max", 1.3);
+  constraints_ = default_constraints_;
 
-  nav2_util::declare_parameter_if_not_declared(
-    node, "controller_frequency", rclcpp::ParameterValue(0.0));
-  node->get_parameter("controller_frequency", controller_frequency_);
+  getParam(sampling_std_.vx, "vx_std", 0.1);
+  getParam(sampling_std_.vy, "vy_std", 0.1);
+  getParam(sampling_std_.wz, "wz_std", 0.3);
+  getParentParam(controller_frequency_, "controller_frequency", 0.0);
+
 
   std::string motion_model_name;
   getParam(motion_model_name, "motion_model", std::string("DiffDrive"));
@@ -141,13 +141,13 @@ xt::xtensor<double, 3> Optimizer::generateNoisedTrajectories(
 xt::xtensor<double, 3> Optimizer::generateNoisedControls() const
 {
   auto vx_noises =
-    xt::random::randn<double>({batch_size_, time_steps_, 1U}, 0.0, vx_std_);
+    xt::random::randn<double>({batch_size_, time_steps_, 1U}, 0.0, sampling_std_.vx);
   auto wz_noises =
-    xt::random::randn<double>({batch_size_, time_steps_, 1U}, 0.0, wz_std_);
+    xt::random::randn<double>({batch_size_, time_steps_, 1U}, 0.0, sampling_std_.wz);
 
   if (isHolonomic()) {
     auto vy_noises =
-      xt::random::randn<double>({batch_size_, time_steps_, 1U}, 0.0, vy_std_);
+      xt::random::randn<double>({batch_size_, time_steps_, 1U}, 0.0, sampling_std_.vy);
     return control_sequence_.data +
            xt::concatenate(xt::xtuple(vx_noises, vy_noises, wz_noises), 2);
   }
@@ -176,14 +176,14 @@ void Optimizer::applyControlConstraints()
 }
 
 void Optimizer::updateStateVelocities(
-  auto & state, const geometry_msgs::msg::Twist & robot_speed) const
+  models::State & state, const geometry_msgs::msg::Twist & robot_speed) const
 {
   updateInitialStateVelocities(state, robot_speed);
   propagateStateVelocitiesFromInitials(state);
 }
 
 void Optimizer::updateInitialStateVelocities(
-  auto & state, const geometry_msgs::msg::Twist & robot_speed) const
+  models::State & state, const geometry_msgs::msg::Twist & robot_speed) const
 {
   xt::view(state.getVelocitiesVX(), xt::all(), 0) = robot_speed.linear.x;
   xt::view(state.getVelocitiesWZ(), xt::all(), 0) = robot_speed.angular.z;
@@ -193,7 +193,7 @@ void Optimizer::updateInitialStateVelocities(
   }
 }
 
-void Optimizer::propagateStateVelocitiesFromInitials(auto & state) const
+void Optimizer::propagateStateVelocitiesFromInitials(models::State & state) const
 {
   using namespace xt::placeholders;  // NOLINT
 
@@ -212,7 +212,7 @@ xt::xtensor<double, 2> Optimizer::evalTrajectoryFromControlSequence(
   const geometry_msgs::msg::PoseStamped & robot_pose,
   const geometry_msgs::msg::Twist & robot_speed) const
 {
-  optimization::State state;
+  models::State state;
   state.idx.setLayout(motion_model_->isHolonomic());
   state.reset(1U, time_steps_);
   state.getControls() = control_sequence_.data;
@@ -223,7 +223,7 @@ xt::xtensor<double, 2> Optimizer::evalTrajectoryFromControlSequence(
 }
 
 xt::xtensor<double, 3> Optimizer::integrateStateVelocities(
-  const auto & state, const geometry_msgs::msg::PoseStamped & pose) const
+  const models::State & state, const geometry_msgs::msg::PoseStamped & pose) const
 {
   using namespace xt::placeholders;  // NOLINT
 
@@ -274,8 +274,13 @@ void Optimizer::updateControlSequence(const xt::xtensor<double, 1> & costs)
     xt::sum(state_.getControls() * softmaxes_expanded, 0);
 }
 
+auto Optimizer::getControlFromSequence(const unsigned int offset)
+{
+  return xt::view(control_sequence_.data, offset);
+}
+
 geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
-  const unsigned int offset, const auto & stamp)
+  const unsigned int offset, const StampType & stamp)
 {
   return utils::toTwistStamped(
     getControlFromSequence(offset),
@@ -283,10 +288,6 @@ geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
     costmap_ros_->getBaseFrameID());
 }
 
-auto Optimizer::getControlFromSequence(const unsigned int offset)
-{
-  return xt::view(control_sequence_.data, offset);
-}
 
 void Optimizer::setMotionModel(const std::string & model)
 {
@@ -312,14 +313,20 @@ xt::xtensor<double, 3> & Optimizer::getGeneratedTrajectories()
   return generated_trajectories_;
 }
 
-void Optimizer::setControlConstraints(const utils::ControlConstraints & constraints)
+void Optimizer::setControlConstraints(const models::ControlConstraints & constraints)
 {
   constraints_ = constraints;
 }
 
-utils::ControlConstraints Optimizer::getControlConstraints()
+models::ControlConstraints Optimizer::getControlConstraints()
 {
   return constraints_;
 }
+
+models::ControlConstraints Optimizer::getDefaultControlConstraints()
+{
+  return default_constraints_;
+}
+
 
 }  // namespace mppi

@@ -9,7 +9,7 @@
 
 #include "mppic/motion_models.hpp"
 
-namespace mppi::optimization
+namespace mppi::models
 {
 
 /**

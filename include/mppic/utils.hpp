@@ -11,8 +11,9 @@
 #include <xtensor/xview.hpp>
 
 #include "geometry_msgs/msg/twist_stamped.hpp"
-#include "mppic/tensor_wrappers/control_sequence.hpp"
+#include "mppic/models/control_sequence.hpp"
 #include "nav2_util/node_utils.hpp"
+#include "nav2_core/goal_checker.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -21,11 +22,6 @@
 
 namespace mppi::utils
 {
-
-struct ControlConstraints
-{
-  double vx, vy, vw;
-};
 
 template<typename NodeT>
 auto getParamGetter(NodeT node, const std::string & name)
@@ -51,28 +47,10 @@ auto getParamGetter(NodeT node, const std::string & name)
          };
 }
 
-template<typename T, typename H>
-geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, const optimization::ControlSequnceIdxes & idx,
-  const bool & is_holonomic, const H & header)
-{
-  geometry_msgs::msg::TwistStamped twist;
-  twist.header.frame_id = header.frame_id;
-  twist.header.stamp = header.stamp;
-
-  twist.twist.linear.x = velocities(idx.vx());
-  twist.twist.angular.z = velocities(idx.wz());
-
-  if (is_holonomic) {
-    twist.twist.linear.y = velocities(idx.vy());
-  }
-
-  return twist;
-}
 
 template<typename T, typename S>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, optimization::ControlSequnceIdxes idx,
+  const T & velocities, models::ControlSequnceIdxes idx,
   const bool & is_holonomic, const S & stamp, const std::string & frame)
 {
   geometry_msgs::msg::TwistStamped twist;
@@ -105,29 +83,31 @@ inline xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
   return points;
 }
 
-template<typename T>
-double hypot(const T & p1, const T & p2)
+inline bool withinPositionGoalTolerance(
+  nav2_core::GoalChecker * goal_checker,
+  const geometry_msgs::msg::PoseStamped & robot_pose_arg,
+  const xt::xtensor<double, 2> & path)
 {
-  double dx = p1.x - p2.x;
-  double dy = p1.y - p2.y;
-  double dz = p1.z - p2.z;
-  return std::hypot(dx, dy, dz);
-}
+  if (goal_checker) {
+    geometry_msgs::msg::Pose pose_tol;
+    geometry_msgs::msg::Twist vel_tol;
+    goal_checker->getTolerances(pose_tol, vel_tol);
 
-template<>
-inline double hypot(
-  const geometry_msgs::msg::Pose & lhs,
-  const geometry_msgs::msg::Pose & rhs)
-{
-  return hypot(lhs.position, rhs.position);
-}
+    const double & goal_tol = pose_tol.position.x;
 
-template<>
-inline double hypot(
-  const geometry_msgs::msg::PoseStamped & lhs,
-  const geometry_msgs::msg::PoseStamped & rhs)
-{
-  return hypot(lhs.pose, rhs.pose);
+    xt::xtensor<double, 1> robot_pose = {
+      static_cast<double>(robot_pose_arg.pose.position.x),
+      static_cast<double>(robot_pose_arg.pose.position.y)};
+    auto goal_pose = xt::view(path, -1, xt::range(0, 2));
+
+    double dist_to_goal = xt::norm_l2(robot_pose - goal_pose, {0})();
+
+    if (dist_to_goal < goal_tol) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace mppi::utils
