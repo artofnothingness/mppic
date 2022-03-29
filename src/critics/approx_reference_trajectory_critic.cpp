@@ -10,7 +10,7 @@ void ApproxReferenceTrajectoryCritic::initialize()
   auto getParam = utils::getParamGetter(node, name_);
 
   getParam(power_, "reference_cost_power", 1);
-  getParam(weight_, "reference_cost_weight", 15.0);
+  getParam(weight_, "reference_cost_weight", 1.0);
   RCLCPP_INFO(
     logger_,
     "ApproxReferenceTrajectoryCritic instantiated with %d power and "

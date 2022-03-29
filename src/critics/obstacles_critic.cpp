@@ -11,9 +11,9 @@ void ObstaclesCritic::initialize()
   auto node = parent_.lock();
   auto getParam = utils::getParamGetter(node, name_);
   getParam(consider_footprint_, "consider_footprint", true);
-  getParam(power_, "obstacle_cost_power", 1);
-  getParam(weight_, "obstacle_cost_weight", 50.0);
-  getParam(collision_cost_, "collision_cost", 2000.0);
+  getParam(power_, "obstacle_cost_power", 2);
+  getParam(weight_, "obstacle_cost_weight", 10.0);
+  getParam(collision_cost_, "collision_cost", 5000.0);
 
   collision_checker_.setCostmap(costmap_);
   RCLCPP_INFO(

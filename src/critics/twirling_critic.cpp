@@ -10,7 +10,7 @@ void TwirlingCritic::initialize()
 
   auto getParam = utils::getParamGetter(node, name_);
   getParam(power_, "twirling_cost_power", 1);
-  getParam(weight_, "twirling_cost_weight", 10.0);
+  getParam(weight_, "twirling_cost_weight", 0.5);
 
   RCLCPP_INFO(
     logger_, "TwirlingCritic instantiated with %d power and %f weight.", power_, weight_);

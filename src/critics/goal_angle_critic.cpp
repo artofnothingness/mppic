@@ -10,7 +10,7 @@ void GoalAngleCritic::initialize()
   auto getParam = utils::getParamGetter(node, name_);
 
   getParam(power_, "goal_angle_cost_power", 1);
-  getParam(weight_, "goal_angle_cost_weight", 15.0);
+  getParam(weight_, "goal_angle_cost_weight", 3.0);
   getParam(
     threshold_to_consider_goal_angle_,
     "threshold_to_consider_goal_angle", 0.30);

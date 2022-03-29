@@ -57,7 +57,7 @@ void Optimizer::getParams()
 
   getParam(sampling_std_.vx, "vx_std", 0.1);
   getParam(sampling_std_.vy, "vy_std", 0.1);
-  getParam(sampling_std_.wz, "wz_std", 0.3);
+  getParam(sampling_std_.wz, "wz_std", 0.5);
   getParentParam(controller_frequency_, "controller_frequency", 0.0);
 
   std::string motion_model_name;
