@@ -1,20 +1,21 @@
-# Tests
-ament_add_gtest(controller_test
-  controller_test.cpp
-)
-ament_target_dependencies(controller_test
-  ${dependencies_pkgs}
-)
-target_link_libraries(controller_test
-  mppic
+set(TEST_NAMES
+  optimizer_test
+  controller_test
 )
 
-ament_add_gtest(optimizer_test
-  optimizer_test.cpp
-)
-ament_target_dependencies(optimizer_test
-  ${dependencies_pkgs}
-)
-target_link_libraries(optimizer_test
-  mppic
-)
+
+foreach(name IN LISTS TEST_NAMES)
+  ament_add_gtest(${name}
+    ${name}.cpp
+  )
+  ament_target_dependencies(${name}
+    ${dependencies_pkgs}
+  )
+  target_link_libraries(${name}
+    mppic
+  )
+
+  if(${TEST_DEBUG_INFO})
+    target_compile_definitions(${name} PUBLIC -DTEST_DEBUG_INFO)
+  endif()
+endforeach()

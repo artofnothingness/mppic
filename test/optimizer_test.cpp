@@ -26,14 +26,17 @@ public:
 };
 RosLockGuard g_rclcpp;
 
+
 TEST(MPPIOptimizer, OptimizerTestDiffFootprint)
 {
   bool consider_footprint = true;
+  bool approx_reference_cost = true;
   std::string motion_model = "DiffDrive";
 
   // Settings
   TestCostmapSettings cost_map_settings{};
-  TestOptimizerSettings optimizer_settings{12, 80, 5.0, motion_model, consider_footprint};
+  TestOptimizerSettings optimizer_settings{12, 80, 5.0, motion_model, consider_footprint,
+    approx_reference_cost};
 
   const double path_step = cost_map_settings.resolution;
   TestPose start_pose = cost_map_settings.getCenterPose();
@@ -78,11 +81,13 @@ TEST(MPPIOptimizer, OptimizerTestDiffFootprint)
 TEST(MPPIOptimizer, OptimizerTestOmniCircle)
 {
   bool consider_footprint = false;
+  bool approx_reference_cost = false;
   std::string motion_model = "Omni";
 
   // Settings
   TestCostmapSettings cost_map_settings{};
-  TestOptimizerSettings optimizer_settings{12, 80, 5.0, motion_model, consider_footprint};
+  TestOptimizerSettings optimizer_settings{12, 80, 5.0, motion_model, consider_footprint,
+    approx_reference_cost};
 
   const double path_step = cost_map_settings.resolution;
   TestPose start_pose = cost_map_settings.getCenterPose();
