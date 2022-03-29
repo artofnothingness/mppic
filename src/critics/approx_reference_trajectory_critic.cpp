@@ -35,8 +35,9 @@ void ApproxReferenceTrajectoryCritic::score(
   auto dists = xt::norm_l2(
     path_points - trajectories_points_extended,
     {trajectories_points_extended.dimension() - 1});
-  auto && cost = xt::mean(xt::amin(std::move(dists), 1), 1);
-  costs += xt::pow(std::move(cost) * weight_, power_);
+  auto && cost = xt::eval(xt::mean(xt::amin(std::move(dists), 1), 1));
+  auto cost_normalized = cost / xt::amax(cost);
+  costs += xt::pow(std::move(cost_normalized) * weight_, power_);
 }
 
 }  // namespace mppi::critics

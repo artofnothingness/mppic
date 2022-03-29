@@ -12,9 +12,9 @@ void ObstaclesCritic::initialize()
   auto getParam = utils::getParamGetter(node, name_);
   getParam(consider_footprint_, "consider_footprint", true);
   getParam(power_, "obstacle_cost_power", 1);
-  getParam(weight_, "obstacle_cost_weight", 1.0);
+  getParam(weight_, "obstacle_cost_weight", 50.0);
+  getParam(collision_cost_, "collision_cost", 2000.0);
 
-  inscribed_radius_ = costmap_ros_->getLayeredCostmap()->getInscribedRadius();
   collision_checker_.setCostmap(costmap_);
   RCLCPP_INFO(
     logger_,
@@ -29,8 +29,6 @@ void ObstaclesCritic::score(
   const xt::xtensor<double, 2> & /*path*/, xt::xtensor<double, 1> & costs,
   nav2_core::GoalChecker * /*goal_checker*/)
 {
-  constexpr double COLLISION_COST = std::numeric_limits<double>::max() / 4;
-
   for (size_t i = 0; i < trajectories.shape()[0]; ++i) {
     bool trajectory_collide = false;
 
@@ -47,7 +45,7 @@ void ObstaclesCritic::score(
     }
 
     costs[i] +=
-      trajectory_collide ? COLLISION_COST : scoreCost(trajectory_cost);
+      trajectory_collide ? collision_cost_ : scoreCost(trajectory_cost);
   }
 }
 

@@ -39,7 +39,9 @@ void PathAngleCritic::score(
   auto yaws_between_points = xt::atan2(goal_y - traj_ys, goal_x - traj_xs);
 
   auto yaws = xt::abs(utils::shortest_angular_distance(traj_yaws, yaws_between_points));
-  costs += xt::pow(xt::mean(yaws, {1}) * weight_, power_);
+  auto cost = xt::eval(xt::mean(yaws, {1}));
+  auto cost_normalized = cost / xt::amax(cost);
+  costs += xt::pow(cost_normalized * weight_, power_);
 }
 
 }  // namespace mppi::critics

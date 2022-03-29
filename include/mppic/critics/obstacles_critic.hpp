@@ -36,10 +36,8 @@ protected:
   nav2_costmap_2d::FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *>
   collision_checker_;
 
+  double collision_cost_ = std::numeric_limits<double>::max() / 4;
   bool consider_footprint_{true};
-  double inflation_cost_scaling_factor_{0};
-  double inscribed_radius_{0};
-  double inflation_radius_{0};
   unsigned int power_{0};
   double weight_{0};
 };

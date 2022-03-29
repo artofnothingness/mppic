@@ -31,7 +31,9 @@ void ReferenceTrajectoryCritic::score(
 
   auto && distances = meanDistancesFromTrajectoriesPointsToReferenceSegments(
     trajectories, path);
-  costs += xt::pow(std::move(distances) * weight_, power_);
+
+  auto && cost_normalized = distances / xt::amax(distances);
+  costs += xt::pow(cost_normalized * weight_, power_);
 }
 
 xt::xtensor<double,

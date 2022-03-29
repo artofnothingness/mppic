@@ -23,7 +23,9 @@ void TwirlingCritic::score(
   nav2_core::GoalChecker * /*goal_checker*/)
 {
   auto wz = xt::abs(state.getVelocitiesWZ());
-  costs += xt::pow(xt::mean(wz, {1}) * weight_, power_);
+  auto cost = xt::eval(xt::mean(wz, {1}));
+  auto cost_normalized = cost / xt::amax(cost);
+  costs += xt::pow(cost_normalized * weight_, power_);
 }
 
 }  // namespace mppi::critics

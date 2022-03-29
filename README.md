@@ -98,6 +98,8 @@ sudo make install
  | consider_footprint            | bool   |                                                                                                             |
  | obstacle_cost_weight          | double |                                                                                                             |
  | obstacle_cost_power           | int    |                                                                                                             |
+ | collision_cost                | double |                                                                                                             |
+
 
 #### PreferForwardCritic params
  | Parameter             | Type   | Definition                                                                                                  |

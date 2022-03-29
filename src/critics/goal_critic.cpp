@@ -31,10 +31,10 @@ void GoalCritic::score(
 
   auto dim = trajectories_end.dimension() - 1;
 
-  auto && dists_trajectories_end_to_goal =
-    xt::norm_l2(std::move(trajectories_end) - goal_points, {dim});
+  auto && cost = xt::eval(xt::norm_l2(std::move(trajectories_end) - goal_points, {dim}));
+  auto cost_normalized = cost / xt::amax(cost);
 
-  costs += xt::pow(std::move(dists_trajectories_end_to_goal) * weight_, power_);
+  costs += xt::pow(std::move(cost_normalized) * weight_, power_);
 }
 
 }  // namespace mppi::critics

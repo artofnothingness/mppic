@@ -38,7 +38,9 @@ void PreferForwardCritic::score(
   auto forward_translation_reversed = -xt::cos(yaws_local) * xt::hypot(dx, dy);
   auto backward_translation = xt::maximum(forward_translation_reversed, 0);
 
-  costs += xt::pow(xt::sum(backward_translation, {1}) * weight_, power_);
+  auto cost = xt::eval(xt::sum(backward_translation, {1}));
+  auto cost_normalized = cost / xt::amax(cost);
+  costs += xt::pow(cost_normalized * weight_, power_);
 }
 
 
