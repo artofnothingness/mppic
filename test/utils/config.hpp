@@ -11,6 +11,7 @@ struct TestOptimizerSettings
   const double lookahead_distance;
   std::string motion_model;
   bool consider_footprint;
+  bool approx_reference_cost;
 };
 
 struct TestPose
@@ -58,7 +59,7 @@ struct TestPathSettings
  */
 void setUpOptimizerParams(
   int iter, int time_steps, double lookahead_dist, std::string motion_model,
-  bool /*consider_footprint*/, std::vector<rclcpp::Parameter> & params_,
+  bool /*consider_footprint*/, bool approx_reference_cost, std::vector<rclcpp::Parameter> & params_,
   std::string node_name = std::string("dummy"))
 {
   double dummy_freq = 10.0;
@@ -69,11 +70,16 @@ void setUpOptimizerParams(
   params_.emplace_back(rclcpp::Parameter("controller_frequency", dummy_freq));
 
   std::string critic_scorer_name = node_name;
-  params_.emplace_back(
-    rclcpp::Parameter(
-      critic_scorer_name + ".critics",
-      std::vector<std::string>{
-    "GoalCritic", "GoalAngleCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic"}));
+
+  std::vector<std::string> critics = {
+    "GoalCritic", "GoalAngleCritic", "PathAngleCritic", "ObstaclesCritic", "PreferForwardCritic",
+    "TwirlingCritic"};
+
+  critics.emplace_back(
+    approx_reference_cost ? "ApproxReferenceTrajectoryCritic" : "ReferenceTrajectoryCritic");
+
+
+  params_.emplace_back(rclcpp::Parameter(critic_scorer_name + ".critics", critics));
 }
 
 void setUpControllerParams(
