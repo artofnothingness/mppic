@@ -1,8 +1,6 @@
 // Copyright 2022 FastSense, Samsung Research
 #pragma once
 
-#include <limits>
-
 #include "mppic/critic_function.hpp"
 #include "mppic/models/state.hpp"
 #include "mppic/utils.hpp"
@@ -38,10 +36,10 @@ protected:
   nav2_costmap_2d::FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *>
   collision_checker_;
 
-  double collision_cost_ = std::numeric_limits<double>::max() / 4;
   bool consider_footprint_{true};
   unsigned int power_{0};
   double weight_{0};
+  double collision_cost_{0};
 };
 
 }  // namespace mppi::critics
