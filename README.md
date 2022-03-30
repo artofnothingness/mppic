@@ -120,9 +120,9 @@ controller_server:
       time_steps: 15
       model_dt: 0.1
       batch_size: 400
-      vx_std: 0.1
-      vy_std: 0.1
-      wz_std: 0.6
+      vx_std: 0.3
+      vy_std: 0.3
+      wz_std: 1.3
       vx_max: 0.5
       vy_max: 0.5
       wz_max: 1.3
@@ -130,27 +130,31 @@ controller_server:
       temperature: 0.25
       motion_model: "DiffDrive"
       visualize: false
-      critics: [ "GoalCritic", "PreferForwardCritic", GoalAngleCritic", "PathAngleCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
+      critics: [ "GoalCritic", "GoalAngleCritic", "ObstaclesCritic", "ReferenceTrajectoryCritic"]
       GoalCritic:
         goal_cost_power: 1
-        goal_cost_weight: 8.0
+        goal_cost_weight: 13.0
       GoalAngleCritic:
         goal_angle_cost_power: 1
-        goal_angle_cost_weight: 15.0
+        goal_angle_cost_weight: 5.0
         threshold_to_consider_goal_angle: 0.20
       ReferenceTrajectoryCritic:
         reference_cost_power: 1
         reference_cost_weight: 5.0
       ObstaclesCritic:
         consider_footprint: true
+        collision_cost: 2000.0
         obstacle_cost_power: 1
-        obstacle_cost_weight: 0.5
+        obstacle_cost_weight: 1.0
       PathAngleCritic:
         path_angle_cost_power: 1
-        path_angle_cost_weight: 0.5
+        path_angle_cost_weight: 1.0
       PreferForwardCritic:
         prefer_forward_cost_power: 1
-        prefer_forward_cost_weight: 50.0
+        prefer_forward_cost_weight: 20.0
+      TwirlingCritic:
+        twirling_cost_power: 1
+        twirling_cost_weight: 25.0
 ```
 
 ## Topics

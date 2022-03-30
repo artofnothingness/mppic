@@ -12,9 +12,9 @@ void ObstaclesCritic::initialize()
   auto getParam = utils::getParamGetter(node, name_);
   getParam(consider_footprint_, "consider_footprint", true);
   getParam(power_, "obstacle_cost_power", 1);
-  getParam(weight_, "obstacle_cost_weight", 1.0);
+  getParam(weight_, "obstacle_cost_weight", 2.0);
+  getParam(collision_cost_, "collision_cost", 1000.0);
 
-  inscribed_radius_ = costmap_ros_->getLayeredCostmap()->getInscribedRadius();
   collision_checker_.setCostmap(costmap_);
   RCLCPP_INFO(
     logger_,
@@ -29,15 +29,13 @@ void ObstaclesCritic::score(
   const xt::xtensor<double, 2> & /*path*/, xt::xtensor<double, 1> & costs,
   nav2_core::GoalChecker * /*goal_checker*/)
 {
-  constexpr double COLLISION_COST = std::numeric_limits<double>::max() / 4;
-
   for (size_t i = 0; i < trajectories.shape()[0]; ++i) {
     bool trajectory_collide = false;
 
     unsigned char trajectory_cost = nav2_costmap_2d::FREE_SPACE;
     for (size_t j = 0; j < trajectories.shape()[1]; ++j) {
-      auto point = xt::view(trajectories, i, j, xt::all());
-      unsigned char pose_cost = costAtPose(point);
+      unsigned char pose_cost = costAtPose(
+        trajectories(i, j, 0), trajectories(i, j, 1), trajectories(i, j, 2));
       trajectory_cost = std::max(trajectory_cost, pose_cost);
 
       if (inCollision(pose_cost)) {
@@ -47,19 +45,20 @@ void ObstaclesCritic::score(
     }
 
     costs[i] +=
-      trajectory_collide ? COLLISION_COST : scoreCost(trajectory_cost);
+      trajectory_collide ? collision_cost_ : scoreCost(trajectory_cost);
   }
 }
 
-unsigned char ObstaclesCritic::costAtPose(const auto & point)
+unsigned char ObstaclesCritic::costAtPose(double x, double y, double theta)
 {
   unsigned char cost;
   if (consider_footprint_) {
     cost = static_cast<unsigned char>(collision_checker_.footprintCostAtPose(
-        point(0), point(1), point(2), costmap_ros_->getRobotFootprint()));
+        x, y, theta, costmap_ros_->getRobotFootprint()));
   } else {
-    cost = static_cast<unsigned char>(
-      collision_checker_.pointCost(point(0), point(1)));
+    unsigned int x_i, y_i;
+    collision_checker_.worldToMap(x, y, x_i, y_i);
+    cost = static_cast<unsigned char>(collision_checker_.pointCost(x_i, y_i));
   }
   return cost;
 }

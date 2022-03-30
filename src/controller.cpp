@@ -1,5 +1,6 @@
 // Copyright 2022 FastSense, Samsung Research
 #include <stdint.h>
+#include <chrono>
 #include "mppic/controller.hpp"
 #include "mppic/motion_models.hpp"
 #include "mppic/utils.hpp"
@@ -18,6 +19,7 @@ void Controller::configure(
   name_ = name;
 
   auto node = parent_.lock();
+  clock_ = node->get_clock();
   // Get high-level controller parameters
   auto getParam = utils::getParamGetter(node, name_);
   getParam(visualize_, "visualize", false);
@@ -53,9 +55,15 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * goal_checker)
 {
+
+  auto t_start = std::chrono::high_resolution_clock::now();
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
   geometry_msgs::msg::TwistStamped cmd =
     optimizer_.evalControl(robot_pose, robot_speed, transformed_plan, goal_checker);
+  auto t_end = std::chrono::high_resolution_clock::now();
+  double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end - t_start).count();
+
+  RCLCPP_INFO_THROTTLE(logger_, *clock_, 1000, "Control evaluation time %f", elapsed_time_ms);
 
   visualize(robot_pose, robot_speed, std::move(transformed_plan));
   return cmd;
