@@ -117,30 +117,34 @@ controller_server:
   ros__parameters:
     FollowPath:
       plugin: "mppi::Controller"
-      time_steps: 15
+      time_steps: 12
       model_dt: 0.1
       batch_size: 400
-      vx_std: 0.3
-      vy_std: 0.3
-      wz_std: 1.3
+      vx_std: 0.2
+      vy_std: 0.2
+      wz_std: 1.0
       vx_max: 0.5
       vy_max: 0.5
       wz_max: 1.3
       iteration_count: 2
+      max_robot_pose_search_dist: 1.2
       temperature: 0.25
       motion_model: "DiffDrive"
-      visualize: false
-      critics: [ "GoalCritic", "GoalAngleCritic", "ObstaclesCritic", "ReferenceTrajectoryCritic"]
+      visualize: true
+      critics: ["ReferenceTrajectoryCritic", "GoalCritic", "GoalAngleCritic", "ObstaclesCritic", "PreferForwardCritic", "PathAngleCritic"]
+      ReferenceTrajectoryCritic:
+        reference_cost_power: 1
+        reference_cost_weight: 5.0
+        enable_nearest_goals_critic: true
+        nearest_goals_offset: 2
+        nearest_goals_count: 2
       GoalCritic:
         goal_cost_power: 1
-        goal_cost_weight: 13.0
+        goal_cost_weight: 1.0
       GoalAngleCritic:
         goal_angle_cost_power: 1
         goal_angle_cost_weight: 5.0
         threshold_to_consider_goal_angle: 0.20
-      ReferenceTrajectoryCritic:
-        reference_cost_power: 1
-        reference_cost_weight: 5.0
       ObstaclesCritic:
         consider_footprint: true
         collision_cost: 2000.0
@@ -148,13 +152,13 @@ controller_server:
         obstacle_cost_weight: 1.0
       PathAngleCritic:
         path_angle_cost_power: 1
-        path_angle_cost_weight: 1.0
+        path_angle_cost_weight: 0.5
       PreferForwardCritic:
         prefer_forward_cost_power: 1
         prefer_forward_cost_weight: 20.0
       TwirlingCritic:
         twirling_cost_power: 1
-        twirling_cost_weight: 25.0
+        twirling_cost_weight: 50.0
 ```
 
 ## Topics
