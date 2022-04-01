@@ -16,10 +16,9 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "nav2_core/goal_checker.hpp"
 
+#include "mppic/models/optimizer_settings.hpp"
 #include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
-#include "mppic/models/control_sequence.hpp"
-#include "mppic/models/constraints.hpp"
 #include "mppic/models/state.hpp"
 #include "mppic/utils.hpp"
 
@@ -53,6 +52,9 @@ public:
   void setSpeedLimit(double speed_limit, bool percentage);
 
 protected:
+  rcl_interfaces::msg::SetParametersResult
+  dynamicParametersCallback(std::vector<rclcpp::Parameter> parameters);
+
   void getParams();
   void reset();
 
@@ -130,25 +132,18 @@ protected:
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_;
 
+  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr dyn_params_handler_;
+
   std::string name_;
+  double controller_frequency_{0};
 
-  unsigned int batch_size_{0};
-  unsigned int time_steps_{0};
-  unsigned int iteration_count_{0};
-  double model_dt_{0};
-  double temperature_{0};
-
-  models::ControlConstraints base_constraints_{0, 0, 0};
-  models::ControlConstraints constraints_{0, 0, 0};
-  models::SamplingStd sampling_std_{0, 0, 0};
+  models::OptimizerSettings settings_;
   models::State state_;
   models::ControlSequence control_sequence_;
 
   std::unique_ptr<MotionModel> motion_model_;
   CriticManager critic_manager_;
 
-  double controller_frequency_{0};
-  int control_sequence_shift_offset_{0};
   xt::xtensor<double, 3> generated_trajectories_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };

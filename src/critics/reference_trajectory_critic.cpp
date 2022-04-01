@@ -13,10 +13,15 @@ void ReferenceTrajectoryCritic::initialize()
   auto getParam = utils::getParamGetter(node, name_);
   getParam(power_, "reference_cost_power", 1);
   getParam(weight_, "reference_cost_weight", 15.0);
+
+  getParam(enable_nearest_goals_critic_, "enable_nearest_goals_critic", true);
+  getParam(nearest_goals_offset_, "nearest_goals_offset", 2);
+  getParam(nearest_goals_count_, "nearest_goals_count", 2);
   RCLCPP_INFO(
     logger_,
     "ReferenceTrajectoryCritic instantiated with %d power and %f weight.",
     power_, weight_);
+
 }
 
 void ReferenceTrajectoryCritic::score(
@@ -29,35 +34,25 @@ void ReferenceTrajectoryCritic::score(
     return;
   }
 
-  auto && distances = meanDistancesFromTrajectoriesPointsToReferenceSegments(
-    trajectories, path);
-  costs += xt::pow(std::move(distances) * weight_, power_);
-}
-
-xt::xtensor<double,
-  1> ReferenceTrajectoryCritic::meanDistancesFromTrajectoriesPointsToReferenceSegments(
-  const xt::xtensor<double, 3> & trajectories,
-  const xt::xtensor<double, 2> & reference_path)
-{
   using namespace xt::placeholders;  // NOLINT
 
-  size_t trajectories_count = trajectories.shape()[0];
-  size_t trajectories_points_count = trajectories.shape()[1];
-  size_t reference_segments_count = reference_path.shape()[0] - 1;
+  size_t trajectories_count = trajectories.shape(0);
+  size_t trajectories_points_count = trajectories.shape(1);
+  size_t reference_segments_count = path.shape(0) - 1;
 
-  auto && distances = xt::xtensor<double, 1>::from_shape({trajectories_count});
+  auto && cost = xt::xtensor<double, 1>::from_shape({trajectories_count});
 
   // see http://paulbourke.net/geometry/pointlineplane/
   const auto & P3 = trajectories;
-  auto P1 = xt::view(reference_path, xt::all(), xt::range(_, -1));
-  auto P2 = xt::view(reference_path, xt::all(), xt::range(1, _));
+  auto P1 = xt::view(path, xt::range(_, -1), xt::all());
+  auto P2 = xt::view(path, xt::range(1, _), xt::all());
   xt::xtensor<double, 2> P2_P1_diff = P2 - P1;
   xt::xtensor<double, 1> P2_P1_norm_sq =
     xt::norm_sq(
     P2_P1_diff, {P2_P1_diff.dimension() - 1},
     xt::evaluation_strategy::immediate);
 
-  auto evaluate_u = [&P1, &P2, &P3, &P2_P1_diff, &P2_P1_norm_sq](
+  auto evaluate_u = [&P1, &P3, &P2_P1_diff, &P2_P1_norm_sq](
     size_t t, size_t p, size_t s) -> double {
       return ((P3(t, p, 0) - P1(s, 0)) * (P2_P1_diff(s, 0)) +
              (P3(t, p, 1) - P1(s, 1)) * (P2_P1_diff(s, 1))) /
@@ -73,10 +68,12 @@ xt::xtensor<double,
       return std::hypot(dx, dy);
     };
 
+  size_t max_s = 0;
   for (size_t t = 0; t < trajectories_count; ++t) {
     double mean_dist = 0;
     for (size_t p = 0; p < trajectories_points_count; ++p) {
       double min_dist = std::numeric_limits<double>::max();
+      size_t min_s = 0;
       for (size_t s = 0; s < reference_segments_count; ++s) {
         xt::xtensor_fixed<double, xt::xshape<2>> P;
         if (segment_short(s)) {
@@ -92,13 +89,40 @@ xt::xtensor<double,
           P[0] = P1(s, 0) + u * P2_P1_diff(s, 0);
           P[1] = P1(s, 1) + u * P2_P1_diff(s, 1);
         }
-        min_dist = std::min(evaluate_dist(std::move(P), t, p), min_dist);
+        auto dist = evaluate_dist(std::move(P), t, p);
+        if (dist < min_dist) {
+          min_s = s;
+          min_dist = dist;
+        }
       }
+      max_s = std::max(max_s, min_s);
       mean_dist += min_dist;
     }
-    distances(t) = mean_dist / trajectories_points_count;
+
+    cost(t) = mean_dist / trajectories_points_count;
   }
-  return distances;
+
+  costs += xt::pow(cost * weight_, power_);
+
+  if (enable_nearest_goals_critic_) {
+    cost = xt::zeros<double>({trajectories_count});
+    size_t last_trajectory_point = trajectories_points_count - 1;
+    auto beg = std::min(reference_segments_count - 1, max_s + nearest_goals_offset_);
+    auto end = std::min(reference_segments_count, beg + nearest_goals_count_ + 1);
+
+    for (size_t t = 0; t < trajectories_count; ++t) {
+      double mean_dist = 0;
+
+      for (size_t i = beg; i < end; ++i) {
+        double dx = P2(i, 0) - P3(t, last_trajectory_point, 0);
+        double dy = P2(i, 1) - P3(t, last_trajectory_point, 1);
+        auto dist = std::hypot(dx, dy);
+        mean_dist += dist;
+      }
+      cost(t) += mean_dist / (end - beg);
+    }
+    costs += xt::pow(cost * weight_, power_);
+  }
 }
 
 }  // namespace mppi::critics

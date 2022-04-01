@@ -51,6 +51,9 @@ protected:
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_{nullptr};
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
+
+  unsigned int power_{0};
+  double weight_{0};
 };
 
 }  // namespace mppi::critics

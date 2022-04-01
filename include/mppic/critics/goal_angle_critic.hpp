@@ -27,8 +27,6 @@ public:
 
 protected:
   double threshold_to_consider_goal_angle_{0};
-  unsigned int power_{0};
-  double weight_{0};
 };
 
 }  // namespace mppi::critics

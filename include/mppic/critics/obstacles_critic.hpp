@@ -39,8 +39,6 @@ protected:
 
   bool consider_footprint_{true};
   double collision_cost_{0};
-  unsigned int power_{0};
-  double weight_{0};
 };
 
 }  // namespace mppi::critics
