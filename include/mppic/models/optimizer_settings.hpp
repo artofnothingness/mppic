@@ -1,3 +1,7 @@
+// Copyright 2022 FastSense, Samsung Research
+
+#pragma once
+
 #include "mppic/models/constraints.hpp"
 
 namespace mppi::models
