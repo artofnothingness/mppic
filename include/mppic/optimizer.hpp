@@ -16,6 +16,7 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "nav2_core/goal_checker.hpp"
 
+#include "mppic/dynamic_parameters_handler.hpp"
 #include "mppic/models/optimizer_settings.hpp"
 #include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
@@ -35,7 +36,9 @@ public:
 
   void initialize(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
-    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros);
+    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros, 
+    DynamicParametersHandler * dynamic_parameters_handler);
+
 
   geometry_msgs::msg::TwistStamped evalControl(
     const geometry_msgs::msg::PoseStamped & robot_pose,
@@ -52,8 +55,7 @@ public:
   void setSpeedLimit(double speed_limit, bool percentage);
 
 protected:
-  rcl_interfaces::msg::SetParametersResult
-  dynamicParametersCallback(std::vector<rclcpp::Parameter> parameters);
+  void dynamicParametersCallback(const std::vector<rclcpp::Parameter> & parameters);
 
   void getParams();
   void reset();
@@ -131,8 +133,7 @@ protected:
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_;
-
-  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr dyn_params_handler_;
+  DynamicParametersHandler * dynamic_parameters_handler_;
 
   std::string name_;
   double controller_frequency_{0};

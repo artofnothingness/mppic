@@ -54,6 +54,7 @@ protected:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<rclcpp::Clock> clock_;
 
+  std::unique_ptr<DynamicParametersHandler> dynamic_parameters_handler_;
   Optimizer optimizer_;
   PathHandler path_handler_;
   TrajectoryVisualizer trajectory_visualizer_;

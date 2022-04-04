@@ -15,6 +15,7 @@
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 #include "mppic/motion_models.hpp"
+#include "mppic/dynamic_parameters_handler.hpp"
 #include "mppic/optimizer.hpp"
 #include "mppic/controller.hpp"
 
@@ -94,7 +95,9 @@ mppi::Optimizer getDummyOptimizer(auto node, auto costmap_ros)
   auto optimizer = mppi::Optimizer();
   std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
 
-  optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros);
+  auto *dummy_dynamic_params_handler = new mppi::DynamicParametersHandler();
+
+  optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros, dummy_dynamic_params_handler);
 
   return optimizer;
 }

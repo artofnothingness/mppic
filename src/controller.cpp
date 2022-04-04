@@ -17,6 +17,7 @@ void Controller::configure(
   costmap_ros_ = costmap_ros;
   tf_buffer_ = tf;
   name_ = name;
+  dynamic_parameters_handler_ = std::make_unique<DynamicParametersHandler>(parent);
 
   auto node = parent_.lock();
   clock_ = node->get_clock();
@@ -25,7 +26,7 @@ void Controller::configure(
   getParam(visualize_, "visualize", false);
 
   // Configure composed objects
-  optimizer_.initialize(parent_, name_, costmap_ros_);
+  optimizer_.initialize(parent_, name_, costmap_ros_, dynamic_parameters_handler_.get());
   path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_);
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 

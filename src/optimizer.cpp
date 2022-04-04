@@ -18,12 +18,14 @@ namespace mppi
 
 void Optimizer::initialize(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
-  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros, 
+  DynamicParametersHandler * dynamic_parameters_handler)
 {
   parent_ = parent;
   name_ = name;
   costmap_ros_ = costmap_ros;
   costmap_ = costmap_ros_->getCostmap();
+  dynamic_parameters_handler_ = dynamic_parameters_handler;
 
   auto node = parent_.lock();
   logger_ = node->get_logger();
@@ -33,10 +35,8 @@ void Optimizer::initialize(
 
   critic_manager_.on_configure(parent_, name_, costmap_ros_);
 
-  dyn_params_handler_ = node->add_on_set_parameters_callback(
-    std::bind(
-      &Optimizer::dynamicParametersCallback, this, std::placeholders::_1));
-
+  dynamic_parameters_handler_->add_callback( [this] (const std::vector<rclcpp::Parameter> & params) 
+                                            { dynamicParametersCallback(params);});
   reset();
 }
 
@@ -69,12 +69,9 @@ void Optimizer::getParams()
 }
 
 // FIXME(artofnothingness) optimize this
-rcl_interfaces::msg::SetParametersResult Optimizer::dynamicParametersCallback(
-  std::vector<rclcpp::Parameter> parameters)
+void Optimizer::dynamicParametersCallback(
+  const std::vector<rclcpp::Parameter> &parameters)
 {
-
-  rcl_interfaces::msg::SetParametersResult result;
-
   auto getParamDouble =
     [this](auto & setting, const std::string & param_name, const auto & parameter) {
       const auto & type = parameter.get_type();
@@ -126,10 +123,6 @@ rcl_interfaces::msg::SetParametersResult Optimizer::dynamicParametersCallback(
   }
 
   reset();
-
-  RCLCPP_INFO(logger_, "Params changed");
-  result.successful = true;
-  return result;
 }
 
 void Optimizer::setOffset()
