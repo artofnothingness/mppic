@@ -19,7 +19,7 @@ void PathHandler::initialize(
   logger_ = node->get_logger();
 
   auto getParam = utils::getParamGetter(node, name_);
-  getParam(max_robot_pose_search_dist_, "max_robot_pose_search_dist", getMaxCostmapDist());
+  getParam(max_robot_pose_search_dist_, "max_robot_pose_search_dist", 1.2);
   getParam(transform_tolerance_, "transform_tolerance", 0.1);
 }
 

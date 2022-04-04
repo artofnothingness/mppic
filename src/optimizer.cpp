@@ -49,16 +49,16 @@ void Optimizer::getParams()
 
   auto & s = settings_;
   getParam(s.model_dt_, "model_dt", 0.1);
-  getParam(s.time_steps_, "time_steps", 15);
-  getParam(s.batch_size_, "batch_size", 200);
+  getParam(s.time_steps_, "time_steps", 12);
+  getParam(s.batch_size_, "batch_size", 400);
   getParam(s.iteration_count_, "iteration_count", 2);
   getParam(s.temperature_, "temperature", 0.25);
   getParam(s.base_constraints_.vx, "vx_max", 0.5);
-  getParam(s.base_constraints_.vy, "vy_max", 1.3);
+  getParam(s.base_constraints_.vy, "vy_max", 0.5);
   getParam(s.base_constraints_.wz, "wz_max", 1.3);
-  getParam(s.sampling_std_.vx, "vx_std", 0.3);
-  getParam(s.sampling_std_.vy, "vy_std", 0.3);
-  getParam(s.sampling_std_.wz, "wz_std", 1.3);
+  getParam(s.sampling_std_.vx, "vx_std", 0.2);
+  getParam(s.sampling_std_.vy, "vy_std", 0.2);
+  getParam(s.sampling_std_.wz, "wz_std", 1.0);
   s.constraints_ = s.base_constraints_;
 
   getParentParam(controller_frequency_, "controller_frequency", 0.0);
