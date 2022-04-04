@@ -11,16 +11,25 @@ void ReferenceTrajectoryCritic::initialize()
 {
   auto node = parent_.lock();
   auto getParam = utils::getParamGetter(node, name_);
-  getParam(power_, "reference_cost_power", 1);
-  getParam(weight_, "reference_cost_weight", 15.0);
+  getParam(reference_cost_power_, "reference_cost_power", 1);
+  getParam(reference_cost_weight_, "reference_cost_weight", 15.0);
 
-  getParam(enable_nearest_goals_critic_, "enable_nearest_goals_critic", true);
-  getParam(nearest_goals_offset_, "nearest_goals_offset", 2);
-  getParam(nearest_goals_count_, "nearest_goals_count", 2);
+  getParam(enable_nearest_path_angle_critic_, "enable_nearest_path_angle_critic", true);
+  getParam(nearest_path_angle_offset_, "nearest_path_angle_offset", 4);
+  getParam(nearest_path_angle_cost_power_, "nearest_path_angle_cost_power", 1);
+  getParam(nearest_path_angle_cost_weight_, "nearest_path_angle_cost_weight", 5.0);
+
+  getParam(enable_nearest_goal_critic_, "enable_nearest_goal_critic", true);
+  getParam(nearest_goal_offset_, "nearest_goal_offset", 2);
+  getParam(nearest_goal_count_, "nearest_goal_count", 2);
+  getParam(nearest_goal_cost_power_, "nearest_goal_cost_power", 1);
+  getParam(nearest_goal_cost_weight_, "nearset_goal_cost_weight", 5.0);
+
   RCLCPP_INFO(
     logger_,
-    "ReferenceTrajectoryCritic instantiated with %d power and %f weight.",
-    power_, weight_);
+    "ReferenceTrajectoryCritic instantiated with %d power and %f weight. Additional nearest angles critic %d, nearest goal critic %d",
+    reference_cost_power_, reference_cost_weight_, enable_nearest_path_angle_critic_,
+    enable_nearest_goal_critic_);
 
 }
 
@@ -41,6 +50,7 @@ void ReferenceTrajectoryCritic::score(
   size_t reference_segments_count = path.shape(0) - 1;
 
   auto && cost = xt::xtensor<double, 1>::from_shape({trajectories_count});
+
 
   // see http://paulbourke.net/geometry/pointlineplane/
   const auto & P3 = trajectories;
@@ -102,13 +112,36 @@ void ReferenceTrajectoryCritic::score(
     cost(t) = mean_dist / trajectories_points_count;
   }
 
-  costs += xt::pow(cost * weight_, power_);
+  costs += xt::pow(cost * reference_cost_weight_, reference_cost_power_);
 
-  if (enable_nearest_goals_critic_) {
+  if (enable_nearest_path_angle_critic_) {
+    cost = xt::zeros<double>({trajectories_count});
+
+    auto path_angle_point = std::min(
+      reference_segments_count - 1,
+      max_s + nearest_path_angle_offset_);
+
+    auto goal_x = xt::view(P2, path_angle_point, 0);
+    auto goal_y = xt::view(P2, path_angle_point, 1);
+    auto traj_xs = xt::view(P3, xt::all(), xt::all(), 0);
+    auto traj_ys = xt::view(P3, xt::all(), xt::all(), 1);
+    auto traj_yaws = xt::view(P3, xt::all(), xt::all(), 2);
+
+    auto yaws_between_points = xt::atan2(goal_y - traj_ys, goal_x - traj_xs);
+
+    auto yaws = xt::abs(utils::shortest_angular_distance(traj_yaws, yaws_between_points));
+    costs += xt::pow(
+      xt::mean(
+        yaws,
+        {1}) * nearest_path_angle_cost_weight_,
+      nearest_path_angle_cost_power_);
+  }
+
+  if (enable_nearest_goal_critic_) {
     cost = xt::zeros<double>({trajectories_count});
     size_t last_trajectory_point = trajectories_points_count - 1;
-    auto beg = std::min(reference_segments_count - 1, max_s + nearest_goals_offset_);
-    auto end = std::min(reference_segments_count, beg + nearest_goals_count_ + 1);
+    auto beg = std::min(reference_segments_count - 1, max_s + nearest_goal_offset_);
+    auto end = std::min(reference_segments_count, beg + nearest_goal_count_ + 1);
 
     for (size_t t = 0; t < trajectories_count; ++t) {
       double mean_dist = 0;
@@ -121,8 +154,10 @@ void ReferenceTrajectoryCritic::score(
       }
       cost(t) += mean_dist / (end - beg);
     }
-    costs += xt::pow(cost * weight_, power_);
+    costs += xt::pow(cost * nearest_goal_cost_weight_, nearest_goal_cost_power_);
   }
+
+
 }
 
 }  // namespace mppi::critics

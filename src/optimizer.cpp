@@ -200,7 +200,9 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
     updateControlSequence(costs);
   }
 
-  auto control = getControlFromSequenceAsTwist(0, plan.header.stamp);
+  auto control = getControlFromSequenceAsTwist(
+    settings_.control_sequence_shift_offset_,
+    plan.header.stamp);
 
   shiftControlSequence();
   return control;

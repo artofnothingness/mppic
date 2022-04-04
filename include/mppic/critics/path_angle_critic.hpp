@@ -25,6 +25,10 @@ public:
     const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs,
     nav2_core::GoalChecker * goal_checker) override;
 
+protected:
+  unsigned int power_{0};
+  double weight_{0};
+
 };
 
 }  // namespace mppi::critics
