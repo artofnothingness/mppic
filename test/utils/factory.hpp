@@ -37,6 +37,7 @@ rclcpp::NodeOptions getOptimizerOptions(TestOptimizerSettings s)
   rclcpp::NodeOptions options;
   setUpOptimizerParams(
     s.iteration_count, s.time_steps, s.lookahead_distance, s.motion_model, s.consider_footprint,
+    s.approx_reference_cost,
     params);
   options.parameter_overrides(params);
   return options;

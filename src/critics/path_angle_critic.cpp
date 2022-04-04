@@ -12,6 +12,7 @@ void PathAngleCritic::initialize()
   getParam(power_, "path_angle_cost_power", 1);
   getParam(weight_, "path_angle_cost_weight", 0.5);
 
+
   RCLCPP_INFO(
     logger_,
     "PathAngleCritic instantiated with %d power and %f weight.",
