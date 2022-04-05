@@ -16,7 +16,7 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "nav2_core/goal_checker.hpp"
 
-#include "mppic/dynamic_parameters_handler.hpp"
+#include "mppic/parameters_handler.hpp"
 #include "mppic/models/optimizer_settings.hpp"
 #include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
@@ -36,8 +36,8 @@ public:
 
   void initialize(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
-    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros, 
-    DynamicParametersHandler * dynamic_parameters_handler);
+    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros,
+    ParametersHandler * dynamic_parameters_handler);
 
 
   geometry_msgs::msg::TwistStamped evalControl(
@@ -55,8 +55,6 @@ public:
   void setSpeedLimit(double speed_limit, bool percentage);
 
 protected:
-  void dynamicParametersCallback(const std::vector<rclcpp::Parameter> & parameters);
-
   void getParams();
   void reset();
 
@@ -133,7 +131,7 @@ protected:
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_;
-  DynamicParametersHandler * dynamic_parameters_handler_;
+  ParametersHandler * parameters_handler_;
 
   std::string name_;
   double controller_frequency_{0};

@@ -18,14 +18,14 @@ namespace mppi
 
 void Optimizer::initialize(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
-  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros, 
-  DynamicParametersHandler * dynamic_parameters_handler)
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros,
+  ParametersHandler * parameters_handler)
 {
   parent_ = parent;
   name_ = name;
   costmap_ros_ = costmap_ros;
   costmap_ = costmap_ros_->getCostmap();
-  dynamic_parameters_handler_ = dynamic_parameters_handler;
+  parameters_handler_ = parameters_handler;
 
   auto node = parent_.lock();
   logger_ = node->get_logger();
@@ -34,95 +34,32 @@ void Optimizer::initialize(
   setOffset();
 
   critic_manager_.on_configure(parent_, name_, costmap_ros_);
-
-  dynamic_parameters_handler_->add_callback( [this] (const std::vector<rclcpp::Parameter> & params) 
-                                            { dynamicParametersCallback(params);});
-  reset();
 }
 
 void Optimizer::getParams()
 {
-  auto node = parent_.lock();
-
-  auto getParam = utils::getParamGetter(node, name_);
-  auto getParentParam = utils::getParamGetter(node, "");
+  std::string motion_model_name;
 
   auto & s = settings_;
-  getParam(s.model_dt_, "model_dt", 0.1);
-  getParam(s.time_steps_, "time_steps", 12);
-  getParam(s.batch_size_, "batch_size", 400);
-  getParam(s.iteration_count_, "iteration_count", 2);
-  getParam(s.temperature_, "temperature", 0.25);
-  getParam(s.base_constraints_.vx, "vx_max", 0.5);
-  getParam(s.base_constraints_.vy, "vy_max", 0.5);
-  getParam(s.base_constraints_.wz, "wz_max", 1.3);
-  getParam(s.sampling_std_.vx, "vx_std", 0.2);
-  getParam(s.sampling_std_.vy, "vy_std", 0.2);
-  getParam(s.sampling_std_.wz, "wz_std", 1.0);
-  s.constraints_ = s.base_constraints_;
-
+  auto getParam = parameters_handler_->getParamGetter(name_);
+  auto getParentParam = parameters_handler_->getParamGetter("");
+  getParam(s.model_dt_, "model_dt", 0.1, ParameterType::Dynamic);
+  getParam(s.time_steps_, "time_steps", 12, ParameterType::Dynamic);
+  getParam(s.batch_size_, "batch_size", 400, ParameterType::Dynamic);
+  getParam(s.iteration_count_, "iteration_count", 2, ParameterType::Dynamic);
+  getParam(s.temperature_, "temperature", 0.25, ParameterType::Dynamic);
+  getParam(s.base_constraints_.vx, "vx_max", 0.5, ParameterType::Dynamic);
+  getParam(s.base_constraints_.vy, "vy_max", 0.5, ParameterType::Dynamic);
+  getParam(s.base_constraints_.wz, "wz_max", 1.3, ParameterType::Dynamic);
+  getParam(s.sampling_std_.vx, "vx_std", 0.2, ParameterType::Dynamic);
+  getParam(s.sampling_std_.vy, "vy_std", 0.2, ParameterType::Dynamic);
+  getParam(s.sampling_std_.wz, "wz_std", 1.0, ParameterType::Dynamic);
+  getParam(motion_model_name, "motion_model", std::string("DiffDrive"), ParameterType::Dynamic);
   getParentParam(controller_frequency_, "controller_frequency", 0.0);
 
-  std::string motion_model_name;
-  getParam(motion_model_name, "motion_model", std::string("DiffDrive"));
+  s.constraints_ = s.base_constraints_;
   setMotionModel(motion_model_name);
-}
-
-// FIXME(artofnothingness) optimize this
-void Optimizer::dynamicParametersCallback(
-  const std::vector<rclcpp::Parameter> &parameters)
-{
-  auto getParamDouble =
-    [this](auto & setting, const std::string & param_name, const auto & parameter) {
-      const auto & type = parameter.get_type();
-      const auto & name = parameter.get_name();
-
-      if (type == rclcpp::ParameterType::PARAMETER_DOUBLE) {
-        if (name == param_name) {
-          auto param_value = parameter.as_double();
-          RCLCPP_INFO(logger_, "Parameter %s set to %f", param_name.c_str(), param_value);
-          setting = param_value;
-        }
-      }
-    };
-
-
-  auto getParamInt =
-    [this](auto & setting, const std::string & param_name, const auto & parameter) {
-      const auto & type = parameter.get_type();
-      const auto & name = parameter.get_name();
-
-      if (type == rclcpp::ParameterType::PARAMETER_INTEGER) {
-        if (name == param_name) {
-          auto param_value = parameter.as_int();
-          RCLCPP_INFO(logger_, "Parameter %s set to %ld", param_name.c_str(), param_value);
-          setting = param_value;
-        }
-      }
-    };
-
-  auto getParam = [&](auto & setting, const std::string & param_name, const auto & parameter) {
-      std::string param_full_name = name_ + "." + param_name;
-      getParamDouble(setting, param_full_name, parameter);
-      getParamInt(setting, param_full_name, parameter);
-    };
-
-  auto & s = settings_;
-  for (auto parameter : parameters) {
-    getParam(s.model_dt_, "model_dt", parameter);
-    getParam(s.time_steps_, "time_steps", parameter);
-    getParam(s.batch_size_, "batch_size", parameter);
-    getParam(s.iteration_count_, "iteration_count", parameter);
-    getParam(s.temperature_, "temperature", parameter);
-    getParam(s.base_constraints_.vx, "vx_max", parameter);
-    getParam(s.base_constraints_.vy, "vy_max", parameter);
-    getParam(s.base_constraints_.wz, "wz_max", parameter);
-    getParam(s.sampling_std_.vx, "vx_std", parameter);
-    getParam(s.sampling_std_.vy, "vy_std", parameter);
-    getParam(s.sampling_std_.wz, "wz_std", parameter);
-  }
-
-  reset();
+  parameters_handler_->addPostCallback([this]() {reset();});
 }
 
 void Optimizer::setOffset()
