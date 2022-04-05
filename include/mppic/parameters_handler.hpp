@@ -47,10 +47,10 @@ public:
     for (auto & param : parameters) {
       const std::string & param_name = param.get_name();
 
-      auto found = get_param_map_.find(param_name);
-      if (found != get_param_map_.end()) {
+      auto get_param_func = get_param_map_.find(param_name);
+      if (get_param_func != get_param_map_.end()) {
         RCLCPP_INFO(logger_, "Parameter %s found", param_name.c_str());
-        get_param_map_[param_name](param);
+        get_param_func->second(param);
       } else {
         RCLCPP_WARN(logger_, "Parameter %s not found", param_name.c_str());
       }
