@@ -47,8 +47,9 @@ public:
     for (auto & param : parameters) {
       const std::string & param_name = param.get_name();
 
-      auto callback = get_param_callbacks_.find(param_name);
-      if (callback != get_param_callbacks_.end()) {
+      if (auto callback = get_param_callbacks_.find(param_name);
+        callback != get_param_callbacks_.end())
+      {
         RCLCPP_INFO(logger_, "Parameter %s found", param_name.c_str());
         callback->second(param);
       } else {
@@ -112,14 +113,20 @@ public:
     T & setting, std::string name)
   {
 
-    auto found = get_param_callbacks_.find(name);
-    if (found != get_param_callbacks_.end()) {
+    if (auto it = get_param_callbacks_.find(name);
+      it != get_param_callbacks_.end())
+    {
       return;
     }
 
     get_param_callbacks_[name] = [this, &setting, name](const rclcpp::Parameter & param) {
         using setting_t = T;
-        if constexpr (std::is_integral_v<setting_t>) {
+
+        if constexpr (std::is_same_v<setting_t, bool>) {
+          auto param_value = param.as_bool();
+          setting = param_value;
+          RCLCPP_INFO(logger_, "Parameter %s set to %d", name.c_str(), param_value);
+        } else if constexpr (std::is_integral_v<setting_t>) {
           auto param_value = param.as_int();
           setting = param_value;
           RCLCPP_INFO(logger_, "Parameter %s set to %ld", name.c_str(), param_value);
