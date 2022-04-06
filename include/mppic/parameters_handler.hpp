@@ -47,13 +47,7 @@ public:
   {
     rcl_interfaces::msg::SetParametersResult result;
 
-    if (!parameters_change_mutex_.try_lock())
-    {
-      RCLCPP_WARN(logger_, "Unable to dynamically change Parameters while the controller is currently running");
-      result.successful = false;
-      result.reason = "Unable to dynamically change Parameters while the controller is currently running";
-      return result;
-    }
+    std::lock_guard<std::mutex> params_lock(parameters_change_mutex_);
 
     for (auto & pre_cb : pre_callbacks_) {
       pre_cb();
@@ -76,7 +70,6 @@ public:
       post_cb();
     }
 
-    parameters_change_mutex_.unlock();
     result.successful = true;
     return result;
   }
