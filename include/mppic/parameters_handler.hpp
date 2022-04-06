@@ -47,10 +47,10 @@ public:
     for (auto & param : parameters) {
       const std::string & param_name = param.get_name();
 
-      auto get_param_func = get_param_map_.find(param_name);
-      if (get_param_func != get_param_map_.end()) {
+      auto callback = get_param_callbacks_.find(param_name);
+      if (callback != get_param_callbacks_.end()) {
         RCLCPP_INFO(logger_, "Parameter %s found", param_name.c_str());
-        get_param_func->second(param);
+        callback->second(param);
       } else {
         RCLCPP_WARN(logger_, "Parameter %s not found", param_name.c_str());
       }
@@ -74,7 +74,7 @@ public:
 
   auto getParamGetter(std::string ns)
   {
-    return [this, ns](auto & setting, std::string name, auto default_value,
+    return [this, ns = std::move(ns)](auto & setting, std::string name, auto default_value,
              ParameterType param_type = ParameterType::Static) {
              getParam(
                setting, ns == "" ? name : ns + "." + name, std::move(
@@ -82,37 +82,42 @@ public:
            };
   }
 
-  // TODO(aibudyakov) refactor this
-  template<typename T, typename D>
+  template<typename SettingT, typename ParamT>
   void getParam(
-    T & setting, std::string name, D default_value,
+    SettingT & setting, std::string name, ParamT default_value,
     ParameterType param_type = ParameterType::Static)
   {
     auto node = node_.lock();
 
-    using OutType = std::decay_t<decltype(setting)>;
-    using InType = std::decay_t<decltype(default_value)>;
-
     nav2_util::declare_parameter_if_not_declared(
       node, name, rclcpp::ParameterValue(default_value));
 
-    InType param_in;
+    setStaticParam<ParamT>(node, setting, name);
+
+    if (param_type == ParameterType::Dynamic) {
+      setDynamicParamCallback(setting, name);
+    }
+  }
+
+  template<typename ParamT, typename SettingT, typename NodeT>
+  void setStaticParam(NodeT node, SettingT & setting, std::string name)
+  {
+    ParamT param_in;
     node->get_parameter(name, param_in);
-    setting = static_cast<OutType>(param_in);
+    setting = static_cast<SettingT>(param_in);
+  }
 
+  template<typename T>
+  void setDynamicParamCallback(
+    T & setting, std::string name)
+  {
 
-    if (param_type == ParameterType::Static) {
+    auto found = get_param_callbacks_.find(name);
+    if (found != get_param_callbacks_.end()) {
       return;
     }
 
-    auto found = get_param_map_.find(name);
-    if (found != get_param_map_.end()) {
-      RCLCPP_WARN(logger_, "Parameter %s already set", name.c_str());
-      return;
-    }
-
-    RCLCPP_INFO(logger_, "Dynamic Parameter added %s", name.c_str());
-    get_param_map_[name] = [this, &setting, name](const rclcpp::Parameter & param) {
+    get_param_callbacks_[name] = [this, &setting, name](const rclcpp::Parameter & param) {
         using setting_t = T;
         if constexpr (std::is_integral_v<setting_t>) {
           auto param_value = param.as_int();
@@ -124,13 +129,15 @@ public:
           RCLCPP_INFO(logger_, "Parameter %s set to %f", name.c_str(), param_value);
         }
       };
+
+    RCLCPP_INFO(logger_, "Dynamic Parameter added %s", name.c_str());
   }
 
 private:
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr on_set_param_handler_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr node_;
-  std::unordered_map<std::string, std::function<get_param_func_t>> get_param_map_;
+  std::unordered_map<std::string, std::function<get_param_func_t>> get_param_callbacks_;
   std::vector<std::function<post_callback_t>> post_callbacks_;
 };
 

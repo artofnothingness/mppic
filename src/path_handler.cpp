@@ -10,17 +10,18 @@ namespace mppi
 void PathHandler::initialize(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap,
-  std::shared_ptr<tf2_ros::Buffer> buffer)
+  std::shared_ptr<tf2_ros::Buffer> buffer, ParametersHandler * param_handler)
 {
   name_ = name;
   costmap_ = costmap;
   tf_buffer_ = buffer;
   auto node = parent.lock();
   logger_ = node->get_logger();
+  parameters_handler_ = param_handler;
 
-  auto getParam = utils::getParamGetter(node, name_);
-  getParam(max_robot_pose_search_dist_, "max_robot_pose_search_dist", 1.2);
-  getParam(transform_tolerance_, "transform_tolerance", 0.1);
+  auto getParam = parameters_handler_->getParamGetter(name_);
+  getParam(max_robot_pose_search_dist_, "max_robot_pose_search_dist", 1.2, ParameterType::Dynamic);
+  getParam(transform_tolerance_, "transform_tolerance", 0.1, ParameterType::Dynamic);
 }
 
 PathRange PathHandler::getGlobalPlanConsideringBounds(

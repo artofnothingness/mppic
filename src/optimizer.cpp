@@ -19,13 +19,13 @@ namespace mppi
 void Optimizer::initialize(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros,
-  ParametersHandler * parameters_handler)
+  ParametersHandler * param_handler)
 {
   parent_ = parent;
   name_ = name;
   costmap_ros_ = costmap_ros;
   costmap_ = costmap_ros_->getCostmap();
-  parameters_handler_ = parameters_handler;
+  parameters_handler_ = param_handler;
 
   auto node = parent_.lock();
   logger_ = node->get_logger();
@@ -33,7 +33,7 @@ void Optimizer::initialize(
   getParams();
   setOffset();
 
-  critic_manager_.on_configure(parent_, name_, costmap_ros_);
+  critic_manager_.on_configure(parent_, name_, costmap_ros_, parameters_handler_);
 }
 
 void Optimizer::getParams()

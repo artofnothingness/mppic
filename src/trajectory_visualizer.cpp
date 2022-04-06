@@ -6,6 +6,43 @@
 namespace mppi
 {
 
+
+namespace
+{
+geometry_msgs::msg::Pose createPose(double x, double y, double z)
+{
+  geometry_msgs::msg::Pose pose;
+  pose.position.x = x;
+  pose.position.y = y;
+  pose.position.z = z;
+  pose.orientation.w = 1;
+  pose.orientation.x = 0;
+  pose.orientation.y = 0;
+  pose.orientation.z = 0;
+  return pose;
+}
+
+geometry_msgs::msg::Vector3 createScale(double x, double y, double z)
+{
+  geometry_msgs::msg::Vector3 scale;
+  scale.x = x;
+  scale.y = y;
+  scale.z = z;
+  return scale;
+}
+
+std_msgs::msg::ColorRGBA createColor(float r, float g, float b, float a)
+{
+  std_msgs::msg::ColorRGBA color;
+  color.r = r;
+  color.g = g;
+  color.b = b;
+  color.a = a;
+  return color;
+}
+
+}
+
 void TrajectoryVisualizer::on_configure(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & frame_id)
 {
@@ -113,38 +150,6 @@ visualization_msgs::msg::Marker TrajectoryVisualizer::createMarker(
   marker.scale = scale;
   marker.color = color;
   return marker;
-}
-
-geometry_msgs::msg::Pose TrajectoryVisualizer::createPose(double x, double y, double z)
-{
-  geometry_msgs::msg::Pose pose;
-  pose.position.x = x;
-  pose.position.y = y;
-  pose.position.z = z;
-  pose.orientation.w = 1;
-  pose.orientation.x = 0;
-  pose.orientation.y = 0;
-  pose.orientation.z = 0;
-  return pose;
-}
-
-geometry_msgs::msg::Vector3 TrajectoryVisualizer::createScale(double x, double y, double z)
-{
-  geometry_msgs::msg::Vector3 scale;
-  scale.x = x;
-  scale.y = y;
-  scale.z = z;
-  return scale;
-}
-
-std_msgs::msg::ColorRGBA TrajectoryVisualizer::createColor(float r, float g, float b, float a)
-{
-  std_msgs::msg::ColorRGBA color;
-  color.r = r;
-  color.g = g;
-  color.b = b;
-  color.a = a;
-  return color;
 }
 
 }  // namespace mppi

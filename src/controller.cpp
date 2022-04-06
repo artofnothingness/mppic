@@ -22,12 +22,12 @@ void Controller::configure(
   auto node = parent_.lock();
   clock_ = node->get_clock();
   // Get high-level controller parameters
-  auto getParam = utils::getParamGetter(node, name_);
-  getParam(visualize_, "visualize", false);
+  auto getParam = parameters_handler_->getParamGetter(name_);
+  getParam(visualize_, "visualize", false, ParameterType::Dynamic);
 
   // Configure composed objects
   optimizer_.initialize(parent_, name_, costmap_ros_, parameters_handler_.get());
-  path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_);
+  path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_, parameters_handler_.get());
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 
   parameters_handler_->start();

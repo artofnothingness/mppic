@@ -17,6 +17,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "mppic/parameters_handler.hpp"
 
 namespace mppi
 {
@@ -28,7 +29,7 @@ public:
 
   void on_configure(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
-    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros);
+    std::shared_ptr<nav2_costmap_2d::Costmap2DROS>, ParametersHandler *);
 
   /**
    * @brief Evaluate cost for each trajectory
@@ -38,11 +39,11 @@ public:
    * @return Cost for each trajectory
    */
   xt::xtensor<double, 1> evalTrajectoriesScores(
-    const models::State & state,
+    const models::State &,
     const xt::xtensor<double, 3> & trajectories,
     const nav_msgs::msg::Path & global_plan,
     const geometry_msgs::msg::PoseStamped & robot_pose,
-    nav2_core::GoalChecker * goal_checker) const;
+    nav2_core::GoalChecker *) const;
 
 protected:
   void getParams();
@@ -54,6 +55,7 @@ protected:
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   std::string name_;
 
+  ParametersHandler * parameters_handler_;
   std::vector<std::string> critic_names_;
   std::unique_ptr<pluginlib::ClassLoader<critics::CriticFunction>> loader_;
   std::vector<std::unique_ptr<critics::CriticFunction>> critics_;
