@@ -74,6 +74,7 @@ protected:
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 
   double max_robot_pose_search_dist_{0};
+  double prune_distance_{0};
   double transform_tolerance_{0};
 };
 }  // namespace mppi

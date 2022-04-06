@@ -7,8 +7,8 @@ namespace mppi::critics
 void PathAngleCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
-  getParam(power_, "path_angle_cost_power", 1, ParameterType::Dynamic);
-  getParam(weight_, "path_angle_cost_weight", 0.5, ParameterType::Dynamic);
+  getParam(power_, "path_angle_cost_power", 1);
+  getParam(weight_, "path_angle_cost_weight", 0.5);
 
 
   RCLCPP_INFO(

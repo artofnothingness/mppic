@@ -10,25 +10,19 @@ namespace mppi::critics
 void ReferenceTrajectoryCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
-  getParam(reference_cost_power_, "reference_cost_power", 1, ParameterType::Dynamic);
-  getParam(reference_cost_weight_, "reference_cost_weight", 5.0, ParameterType::Dynamic);
+  getParam(reference_cost_power_, "reference_cost_power", 1);
+  getParam(reference_cost_weight_, "reference_cost_weight", 5.0);
 
-  getParam(
-    enable_nearest_path_angle_critic_, "enable_nearest_path_angle_critic", true,
-    ParameterType::Dynamic);
-  getParam(nearest_path_angle_offset_, "nearest_path_angle_offset", 4, ParameterType::Dynamic);
-  getParam(
-    nearest_path_angle_cost_power_, "nearest_path_angle_cost_power", 1,
-    ParameterType::Dynamic);
-  getParam(
-    nearest_path_angle_cost_weight_, "nearest_path_angle_cost_weight", 1.0,
-    ParameterType::Dynamic);
+  getParam(enable_nearest_path_angle_critic_, "enable_nearest_path_angle_critic", true);
+  getParam(nearest_path_angle_offset_, "nearest_path_angle_offset", 4);
+  getParam(nearest_path_angle_cost_power_, "nearest_path_angle_cost_power", 1);
+  getParam(nearest_path_angle_cost_weight_, "nearest_path_angle_cost_weight", 1.0);
 
-  getParam(enable_nearest_goal_critic_, "enable_nearest_goal_critic", true, ParameterType::Dynamic);
-  getParam(nearest_goal_offset_, "nearest_goal_offset", 2, ParameterType::Dynamic);
-  getParam(nearest_goal_count_, "nearest_goal_count", 2, ParameterType::Dynamic);
-  getParam(nearest_goal_cost_power_, "nearest_goal_cost_power", 1, ParameterType::Dynamic);
-  getParam(nearest_goal_cost_weight_, "nearset_goal_cost_weight", 3.0, ParameterType::Dynamic);
+  getParam(enable_nearest_goal_critic_, "enable_nearest_goal_critic", true);
+  getParam(nearest_goal_offset_, "nearest_goal_offset", 2);
+  getParam(nearest_goal_count_, "nearest_goal_count", 2);
+  getParam(nearest_goal_cost_power_, "nearest_goal_cost_power", 1);
+  getParam(nearest_goal_cost_weight_, "nearset_goal_cost_weight", 3.0);
 
   RCLCPP_INFO(
     logger_,

@@ -9,10 +9,10 @@ namespace mppi::critics
 void ObstaclesCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
-  getParam(consider_footprint_, "consider_footprint", true, ParameterType::Dynamic);
-  getParam(power_, "obstacle_cost_power", 2, ParameterType::Dynamic);
-  getParam(weight_, "obstacle_cost_weight", 1.0, ParameterType::Dynamic);
-  getParam(collision_cost_, "collision_cost", 2000.0, ParameterType::Dynamic);
+  getParam(consider_footprint_, "consider_footprint", true);
+  getParam(power_, "obstacle_cost_power", 2);
+  getParam(weight_, "obstacle_cost_weight", 1.0);
+  getParam(collision_cost_, "collision_cost", 2000.0);
 
   collision_checker_.setCostmap(costmap_);
   RCLCPP_INFO(

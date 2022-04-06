@@ -8,11 +8,11 @@ void GoalAngleCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
 
-  getParam(power_, "goal_angle_cost_power", 1, ParameterType::Dynamic);
-  getParam(weight_, "goal_angle_cost_weight", 5.0, ParameterType::Dynamic);
+  getParam(power_, "goal_angle_cost_power", 1);
+  getParam(weight_, "goal_angle_cost_weight", 5.0);
   getParam(
     threshold_to_consider_goal_angle_,
-    "threshold_to_consider_goal_angle", 0.20, ParameterType::Dynamic);
+    "threshold_to_consider_goal_angle", 0.20);
   RCLCPP_INFO(
     logger_,
     "GoalAngleCritic instantiated with %d power, %f weight, and %f "

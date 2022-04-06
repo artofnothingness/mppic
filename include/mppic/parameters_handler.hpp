@@ -44,6 +44,7 @@ public:
   rcl_interfaces::msg::SetParametersResult dynamicParametersCallback(
     std::vector<rclcpp::Parameter> parameters)
   {
+    std::lock_guard<std::mutex> lock(parameters_change_mutex_);
     for (auto & param : parameters) {
       const std::string & param_name = param.get_name();
 
@@ -66,6 +67,11 @@ public:
     return result;
   }
 
+  std::mutex * getLock()
+  {
+    return &parameters_change_mutex_;
+  }
+
 
   template<typename T>
   void addPostCallback(T && callback)
@@ -86,7 +92,7 @@ public:
   template<typename SettingT, typename ParamT>
   void getParam(
     SettingT & setting, std::string name, ParamT default_value,
-    ParameterType param_type = ParameterType::Static)
+    ParameterType param_type = ParameterType::Dynamic)
   {
     auto node = node_.lock();
 
@@ -141,6 +147,7 @@ public:
   }
 
 private:
+  std::mutex parameters_change_mutex_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr on_set_param_handler_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr node_;

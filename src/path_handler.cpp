@@ -20,8 +20,9 @@ void PathHandler::initialize(
   parameters_handler_ = param_handler;
 
   auto getParam = parameters_handler_->getParamGetter(name_);
-  getParam(max_robot_pose_search_dist_, "max_robot_pose_search_dist", 1.2, ParameterType::Dynamic);
-  getParam(transform_tolerance_, "transform_tolerance", 0.1, ParameterType::Dynamic);
+  getParam(max_robot_pose_search_dist_, "max_robot_pose_search_dist", getMaxCostmapDist());
+  getParam(prune_distance_, "prune_distance", 1.2);
+  getParam(transform_tolerance_, "transform_tolerance", 0.1);
 }
 
 PathRange PathHandler::getGlobalPlanConsideringBounds(
@@ -36,7 +37,6 @@ PathRange PathHandler::getGlobalPlanConsideringBounds(
     global_plan_.poses.begin(), global_plan_.poses.end(), max_robot_pose_search_dist_);
 
   // Find closest point to the robot
-
   auto closest_point = nav2_util::geometry_utils::min_by(
     begin, closest_pose_upper_bound,
     [&global_pose](const geometry_msgs::msg::PoseStamped & ps) {
@@ -50,7 +50,8 @@ PathRange PathHandler::getGlobalPlanConsideringBounds(
   auto last_point =
     std::find_if(
     closest_point, end, [&](const geometry_msgs::msg::PoseStamped & global_plan_pose) {
-      return euclidean_distance(global_pose, global_plan_pose) > max_costmap_dist;
+      auto distance = euclidean_distance(global_pose, global_plan_pose);
+      return distance > max_costmap_dist || distance >= prune_distance_;
     });
 
   return {closest_point, last_point};

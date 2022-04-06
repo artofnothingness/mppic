@@ -23,26 +23,27 @@ void Controller::configure(
   clock_ = node->get_clock();
   // Get high-level controller parameters
   auto getParam = parameters_handler_->getParamGetter(name_);
-  getParam(visualize_, "visualize", false, ParameterType::Dynamic);
+  getParam(visualize_, "visualize", false);
 
   // Configure composed objects
   optimizer_.initialize(parent_, name_, costmap_ros_, parameters_handler_.get());
   path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_, parameters_handler_.get());
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 
-  parameters_handler_->start();
   RCLCPP_INFO(logger_, "Configured MPPI Controller: %s", name_.c_str());
 }
 
 void Controller::cleanup()
 {
   trajectory_visualizer_.on_cleanup();
+  parameters_handler_.reset();
   RCLCPP_INFO(logger_, "Cleaned up MPPI Controller: %s", name_.c_str());
 }
 
 void Controller::activate()
 {
   trajectory_visualizer_.on_activate();
+  parameters_handler_->start();
   RCLCPP_INFO(logger_, "Activated MPPI Controller: %s", name_.c_str());
 }
 
@@ -57,6 +58,7 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * goal_checker)
 {
+  std::lock_guard<std::mutex>(*parameters_handler_->getLock());
 
   auto t_start = std::chrono::high_resolution_clock::now();
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);

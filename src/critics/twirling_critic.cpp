@@ -8,8 +8,8 @@ void TwirlingCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
 
-  getParam(power_, "twirling_cost_power", 1, ParameterType::Dynamic);
-  getParam(weight_, "twirling_cost_weight", 10.0, ParameterType::Dynamic);
+  getParam(power_, "twirling_cost_power", 1);
+  getParam(weight_, "twirling_cost_weight", 10.0);
 
   RCLCPP_INFO(
     logger_, "TwirlingCritic instantiated with %d power and %f weight.", power_, weight_);
