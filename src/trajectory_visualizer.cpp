@@ -76,6 +76,7 @@ void TrajectoryVisualizer::on_deactivate()
 
 void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
 {
+
   auto & size = trajectory.shape()[0];
   if (!size) {
     return;

@@ -28,6 +28,7 @@ void PathHandler::initialize(
 PathRange PathHandler::getGlobalPlanConsideringBounds(
   const geometry_msgs::msg::PoseStamped & global_pose)
 {
+
   using nav2_util::geometry_utils::euclidean_distance;
   auto begin = global_plan_.poses.begin();
   auto end = global_plan_.poses.end();

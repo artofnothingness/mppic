@@ -58,16 +58,10 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * goal_checker)
 {
-  std::lock_guard<std::mutex>(*parameters_handler_->getLock());
-
-  auto t_start = std::chrono::high_resolution_clock::now();
+  std::lock_guard<std::mutex> lock(*(parameters_handler_->getLock()));
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
   geometry_msgs::msg::TwistStamped cmd =
     optimizer_.evalControl(robot_pose, robot_speed, transformed_plan, goal_checker);
-  auto t_end = std::chrono::high_resolution_clock::now();
-  double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end - t_start).count();
-
-  RCLCPP_INFO_THROTTLE(logger_, *clock_, 1000, "Control evaluation time %f", elapsed_time_ms);
 
   visualize(robot_pose, robot_speed, std::move(transformed_plan));
   return cmd;
@@ -84,7 +78,7 @@ void Controller::visualize(
 
   trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories(), 5, 2);
   trajectory_visualizer_.add(optimizer_.evalTrajectoryFromControlSequence(robot_pose, robot_speed));
-  trajectory_visualizer_.visualize(transformed_plan);
+  trajectory_visualizer_.visualize(std::move(transformed_plan));
 }
 
 void Controller::setPlan(const nav_msgs::msg::Path & path)

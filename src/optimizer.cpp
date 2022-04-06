@@ -34,6 +34,8 @@ void Optimizer::initialize(
   setOffset();
 
   critic_manager_.on_configure(parent_, name_, costmap_ros_, parameters_handler_);
+
+  reset();
 }
 
 void Optimizer::getParams()

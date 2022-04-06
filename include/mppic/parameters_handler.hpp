@@ -24,6 +24,7 @@ class ParametersHandler
 public:
   using get_param_func_t = void (const rclcpp::Parameter & param);
   using post_callback_t = void ();
+  using pre_callback_t = void ();
 
   ParametersHandler() = default;
   ParametersHandler(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent)
@@ -45,6 +46,11 @@ public:
     std::vector<rclcpp::Parameter> parameters)
   {
     std::lock_guard<std::mutex> lock(parameters_change_mutex_);
+
+    for (auto & pre_cb : pre_callbacks_) {
+      pre_cb();
+    }
+
     for (auto & param : parameters) {
       const std::string & param_name = param.get_name();
 
@@ -79,10 +85,16 @@ public:
     post_callbacks_.push_back(std::move(callback));
   }
 
+  template<typename T>
+  void addPreCallback(T && callback)
+  {
+    pre_callbacks_.push_back(std::move(callback));
+  }
+
   auto getParamGetter(std::string ns)
   {
     return [this, ns = std::move(ns)](auto & setting, std::string name, auto default_value,
-             ParameterType param_type = ParameterType::Static) {
+             ParameterType param_type = ParameterType::Dynamic) {
              getParam(
                setting, ns == "" ? name : ns + "." + name, std::move(
                  default_value), param_type);
@@ -153,6 +165,7 @@ private:
   rclcpp_lifecycle::LifecycleNode::WeakPtr node_;
   std::unordered_map<std::string, std::function<get_param_func_t>> get_param_callbacks_;
   std::vector<std::function<post_callback_t>> post_callbacks_;
+  std::vector<std::function<pre_callback_t>> pre_callbacks_;
 };
 
 
