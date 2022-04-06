@@ -52,9 +52,10 @@ void ReferenceTrajectoryCritic::score(
 
 
   // see http://paulbourke.net/geometry/pointlineplane/
-  const auto & P3 = trajectories;
-  auto P1 = xt::view(path, xt::range(_, -1), xt::all());
-  auto P2 = xt::view(path, xt::range(1, _), xt::all());
+  const auto & P3 = trajectories; // P3 points from which we calculate distance to segments
+  auto P1 = xt::view(path, xt::range(_, -1), xt::all()); //  segments start points
+  auto P2 = xt::view(path, xt::range(1, _), xt::all()); //  segments end points
+
   xt::xtensor<double, 2> P2_P1_diff = P2 - P1;
   xt::xtensor<double, 1> P2_P1_norm_sq =
     xt::norm_sq(
