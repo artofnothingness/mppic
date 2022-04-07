@@ -14,7 +14,7 @@ void ReferenceTrajectoryCritic::initialize()
   getParam(reference_cost_weight_, "reference_cost_weight", 3.0);
 
   getParam(enable_nearest_path_angle_critic_, "enable_nearest_path_angle_critic", true);
-  getParam(nearest_path_angle_offset_, "nearest_path_angle_offset", 4);
+  getParam(nearest_path_angle_offset_, "nearest_path_angle_offset", 6);
   getParam(nearest_path_angle_cost_power_, "nearest_path_angle_cost_power", 1);
   getParam(nearest_path_angle_cost_weight_, "nearest_path_angle_cost_weight", 1.0);
 

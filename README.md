@@ -150,7 +150,7 @@ controller_server:
         nearest_goal_cost_power: 1
         nearset_goal_cost_weight: 1.0
         enable_nearest_path_angle_critic: true
-        nearest_path_angle_offset: 4
+        nearest_path_angle_offset: 6
         nearest_path_angle_cost_power: 1
         nearest_path_angle_cost_weight: 1.0
       GoalCritic:
@@ -163,8 +163,8 @@ controller_server:
       ObstaclesCritic:
         consider_footprint: true
         collision_cost: 2000.0
-        obstacle_cost_power: 1
-        obstacle_cost_weight: 6.0
+        obstacle_cost_power: 2
+        obstacle_cost_weight: 1.5
       PreferForwardCritic:
         prefer_forward_cost_power: 1
         prefer_forward_cost_weight: 5.0
