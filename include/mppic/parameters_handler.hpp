@@ -47,7 +47,7 @@ public:
   {
     rcl_interfaces::msg::SetParametersResult result;
 
-    std::lock_guard<std::mutex> params_lock(parameters_change_mutex_);
+    std::lock_guard<std::mutex> lock(parameters_change_mutex_);
 
     for (auto & pre_cb : pre_callbacks_) {
       pre_cb();
