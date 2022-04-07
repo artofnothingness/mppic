@@ -20,7 +20,6 @@ void Controller::configure(
   parameters_handler_ = std::make_unique<ParametersHandler>(parent);
 
   auto node = parent_.lock();
-  clock_ = node->get_clock();
   // Get high-level controller parameters
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(visualize_, "visualize", false);
