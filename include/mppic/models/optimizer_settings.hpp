@@ -20,4 +20,4 @@ struct OptimizerSettings
   int control_sequence_shift_offset_{0};
 };
 
-}
+}  // namespace mppi::models

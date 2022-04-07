@@ -38,8 +38,6 @@ protected:
   size_t nearest_goal_count_;
   unsigned int nearest_goal_cost_power_{0};
   double nearest_goal_cost_weight_{0};
-
-
 };
 
 }  // namespace mppi::critics

@@ -9,7 +9,7 @@ void PreferForwardCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(power_, "prefer_forward_cost_power", 1);
-  getParam(weight_, "prefer_forward_cost_weight", 10.0);
+  getParam(weight_, "prefer_forward_cost_weight", 5.0);
 
   RCLCPP_INFO(
     logger_, "PreferForwardCritic instantiated with %d power and %f weight.", power_, weight_);

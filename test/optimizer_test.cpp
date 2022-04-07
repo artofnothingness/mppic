@@ -14,6 +14,7 @@
 #include <xtensor/xview.hpp>
 
 #include "mppic/optimizer.hpp"
+#include "mppic/parameters_handler.hpp"
 #include "mppic/motion_models.hpp"
 
 #include "utils/utils.hpp"
@@ -46,7 +47,8 @@ TEST(MPPIOptimizer, OptimizerTestDiffFootprint)
 
   auto costmap_ros = getDummyCostmapRos(cost_map_settings);
   auto node = getDummyNode(optimizer_settings);
-  auto optimizer = getDummyOptimizer(node, costmap_ros);
+  auto parameters_handler = std::make_unique<mppi::ParametersHandler>(node);
+  auto optimizer = getDummyOptimizer(node, costmap_ros, parameters_handler.get());
 
   // setup costmap
   auto costmap = costmap_ros->getCostmap();
@@ -97,7 +99,8 @@ TEST(MPPIOptimizer, OptimizerTestOmniCircle)
 
   auto costmap_ros = getDummyCostmapRos(cost_map_settings);
   auto node = getDummyNode(optimizer_settings);
-  auto optimizer = getDummyOptimizer(node, costmap_ros);
+  auto parameters_handler = std::make_unique<mppi::ParametersHandler>(node);
+  auto optimizer = getDummyOptimizer(node, costmap_ros, parameters_handler.get());
 
   // setup costmap
   auto costmap = costmap_ros->getCostmap();

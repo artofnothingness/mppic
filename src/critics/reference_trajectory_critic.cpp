@@ -11,7 +11,7 @@ void ReferenceTrajectoryCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(reference_cost_power_, "reference_cost_power", 1);
-  getParam(reference_cost_weight_, "reference_cost_weight", 5.0);
+  getParam(reference_cost_weight_, "reference_cost_weight", 3.0);
 
   getParam(enable_nearest_path_angle_critic_, "enable_nearest_path_angle_critic", true);
   getParam(nearest_path_angle_offset_, "nearest_path_angle_offset", 4);
@@ -22,14 +22,14 @@ void ReferenceTrajectoryCritic::initialize()
   getParam(nearest_goal_offset_, "nearest_goal_offset", 2);
   getParam(nearest_goal_count_, "nearest_goal_count", 2);
   getParam(nearest_goal_cost_power_, "nearest_goal_cost_power", 1);
-  getParam(nearest_goal_cost_weight_, "nearset_goal_cost_weight", 3.0);
+  getParam(nearest_goal_cost_weight_, "nearset_goal_cost_weight", 1.0);
 
   RCLCPP_INFO(
     logger_,
-    "ReferenceTrajectoryCritic instantiated with %d power and %f weight. Additional nearest angles critic %d, nearest goal critic %d",
+    "ReferenceTrajectoryCritic instantiated with %d power and %f weight."
+    "Additional nearest angles critic %d, nearest goal critic %d",
     reference_cost_power_, reference_cost_weight_, enable_nearest_path_angle_critic_,
     enable_nearest_goal_critic_);
-
 }
 
 void ReferenceTrajectoryCritic::score(
@@ -52,9 +52,9 @@ void ReferenceTrajectoryCritic::score(
 
 
   // see http://paulbourke.net/geometry/pointlineplane/
-  const auto & P3 = trajectories; // P3 points from which we calculate distance to segments
-  auto P1 = xt::view(path, xt::range(_, -1), xt::all()); //  segments start points
-  auto P2 = xt::view(path, xt::range(1, _), xt::all()); //  segments end points
+  const auto & P3 = trajectories;  // P3 points from which we calculate distance to segments
+  auto P1 = xt::view(path, xt::range(_, -1), xt::all());  // segments start points
+  auto P2 = xt::view(path, xt::range(1, _), xt::all());  // segments end points
 
   xt::xtensor<double, 2> P2_P1_diff = P2 - P1;
   xt::xtensor<double, 1> P2_P1_norm_sq =
@@ -156,8 +156,6 @@ void ReferenceTrajectoryCritic::score(
     }
     costs += xt::pow(cost * nearest_goal_cost_weight_, nearest_goal_cost_power_);
   }
-
-
 }
 
 }  // namespace mppi::critics

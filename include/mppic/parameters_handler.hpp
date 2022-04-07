@@ -3,6 +3,9 @@
 #pragma once
 
 #include <vector>
+#include <utility>
+#include <string>
+#include <unordered_map>
 #include <functional>
 #include <type_traits>
 
@@ -27,7 +30,7 @@ public:
   using pre_callback_t = void ();
 
   ParametersHandler() = default;
-  ParametersHandler(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent)
+  explicit ParametersHandler(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent)
   {
     node_ = parent;
     auto node = node_.lock();
@@ -131,7 +134,6 @@ public:
   void setDynamicParamCallback(
     T & setting, std::string name)
   {
-
     if (auto it = get_param_callbacks_.find(name);
       it != get_param_callbacks_.end())
     {
@@ -170,4 +172,4 @@ private:
 };
 
 
-}
+}  // namespace mppi

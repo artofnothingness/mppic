@@ -125,7 +125,7 @@ controller_server:
   ros__parameters:
     FollowPath:
       plugin: "mppi::Controller"
-      time_steps: 12
+      time_steps: 15
       model_dt: 0.1
       batch_size: 400
       vx_std: 0.2
@@ -135,7 +135,7 @@ controller_server:
       vy_max: 0.5
       wz_max: 1.3
       iteration_count: 2
-      max_robot_pose_search_dist: 1.2
+      prune_distance: 1.5
       transform_tolerance: 0.1
       temperature: 0.25
       motion_model: "DiffDrive"
@@ -143,19 +143,19 @@ controller_server:
       critics: ["ReferenceTrajectoryCritic", "GoalCritic", "GoalAngleCritic", "ObstaclesCritic", "PreferForwardCritic" ]
       ReferenceTrajectoryCritic:
         reference_cost_power: 1
-        reference_cost_weight: 5.0
+        reference_cost_weight: 3.0
         enable_nearest_goal_critic: true
         nearest_goal_offset: 2
         nearest_goal_count: 2
         nearest_goal_cost_power: 1
-        nearset_goal_cost_weight: 3.0
+        nearset_goal_cost_weight: 1.0
         enable_nearest_path_angle_critic: true
         nearest_path_angle_offset: 4
         nearest_path_angle_cost_power: 1
         nearest_path_angle_cost_weight: 1.0
       GoalCritic:
         goal_cost_power: 1
-        goal_cost_weight: 1.0
+        goal_cost_weight: 5.0
       GoalAngleCritic:
         goal_angle_cost_power: 1
         goal_angle_cost_weight: 5.0
@@ -163,11 +163,11 @@ controller_server:
       ObstaclesCritic:
         consider_footprint: true
         collision_cost: 2000.0
-        obstacle_cost_power: 2
-        obstacle_cost_weight: 1.0
+        obstacle_cost_power: 1
+        obstacle_cost_weight: 6.0
       PreferForwardCritic:
         prefer_forward_cost_power: 1
-        prefer_forward_cost_weight: 10.0
+        prefer_forward_cost_weight: 5.0
       PathAngleCritic:
         path_angle_cost_power: 1
         path_angle_cost_weight: 0.5

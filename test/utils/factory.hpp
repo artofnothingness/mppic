@@ -91,13 +91,10 @@ getDummyNode(rclcpp::NodeOptions options, std::string node_name = std::string("d
   return node;
 }
 
-mppi::Optimizer getDummyOptimizer(auto node, auto costmap_ros)
+mppi::Optimizer getDummyOptimizer(auto node, auto costmap_ros, auto *params_handler)
 {
   auto optimizer = mppi::Optimizer();
   std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
-
-  // TODO(@aibudyakov) leak
-  auto * params_handler = new mppi::ParametersHandler();
 
   optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros, params_handler);
 

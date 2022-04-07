@@ -6,7 +6,6 @@
 namespace mppi
 {
 
-
 namespace
 {
 geometry_msgs::msg::Pose createPose(double x, double y, double z)
@@ -41,7 +40,7 @@ std_msgs::msg::ColorRGBA createColor(float r, float g, float b, float a)
   return color;
 }
 
-}
+}  // namespace
 
 void TrajectoryVisualizer::on_configure(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & frame_id)
@@ -76,7 +75,6 @@ void TrajectoryVisualizer::on_deactivate()
 
 void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
 {
-
   auto & size = trajectory.shape()[0];
   if (!size) {
     return;

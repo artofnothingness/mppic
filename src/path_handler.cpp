@@ -21,14 +21,13 @@ void PathHandler::initialize(
 
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(max_robot_pose_search_dist_, "max_robot_pose_search_dist", getMaxCostmapDist());
-  getParam(prune_distance_, "prune_distance", 1.2);
+  getParam(prune_distance_, "prune_distance", 1.5);
   getParam(transform_tolerance_, "transform_tolerance", 0.1);
 }
 
 PathRange PathHandler::getGlobalPlanConsideringBounds(
   const geometry_msgs::msg::PoseStamped & global_pose)
 {
-
   using nav2_util::geometry_utils::euclidean_distance;
   auto begin = global_plan_.poses.begin();
   auto end = global_plan_.poses.end();

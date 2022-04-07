@@ -10,8 +10,8 @@ void ObstaclesCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(consider_footprint_, "consider_footprint", true);
-  getParam(power_, "obstacle_cost_power", 2);
-  getParam(weight_, "obstacle_cost_weight", 1.0);
+  getParam(power_, "obstacle_cost_power", 1);
+  getParam(weight_, "obstacle_cost_weight", 6.0);
   getParam(collision_cost_, "collision_cost", 2000.0);
 
   collision_checker_.setCostmap(costmap_);
