@@ -115,7 +115,7 @@ public:
     nav2_util::declare_parameter_if_not_declared(
       node, name, rclcpp::ParameterValue(default_value));
 
-    setStaticParam<ParamT>(node, setting, name);
+    setParameter<ParamT>(node, setting, name);
 
     if (param_type == ParameterType::Dynamic) {
       setDynamicParamCallback(setting, name);
@@ -123,7 +123,7 @@ public:
   }
 
   template<typename ParamT, typename SettingT, typename NodeT>
-  void setStaticParam(NodeT node, SettingT & setting, std::string name)
+  void setParameter(NodeT node, SettingT & setting, std::string name)
   {
     ParamT param_in;
     node->get_parameter(name, param_in);
