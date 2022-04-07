@@ -23,7 +23,7 @@ void CriticManager::getParams()
 {
   auto node = parent_.lock();
   auto getParam = parameters_handler_->getParamGetter(name_);
-  getParam(critic_names_, "critics", std::vector<std::string>{}, ParameterType::Static);
+  getParam(critic_names_, "critics", std::vector<std::string>{}J ParameterType::Static);
 }
 
 void CriticManager::loadCritics()
@@ -33,6 +33,7 @@ void CriticManager::loadCritics()
       "mppic", "mppi::critics::CriticFunction");
   }
 
+  critics_.clear();
   for (auto name : critic_names_) {
     std::string fullname = getFullName(name);
     auto instance = std::unique_ptr<critics::CriticFunction>(
