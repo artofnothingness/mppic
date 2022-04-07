@@ -50,8 +50,6 @@ public:
   {
     rcl_interfaces::msg::SetParametersResult result;
 
-    std::lock_guard<std::mutex> lock(parameters_change_mutex_);
-
     for (auto & pre_cb : pre_callbacks_) {
       pre_cb();
     }
@@ -162,7 +160,6 @@ public:
   }
 
 private:
-  std::mutex parameters_change_mutex_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr on_set_param_handler_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr node_;
