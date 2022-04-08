@@ -23,7 +23,7 @@ void CriticManager::getParams()
 {
   auto node = parent_.lock();
   auto getParam = parameters_handler_->getParamGetter(name_);
-  getParam(critic_names_, "critics", std::vector<std::string>{}J ParameterType::Static);
+  getParam(critic_names_, "critics", std::vector<std::string>{}, ParameterType::Static);
 }
 
 void CriticManager::loadCritics()
