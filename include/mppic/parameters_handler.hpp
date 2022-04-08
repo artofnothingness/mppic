@@ -75,12 +75,6 @@ public:
     return result;
   }
 
-  std::mutex * getLock()
-  {
-    return &parameters_change_mutex_;
-  }
-
-
   template<typename T>
   void addPostCallback(T && callback)
   {
