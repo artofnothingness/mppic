@@ -23,6 +23,7 @@ void Controller::configure(
   // Get high-level controller parameters
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(visualize_, "visualize", false);
+  getParam(stop_robot_, "stop_robot", false);
 
   // Configure composed objects
   optimizer_.initialize(parent_, name_, costmap_ros_, parameters_handler_.get());
@@ -63,7 +64,7 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
 
   visualize(robot_pose, robot_speed, std::move(transformed_plan));
 
-  return cmd;
+  return stop_robot_ ? geometry_msgs::msg::TwistStamped{} : cmd;
 }
 
 void Controller::visualize(

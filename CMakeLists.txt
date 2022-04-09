@@ -42,6 +42,7 @@ add_library(critics SHARED
   src/critics/obstacles_critic.cpp
   src/critics/prefer_forward_critic.cpp
   src/critics/twirling_critic.cpp
+  src/critics/smoother_critic.cpp
 )
 
 set(libraries mppic critics)
