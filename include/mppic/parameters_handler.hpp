@@ -3,7 +3,6 @@
 #pragma once
 
 #include <functional>
-#include <rclcpp/parameter_value.hpp>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -12,6 +11,7 @@
 
 #include "nav2_util/node_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/parameter_value.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 namespace mppi
