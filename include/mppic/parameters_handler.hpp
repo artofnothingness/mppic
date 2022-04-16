@@ -16,13 +16,7 @@
 
 namespace mppi
 {
-
 enum class ParameterType { Dynamic, Static };
-
-namespace
-{
-
-}  // namespace
 
 class ParametersHandler
 {
@@ -37,14 +31,14 @@ public:
 
   void start();
 
-  rcl_interfaces::msg::SetParametersResult dynamicParametersCallback(
+  rcl_interfaces::msg::SetParametersResult dynamicParamsCallback(
     std::vector<rclcpp::Parameter> parameters);
 
-  inline auto getParamGetter(const std::string &ns);
+  inline auto getParamGetter(const std::string & ns);
 
   template<typename SettingT, typename ParamT>
   void getParam(
-    SettingT & setting, const std::string &name, ParamT default_value,
+    SettingT & setting, const std::string & name, ParamT default_value,
     ParameterType param_type = ParameterType::Dynamic);
 
   template<typename T>
@@ -54,42 +48,17 @@ public:
   void addPreCallback(T && callback);
 
   template<typename ParamT, typename SettingT, typename NodeT>
-  void setParameter(SettingT & setting, const std::string &name, NodeT node);
+  void setParam(SettingT & setting, const std::string & name, NodeT node) const;
 
   template<typename T>
-  void setDynamicParamCallback(T & setting, const std::string &name);
+  void setDynamicParamCallback(T & setting, const std::string & name);
 
 private:
   template<typename T>
-  void addDynamicParameterCallback(const std::string & name, T && callback);
+  void addDynamicParamCallback(const std::string & name, T && callback);
 
   template<typename T>
-  static auto as(const rclcpp::Parameter & parameter)
-  {
-    if constexpr (std::is_same_v<T, bool>) {
-      return parameter.as_bool();
-    } else if constexpr (std::is_integral_v<T>) {
-      return parameter.as_int();
-    } else if constexpr (std::is_floating_point_v<T>) {
-      return parameter.as_double();
-    } else if constexpr (std::is_same_v<T, std::string>) {
-      return parameter.as_string();
-    } else if constexpr (std::is_same_v<T, std::vector<int>>) {
-      return parameter.as_integer_array();
-    } else if constexpr (std::is_same_v<T, std::vector<int64_t>>) {
-      return parameter.as_integer_array();
-    } else if constexpr (std::is_same_v<T, std::vector<unsigned int>>) {
-      return parameter.as_integer_array();
-    } else if constexpr (std::is_same_v<T, std::vector<size_t>>) {
-      return parameter.as_integer_array();
-    } else if constexpr (std::is_same_v<T, std::vector<double>>) {
-      return parameter.as_double_array();
-    } else if constexpr (std::is_same_v<T, std::vector<float>>) {
-      return parameter.as_double_array();
-    } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-      return parameter.as_string_array();
-    }
-  }
+  static auto as(const rclcpp::Parameter & parameter);
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr
@@ -103,10 +72,10 @@ private:
   std::vector<std::function<post_callback_t>> post_callbacks_;
 };
 
-inline auto ParametersHandler::getParamGetter(const std::string &ns)
+inline auto ParametersHandler::getParamGetter(const std::string & ns)
 {
   return [this, ns](
-    auto & setting, const std::string &name, auto default_value,
+    auto & setting, const std::string & name, auto default_value,
     ParameterType param_type = ParameterType::Dynamic) {
            getParam(
              setting, ns == "" ? name : ns + "." + name,
@@ -116,7 +85,7 @@ inline auto ParametersHandler::getParamGetter(const std::string &ns)
 
 
 template<typename T>
-void ParametersHandler::addDynamicParameterCallback(const std::string & name, T && callback)
+void ParametersHandler::addDynamicParamCallback(const std::string & name, T && callback)
 {
   get_param_callbacks_[name] = std::move(callback);
 }
@@ -135,7 +104,7 @@ void ParametersHandler::addPreCallback(T && callback)
 
 template<typename SettingT, typename ParamT>
 void ParametersHandler::getParam(
-  SettingT & setting, const std::string &name,
+  SettingT & setting, const std::string & name,
   ParamT default_value,
   ParameterType param_type)
 {
@@ -144,7 +113,7 @@ void ParametersHandler::getParam(
   nav2_util::declare_parameter_if_not_declared(
     node, name, rclcpp::ParameterValue(default_value));
 
-  setParameter<ParamT>(setting, name, node);
+  setParam<ParamT>(setting, name, node);
 
   if (param_type == ParameterType::Dynamic) {
     setDynamicParamCallback(setting, name);
@@ -152,8 +121,8 @@ void ParametersHandler::getParam(
 }
 
 template<typename ParamT, typename SettingT, typename NodeT>
-void ParametersHandler::setParameter(
-  SettingT & setting, const std::string &name, NodeT node)
+void ParametersHandler::setParam(
+  SettingT & setting, const std::string & name, NodeT node) const
 {
   ParamT param_in;
   node->get_parameter(name, param_in);
@@ -161,7 +130,7 @@ void ParametersHandler::setParameter(
 }
 
 template<typename T>
-void ParametersHandler::setDynamicParamCallback(T & setting, const std::string &name)
+void ParametersHandler::setDynamicParamCallback(T & setting, const std::string & name)
 {
   if (get_param_callbacks_.find(name) != get_param_callbacks_.end()) {
     return;
@@ -173,9 +142,37 @@ void ParametersHandler::setDynamicParamCallback(T & setting, const std::string &
       RCLCPP_INFO(logger_, "Dynamic parameter changed: %s", std::to_string(param).c_str());
     };
 
-  addDynamicParameterCallback(name, callback);
+  addDynamicParamCallback(name, callback);
 
   RCLCPP_INFO(logger_, "Dynamic Parameter added %s", name.c_str());
+}
+
+template<typename T>
+auto ParametersHandler::as(const rclcpp::Parameter & parameter)
+{
+  if constexpr (std::is_same_v<T, bool>) {
+    return parameter.as_bool();
+  } else if constexpr (std::is_integral_v<T>) {
+    return parameter.as_int();
+  } else if constexpr (std::is_floating_point_v<T>) {
+    return parameter.as_double();
+  } else if constexpr (std::is_same_v<T, std::string>) {
+    return parameter.as_string();
+  } else if constexpr (std::is_same_v<T, std::vector<int>>) {
+    return parameter.as_integer_array();
+  } else if constexpr (std::is_same_v<T, std::vector<int64_t>>) {
+    return parameter.as_integer_array();
+  } else if constexpr (std::is_same_v<T, std::vector<unsigned int>>) {
+    return parameter.as_integer_array();
+  } else if constexpr (std::is_same_v<T, std::vector<size_t>>) {
+    return parameter.as_integer_array();
+  } else if constexpr (std::is_same_v<T, std::vector<double>>) {
+    return parameter.as_double_array();
+  } else if constexpr (std::is_same_v<T, std::vector<float>>) {
+    return parameter.as_double_array();
+  } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+    return parameter.as_string_array();
+  }
 }
 
 }  // namespace mppi

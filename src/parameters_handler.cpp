@@ -16,12 +16,12 @@ void ParametersHandler::start()
   auto node = node_.lock();
   on_set_param_handler_ = node->add_on_set_parameters_callback(
     std::bind(
-      &ParametersHandler::dynamicParametersCallback, this,
+      &ParametersHandler::dynamicParamsCallback, this,
       std::placeholders::_1));
 }
 
 rcl_interfaces::msg::SetParametersResult
-ParametersHandler::dynamicParametersCallback(
+ParametersHandler::dynamicParamsCallback(
   std::vector<rclcpp::Parameter> parameters)
 {
   rcl_interfaces::msg::SetParametersResult result;
