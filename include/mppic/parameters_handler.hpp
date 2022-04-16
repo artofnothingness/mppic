@@ -137,8 +137,7 @@ void ParametersHandler::setDynamicParamCallback(T & setting, const std::string &
   }
 
   auto callback = [this, &setting, name](const rclcpp::Parameter & param) {
-      auto param_value = as<T>(param);
-      setting = param_value;
+      setting = as<T>(param);
       RCLCPP_INFO(logger_, "Dynamic parameter changed: %s", std::to_string(param).c_str());
     };
 
