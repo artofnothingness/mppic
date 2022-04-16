@@ -59,7 +59,6 @@ protected:
   TrajectoryVisualizer trajectory_visualizer_;
 
   bool visualize_;
-  bool stop_robot_;
 };
 
 }  // namespace mppi
