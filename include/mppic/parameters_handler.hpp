@@ -158,17 +158,9 @@ auto ParametersHandler::as(const rclcpp::Parameter & parameter)
     return parameter.as_double();
   } else if constexpr (std::is_same_v<T, std::string>) {
     return parameter.as_string();
-  } else if constexpr (std::is_same_v<T, std::vector<int>>) {
-    return parameter.as_integer_array();
   } else if constexpr (std::is_same_v<T, std::vector<int64_t>>) {
     return parameter.as_integer_array();
-  } else if constexpr (std::is_same_v<T, std::vector<unsigned int>>) {
-    return parameter.as_integer_array();
-  } else if constexpr (std::is_same_v<T, std::vector<size_t>>) {
-    return parameter.as_integer_array();
   } else if constexpr (std::is_same_v<T, std::vector<double>>) {
-    return parameter.as_double_array();
-  } else if constexpr (std::is_same_v<T, std::vector<float>>) {
     return parameter.as_double_array();
   } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
     return parameter.as_string_array();
