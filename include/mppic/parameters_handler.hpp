@@ -78,7 +78,7 @@ inline auto ParametersHandler::getParamGetter(const std::string & ns)
     auto & setting, const std::string & name, auto default_value,
     ParameterType param_type = ParameterType::Dynamic) {
            getParam(
-             setting, ns == "" ? name : ns + "." + name,
+             setting, ns.empty() ? name : ns + "." + name,
              std::move(default_value), param_type);
          };
 }
@@ -87,19 +87,19 @@ inline auto ParametersHandler::getParamGetter(const std::string & ns)
 template<typename T>
 void ParametersHandler::addDynamicParamCallback(const std::string & name, T && callback)
 {
-  get_param_callbacks_[name] = std::move(callback);
+  get_param_callbacks_[name] = callback;
 }
 
 template<typename T>
 void ParametersHandler::addPostCallback(T && callback)
 {
-  post_callbacks_.push_back(std::move(callback));
+  post_callbacks_.push_back(callback);
 }
 
 template<typename T>
 void ParametersHandler::addPreCallback(T && callback)
 {
-  pre_callbacks_.push_back(std::move(callback));
+  pre_callbacks_.push_back(callback);
 }
 
 template<typename SettingT, typename ParamT>

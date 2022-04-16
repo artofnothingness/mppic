@@ -33,10 +33,5 @@
       <description>mppi critic for preventing twirling behavior when using omnidirectional models</description>
     </class>
 
-    <class type="mppi::critics::SmootherCritic" base_class_type="mppi::critics::CriticFunction">
-      <description></description>
-    </class>
-
-
   </library>
 </class_libraries>
