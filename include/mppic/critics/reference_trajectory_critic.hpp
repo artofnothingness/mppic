@@ -24,20 +24,20 @@ public:
     const xt::xtensor<double, 2> & path, xt::xtensor<double, 1> & costs,
     nav2_core::GoalChecker * goal_checker) override;
 
-  /**
-   * @brief given reference_path [..., 2] and multiple trajectories [..., ...,
-   * 2], evaluate mean distances from trajectories to reference_path [..., ...,
-   * ..., 2]
-   *
-   * @ref http://paulbourke.net/geometry/pointlineplane/
-   */
-  xt::xtensor<double, 1> meanDistancesFromTrajectoriesPointsToReferenceSegments(
-    const xt::xtensor<double, 3> & trajectories,
-    const xt::xtensor<double, 2> & reference_path);
-
 protected:
-  unsigned int power_{0};
-  double weight_{0};
+  unsigned int reference_cost_power_{0};
+  double reference_cost_weight_{0};
+
+  bool enable_nearest_path_angle_critic_;
+  size_t nearest_path_angle_offset_{0};
+  unsigned int nearest_path_angle_cost_power_{0};
+  double nearest_path_angle_cost_weight_{0};
+
+  bool enable_nearest_goal_critic_;
+  size_t nearest_goal_offset_;
+  size_t nearest_goal_count_;
+  unsigned int nearest_goal_cost_power_{0};
+  double nearest_goal_cost_weight_{0};
 };
 
 }  // namespace mppi::critics

@@ -11,7 +11,6 @@ struct TestOptimizerSettings
   const double lookahead_distance;
   std::string motion_model;
   bool consider_footprint;
-  bool approx_reference_cost;
 };
 
 struct TestPose
@@ -59,7 +58,7 @@ struct TestPathSettings
  */
 void setUpOptimizerParams(
   int iter, int time_steps, double lookahead_dist, std::string motion_model,
-  bool /*consider_footprint*/, bool approx_reference_cost, std::vector<rclcpp::Parameter> & params_,
+  bool /*consider_footprint*/, std::vector<rclcpp::Parameter> & params_,
   std::string node_name = std::string("dummy"))
 {
   double dummy_freq = 10.0;
@@ -73,11 +72,7 @@ void setUpOptimizerParams(
 
   std::vector<std::string> critics = {
     "GoalCritic", "GoalAngleCritic", "PathAngleCritic", "ObstaclesCritic", "PreferForwardCritic",
-    "TwirlingCritic"};
-
-  critics.emplace_back(
-    approx_reference_cost ? "ApproxReferenceTrajectoryCritic" : "ReferenceTrajectoryCritic");
-
+    "ReferenceTrajectoryCritic", "TwirlingCritic"};
 
   params_.emplace_back(rclcpp::Parameter(critic_scorer_name + ".critics", critics));
 }

@@ -14,6 +14,7 @@
 #include <xtensor/xview.hpp>
 
 #include "mppic/optimizer.hpp"
+#include "mppic/parameters_handler.hpp"
 #include "mppic/motion_models.hpp"
 
 #include "utils/utils.hpp"
@@ -30,13 +31,11 @@ RosLockGuard g_rclcpp;
 TEST(MPPIOptimizer, OptimizerTestDiffFootprint)
 {
   bool consider_footprint = true;
-  bool approx_reference_cost = true;
   std::string motion_model = "DiffDrive";
 
   // Settings
   TestCostmapSettings cost_map_settings{};
-  TestOptimizerSettings optimizer_settings{12, 80, 5.0, motion_model, consider_footprint,
-    approx_reference_cost};
+  TestOptimizerSettings optimizer_settings{12, 80, 5.0, motion_model, consider_footprint};
 
   const double path_step = cost_map_settings.resolution;
   TestPose start_pose = cost_map_settings.getCenterPose();
@@ -46,7 +45,8 @@ TEST(MPPIOptimizer, OptimizerTestDiffFootprint)
 
   auto costmap_ros = getDummyCostmapRos(cost_map_settings);
   auto node = getDummyNode(optimizer_settings);
-  auto optimizer = getDummyOptimizer(node, costmap_ros);
+  auto parameters_handler = std::make_unique<mppi::ParametersHandler>(node);
+  auto optimizer = getDummyOptimizer(node, costmap_ros, parameters_handler.get());
 
   // setup costmap
   auto costmap = costmap_ros->getCostmap();
@@ -81,13 +81,11 @@ TEST(MPPIOptimizer, OptimizerTestDiffFootprint)
 TEST(MPPIOptimizer, OptimizerTestOmniCircle)
 {
   bool consider_footprint = false;
-  bool approx_reference_cost = false;
   std::string motion_model = "Omni";
 
   // Settings
   TestCostmapSettings cost_map_settings{};
-  TestOptimizerSettings optimizer_settings{12, 80, 5.0, motion_model, consider_footprint,
-    approx_reference_cost};
+  TestOptimizerSettings optimizer_settings{12, 80, 5.0, motion_model, consider_footprint};
 
   const double path_step = cost_map_settings.resolution;
   TestPose start_pose = cost_map_settings.getCenterPose();
@@ -97,7 +95,8 @@ TEST(MPPIOptimizer, OptimizerTestOmniCircle)
 
   auto costmap_ros = getDummyCostmapRos(cost_map_settings);
   auto node = getDummyNode(optimizer_settings);
-  auto optimizer = getDummyOptimizer(node, costmap_ros);
+  auto parameters_handler = std::make_unique<mppi::ParametersHandler>(node);
+  auto optimizer = getDummyOptimizer(node, costmap_ros, parameters_handler.get());
 
   // setup costmap
   auto costmap = costmap_ros->getCostmap();

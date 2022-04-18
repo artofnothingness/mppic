@@ -86,18 +86,26 @@ sudo make install
  | path_angle_cost_weight    | double |                                                                                                             |
  | path_angle_cost_power     | int    |                                                                                                             |
 
-#### ApproxReferenceTrajectoryCritic and ReferenceTrajectoryCritic params
- | Parameter             | Type   | Definition                                                                                                  |
- | ---------------       | ------ | ----------------------------------------------------------------------------------------------------------- |
- | reference_cost_weight | double |                                                                                                             |
- | reference_cost_power  | int    |                                                                                                             |
+#### ReferenceTrajectoryCritic params
+ | Parameter                        | Type   | Definition                                                                                                                         |
+ | ---------------                  | ------ | -----------------------------------------------------------------------------------------------------------                        |
+ | reference_cost_weight            | double |                                                                                                                                    |
+ | reference_cost_power             | int    |                                                                                                                                    |
+ | enable_nearest_goal_critic       | bool   | enable critic that scores by mean distance from generated trajectories to nearest to generated trajectories path points            |
+ | nearest_goal_offset              | int    | take offseted nearest path point [nearest + offset] in considiration                                                               |
+ | nearest_goal_count               | int    | take nearest path points [nearest + offset, nearest + offset + count] in considiration                                             |
+ | nearset_goal_cost_weight         | int    |                                                                                                                                    |
+ | enable_nearest_path_angle_critic | bool   | enable critic that scores by mean angle difference between generated trajectories and nearest to generated trajectories path point |
+ | nearest_path_angle_offset        | int    | take offseted nearest path point [nearest + offset] in considiration                                                               |
+ | nearest_path_angle_cost_power    | int    |                                                                                                                                    |
+ | nearest_path_angle_cost_weight   | int    |                                                                                                                                    |
 
 #### ObstaclesCritic params
- | Parameter                     | Type   | Definition                                                                                                  |
- | ---------------               | ------ | ----------------------------------------------------------------------------------------------------------- |
- | consider_footprint            | bool   |                                                                                                             |
- | obstacle_cost_weight          | double |                                                                                                             |
- | obstacle_cost_power           | int    |                                                                                                             |
+ | Parameter            | Type   | Definition                                                                                                  |
+ | ---------------      | ------ | ----------------------------------------------------------------------------------------------------------- |
+ | consider_footprint   | bool   |                                                                                                             |
+ | obstacle_cost_weight | double |                                                                                                             |
+ | obstacle_cost_power  | int    |                                                                                                             |
 
 #### PreferForwardCritic params
  | Parameter             | Type   | Definition                                                                                                  |
@@ -120,37 +128,52 @@ controller_server:
       time_steps: 15
       model_dt: 0.1
       batch_size: 400
-      vx_std: 0.1
-      vy_std: 0.1
-      wz_std: 0.6
+      vx_std: 0.2
+      vy_std: 0.2
+      wz_std: 1.0
       vx_max: 0.5
       vy_max: 0.5
       wz_max: 1.3
       iteration_count: 2
+      prune_distance: 1.5
+      transform_tolerance: 0.1
       temperature: 0.25
       motion_model: "DiffDrive"
       visualize: false
-      critics: [ "GoalCritic", "PreferForwardCritic", GoalAngleCritic", "PathAngleCritic", "ReferenceTrajectoryCritic", "ObstaclesCritic" ]
-      GoalCritic:
-        goal_cost_power: 1
-        goal_cost_weight: 8.0
-      GoalAngleCritic:
-        goal_angle_cost_power: 1
-        goal_angle_cost_weight: 15.0
-        threshold_to_consider_goal_angle: 0.20
+      critics: ["ReferenceTrajectoryCritic", "GoalCritic", "GoalAngleCritic", "ObstaclesCritic", "PreferForwardCritic" ]
       ReferenceTrajectoryCritic:
         reference_cost_power: 1
-        reference_cost_weight: 5.0
+        reference_cost_weight: 3.0
+        enable_nearest_goal_critic: true
+        nearest_goal_offset: 2
+        nearest_goal_count: 2
+        nearest_goal_cost_power: 1
+        nearset_goal_cost_weight: 1.0
+        enable_nearest_path_angle_critic: true
+        nearest_path_angle_offset: 6
+        nearest_path_angle_cost_power: 1
+        nearest_path_angle_cost_weight: 1.0
+      GoalCritic:
+        goal_cost_power: 1
+        goal_cost_weight: 5.0
+      GoalAngleCritic:
+        goal_angle_cost_power: 1
+        goal_angle_cost_weight: 5.0
+        threshold_to_consider_goal_angle: 0.20
       ObstaclesCritic:
         consider_footprint: true
-        obstacle_cost_power: 1
-        obstacle_cost_weight: 0.5
+        collision_cost: 2000.0
+        obstacle_cost_power: 2
+        obstacle_cost_weight: 1.5
+      PreferForwardCritic:
+        prefer_forward_cost_power: 1
+        prefer_forward_cost_weight: 5.0
       PathAngleCritic:
         path_angle_cost_power: 1
         path_angle_cost_weight: 0.5
-      PreferForwardCritic:
-        prefer_forward_cost_power: 1
-        prefer_forward_cost_weight: 50.0
+      TwirlingCritic:
+        twirling_cost_power: 1
+        twirling_cost_weight: 25.0
 ```
 
 ## Topics

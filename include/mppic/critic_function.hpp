@@ -14,6 +14,7 @@
 #include "nav2_core/goal_checker.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "mppic/models/state.hpp"
+#include "mppic/parameters_handler.hpp"
 
 namespace mppi::critics
 {
@@ -26,13 +27,15 @@ public:
   void on_configure(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent,
     const std::string & name,
-    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
+    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros,
+    ParametersHandler * param_handler)
   {
     parent_ = parent;
     logger_ = parent_.lock()->get_logger();
     name_ = name;
     costmap_ros_ = costmap_ros;
     costmap_ = costmap_ros_->getCostmap();
+    parameters_handler_ = param_handler;
 
     initialize();
   }
@@ -50,6 +53,7 @@ protected:
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_{nullptr};
+  ParametersHandler * parameters_handler_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
 

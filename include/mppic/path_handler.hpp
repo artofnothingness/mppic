@@ -15,6 +15,8 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav2_util/geometry_utils.hpp"
 
+#include "mppic/parameters_handler.hpp"
+
 namespace mppi
 {
 
@@ -29,8 +31,8 @@ public:
 
   void initialize(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
-    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap,
-    std::shared_ptr<tf2_ros::Buffer> buffer);
+    std::shared_ptr<nav2_costmap_2d::Costmap2DROS>,
+    std::shared_ptr<tf2_ros::Buffer>, ParametersHandler *);
 
   void setPath(const nav_msgs::msg::Path & plan);
 
@@ -66,11 +68,13 @@ protected:
   std::string name_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  ParametersHandler * parameters_handler_;
 
   nav_msgs::msg::Path global_plan_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 
   double max_robot_pose_search_dist_{0};
+  double prune_distance_{0};
   double transform_tolerance_{0};
 };
 }  // namespace mppi

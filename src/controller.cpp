@@ -1,5 +1,6 @@
 // Copyright 2022 FastSense, Samsung Research
 #include <stdint.h>
+#include <chrono>
 #include "mppic/controller.hpp"
 #include "mppic/motion_models.hpp"
 #include "mppic/utils.hpp"
@@ -16,15 +17,16 @@ void Controller::configure(
   costmap_ros_ = costmap_ros;
   tf_buffer_ = tf;
   name_ = name;
+  parameters_handler_ = std::make_unique<ParametersHandler>(parent);
 
   auto node = parent_.lock();
   // Get high-level controller parameters
-  auto getParam = utils::getParamGetter(node, name_);
+  auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(visualize_, "visualize", false);
 
   // Configure composed objects
-  optimizer_.initialize(parent_, name_, costmap_ros_);
-  path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_);
+  optimizer_.initialize(parent_, name_, costmap_ros_, parameters_handler_.get());
+  path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_, parameters_handler_.get());
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 
   RCLCPP_INFO(logger_, "Configured MPPI Controller: %s", name_.c_str());
@@ -33,12 +35,14 @@ void Controller::configure(
 void Controller::cleanup()
 {
   trajectory_visualizer_.on_cleanup();
+  parameters_handler_.reset();
   RCLCPP_INFO(logger_, "Cleaned up MPPI Controller: %s", name_.c_str());
 }
 
 void Controller::activate()
 {
   trajectory_visualizer_.on_activate();
+  parameters_handler_->start();
   RCLCPP_INFO(logger_, "Activated MPPI Controller: %s", name_.c_str());
 }
 
@@ -58,6 +62,7 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
     optimizer_.evalControl(robot_pose, robot_speed, transformed_plan, goal_checker);
 
   visualize(robot_pose, robot_speed, std::move(transformed_plan));
+
   return cmd;
 }
 
@@ -72,7 +77,7 @@ void Controller::visualize(
 
   trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories(), 5, 2);
   trajectory_visualizer_.add(optimizer_.evalTrajectoryFromControlSequence(robot_pose, robot_speed));
-  trajectory_visualizer_.visualize(transformed_plan);
+  trajectory_visualizer_.visualize(std::move(transformed_plan));
 }
 
 void Controller::setPlan(const nav_msgs::msg::Path & path)

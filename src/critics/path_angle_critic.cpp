@@ -6,11 +6,10 @@ namespace mppi::critics
 
 void PathAngleCritic::initialize()
 {
-  auto node = parent_.lock();
-
-  auto getParam = utils::getParamGetter(node, name_);
+  auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(power_, "path_angle_cost_power", 1);
-  getParam(weight_, "path_angle_cost_weight", 2.0);
+  getParam(weight_, "path_angle_cost_weight", 0.5);
+
 
   RCLCPP_INFO(
     logger_,

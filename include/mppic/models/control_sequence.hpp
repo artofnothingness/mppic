@@ -1,5 +1,4 @@
 // Copyright 2022 FastSense, Samsung Research
-
 #ifndef MPPIC__MODELS__CONTROL_SEQUENCE_HPP_
 #define MPPIC__MODELS__CONTROL_SEQUENCE_HPP_
 

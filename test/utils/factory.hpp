@@ -15,6 +15,7 @@
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 #include "mppic/motion_models.hpp"
+#include "mppic/parameters_handler.hpp"
 #include "mppic/optimizer.hpp"
 #include "mppic/controller.hpp"
 
@@ -36,7 +37,6 @@ rclcpp::NodeOptions getOptimizerOptions(TestOptimizerSettings s)
   rclcpp::NodeOptions options;
   setUpOptimizerParams(
     s.iteration_count, s.time_steps, s.lookahead_distance, s.motion_model, s.consider_footprint,
-    s.approx_reference_cost,
     params);
   options.parameter_overrides(params);
   return options;
@@ -90,12 +90,12 @@ getDummyNode(rclcpp::NodeOptions options, std::string node_name = std::string("d
   return node;
 }
 
-mppi::Optimizer getDummyOptimizer(auto node, auto costmap_ros)
+mppi::Optimizer getDummyOptimizer(auto node, auto costmap_ros, auto * params_handler)
 {
   auto optimizer = mppi::Optimizer();
   std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
 
-  optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros);
+  optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros, params_handler);
 
   return optimizer;
 }
