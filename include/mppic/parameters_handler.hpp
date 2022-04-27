@@ -53,6 +53,11 @@ public:
   template<typename T>
   void setDynamicParamCallback(T & setting, const std::string & name);
 
+  std::mutex * getLock()
+  {
+    return &parameters_change_mutex_;
+  }
+
 private:
   template<typename T>
   void addDynamicParamCallback(const std::string & name, T && callback);
@@ -60,6 +65,7 @@ private:
   template<typename T>
   static auto as(const rclcpp::Parameter & parameter);
 
+  std::mutex parameters_change_mutex_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr
     on_set_param_handler_;
