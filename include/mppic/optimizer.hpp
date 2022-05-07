@@ -7,26 +7,18 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "builtin_interfaces/msg/time.hpp"
-#include "geometry_msgs/msg/pose_stamped.hpp"
-#include "geometry_msgs/msg/twist.hpp"
-#include "geometry_msgs/msg/twist_stamped.hpp"
-#include "nav2_costmap_2d/costmap_2d_ros.hpp"
-#include "nav_msgs/msg/path.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "nav2_core/goal_checker.hpp"
 
-#include "mppic/parameters_handler.hpp"
-#include "mppic/models/optimizer_settings.hpp"
 #include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
-#include "mppic/utils.hpp"
+#include "mppic/optimizer_core.hpp"
 
 namespace mppi
 {
 
-class Optimizer
+class Optimizer : public OptimizerCore
 {
 public:
   using model_t = xt::xtensor<double, 2>(
@@ -37,19 +29,19 @@ public:
   void initialize(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros,
-    ParametersHandler * dynamic_parameters_handler);
+    ParametersHandler * dynamic_parameters_handler) override;
 
 
   geometry_msgs::msg::TwistStamped evalControl(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan,
-    nav2_core::GoalChecker * goal_checker);
+    nav2_core::GoalChecker * goal_checker) override;
 
-  xt::xtensor<double, 3> & getGeneratedTrajectories();
+  xt::xtensor<double, 3> & getGeneratedTrajectories() override;
 
   xt::xtensor<double, 2> evalTrajectoryFromControlSequence(
     const geometry_msgs::msg::PoseStamped & robot_pose,
-    const geometry_msgs::msg::Twist & robot_speed) const;
+    const geometry_msgs::msg::Twist & robot_speed) override;
 
 
   void setSpeedLimit(double speed_limit, bool percentage);
@@ -128,18 +120,9 @@ protected:
 
   void setOffset();
 
-  rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
-  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
-  nav2_costmap_2d::Costmap2D * costmap_;
-  ParametersHandler * parameters_handler_;
-
-  std::string name_;
-  double controller_frequency_{0};
-
-  models::OptimizerSettings settings_;
+protected:
   models::State state_;
   models::ControlSequence control_sequence_;
-
   std::unique_ptr<MotionModel> motion_model_;
   CriticManager critic_manager_;
 

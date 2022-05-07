@@ -46,14 +46,13 @@ public:
       evalScore(data);
   }
 
-  std::string getName() {
-      return name_;
-  }
-
   virtual void initialize() = 0;
 
   virtual void evalScore(models::CriticFunctionData & data) = 0;
 
+  std::string getName() {
+      return name_;
+  }
 
 protected:
   std::string name_;

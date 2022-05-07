@@ -10,8 +10,6 @@
 #include <xtensor/xrandom.hpp>
 
 #include "nav2_core/exceptions.hpp"
-#include "nav2_costmap_2d/cost_values.hpp"
-#include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
 #include "mppic/models/critic_function_data.hpp"
 
 namespace mppi
@@ -251,7 +249,7 @@ void Optimizer::propagateStateVelocitiesFromInitials(
 
 xt::xtensor<double, 2> Optimizer::evalTrajectoryFromControlSequence(
   const geometry_msgs::msg::PoseStamped & robot_pose,
-  const geometry_msgs::msg::Twist & robot_speed) const
+  const geometry_msgs::msg::Twist & robot_speed)
 {
   models::State state;
   state.idx.setLayout(motion_model_->isHolonomic());
