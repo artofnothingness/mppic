@@ -89,7 +89,6 @@ protected:
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_;
   std::string name_;
-  double controller_frequency_{0};
 
   ParametersHandler * parameters_handler_;
   models::OptimizerSettings settings_;

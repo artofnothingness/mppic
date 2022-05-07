@@ -44,8 +44,6 @@ public:
     const geometry_msgs::msg::Twist & robot_speed) override;
 
 
-  void setSpeedLimit(double speed_limit, bool percentage);
-
 protected:
   void getParams();
   void reset();
@@ -106,19 +104,12 @@ protected:
    */
   void updateControlSequence(const xt::xtensor<double, 1> & costs);
 
-  /**
-   * @brief Get offseted control from control_sequence_
-   *
-   */
-  auto getControlFromSequence(const unsigned int offset);
   geometry_msgs::msg::TwistStamped
-  getControlFromSequenceAsTwist(
-    const unsigned int offset,
-    const builtin_interfaces::msg::Time & stamp);
+  getControlFromSequenceAsTwist(const builtin_interfaces::msg::Time & stamp);
 
   bool isHolonomic() const;
 
-  void setOffset();
+  void setOffset(double controller_frequency);
 
 protected:
   models::State state_;

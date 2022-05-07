@@ -30,7 +30,6 @@ void Optimizer::initialize(
   logger_ = node->get_logger();
 
   getParams();
-  setOffset();
 
   critic_manager_.on_configure(parent_, name_, costmap_ros_, parameters_handler_);
 
@@ -56,56 +55,34 @@ void Optimizer::getParams()
   getParam(s.sampling_std.vy, "vy_std", 0.2);
   getParam(s.sampling_std.wz, "wz_std", 1.0);
   getParam(motion_model_name, "motion_model", std::string("DiffDrive"));
-  getParentParam(controller_frequency_, "controller_frequency", 0.0);
 
   s.constraints = s.base_constraints;
   setMotionModel(motion_model_name);
   parameters_handler_->addPostCallback([this]() {reset();});
+
+  double controller_frequency;
+  getParentParam(controller_frequency, "controller_frequency", 0.0, ParameterType::Static);
+  setOffset(controller_frequency);
 }
 
-void Optimizer::setOffset()
+void Optimizer::setOffset(double controller_frequency)
 {
-  const double controller_period = 1.0 / controller_frequency_;
+  const double controller_period = 1.0 / controller_frequency;
   constexpr double eps = 1e-6;
 
   if (controller_period < settings_.model_dt) {
     RCLCPP_WARN(
       logger_,
       "Controller period is less then model dt, consider setting it equal");
-    settings_.control_sequence_shift_offset = 0;
   } else if (abs(controller_period - settings_.model_dt) < eps) {
     RCLCPP_INFO(
       logger_,
       "Controller period is equal to model dt. Control seuqence "
       "shifting is ON");
-    settings_.control_sequence_shift_offset = 1;
+    settings_.shift_control_sequence = true;
   } else {
     throw std::runtime_error(
             "Controller period more then model dt, set it equal to model dt");
-  }
-}
-
-void Optimizer::setSpeedLimit(double speed_limit, bool percentage)
-{
-  auto & s = settings_;
-  if (speed_limit == nav2_costmap_2d::NO_SPEED_LIMIT) {
-    s.constraints.vx = s.base_constraints.vx;
-    s.constraints.vy = s.base_constraints.vy;
-    s.constraints.wz = s.base_constraints.wz;
-  } else {
-    if (percentage) {
-      // Speed limit is expressed in % from maximum speed of robot
-      double ratio = speed_limit / 100.0;
-      s.constraints.vx = s.base_constraints.vx * ratio;
-      s.constraints.vy = s.base_constraints.vy * ratio;
-      s.constraints.wz = s.base_constraints.wz * ratio;
-    } else {
-      // Speed limit is expressed in absolute value
-      double ratio = speed_limit / s.base_constraints.vx;
-      s.constraints.vx = speed_limit;
-      s.constraints.vy = s.base_constraints.vx * ratio;
-      s.constraints.wz = s.base_constraints.wz * ratio;
-    }
   }
 }
 
@@ -139,11 +116,11 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
     updateControlSequence(costs);
   }
 
-  auto control = getControlFromSequenceAsTwist(
-    settings_.control_sequence_shift_offset,
-    plan.header.stamp);
+  auto control = getControlFromSequenceAsTwist(plan.header.stamp);
 
-  shiftControlSequence();
+  if (settings_.shift_control_sequence) {
+    shiftControlSequence();
+  }
 
     
   if (stop_flag) {
@@ -154,10 +131,6 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
 
 void Optimizer::shiftControlSequence()
 {
-  if (settings_.control_sequence_shift_offset == 0) {
-    return;
-  }
-
   using namespace xt::placeholders;  // NOLINT
   control_sequence_.data = xt::roll(control_sequence_.data, -1, 0);
 
@@ -317,16 +290,12 @@ void Optimizer::updateControlSequence(const xt::xtensor<double, 1> & costs)
     xt::sum(state_.getControls() * softmaxes_expanded, 0);
 }
 
-auto Optimizer::getControlFromSequence(const unsigned int offset)
-{
-  return xt::view(control_sequence_.data, offset);
-}
-
 geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
-  const unsigned int offset, const builtin_interfaces::msg::Time & stamp)
+  const builtin_interfaces::msg::Time & stamp)
 {
+  unsigned int offset = settings_.shift_control_sequence ? 1 : 0;
   return utils::toTwistStamped(
-    getControlFromSequence(offset),
+    xt::view(control_sequence_.data, offset),
     control_sequence_.idx, isHolonomic(), stamp,
     costmap_ros_->getBaseFrameID());
 }

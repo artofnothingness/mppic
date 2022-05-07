@@ -17,7 +17,7 @@ struct OptimizerSettings
   unsigned int batch_size{0};
   unsigned int time_steps{0};
   unsigned int iteration_count{0};
-  int control_sequence_shift_offset{0};
+  bool shift_control_sequence = false;
 };
 
 }  // namespace mppi::models
