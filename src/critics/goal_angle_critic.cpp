@@ -23,8 +23,8 @@ void GoalAngleCritic::initialize()
 void GoalAngleCritic::evalScore(models::CriticFunctionData & data)
 {
   xt::xtensor<double, 1> tensor_pose = {
-    static_cast<double>(data.robot_pose.pose.position.x),
-    static_cast<double>(data.robot_pose.pose.position.y)};
+    static_cast<double>(data.state.pose.pose.position.x),
+    static_cast<double>(data.state.pose.pose.position.y)};
 
   auto path_points = xt::view(data.path, -1, xt::range(0, 2));
 

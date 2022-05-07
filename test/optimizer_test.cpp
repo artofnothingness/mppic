@@ -69,7 +69,7 @@ TEST(MPPIOptimizer, OptimizerTestDiffFootprint)
 
   nav2_core::GoalChecker * dummy_goal_checker{nullptr};
   EXPECT_NO_THROW(optimizer.evalControl(pose, velocity, path, dummy_goal_checker));
-  auto trajectory = optimizer.getOptimizedTrajectory(pose, velocity);
+  auto trajectory = optimizer.getOptimizedTrajectory();
   auto goal_point = path.poses.back();
 #ifdef TEST_DEBUG_INFO
   printMapWithTrajectoryAndGoal(*costmap, trajectory, goal_point);
@@ -119,7 +119,7 @@ TEST(MPPIOptimizer, OptimizerTestOmniCircle)
 
   nav2_core::GoalChecker * dummy_goal_checker{nullptr};
   EXPECT_NO_THROW(optimizer.evalControl(pose, velocity, path, dummy_goal_checker));
-  auto trajectory = optimizer.getOptimizedTrajectory(pose, velocity);
+  auto trajectory = optimizer.getOptimizedTrajectory();
   auto goal_point = path.poses.back();
 #ifdef TEST_DEBUG_INFO
   printMapWithTrajectoryAndGoal(*costmap, trajectory, goal_point);

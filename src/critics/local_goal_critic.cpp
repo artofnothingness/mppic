@@ -28,7 +28,7 @@ void LocalGoalCritic::evalScore(models::CriticFunctionData & data)
 {
   auto last_points_ext = xt::view(data.trajectories, xt::all(), -1, xt::newaxis(), xt::range(0, 2));
   auto path_points = xt::view(
-      data.path, xt::all(), xt::range(0, 2));
+    data.path, xt::all(), xt::range(0, 2));
 
   auto distances = xt::norm_l2(last_points_ext - path_points, {2});
 
@@ -48,14 +48,18 @@ void LocalGoalCritic::evalScore(models::CriticFunctionData & data)
   auto offset = std::min(max_id_by_trajectories + goal_offset_, path_points.shape(0) - 1);
   auto upper_distance_offset = std::min(offset + goal_count_, path_points.shape(0) - 1);
 
-  auto angle_upper_offset  = std::min(max_id_by_trajectories + angle_offset_, path_points.shape(0) - 1);
+  auto angle_upper_offset = std::min(
+    max_id_by_trajectories + angle_offset_, path_points.shape(
+      0) - 1);
 
   size_t threshold_idx = static_cast<size_t>(
-      static_cast<double>(data.path.shape(0) - 1) * stop_usage_path_reached_ratio_);
+    static_cast<double>(data.path.shape(0) - 1) * stop_usage_path_reached_ratio_);
 
   if (upper_distance_offset < threshold_idx) {
     auto path_interval = xt::view(path_points, xt::range(offset, upper_distance_offset), xt::all());
-    auto trajectories_points = xt::view(data.trajectories, xt::all(), xt::all(), xt::newaxis(), xt::range(0, 2));
+    auto trajectories_points = xt::view(
+      data.trajectories, xt::all(), xt::all(),
+      xt::newaxis(), xt::range(0, 2));
     auto distance_to_furthest = xt::norm_l2(trajectories_points - path_interval, {2});
     auto mean_distance_to_furthest = xt::mean(distance_to_furthest, {1, 2});
     data.costs += xt::pow(distance_cost_weight_ * mean_distance_to_furthest, distance_cost_power_);
@@ -74,7 +78,7 @@ void LocalGoalCritic::evalScore(models::CriticFunctionData & data)
     auto yaws = xt::abs(utils::shortest_angular_distance(traj_yaws, yaws_between_points));
 
     auto mean_angles_to_furthest = xt::mean(yaws, {1});
-    
+
     data.costs += xt::pow(angle_cost_weight_ * mean_angles_to_furthest, angle_cost_power_);
   }
 }

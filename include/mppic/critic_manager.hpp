@@ -44,6 +44,7 @@ protected:
 
   bool profile_;
   rclcpp::Clock::SharedPtr clock_;
+
   ParametersHandler * parameters_handler_;
   std::vector<std::string> critic_names_;
   std::unique_ptr<pluginlib::ClassLoader<critics::CriticFunction>> loader_;

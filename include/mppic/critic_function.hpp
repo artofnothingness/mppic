@@ -38,20 +38,22 @@ public:
     initialize();
   }
 
-  void score(models::CriticFunctionData & data) {
-      if(data.stop_flag) {
-        return;
-      }
+  void score(models::CriticFunctionData & data)
+  {
+    if (data.stop_flag) {
+      return;
+    }
 
-      evalScore(data);
+    evalScore(data);
   }
 
   virtual void initialize() = 0;
 
   virtual void evalScore(models::CriticFunctionData & data) = 0;
 
-  std::string getName() {
-      return name_;
+  std::string getName()
+  {
+    return name_;
   }
 
 protected:

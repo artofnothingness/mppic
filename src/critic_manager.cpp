@@ -60,7 +60,9 @@ void CriticManager::evalTrajectoriesScores(
       critics_[q]->score(data);
       auto stop = std::chrono::high_resolution_clock::now();
       size_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
-      RCLCPP_INFO_THROTTLE(logger_, *clock_, 500, "Critic %s score take: %ld [ms]", critics_[q]->getName().c_str(), duration);
+      RCLCPP_INFO_THROTTLE(
+        logger_, *clock_, 500, "Critic %s score take: %ld [ms]",
+        critics_[q]->getName().c_str(), duration);
     } else {
       critics_[q]->score(data);
     }

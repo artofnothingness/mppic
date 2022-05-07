@@ -4,21 +4,22 @@
 
 #include <string>
 #include <memory>
+
+// 3rdparty
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
-#include "nav2_core/goal_checker.hpp"
+#include "mppic/optimizer_core_interface.hpp"
+#include "mppic/optimizer_ros_interface.hpp"
 
 #include "mppic/motion_models.hpp"
-#include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
-#include "mppic/optimizer_core.hpp"
+#include "mppic/critic_manager.hpp"
 
 namespace mppi
 {
 
-class Optimizer : public OptimizerCore
+class Optimizer : public IOptimizerCore, public IOptimizerROS
 {
 public:
   using model_t = xt::xtensor<double, 2>(
@@ -38,11 +39,7 @@ public:
     nav2_core::GoalChecker * goal_checker) override;
 
   span3d getGeneratedTrajectories() override;
-
-  span2d getOptimizedTrajectory(
-    const geometry_msgs::msg::PoseStamped & robot_pose,
-    const geometry_msgs::msg::Twist & robot_speed) override;
-
+  span2d getOptimizedTrajectory() override;
 
 protected:
   void getParams();
@@ -57,9 +54,7 @@ protected:
    * @return trajectories: tensor of shape [ batch_size_, time_steps_, 3 ]
    * where 3 stands for x, y, yaw
    */
-  xt::xtensor<double, 3> generateNoisedTrajectories(
-    const geometry_msgs::msg::PoseStamped & robot_pose,
-    const geometry_msgs::msg::Twist & robot_speed);
+  xt::xtensor<double, 3> generateNoisedTrajectories();
 
   /**
    * @brief Generate random controls by gaussian noise with mean in
@@ -78,14 +73,9 @@ protected:
    * @param twist current robot speed
    * @param state[out] fill state with velocities on each step
    */
-  void updateStateVelocities(
-    models::State & state,
-    const geometry_msgs::msg::Twist & robot_speed) const;
+  void updateStateVelocities(models::State & state) const;
 
-  void
-  updateInitialStateVelocities(
-    models::State & state,
-    const geometry_msgs::msg::Twist & robot_speed) const;
+  void updateInitialStateVelocities(models::State & state) const;
 
   /**
    * @brief predict velocities in state_ using model
@@ -93,8 +83,7 @@ protected:
    */
   void propagateStateVelocitiesFromInitials(models::State & state) const;
 
-  xt::xtensor<double, 3> integrateStateVelocities(
-    const models::State & state, const geometry_msgs::msg::PoseStamped & robot_pose) const;
+  xt::xtensor<double, 3> integrateStateVelocities(const models::State & state) const;
 
   /**
    * @brief Update control_sequence_ with state controls weighted by costs

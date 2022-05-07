@@ -100,16 +100,19 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
   const geometry_msgs::msg::Twist & robot_speed,
   const nav_msgs::msg::Path & plan, nav2_core::GoalChecker * goal_checker)
 {
+  state_.pose = robot_pose;
+  state_.speed = robot_speed;
+
   bool stop_flag = false;
 
   for (size_t i = 0; i < settings_.iteration_count; ++i) {
     generated_trajectories_ =
-      generateNoisedTrajectories(robot_pose, robot_speed);
+      generateNoisedTrajectories();
 
     xt::xtensor<double, 1> costs = xt::zeros<double>({settings_.batch_size});
 
     auto data =
-      models::CriticFunctionData{robot_pose, state_, generated_trajectories_,
+      models::CriticFunctionData{state_, generated_trajectories_,
       utils::toTensor(plan), goal_checker, costs, stop_flag};
     critic_manager_.evalTrajectoriesScores(data);
 
@@ -122,7 +125,7 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
     shiftControlSequence();
   }
 
-    
+
   if (stop_flag) {
     reset();
   }
@@ -134,18 +137,16 @@ void Optimizer::shiftControlSequence()
   using namespace xt::placeholders;  // NOLINT
   control_sequence_.data = xt::roll(control_sequence_.data, -1, 0);
 
-  xt::view(control_sequence_.data, -1, xt::all()) = 
+  xt::view(control_sequence_.data, -1, xt::all()) =
     xt::view(control_sequence_.data, -2, xt::all());
 }
 
-xt::xtensor<double, 3> Optimizer::generateNoisedTrajectories(
-  const geometry_msgs::msg::PoseStamped & robot_pose,
-  const geometry_msgs::msg::Twist & robot_speed)
+xt::xtensor<double, 3> Optimizer::generateNoisedTrajectories()
 {
   state_.getControls() = generateNoisedControls();
   applyControlConstraints();
-  updateStateVelocities(state_, robot_speed);
-  return integrateStateVelocities(state_, robot_pose);
+  updateStateVelocities(state_);
+  return integrateStateVelocities(state_);
 }
 
 xt::xtensor<double, 3> Optimizer::generateNoisedControls() const
@@ -187,20 +188,20 @@ void Optimizer::applyControlConstraints()
 }
 
 void Optimizer::updateStateVelocities(
-  models::State & state, const geometry_msgs::msg::Twist & robot_speed) const
+  models::State & state) const
 {
-  updateInitialStateVelocities(state, robot_speed);
+  updateInitialStateVelocities(state);
   propagateStateVelocitiesFromInitials(state);
 }
 
 void Optimizer::updateInitialStateVelocities(
-  models::State & state, const geometry_msgs::msg::Twist & robot_speed) const
+  models::State & state) const
 {
-  xt::view(state.getVelocitiesVX(), xt::all(), 0) = robot_speed.linear.x;
-  xt::view(state.getVelocitiesWZ(), xt::all(), 0) = robot_speed.angular.z;
+  xt::view(state.getVelocitiesVX(), xt::all(), 0) = state_.speed.linear.x;
+  xt::view(state.getVelocitiesWZ(), xt::all(), 0) = state_.speed.angular.z;
 
   if (isHolonomic()) {
-    xt::view(state.getVelocitiesVY(), xt::all(), 0) = robot_speed.linear.y;
+    xt::view(state.getVelocitiesVY(), xt::all(), 0) = state_.speed.linear.y;
   }
 }
 
@@ -220,9 +221,7 @@ void Optimizer::propagateStateVelocitiesFromInitials(
   }
 }
 
-span2d Optimizer::getOptimizedTrajectory(
-  const geometry_msgs::msg::PoseStamped & robot_pose,
-  const geometry_msgs::msg::Twist & robot_speed)
+span2d Optimizer::getOptimizedTrajectory()
 {
   models::State state;
   state.idx.setLayout(motion_model_->isHolonomic());
@@ -230,19 +229,17 @@ span2d Optimizer::getOptimizedTrajectory(
   state.getControls() = control_sequence_.data;
   state.getTimeIntervals() = settings_.model_dt;
 
-  updateStateVelocities(state, robot_speed);
-  auto trajectory = xt::squeeze(integrateStateVelocities(state, robot_pose));
+  updateStateVelocities(state);
+  auto trajectory = xt::squeeze(integrateStateVelocities(state));
   return span2d{trajectory.data(), settings_.time_steps, 3};
 }
 
-xt::xtensor<double, 3> Optimizer::integrateStateVelocities(
-  const models::State & state,
-  const geometry_msgs::msg::PoseStamped & pose) const
+xt::xtensor<double, 3> Optimizer::integrateStateVelocities(const models::State & state) const
 {
   using namespace xt::placeholders;  // NOLINT
 
   auto w = state.getVelocitiesWZ();
-  double initial_yaw = tf2::getYaw(pose.pose.orientation);
+  double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
   xt::xtensor<double, 2> yaw =
     xt::cumsum(w * settings_.model_dt, 1) + initial_yaw;
   xt::xtensor<double, 2> yaw_offseted = yaw;
@@ -264,8 +261,8 @@ xt::xtensor<double, 3> Optimizer::integrateStateVelocities(
     dy = dy + vy * yaw_cos;
   }
 
-  auto x = pose.pose.position.x + xt::cumsum(dx * settings_.model_dt, 1);
-  auto y = pose.pose.position.y + xt::cumsum(dy * settings_.model_dt, 1);
+  auto x = state_.pose.pose.position.x + xt::cumsum(dx * settings_.model_dt, 1);
+  auto y = state_.pose.pose.position.y + xt::cumsum(dy * settings_.model_dt, 1);
 
   return xt::concatenate(
     xt::xtuple(

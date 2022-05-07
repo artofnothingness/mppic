@@ -13,14 +13,13 @@ namespace mppi::models
 
 struct CriticFunctionData
 {
-  const geometry_msgs::msg::PoseStamped & robot_pose;
   const models::State & state;
   const xt::xtensor<double, 3> & trajectories;
   const xt::xtensor<double, 2> & path;
   nav2_core::GoalChecker * goal_checker;
 
   xt::xtensor<double, 1> & costs;
-  bool &stop_flag;
+  bool & stop_flag;
 };
 
 }  // namespace mppi::models

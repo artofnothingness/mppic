@@ -111,7 +111,7 @@ void TrajectoryVisualizer::on_deactivate()
 
 void TrajectoryVisualizer::add(const span2d & trajectory)
 {
-  
+
   auto size = trajectory.extent(0);
   if (!size) {
     return;
@@ -139,7 +139,8 @@ void TrajectoryVisualizer::add(
 
   for (size_t i = 0; i < trajectories.extent(0); i += batch_step) {
     for (size_t j = 0; j < trajectories.extent(1); j += time_step) {
-      float blue_component = 1.0f - static_cast<float>(j) / static_cast<float>(trajectories.extent(1));
+      float blue_component = 1.0f - static_cast<float>(j) / static_cast<float>(trajectories.extent(
+          1));
       float green_component = static_cast<float>(j) / static_cast<float>(trajectories.extent(1));
 
       auto pose = createPose(trajectories(i, j, 0), trajectories(i, j, 1), 0.03);

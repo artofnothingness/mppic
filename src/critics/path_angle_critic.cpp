@@ -19,7 +19,7 @@ void PathAngleCritic::initialize()
 
 void PathAngleCritic::evalScore(models::CriticFunctionData & data)
 {
-  if (utils::withinPositionGoalTolerance(data.goal_checker, data.robot_pose, data.path)) {
+  if (utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose, data.path)) {
     return;
   }
 

@@ -23,7 +23,8 @@ namespace mppi
 {
 
 using span2d = stdex::mdspan<double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>>;
-using span3d = stdex::mdspan<double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>>;
+using span3d = stdex::mdspan<double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent,
+    stdex::dynamic_extent>>;
 
 class TrajectoryVisualizer
 {
@@ -35,8 +36,9 @@ public:
   void on_activate();
   void on_deactivate();
 
-  void add(const span2d &trajectory);
-  void add(const span3d &trajectories, const size_t batch_step,
+  void add(const span2d & trajectory);
+  void add(
+    const span3d & trajectories, const size_t batch_step,
     const size_t time_step);
   void visualize(nav_msgs::msg::Path plan);
   void reset();

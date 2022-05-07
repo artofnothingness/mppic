@@ -29,6 +29,7 @@ nav2_package()
 add_library(mppic SHARED
   src/controller.cpp
   src/optimizer.cpp
+  src/optimizer_core_interface.cpp
   src/critic_manager.cpp
   src/trajectory_visualizer.cpp
   src/path_handler.cpp

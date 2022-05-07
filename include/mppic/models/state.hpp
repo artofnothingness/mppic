@@ -84,7 +84,10 @@ private:
  **/
 struct State
 {
+  geometry_msgs::msg::PoseStamped pose;
+  geometry_msgs::msg::Twist speed;
   xt::xtensor<double, 3> data;
+
   StateIdxes idx;
 
   void reset(unsigned int batch_size, unsigned int time_steps)
