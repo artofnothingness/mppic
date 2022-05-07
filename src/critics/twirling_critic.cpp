@@ -15,14 +15,10 @@ void TwirlingCritic::initialize()
     logger_, "TwirlingCritic instantiated with %d power and %f weight.", power_, weight_);
 }
 
-void TwirlingCritic::score(
-  const geometry_msgs::msg::PoseStamped & /*robot_pose*/, const models::State & state,
-  const xt::xtensor<double, 3> & /*trajectories*/,
-  const xt::xtensor<double, 2> & /*path*/, xt::xtensor<double, 1> & costs,
-  nav2_core::GoalChecker * /*goal_checker*/)
+void TwirlingCritic::evalScore(models::CriticFunctionData & data)
 {
-  auto wz = xt::abs(state.getVelocitiesWZ());
-  costs += xt::pow(xt::mean(wz, {1}) * weight_, power_);
+  auto wz = xt::abs(data.state.getVelocitiesWZ());
+  data.costs += xt::pow(xt::mean(wz, {1}) * weight_, power_);
 }
 
 }  // namespace mppi::critics

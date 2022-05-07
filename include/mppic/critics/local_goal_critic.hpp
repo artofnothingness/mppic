@@ -8,21 +8,25 @@
 namespace mppi::critics
 {
 
-class GoalCritic : public CriticFunction
+class LocalGoalCritic : public CriticFunction
 {
 public:
   void initialize() override;
 
-  /**
-   * @brief Evaluate cost related to goal following
-   *
-   * @param costs [out] add reference cost values to this tensor
-   */
   void evalScore(models::CriticFunctionData & data) override;
 
 protected:
-  unsigned int power_{0};
-  double weight_{0};
+  size_t goal_count_{0};
+
+  size_t angle_offset_{0};
+  unsigned int angle_cost_power_{0};
+  double angle_cost_weight_{0};
+
+  size_t goal_offset_{0};
+  unsigned int distance_cost_power_{0};
+  double distance_cost_weight_{0};
+
+  double stop_usage_path_reached_ratio_{0};
 };
 
 }  // namespace mppi::critics

@@ -40,6 +40,34 @@ std_msgs::msg::ColorRGBA createColor(float r, float g, float b, float a)
   return color;
 }
 
+visualization_msgs::msg::Marker createMarker(
+  int id, const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & scale,
+  const std_msgs::msg::ColorRGBA & color, const std::string & frame_id)
+{
+  using visualization_msgs::msg::Marker;
+  Marker marker;
+  marker.header.frame_id = frame_id;
+  marker.header.stamp = rclcpp::Time(0, 0);
+  marker.ns = "MarkerNS";
+  marker.id = id;
+  marker.type = Marker::SPHERE;
+  marker.action = Marker::ADD;
+
+  marker.pose = pose;
+  marker.scale = scale;
+  marker.color = color;
+  return marker;
+}
+
+visualization_msgs::msg::Marker createLastPoseMarker(const nav_msgs::msg::Path & plan)
+{
+  auto scale = createScale(0.10, 0.10, 0.10);
+  auto color = createColor(0, 0, 1, 1);
+
+  return createMarker(0, plan.poses.back().pose, scale, color, plan.header.frame_id);
+}
+
+
 }  // namespace
 
 void TrajectoryVisualizer::on_configure(
@@ -50,6 +78,10 @@ void TrajectoryVisualizer::on_configure(
   frame_id_ = frame_id;
   trajectories_publisher_ =
     node->create_publisher<visualization_msgs::msg::MarkerArray>("/trajectories", 1);
+
+  local_goal_publisher_ =
+    node->create_publisher<visualization_msgs::msg::Marker>("/local_goal", 1);
+
   transformed_path_pub_ = node->create_publisher<nav_msgs::msg::Path>("transformed_global_plan", 1);
 
   reset();
@@ -58,18 +90,21 @@ void TrajectoryVisualizer::on_configure(
 void TrajectoryVisualizer::on_cleanup()
 {
   trajectories_publisher_.reset();
+  local_goal_publisher_.reset();
   transformed_path_pub_.reset();
 }
 
 void TrajectoryVisualizer::on_activate()
 {
   trajectories_publisher_->on_activate();
+  local_goal_publisher_->on_activate();
   transformed_path_pub_->on_activate();
 }
 
 void TrajectoryVisualizer::on_deactivate()
 {
   trajectories_publisher_->on_deactivate();
+  local_goal_publisher_->on_deactivate();
   transformed_path_pub_->on_deactivate();
 }
 
@@ -128,27 +163,13 @@ void TrajectoryVisualizer::visualize(nav_msgs::msg::Path plan)
   trajectories_publisher_->publish(std::move(points_));
   reset();
 
+
+  local_goal_publisher_->publish(createLastPoseMarker(plan));
+
   auto plan_ptr = std::make_unique<nav_msgs::msg::Path>(std::move(plan));
   transformed_path_pub_->publish(std::move(plan_ptr));
+
 }
 
-visualization_msgs::msg::Marker TrajectoryVisualizer::createMarker(
-  int id, const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & scale,
-  const std_msgs::msg::ColorRGBA & color, const std::string & frame_id)
-{
-  using visualization_msgs::msg::Marker;
-  Marker marker;
-  marker.header.frame_id = frame_id;
-  marker.header.stamp = rclcpp::Time(0, 0);
-  marker.ns = "MarkerNS";
-  marker.id = id;
-  marker.type = Marker::SPHERE;
-  marker.action = Marker::ADD;
-
-  marker.pose = pose;
-  marker.scale = scale;
-  marker.color = color;
-  return marker;
-}
 
 }  // namespace mppi

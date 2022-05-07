@@ -15,28 +15,23 @@ void PreferForwardCritic::initialize()
     logger_, "PreferForwardCritic instantiated with %d power and %f weight.", power_, weight_);
 }
 
-void PreferForwardCritic::score(
-  const geometry_msgs::msg::PoseStamped & /* robot_pos */,
-  const models::State & /* state */,
-  const xt::xtensor<double, 3> & trajectories,
-  const xt::xtensor<double, 2> & /* path */, xt::xtensor<double, 1> & costs,
-  nav2_core::GoalChecker * /* goal_checker */)
+void PreferForwardCritic::evalScore(models::CriticFunctionData & data)
 {
   using namespace xt::placeholders;  // NOLINT
 
-  auto dx = xt::view(trajectories, xt::all(), xt::range(1, _), 0) -
-    xt::view(trajectories, xt::all(), xt::range(_, -1), 0);
-  auto dy = xt::view(trajectories, xt::all(), xt::range(1, _), 1) -
-    xt::view(trajectories, xt::all(), xt::range(_, -1), 1);
+  auto dx = xt::view(data.trajectories, xt::all(), xt::range(1, _), 0) -
+    xt::view(data.trajectories, xt::all(), xt::range(_, -1), 0);
+  auto dy = xt::view(data.trajectories, xt::all(), xt::range(1, _), 1) -
+    xt::view(data.trajectories, xt::all(), xt::range(_, -1), 1);
 
   auto thetas = xt::atan2(dy, dx);
-  auto yaws = xt::view(trajectories, xt::all(), xt::range(_, -1), 2);
+  auto yaws = xt::view(data.trajectories, xt::all(), xt::range(_, -1), 2);
 
   auto yaws_local = xt::abs(utils::shortest_angular_distance(thetas, yaws));
   auto forward_translation_reversed = -xt::cos(yaws_local) * xt::hypot(dx, dy);
   auto backward_translation = xt::maximum(forward_translation_reversed, 0);
 
-  costs += xt::pow(xt::sum(backward_translation, {1}) * weight_, power_);
+  data.costs += xt::pow(xt::sum(backward_translation, {1}) * weight_, power_);
 }
 
 

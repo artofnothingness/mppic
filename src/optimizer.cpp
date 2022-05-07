@@ -12,6 +12,7 @@
 #include "nav2_core/exceptions.hpp"
 #include "nav2_costmap_2d/cost_values.hpp"
 #include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
+#include "mppic/models/critic_function_data.hpp"
 
 namespace mppi
 {
@@ -45,21 +46,21 @@ void Optimizer::getParams()
   auto & s = settings_;
   auto getParam = parameters_handler_->getParamGetter(name_);
   auto getParentParam = parameters_handler_->getParamGetter("");
-  getParam(s.model_dt_, "model_dt", 0.1);
-  getParam(s.time_steps_, "time_steps", 15);
-  getParam(s.batch_size_, "batch_size", 400);
-  getParam(s.iteration_count_, "iteration_count", 2);
-  getParam(s.temperature_, "temperature", 0.25);
-  getParam(s.base_constraints_.vx, "vx_max", 0.5);
-  getParam(s.base_constraints_.vy, "vy_max", 0.5);
-  getParam(s.base_constraints_.wz, "wz_max", 1.3);
-  getParam(s.sampling_std_.vx, "vx_std", 0.2);
-  getParam(s.sampling_std_.vy, "vy_std", 0.2);
-  getParam(s.sampling_std_.wz, "wz_std", 1.0);
+  getParam(s.model_dt, "model_dt", 0.1);
+  getParam(s.time_steps, "time_steps", 15);
+  getParam(s.batch_size, "batch_size", 400);
+  getParam(s.iteration_count, "iteration_count", 2);
+  getParam(s.temperature, "temperature", 0.25);
+  getParam(s.base_constraints.vx, "vx_max", 0.5);
+  getParam(s.base_constraints.vy, "vy_max", 0.5);
+  getParam(s.base_constraints.wz, "wz_max", 1.3);
+  getParam(s.sampling_std.vx, "vx_std", 0.2);
+  getParam(s.sampling_std.vy, "vy_std", 0.2);
+  getParam(s.sampling_std.wz, "wz_std", 1.0);
   getParam(motion_model_name, "motion_model", std::string("DiffDrive"));
   getParentParam(controller_frequency_, "controller_frequency", 0.0);
 
-  s.constraints_ = s.base_constraints_;
+  s.constraints = s.base_constraints;
   setMotionModel(motion_model_name);
   parameters_handler_->addPostCallback([this]() {reset();});
 }
@@ -69,17 +70,17 @@ void Optimizer::setOffset()
   const double controller_period = 1.0 / controller_frequency_;
   constexpr double eps = 1e-6;
 
-  if (controller_period < settings_.model_dt_) {
+  if (controller_period < settings_.model_dt) {
     RCLCPP_WARN(
       logger_,
       "Controller period is less then model dt, consider setting it equal");
-    settings_.control_sequence_shift_offset_ = 0;
-  } else if (abs(controller_period - settings_.model_dt_) < eps) {
+    settings_.control_sequence_shift_offset = 0;
+  } else if (abs(controller_period - settings_.model_dt) < eps) {
     RCLCPP_INFO(
       logger_,
       "Controller period is equal to model dt. Control seuqence "
       "shifting is ON");
-    settings_.control_sequence_shift_offset_ = 1;
+    settings_.control_sequence_shift_offset = 1;
   } else {
     throw std::runtime_error(
             "Controller period more then model dt, set it equal to model dt");
@@ -90,31 +91,31 @@ void Optimizer::setSpeedLimit(double speed_limit, bool percentage)
 {
   auto & s = settings_;
   if (speed_limit == nav2_costmap_2d::NO_SPEED_LIMIT) {
-    s.constraints_.vx = s.base_constraints_.vx;
-    s.constraints_.vy = s.base_constraints_.vy;
-    s.constraints_.wz = s.base_constraints_.wz;
+    s.constraints.vx = s.base_constraints.vx;
+    s.constraints.vy = s.base_constraints.vy;
+    s.constraints.wz = s.base_constraints.wz;
   } else {
     if (percentage) {
       // Speed limit is expressed in % from maximum speed of robot
       double ratio = speed_limit / 100.0;
-      s.constraints_.vx = s.base_constraints_.vx * ratio;
-      s.constraints_.vy = s.base_constraints_.vy * ratio;
-      s.constraints_.wz = s.base_constraints_.wz * ratio;
+      s.constraints.vx = s.base_constraints.vx * ratio;
+      s.constraints.vy = s.base_constraints.vy * ratio;
+      s.constraints.wz = s.base_constraints.wz * ratio;
     } else {
       // Speed limit is expressed in absolute value
-      double ratio = speed_limit / s.base_constraints_.vx;
-      s.constraints_.vx = speed_limit;
-      s.constraints_.vy = s.base_constraints_.vx * ratio;
-      s.constraints_.wz = s.base_constraints_.wz * ratio;
+      double ratio = speed_limit / s.base_constraints.vx;
+      s.constraints.vx = speed_limit;
+      s.constraints.vy = s.base_constraints.vx * ratio;
+      s.constraints.wz = s.base_constraints.wz * ratio;
     }
   }
 }
 
 void Optimizer::reset()
 {
-  state_.reset(settings_.batch_size_, settings_.time_steps_);
-  state_.getTimeIntervals() = settings_.model_dt_;
-  control_sequence_.reset(settings_.time_steps_);
+  state_.reset(settings_.batch_size, settings_.time_steps);
+  state_.getTimeIntervals() = settings_.model_dt;
+  control_sequence_.reset(settings_.time_steps);
 
   RCLCPP_INFO(logger_, "Optimizer reset");
 }
@@ -124,36 +125,46 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
   const geometry_msgs::msg::Twist & robot_speed,
   const nav_msgs::msg::Path & plan, nav2_core::GoalChecker * goal_checker)
 {
-  for (size_t i = 0; i < settings_.iteration_count_; ++i) {
+  bool stop_flag = false;
+
+  for (size_t i = 0; i < settings_.iteration_count; ++i) {
     generated_trajectories_ =
       generateNoisedTrajectories(robot_pose, robot_speed);
-    auto && costs = critic_manager_.evalTrajectoriesScores(
-      state_, generated_trajectories_, plan, robot_pose, goal_checker);
+
+    xt::xtensor<double, 1> costs = xt::zeros<double>({settings_.batch_size});
+
+    auto data =
+      models::CriticFunctionData{robot_pose, state_, generated_trajectories_,
+      utils::toTensor(plan), goal_checker, costs, stop_flag};
+    critic_manager_.evalTrajectoriesScores(data);
+
     updateControlSequence(costs);
   }
 
   auto control = getControlFromSequenceAsTwist(
-    settings_.control_sequence_shift_offset_,
+    settings_.control_sequence_shift_offset,
     plan.header.stamp);
 
   shiftControlSequence();
+
+    
+  if (stop_flag) {
+    reset();
+  }
   return control;
 }
 
 void Optimizer::shiftControlSequence()
 {
-  if (settings_.control_sequence_shift_offset_ == 0) {
+  if (settings_.control_sequence_shift_offset == 0) {
     return;
   }
 
   using namespace xt::placeholders;  // NOLINT
-  xt::view(
-    control_sequence_.data,
-    xt::range(_, -settings_.control_sequence_shift_offset_), xt::all()) =
-    xt::view(
-    control_sequence_.data,
-    xt::range(settings_.control_sequence_shift_offset_, _),
-    xt::all());
+  control_sequence_.data = xt::roll(control_sequence_.data, -1, 0);
+
+  xt::view(control_sequence_.data, -1, xt::all()) = 
+    xt::view(control_sequence_.data, -2, xt::all());
 }
 
 xt::xtensor<double, 3> Optimizer::generateNoisedTrajectories(
@@ -170,15 +181,15 @@ xt::xtensor<double, 3> Optimizer::generateNoisedControls() const
 {
   auto & s = settings_;
   auto vx_noises = xt::random::randn<double>(
-    {s.batch_size_, s.time_steps_, 1U},
-    0.0, s.sampling_std_.vx);
+    {s.batch_size, s.time_steps, 1U},
+    0.0, s.sampling_std.vx);
   auto wz_noises = xt::random::randn<double>(
-    {s.batch_size_, s.time_steps_, 1U},
-    0.0, s.sampling_std_.wz);
+    {s.batch_size, s.time_steps, 1U},
+    0.0, s.sampling_std.wz);
 
   if (isHolonomic()) {
     auto vy_noises = xt::random::randn<double>(
-      {s.batch_size_, s.time_steps_, 1U}, 0.0, s.sampling_std_.vy);
+      {s.batch_size, s.time_steps, 1U}, 0.0, s.sampling_std.vy);
     return control_sequence_.data +
            xt::concatenate(xt::xtuple(vx_noises, vy_noises, wz_noises), 2);
   }
@@ -197,11 +208,11 @@ void Optimizer::applyControlConstraints()
 
   if (isHolonomic()) {
     auto vy = state_.getControlVelocitiesVY();
-    vy = xt::clip(vy, -s.constraints_.vy, s.constraints_.vy);
+    vy = xt::clip(vy, -s.constraints.vy, s.constraints.vy);
   }
 
-  vx = xt::clip(vx, -s.constraints_.vx, s.constraints_.vx);
-  wz = xt::clip(wz, -s.constraints_.wz, s.constraints_.wz);
+  vx = xt::clip(vx, -s.constraints.vx, s.constraints.vx);
+  wz = xt::clip(wz, -s.constraints.wz, s.constraints.wz);
 }
 
 void Optimizer::updateStateVelocities(
@@ -227,8 +238,8 @@ void Optimizer::propagateStateVelocitiesFromInitials(
 {
   using namespace xt::placeholders;  // NOLINT
 
-  for (size_t i = 0; i < settings_.time_steps_ - 1; i++) {
-    auto curr_state = xt::view(state.data, xt::all(), i);
+  for (size_t i = 0; i < settings_.time_steps - 1; i++) {
+    auto curr_state = xt::view(state.data, xt::all(), i, xt::all());
     auto next_velocities =
       xt::view(
       state.data, xt::all(), i + 1,
@@ -244,9 +255,9 @@ xt::xtensor<double, 2> Optimizer::evalTrajectoryFromControlSequence(
 {
   models::State state;
   state.idx.setLayout(motion_model_->isHolonomic());
-  state.reset(1U, settings_.time_steps_);
+  state.reset(1U, settings_.time_steps);
   state.getControls() = control_sequence_.data;
-  state.getTimeIntervals() = settings_.model_dt_;
+  state.getTimeIntervals() = settings_.model_dt;
 
   updateStateVelocities(state, robot_speed);
   return xt::squeeze(integrateStateVelocities(state, robot_pose));
@@ -261,7 +272,7 @@ xt::xtensor<double, 3> Optimizer::integrateStateVelocities(
   auto w = state.getVelocitiesWZ();
   double initial_yaw = tf2::getYaw(pose.pose.orientation);
   xt::xtensor<double, 2> yaw =
-    xt::cumsum(w * settings_.model_dt_, 1) + initial_yaw;
+    xt::cumsum(w * settings_.model_dt, 1) + initial_yaw;
   xt::xtensor<double, 2> yaw_offseted = yaw;
 
   xt::view(yaw_offseted, xt::all(), xt::range(1, _)) =
@@ -281,8 +292,8 @@ xt::xtensor<double, 3> Optimizer::integrateStateVelocities(
     dy = dy + vy * yaw_cos;
   }
 
-  auto x = pose.pose.position.x + xt::cumsum(dx * settings_.model_dt_, 1);
-  auto y = pose.pose.position.y + xt::cumsum(dy * settings_.model_dt_, 1);
+  auto x = pose.pose.position.x + xt::cumsum(dx * settings_.model_dt, 1);
+  auto y = pose.pose.position.y + xt::cumsum(dy * settings_.model_dt, 1);
 
   return xt::concatenate(
     xt::xtuple(
@@ -298,7 +309,7 @@ void Optimizer::updateControlSequence(const xt::xtensor<double, 1> & costs)
 
   auto && costs_normalized = costs - xt::amin(costs, immediate);
   auto exponents =
-    xt::eval(xt::exp(-1 / settings_.temperature_ * costs_normalized));
+    xt::eval(xt::exp(-1 / settings_.temperature * costs_normalized));
   auto softmaxes = exponents / xt::sum(exponents, immediate);
   auto softmaxes_expanded =
     xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());

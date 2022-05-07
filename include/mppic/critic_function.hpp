@@ -9,12 +9,10 @@
 #include <xtensor/xmath.hpp>
 #include <xtensor/xview.hpp>
 
-#include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
-#include "nav2_core/goal_checker.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-#include "mppic/models/state.hpp"
 #include "mppic/parameters_handler.hpp"
+#include "mppic/models/critic_function_data.hpp"
 
 namespace mppi::critics
 {
@@ -40,19 +38,29 @@ public:
     initialize();
   }
 
+  void score(models::CriticFunctionData & data) {
+      if(data.stop_flag) {
+        return;
+      }
+
+      evalScore(data);
+  }
+
+  std::string getName() {
+      return name_;
+  }
+
   virtual void initialize() = 0;
 
-  virtual void score(
-    const geometry_msgs::msg::PoseStamped & robot_pose, const models::State & state,
-    const xt::xtensor<double, 3> & trajectories, const xt::xtensor<double, 2> & path,
-    xt::xtensor<double, 1> & costs,
-    nav2_core::GoalChecker * goal_checker) = 0;
+  virtual void evalScore(models::CriticFunctionData & data) = 0;
+
 
 protected:
   std::string name_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_{nullptr};
+
   ParametersHandler * parameters_handler_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };

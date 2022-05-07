@@ -96,10 +96,10 @@ inline bool withinPositionGoalTolerance(
   *
   */
 template<typename T>
-xt::xtensor<double, 2> normalize_angles(const T & angles)
+auto normalize_angles(const T & angles)
 {
-  xt::xtensor<double, 2> theta = xt::fmod(angles + M_PI, 2.0 * M_PI);
-  return xt::where(theta <= 0.0, theta + M_PI, theta - M_PI);
+  auto theta = xt::eval(xt::fmod(angles + M_PI, 2.0 * M_PI));
+  return xt::eval(xt::where(theta <= 0.0, theta + M_PI, theta - M_PI));
 }
 
 
@@ -115,7 +115,7 @@ xt::xtensor<double, 2> normalize_angles(const T & angles)
   *
   */
 template<typename F, typename T>
-xt::xtensor<double, 2> shortest_angular_distance(
+auto shortest_angular_distance(
   const F & from,
   const T & to)
 {

@@ -33,14 +33,13 @@ public:
   void reset();
 
 protected:
-  visualization_msgs::msg::Marker createMarker(
-    int id, const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & scale,
-    const std_msgs::msg::ColorRGBA & color, const std::string & frame_id);
-
   std::string frame_id_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<visualization_msgs::msg::MarkerArray>>
   trajectories_publisher_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>> transformed_path_pub_;
+
+  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<visualization_msgs::msg::Marker>>
+  local_goal_publisher_;
 
   std::unique_ptr<visualization_msgs::msg::MarkerArray> points_;
   int marker_id_ = 0;
