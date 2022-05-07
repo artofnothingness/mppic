@@ -4,16 +4,26 @@
 
 #include <memory>
 #include <string>
-#include <xtensor/xtensor.hpp>
 
-#include "nav_msgs/msg/path.hpp"
+// 3rdparty
+#include <experimental/mdspan>
+
+// ros
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+
+// msgs
+#include "nav_msgs/msg/path.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
+
+namespace stdex = std::experimental;
 
 namespace mppi
 {
+
+using span2d = stdex::mdspan<double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>>;
+using span3d = stdex::mdspan<double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>>;
 
 class TrajectoryVisualizer
 {
@@ -25,9 +35,8 @@ public:
   void on_activate();
   void on_deactivate();
 
-  void add(const xt::xtensor<double, 2> & trajectory);
-  void add(
-    const xt::xtensor<double, 3> & trajectories, const size_t batch_step,
+  void add(const span2d &trajectory);
+  void add(const span3d &trajectories, const size_t batch_step,
     const size_t time_step);
   void visualize(nav_msgs::msg::Path plan);
   void reset();

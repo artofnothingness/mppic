@@ -247,7 +247,7 @@ void Optimizer::propagateStateVelocitiesFromInitials(
   }
 }
 
-xt::xtensor<double, 2> Optimizer::evalTrajectoryFromControlSequence(
+span2d Optimizer::getOptimizedTrajectory(
   const geometry_msgs::msg::PoseStamped & robot_pose,
   const geometry_msgs::msg::Twist & robot_speed)
 {
@@ -258,7 +258,8 @@ xt::xtensor<double, 2> Optimizer::evalTrajectoryFromControlSequence(
   state.getTimeIntervals() = settings_.model_dt;
 
   updateStateVelocities(state, robot_speed);
-  return xt::squeeze(integrateStateVelocities(state, robot_pose));
+  auto trajectory = xt::squeeze(integrateStateVelocities(state, robot_pose));
+  return span2d{trajectory.data(), settings_.time_steps, 3};
 }
 
 xt::xtensor<double, 3> Optimizer::integrateStateVelocities(
@@ -350,9 +351,9 @@ void Optimizer::setMotionModel(const std::string & model)
   control_sequence_.idx.setLayout(motion_model_->isHolonomic());
 }
 
-xt::xtensor<double, 3> & Optimizer::getGeneratedTrajectories()
+span3d Optimizer::getGeneratedTrajectories()
 {
-  return generated_trajectories_;
+  return span3d{generated_trajectories_.data(), settings_.batch_size, settings_.time_steps, 3};
 }
 
 }  // namespace mppi

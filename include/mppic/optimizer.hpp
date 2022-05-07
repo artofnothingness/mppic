@@ -37,9 +37,9 @@ public:
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan,
     nav2_core::GoalChecker * goal_checker) override;
 
-  xt::xtensor<double, 3> & getGeneratedTrajectories() override;
+  span3d getGeneratedTrajectories() override;
 
-  xt::xtensor<double, 2> evalTrajectoryFromControlSequence(
+  span2d getOptimizedTrajectory(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed) override;
 

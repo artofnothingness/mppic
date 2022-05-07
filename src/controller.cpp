@@ -77,7 +77,7 @@ void Controller::visualize(
   }
 
   trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories(), 5, 2);
-  trajectory_visualizer_.add(optimizer_.evalTrajectoryFromControlSequence(robot_pose, robot_speed));
+  trajectory_visualizer_.add(optimizer_.getOptimizedTrajectory(robot_pose, robot_speed));
   trajectory_visualizer_.visualize(std::move(transformed_plan));
 }
 

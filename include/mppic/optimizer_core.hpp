@@ -4,6 +4,9 @@
 #include <string>
 #include <memory>
 
+// 3rdparty
+#include <experimental/mdspan>
+
 // ros
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
@@ -24,12 +27,18 @@
 #include "mppic/models/optimizer_settings.hpp"
 #include "mppic/models/state.hpp"
 
+namespace stdex = std::experimental;
+
 namespace mppi
 {
+
+using span2d = stdex::mdspan<double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>>;
+using span3d = stdex::mdspan<double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>>;
 
 class OptimizerCore
 {
 public:
+
   OptimizerCore() = default;
   virtual ~OptimizerCore() = default;
 
@@ -44,9 +53,9 @@ public:
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan,
     nav2_core::GoalChecker * goal_checker) = 0;
 
-  virtual xt::xtensor<double, 3> & getGeneratedTrajectories() = 0;
+  virtual span3d getGeneratedTrajectories() = 0;
 
-  virtual xt::xtensor<double, 2> evalTrajectoryFromControlSequence(
+  virtual span2d getOptimizedTrajectory(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed) = 0;
 

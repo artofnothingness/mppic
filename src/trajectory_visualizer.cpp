@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "mppic/trajectory_visualizer.hpp"
+#include "experimental/mdspan"
 
 namespace mppi
 {
@@ -108,9 +109,10 @@ void TrajectoryVisualizer::on_deactivate()
   transformed_path_pub_->on_deactivate();
 }
 
-void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
+void TrajectoryVisualizer::add(const span2d & trajectory)
 {
-  auto & size = trajectory.shape()[0];
+  
+  auto size = trajectory.extent(0);
   if (!size) {
     return;
   }
@@ -129,18 +131,16 @@ void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
 }
 
 void TrajectoryVisualizer::add(
-  const xt::xtensor<double, 3> & trajectories, const size_t batch_step, const size_t time_step)
+  const span3d & trajectories, const size_t batch_step, const size_t time_step)
 {
-  if (!trajectories.shape()[0]) {
+  if (!trajectories.extent(0)) {
     return;
   }
 
-  auto & shape = trajectories.shape();
-
-  for (size_t i = 0; i < shape[0]; i += batch_step) {
-    for (size_t j = 0; j < shape[1]; j += time_step) {
-      float blue_component = 1.0f - static_cast<float>(j) / static_cast<float>(shape[1]);
-      float green_component = static_cast<float>(j) / static_cast<float>(shape[1]);
+  for (size_t i = 0; i < trajectories.extent(0); i += batch_step) {
+    for (size_t j = 0; j < trajectories.extent(1); j += time_step) {
+      float blue_component = 1.0f - static_cast<float>(j) / static_cast<float>(trajectories.extent(1));
+      float green_component = static_cast<float>(j) / static_cast<float>(trajectories.extent(1));
 
       auto pose = createPose(trajectories(i, j, 0), trajectories(i, j, 1), 0.03);
       auto scale = createScale(0.03, 0.03, 0.03);
