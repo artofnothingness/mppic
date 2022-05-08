@@ -6,9 +6,10 @@
 
 struct TestOptimizerSettings
 {
-  const int iteration_count;
-  const int time_steps;
-  const double lookahead_distance;
+  int batch_size;
+  int time_steps;
+  int iteration_count;
+  double lookahead_distance;
   std::string motion_model;
   bool consider_footprint;
 };
@@ -63,6 +64,7 @@ void setUpOptimizerParams(
 {
   constexpr double dummy_freq = 10.0;
   params_.emplace_back(rclcpp::Parameter(node_name + ".iteration_count", s.iteration_count));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".batch_size", s.batch_size));
   params_.emplace_back(rclcpp::Parameter(node_name + ".time_steps", s.time_steps));
   params_.emplace_back(rclcpp::Parameter(node_name + ".lookahead_dist", s.lookahead_distance));
   params_.emplace_back(rclcpp::Parameter(node_name + ".motion_model", s.motion_model));

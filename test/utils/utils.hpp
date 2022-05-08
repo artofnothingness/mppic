@@ -98,9 +98,10 @@ void print_info(TestOptimizerSettings os, TestPathSettings ps, std::vector<std::
     "Critics: " << ss.str() << "\n" \
     "Motion model: " << os.motion_model << "\n"
     "Consider footprint: " << os.consider_footprint << "\n" <<
-    "Path points: " << ps.poses_count << "\n" <<
     "Iterations: " << os.iteration_count << "\n" <<
-    "Time steps: " << os.time_steps <<
+    "Batch size: " << os.batch_size << "\n" <<
+    "Time steps: " << os.time_steps << "\n" <<
+    "Path points: " << ps.poses_count << "\n" <<
     "\n-------------------------------------------------------------------\n\n";
 }
 

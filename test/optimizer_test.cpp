@@ -34,13 +34,13 @@ RosLockGuard g_rclcpp;
 TEST_CASE("Optimizer doesn't fail")
 {
   // Settings
-  TestCostmapSettings cost_map_settings{};
-  const double path_step = cost_map_settings.resolution;
-  TestPose start_pose = cost_map_settings.getCenterPose();
-  auto costmap_ros = getDummyCostmapRos(cost_map_settings);
+  int batch_size = 400;
+  int time_steps = 15;
+  unsigned int path_points = 50u;
+  int iteration_count = 1;
+  double lookahead_distance = 10.0;
 
   bool consider_footprint = GENERATE(true, false);
-  unsigned int path_points = GENERATE(10u);
   std::string motion_model = GENERATE("DiffDrive", "Omni");
   std::string critic = GENERATE(
     as<std::string>{},
@@ -54,7 +54,11 @@ TEST_CASE("Optimizer doesn't fail")
     "PathAngleCritic",
     "TwirlingCritic");
 
-  TestOptimizerSettings optimizer_settings{1, 15, 10.0, motion_model, consider_footprint};
+  TestCostmapSettings cost_map_settings{};
+  TestPose start_pose = cost_map_settings.getCenterPose();
+  TestOptimizerSettings optimizer_settings{batch_size, time_steps, iteration_count, lookahead_distance, motion_model, consider_footprint};
+
+  double path_step = cost_map_settings.resolution;
   TestPathSettings path_settings{start_pose, path_points, path_step, path_step};
 
   std::vector<std::string> critics;
@@ -63,6 +67,7 @@ TEST_CASE("Optimizer doesn't fail")
   }
 
   print_info(optimizer_settings, path_settings, critics);
+  auto costmap_ros = getDummyCostmapRos(cost_map_settings);
   auto node = getDummyNode(optimizer_settings, critics);
   auto parameters_handler = std::make_unique<mppi::ParametersHandler>(node);
   auto optimizer = getDummyOptimizer(node, costmap_ros, parameters_handler.get());
@@ -85,12 +90,10 @@ TEST_CASE("Optimizer doesn't fail")
   auto pose = getDummyPointStamped(node, start_pose);
   auto velocity = getDummyTwist();
   auto path = getIncrementalDummyPath(node, path_settings);
-
   nav2_core::GoalChecker * dummy_goal_checker{nullptr};
 
 #ifdef DO_BENCHMARKS
   BENCHMARK("evalControl Benchmark") {
-    nav2_core::GoalChecker * dummy_goal_checker{nullptr};
     return optimizer.evalControl(pose, velocity, path, dummy_goal_checker);
   };
 #else
