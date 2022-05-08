@@ -66,7 +66,7 @@ void ReferenceTrajectoryCritic::evalScore(models::CriticFunctionData & data)
     double mean_dist = 0;
     for (size_t p = 0; p < trajectories_points_count; ++p) {
       double min_dist = std::numeric_limits<double>::max();
-      for (size_t s = 0; s < reference_segments_count;  s+=reference_point_step_) {
+      for (size_t s = 0; s < reference_segments_count; s += reference_point_step_) {
         xt::xtensor_fixed<double, xt::xshape<2>> P;
         if (segment_short(s)) {
           P[0] = P1(s, 0);

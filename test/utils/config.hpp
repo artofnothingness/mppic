@@ -56,9 +56,10 @@ struct TestPathSettings
  *
  * @param params_ container for optimizer's parameters.
  */
-void setUpOptimizerParams(const TestOptimizerSettings &s, 
-                          const std::vector<std::string> & critics, 
-                          std::vector<rclcpp::Parameter> & params_, std::string node_name = std::string("dummy"))
+void setUpOptimizerParams(
+  const TestOptimizerSettings & s,
+  const std::vector<std::string> & critics,
+  std::vector<rclcpp::Parameter> & params_, std::string node_name = std::string("dummy"))
 {
   constexpr double dummy_freq = 10.0;
   params_.emplace_back(rclcpp::Parameter(node_name + ".iteration_count", s.iteration_count));

@@ -31,7 +31,9 @@ auto setHeader(auto && msg, auto node, std::string frame)
 }
 }  // namespace detail
 
-rclcpp::NodeOptions getOptimizerOptions(TestOptimizerSettings s, const std::vector<std::string> &critics)
+rclcpp::NodeOptions getOptimizerOptions(
+  TestOptimizerSettings s,
+  const std::vector<std::string> & critics)
 {
   std::vector<rclcpp::Parameter> params;
   rclcpp::NodeOptions options;

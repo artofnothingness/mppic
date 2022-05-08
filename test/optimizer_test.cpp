@@ -42,15 +42,16 @@ TEST_CASE("Optimizer doesn't fail")
   bool consider_footprint = GENERATE(true, false);
   unsigned int path_points = GENERATE(10u);
   std::string motion_model = GENERATE("DiffDrive", "Omni");
-  std::string critic = GENERATE(as<std::string>{}, 
-                        "GoalCritic", 
-                        "GoalAngleCritic", 
-                        "ObstaclesCritic", 
-                        "LocalGoalCritic", 
-                        "PreferForwardCritic", 
-                        "ReferenceTrajectoryCritic", 
-                        "PathAngleCritic", 
-                        "TwirlingCritic");
+  std::string critic = GENERATE(
+    as<std::string>{},
+    "GoalCritic",
+    "GoalAngleCritic",
+    "ObstaclesCritic",
+    "LocalGoalCritic",
+    "PreferForwardCritic",
+    "ReferenceTrajectoryCritic",
+    "PathAngleCritic",
+    "TwirlingCritic");
 
   TestOptimizerSettings optimizer_settings{1, 15, 10.0, motion_model, consider_footprint};
   TestPathSettings path_settings{start_pose, path_points, path_step, path_step};
@@ -85,8 +86,8 @@ TEST_CASE("Optimizer doesn't fail")
 
 #ifdef DO_BENCHMARKS
   BENCHMARK("evalControl Benchmark") {
-      nav2_core::GoalChecker * dummy_goal_checker{nullptr};
-      return optimizer.evalControl(pose, velocity, path, dummy_goal_checker);
+    nav2_core::GoalChecker * dummy_goal_checker{nullptr};
+    return optimizer.evalControl(pose, velocity, path, dummy_goal_checker);
   };
 #else
   REQUIRE_NOTHROW(optimizer.evalControl(pose, velocity, path, dummy_goal_checker));
