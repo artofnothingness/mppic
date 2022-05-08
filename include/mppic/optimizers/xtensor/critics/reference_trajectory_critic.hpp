@@ -22,6 +22,7 @@ public:
 
 protected:
   unsigned int reference_point_step_{0};
+  unsigned int trajectory_point_step_{0};
 
   unsigned int reference_cost_power_{0};
   double reference_cost_weight_{0};

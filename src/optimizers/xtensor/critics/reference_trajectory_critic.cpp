@@ -12,7 +12,9 @@ void ReferenceTrajectoryCritic::initialize()
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(reference_cost_power_, "reference_cost_power", 1);
   getParam(reference_cost_weight_, "reference_cost_weight", 3.0);
-  getParam(reference_point_step_, "reference_point_step", 2);
+
+  getParam(reference_point_step_, "reference_point_step", 1);
+  getParam(trajectory_point_step_, "trajectory_point_step", 2);
 
   RCLCPP_INFO(
     logger_,
@@ -65,7 +67,7 @@ void ReferenceTrajectoryCritic::evalScore(models::CriticFunctionData & data)
   size_t max_s = 0;
   for (size_t t = 0; t < trajectories_count; ++t) {
     double mean_dist = 0;
-    for (size_t p = 0; p < trajectories_points_count; ++p) {
+    for (size_t p = 0; p < trajectories_points_count; p += trajectory_point_step_) {
       double min_dist = std::numeric_limits<double>::max();
       size_t min_s = 0;
       for (size_t s = 0; s < reference_segments_count; s += reference_point_step_) {

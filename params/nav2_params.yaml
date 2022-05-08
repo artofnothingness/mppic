@@ -179,7 +179,8 @@ controller_server:
       ReferenceTrajectoryCritic:
         reference_cost_power: 1
         reference_cost_weight: 4.0
-        reference_point_step: 2
+        trajectory_point_step: 2
+        reference_point_step: 1
       # PreferForwardCritic:
       #   prefer_forward_cost_power: 1
       #   prefer_forward_cost_weight: 10.0
