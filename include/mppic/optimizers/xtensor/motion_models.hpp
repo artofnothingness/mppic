@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-#include "mppic/models/state.hpp"
+#include "mppic/optimizers/xtensor/models/state.hpp"
 
 namespace mppi
 {

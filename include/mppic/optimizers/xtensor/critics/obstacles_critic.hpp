@@ -1,10 +1,11 @@
 // Copyright 2022 FastSense, Samsung Research
 #pragma once
 
-#include "mppic/critic_function.hpp"
-#include "mppic/models/state.hpp"
-#include "mppic/utils.hpp"
 #include "nav2_costmap_2d/footprint_collision_checker.hpp"
+
+#include "mppic/optimizers/xtensor/critic_function.hpp"
+#include "mppic/optimizers/xtensor/models/state.hpp"
+#include "mppic/utils.hpp"
 
 namespace mppi::critics
 {

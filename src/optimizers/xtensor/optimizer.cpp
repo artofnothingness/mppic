@@ -1,5 +1,4 @@
 // Copyright 2022 FastSense, Samsung Research
-#include "mppic/optimizer.hpp"
 
 #include <limits>
 #include <memory>
@@ -10,7 +9,9 @@
 #include <xtensor/xrandom.hpp>
 
 #include "nav2_core/exceptions.hpp"
-#include "mppic/models/critic_function_data.hpp"
+
+#include "mppic/optimizers/xtensor/optimizer.hpp"
+#include "mppic/optimizers/xtensor/models/critic_function_data.hpp"
 
 namespace mppi
 {

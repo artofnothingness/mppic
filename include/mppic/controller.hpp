@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "mppic/path_handler.hpp"
-#include "mppic/optimizer.hpp"
+#include "mppic/optimizer_core_interface.hpp"
 #include "mppic/trajectory_visualizer.hpp"
 #include "mppic/models/constraints.hpp"
 #include "mppic/utils.hpp"
@@ -51,7 +51,7 @@ protected:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
   std::unique_ptr<ParametersHandler> parameters_handler_;
-  Optimizer optimizer_;
+  std::unique_ptr<IOptimizerCore> optimizer_;
   PathHandler path_handler_;
   TrajectoryVisualizer trajectory_visualizer_;
 

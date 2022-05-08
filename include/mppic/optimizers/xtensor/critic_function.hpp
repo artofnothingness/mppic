@@ -5,14 +5,11 @@
 #include <string>
 #include <memory>
 
-#include <xtensor/xtensor.hpp>
-#include <xtensor/xmath.hpp>
-#include <xtensor/xview.hpp>
-
-#include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
+
 #include "mppic/parameters_handler.hpp"
-#include "mppic/models/critic_function_data.hpp"
+#include "mppic/optimizers/xtensor/models/critic_function_data.hpp"
 
 namespace mppi::critics
 {

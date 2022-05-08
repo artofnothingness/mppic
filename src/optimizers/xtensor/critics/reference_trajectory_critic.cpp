@@ -1,5 +1,5 @@
 // Copyright 2022 FastSense, Samsung Research
-#include "mppic/critics/reference_trajectory_critic.hpp"
+#include "mppic/optimizers/xtensor/critics/reference_trajectory_critic.hpp"
 
 #include <xtensor/xfixed.hpp>
 #include <xtensor/xmath.hpp>

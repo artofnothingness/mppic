@@ -21,7 +21,6 @@ namespace stdex = std::experimental;
 
 namespace mppi
 {
-
 using span2d = stdex::mdspan<double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>>;
 using span3d = stdex::mdspan<double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent,
     stdex::dynamic_extent>>;

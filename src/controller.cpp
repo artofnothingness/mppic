@@ -2,8 +2,9 @@
 #include <stdint.h>
 #include <chrono>
 #include "mppic/controller.hpp"
-#include "mppic/motion_models.hpp"
 #include "mppic/utils.hpp"
+
+#include "mppic/optimizers/xtensor/optimizer.hpp"
 
 namespace mppi
 {
@@ -24,8 +25,12 @@ void Controller::configure(
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(visualize_, "visualize", false);
 
+
+  // TODO make factory, change name
+  optimizer_ = std::make_unique<mppi::Optimizer>();
+
   // Configure composed objects
-  optimizer_.initialize(parent_, name_, costmap_ros_, parameters_handler_.get());
+  optimizer_->initialize(parent_, name_, costmap_ros_, parameters_handler_.get());
   path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_, parameters_handler_.get());
   trajectory_visualizer_.on_configure(parent_, costmap_ros_->getGlobalFrameID());
 
@@ -60,7 +65,7 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   std::lock_guard<std::mutex> lock(*parameters_handler_->getLock());
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
   geometry_msgs::msg::TwistStamped cmd =
-    optimizer_.evalControl(robot_pose, robot_speed, transformed_plan, goal_checker);
+    optimizer_->evalControl(robot_pose, robot_speed, transformed_plan, goal_checker);
 
   visualize(std::move(transformed_plan));
 
@@ -73,8 +78,8 @@ void Controller::visualize(nav_msgs::msg::Path transformed_plan)
     return;
   }
 
-  trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories(), 5, 2);
-  trajectory_visualizer_.add(optimizer_.getOptimizedTrajectory());
+  trajectory_visualizer_.add(optimizer_->getGeneratedTrajectories(), 5, 2);
+  trajectory_visualizer_.add(optimizer_->getOptimizedTrajectory());
   trajectory_visualizer_.visualize(std::move(transformed_plan));
 }
 
@@ -85,7 +90,7 @@ void Controller::setPlan(const nav_msgs::msg::Path & path)
 
 void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {
-  optimizer_.setConstraints(speed_limit, percentage);
+  optimizer_->setConstraints(speed_limit, percentage);
 }
 
 }  // namespace mppi

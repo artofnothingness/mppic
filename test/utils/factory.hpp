@@ -14,9 +14,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
-#include "mppic/motion_models.hpp"
+#include "mppic/optimizers/xtensor/motion_models.hpp"
+#include "mppic/optimizers/xtensor/optimizer.hpp"
 #include "mppic/parameters_handler.hpp"
-#include "mppic/optimizer.hpp"
 #include "mppic/controller.hpp"
 
 #include "config.hpp"

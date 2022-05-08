@@ -10,12 +10,14 @@
 
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
-#include "mppic/critic_function.hpp"
-#include "mppic/utils.hpp"
+
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+
 #include "mppic/parameters_handler.hpp"
-#include "mppic/models/critic_function_data.hpp"
+#include "mppic/utils.hpp"
+#include "mppic/optimizers/xtensor/models/critic_function_data.hpp"
+#include "mppic/optimizers/xtensor/critic_function.hpp"
 
 namespace mppi
 {

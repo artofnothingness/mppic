@@ -1,6 +1,6 @@
 // Copyright 2022 FastSense, Samsung Research
 
-#include "mppic/critics/prefer_forward_critic.hpp"
+#include "mppic/optimizers/xtensor/critics/prefer_forward_critic.hpp"
 
 namespace mppi::critics
 {

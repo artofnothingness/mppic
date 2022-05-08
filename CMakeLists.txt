@@ -28,23 +28,24 @@ nav2_package()
 
 add_library(mppic SHARED
   src/controller.cpp
-  src/optimizer.cpp
   src/optimizer_core_interface.cpp
-  src/critic_manager.cpp
   src/trajectory_visualizer.cpp
   src/path_handler.cpp
   src/parameters_handler.cpp
+
+  src/optimizers/xtensor/optimizer.cpp
+  src/optimizers/xtensor/critic_manager.cpp
 )
 
 add_library(critics SHARED
-  src/critics/reference_trajectory_critic.cpp
-  src/critics/goal_angle_critic.cpp
-  src/critics/path_angle_critic.cpp
-  src/critics/goal_critic.cpp
-  src/critics/obstacles_critic.cpp
-  src/critics/prefer_forward_critic.cpp
-  src/critics/twirling_critic.cpp
-  src/critics/local_goal_critic.cpp
+  src/optimizers/xtensor/critics/reference_trajectory_critic.cpp
+  src/optimizers/xtensor/critics/goal_angle_critic.cpp
+  src/optimizers/xtensor/critics/path_angle_critic.cpp
+  src/optimizers/xtensor/critics/goal_critic.cpp
+  src/optimizers/xtensor/critics/obstacles_critic.cpp
+  src/optimizers/xtensor/critics/prefer_forward_critic.cpp
+  src/optimizers/xtensor/critics/twirling_critic.cpp
+  src/optimizers/xtensor/critics/local_goal_critic.cpp
 )
 
 set(libraries mppic critics)

@@ -1,5 +1,5 @@
 // Copyright 2022 FastSense, Samsung Research
-#include "mppic/critics/twirling_critic.hpp"
+#include "mppic/optimizers/xtensor/critics/twirling_critic.hpp"
 
 namespace mppi::critics
 {

@@ -13,9 +13,10 @@
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/optimizer.hpp"
+#include "mppic/optimizers/xtensor/optimizer.hpp"
+#include "mppic/optimizers/xtensor/motion_models.hpp"
+
 #include "mppic/parameters_handler.hpp"
-#include "mppic/motion_models.hpp"
 
 #include "utils/utils.hpp"
 

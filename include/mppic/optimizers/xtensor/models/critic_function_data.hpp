@@ -5,7 +5,7 @@
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav2_core/goal_checker.hpp"
-#include "mppic/models/state.hpp"
+#include "mppic/optimizers/xtensor/models/state.hpp"
 
 
 namespace mppi::models

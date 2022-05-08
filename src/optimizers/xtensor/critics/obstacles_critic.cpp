@@ -1,5 +1,5 @@
 // Copyright 2022 FastSense, Samsung Research
-#include "mppic/critics/obstacles_critic.hpp"
+#include "mppic/optimizers/xtensor/critics/obstacles_critic.hpp"
 
 #include <xtensor/xaxis_slice_iterator.hpp>
 

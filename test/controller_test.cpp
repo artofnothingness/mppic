@@ -8,7 +8,7 @@
 #include <nav2_costmap_2d/costmap_2d_ros.hpp>
 
 #include "mppic/controller.hpp"
-#include "mppic/optimizer.hpp"
+#include "mppic/optimizers/xtensor/optimizer.hpp"
 
 #include "utils/utils.hpp"
 

@@ -1,5 +1,5 @@
 // Copyright 2022 FastSense, Samsung Research
-#include "mppic/critics/local_goal_critic.hpp"
+#include "mppic/optimizers/xtensor/critics/local_goal_critic.hpp"
 
 #include <xtensor/xmath.hpp>
 #include <xtensor/xsort.hpp>

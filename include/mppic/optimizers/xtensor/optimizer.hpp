@@ -10,16 +10,15 @@
 #include <xtensor/xview.hpp>
 
 #include "mppic/optimizer_core_interface.hpp"
-#include "mppic/optimizer_ros_interface.hpp"
 
-#include "mppic/motion_models.hpp"
-#include "mppic/models/state.hpp"
-#include "mppic/critic_manager.hpp"
+#include "mppic/optimizers/xtensor/motion_models.hpp"
+#include "mppic/optimizers/xtensor/critic_manager.hpp"
+#include "mppic/optimizers/xtensor/models/state.hpp"
 
 namespace mppi
 {
 
-class Optimizer : public IOptimizerCore, public IOptimizerROS
+class Optimizer : public IOptimizerCore
 {
 public:
   using model_t = xt::xtensor<double, 2>(

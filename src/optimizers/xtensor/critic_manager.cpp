@@ -1,5 +1,5 @@
 // Copyright 2022 FastSense, Samsung Research
-#include "mppic/critic_manager.hpp"
+#include "mppic/optimizers/xtensor/critic_manager.hpp"
 
 namespace mppi
 {
