@@ -83,6 +83,10 @@ if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
+if(BUILD_BENCHMARKS)
+  add_subdirectory(test/benchmarks/optimizers/xtensor)
+endif()
+
 ament_export_libraries(${libraries})
 ament_export_dependencies(${dependencies_pkgs})
 ament_export_include_directories(include)

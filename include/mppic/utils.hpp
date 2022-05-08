@@ -29,18 +29,6 @@ namespace mppi::utils
 {
 
 
-class Timer() {
-  Timer() {
-
-  }
-
-  ~Timer() {
-
-  }
-
-}
-
-
 template<typename T, typename S>
 geometry_msgs::msg::TwistStamped toTwistStamped(
   const T & velocities, xtensor::models::ControlSequnceIdxes idx,

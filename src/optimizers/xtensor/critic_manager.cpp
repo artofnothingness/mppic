@@ -1,8 +1,6 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/optimizers/xtensor/critic_manager.hpp"
 
-#include "mppic/context.hpp"
-
 namespace mppi::xtensor
 {
 
@@ -14,7 +12,6 @@ void CriticManager::on_configure(
   costmap_ros_ = costmap_ros;
   name_ = name;
   auto node = parent_.lock();
-  clock_ = node->get_clock();
   logger_ = node->get_logger();
   parameters_handler_ = param_handler;
 
@@ -27,7 +24,6 @@ void CriticManager::getParams()
   auto node = parent_.lock();
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(critic_names_, "critics", std::vector<std::string>{}, ParameterType::Static);
-  getParam(profile_, "profile", false);
 }
 
 void CriticManager::loadCritics()
@@ -57,17 +53,7 @@ void CriticManager::evalTrajectoriesScores(
   models::CriticFunctionData & data) const
 {
   for (size_t q = 0; q < critics_.size(); q++) {
-    if constexpr (context::profile) {
-      auto start = std::chrono::high_resolution_clock::now();
-      critics_[q]->score(data);
-      auto stop = std::chrono::high_resolution_clock::now();
-      size_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
-      RCLCPP_INFO_THROTTLE(
-        logger_, *clock_, 500, "Critic %s score take: %ld [ms]",
-        critics_[q]->getName().c_str(), duration);
-    } else {
-      critics_[q]->score(data);
-    }
+    critics_[q]->score(data);
   }
 
 }
