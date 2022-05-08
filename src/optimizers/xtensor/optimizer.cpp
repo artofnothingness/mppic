@@ -323,4 +323,10 @@ span3d Optimizer::getGeneratedTrajectories()
   return span3d{generated_trajectories_.data(), settings_.batch_size, settings_.time_steps, 3};
 }
 
+#include <pluginlib/class_list_macros.hpp>
+
+PLUGINLIB_EXPORT_CLASS(
+  mppi::Optimizer,
+  mppi::IOptimizerCore)
+
 }  // namespace mppi

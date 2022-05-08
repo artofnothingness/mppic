@@ -4,8 +4,6 @@
 #include "mppic/controller.hpp"
 #include "mppic/utils.hpp"
 
-#include "mppic/optimizers/xtensor/optimizer.hpp"
-
 namespace mppi
 {
 
@@ -27,7 +25,15 @@ void Controller::configure(
 
 
   // TODO make factory, change name
-  optimizer_ = std::make_unique<mppi::Optimizer>();
+  loader_ = std::make_unique<pluginlib::ClassLoader<IOptimizerCore>>(
+      "mppic", "mppi::IOptimizerCore");
+
+  std::string fullname = "mppi::Optimizer";
+
+  optimizer_ = std::unique_ptr<IOptimizerCore>(
+    loader_->createUnmanagedInstance(fullname));
+
+  RCLCPP_INFO(logger_, "Optimizer loaded : %s", fullname.c_str());
 
   // Configure composed objects
   optimizer_->initialize(parent_, name_, costmap_ros_, parameters_handler_.get());

@@ -50,8 +50,9 @@ protected:
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
-  std::unique_ptr<ParametersHandler> parameters_handler_;
+  std::unique_ptr<pluginlib::ClassLoader<IOptimizerCore>> loader_;
   std::unique_ptr<IOptimizerCore> optimizer_;
+  std::unique_ptr<ParametersHandler> parameters_handler_;
   PathHandler path_handler_;
   TrajectoryVisualizer trajectory_visualizer_;
 

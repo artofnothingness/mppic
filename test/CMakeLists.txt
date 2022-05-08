@@ -12,7 +12,7 @@ foreach(name IN LISTS TEST_NAMES)
     ${dependencies_pkgs}
   )
   target_link_libraries(${name}
-    mppic
+    mppic xtensor-critics xtensor-optimizer
   )
 
   if(${TEST_DEBUG_INFO})

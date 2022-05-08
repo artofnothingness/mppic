@@ -1,5 +1,5 @@
 <class_libraries>
-  <library path="critics">
+  <library path="xtensor-critics">
 
     <class type="mppi::critics::ObstaclesCritic" base_class_type="mppi::critics::CriticFunction">
       <description>mppi critic for obstacle avoidance</description>

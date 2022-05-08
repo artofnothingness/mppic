@@ -32,12 +32,14 @@ add_library(mppic SHARED
   src/trajectory_visualizer.cpp
   src/path_handler.cpp
   src/parameters_handler.cpp
+)
 
+add_library(xtensor-optimizer SHARED
   src/optimizers/xtensor/optimizer.cpp
   src/optimizers/xtensor/critic_manager.cpp
 )
 
-add_library(critics SHARED
+add_library(xtensor-critics SHARED
   src/optimizers/xtensor/critics/reference_trajectory_critic.cpp
   src/optimizers/xtensor/critics/goal_angle_critic.cpp
   src/optimizers/xtensor/critics/path_angle_critic.cpp
@@ -48,16 +50,18 @@ add_library(critics SHARED
   src/optimizers/xtensor/critics/local_goal_critic.cpp
 )
 
-set(libraries mppic critics)
+set(libraries mppic xtensor-critics xtensor-optimizer)
 
 foreach(lib IN LISTS libraries)
   target_compile_options(${lib} PUBLIC -fconcepts)
   target_include_directories(${lib} PUBLIC include)
-  target_link_libraries(${lib} xtensor)
   ament_target_dependencies(${lib} ${dependencies_pkgs})
 endforeach()
 
-install(TARGETS mppic critics
+target_link_libraries(xtensor-optimizer xtensor)
+target_link_libraries(xtensor-critics xtensor)
+
+install(TARGETS mppic xtensor-optimizer xtensor-critics
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -78,7 +82,8 @@ endif()
 ament_export_libraries(${libraries})
 ament_export_dependencies(${dependencies_pkgs})
 ament_export_include_directories(include)
-pluginlib_export_plugin_description_file(nav2_core mppic.xml)
-pluginlib_export_plugin_description_file(mppic critics.xml)
+pluginlib_export_plugin_description_file(nav2_core plugins/mppic.xml)
+pluginlib_export_plugin_description_file(mppic plugins/optimizers.xml)
+pluginlib_export_plugin_description_file(mppic plugins/xtensor-critics.xml)
 
 ament_package()

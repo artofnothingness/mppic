@@ -50,7 +50,6 @@ public:
   virtual span3d getGeneratedTrajectories() = 0;
   virtual span2d getOptimizedTrajectory() = 0;
 
-
   void setConstraints(double speed_limit, bool percentage);
 
 protected:
