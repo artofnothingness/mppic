@@ -33,18 +33,15 @@ RosLockGuard g_rclcpp;
 
 TEST_CASE("Optimizer doesn't fail")
 {
+  // Settings
+  TestCostmapSettings cost_map_settings{};
+  const double path_step = cost_map_settings.resolution;
+  TestPose start_pose = cost_map_settings.getCenterPose();
+  auto costmap_ros = getDummyCostmapRos(cost_map_settings);
+
   bool consider_footprint = GENERATE(true, false);
   std::string motion_model = GENERATE("DiffDrive", "Omni");
   unsigned int path_points = GENERATE(10u);
-
-  // Settings
-  TestCostmapSettings cost_map_settings{};
-  TestOptimizerSettings optimizer_settings{1, 15, 10.0, motion_model, consider_footprint};
-
-  const double path_step = cost_map_settings.resolution;
-  TestPose start_pose = cost_map_settings.getCenterPose();
-  TestPathSettings path_settings{start_pose, path_points, path_step, path_step};
-
   auto critic = GENERATE(as<std::string>{}, 
                         "GoalCritic", 
                         "GoalAngleCritic", 
@@ -55,11 +52,12 @@ TEST_CASE("Optimizer doesn't fail")
                         "PathAngleCritic", 
                         "TwirlingCritic");
 
+  TestOptimizerSettings optimizer_settings{1, 15, 10.0, motion_model, consider_footprint};
+  TestPathSettings path_settings{start_pose, path_points, path_step, path_step};
+
   std::vector<std::string> critics = {{critic}};
 
   print_info(optimizer_settings, path_settings, critics);
-
-  auto costmap_ros = getDummyCostmapRos(cost_map_settings);
   auto node = getDummyNode(optimizer_settings, critics);
   auto parameters_handler = std::make_unique<mppi::ParametersHandler>(node);
   auto optimizer = getDummyOptimizer(node, costmap_ros, parameters_handler.get());
@@ -84,12 +82,15 @@ TEST_CASE("Optimizer doesn't fail")
   auto path = getIncrementalDummyPath(node, path_settings);
 
   nav2_core::GoalChecker * dummy_goal_checker{nullptr};
-  REQUIRE_NOTHROW(optimizer.evalControl(pose, velocity, path, dummy_goal_checker));
 
+#ifdef DO_BENCHMARKS
   BENCHMARK("evalControl Benchmark") {
       nav2_core::GoalChecker * dummy_goal_checker{nullptr};
       return optimizer.evalControl(pose, velocity, path, dummy_goal_checker);
   };
+#else
+  REQUIRE_NOTHROW(optimizer.evalControl(pose, velocity, path, dummy_goal_checker));
+#endif
 }
 
 

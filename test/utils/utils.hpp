@@ -100,7 +100,7 @@ void print_info(TestOptimizerSettings os, TestPathSettings ps, std::vector<std::
     "Time_steps " << os.time_steps << "\n" <<
     "Motion model " << os.motion_model << "\n"
     "Is footprint considering " << os.consider_footprint << "\n" <<
-    "critics used: " << ss.str() << std::endl;
+    "Critics used: " << ss.str() << "\n\n" ;
 }
 
 void addObstacle(nav2_costmap_2d::Costmap2D * costmap, TestObstaclesSettings s)

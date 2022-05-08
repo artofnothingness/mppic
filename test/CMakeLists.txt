@@ -17,7 +17,7 @@ foreach(name IN LISTS TEST_NAMES)
     mppic xtensor-critics xtensor-optimizer Catch2::Catch2WithMain
   )
 
-  if(${TEST_DEBUG_INFO})
-    target_compile_definitions(${name} PUBLIC -DTEST_DEBUG_INFO)
+  if(${DO_BENCHMARKS})
+    target_compile_definitions(${name} PUBLIC -DO_BENCHMARKS)
   endif()
 endforeach()
