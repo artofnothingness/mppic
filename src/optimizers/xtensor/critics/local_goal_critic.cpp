@@ -11,13 +11,14 @@ void LocalGoalCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
 
-  getParam(goal_count_, "goal_count", 2);
-  getParam(goal_offset_, "goal_offset", 2);
-
+  getParam(consider_angle_, "consider_angle_", true);
   getParam(angle_offset_, "angle_offset", 6);
   getParam(angle_cost_power_, "angle_cost_power", 1);
   getParam(angle_cost_weight_, "angle_cost_weight", 1.0);
 
+  getParam(consider_distance_, "consider_distance", true);
+  getParam(distance_goal_count_, "disance_goal_count", 2);
+  getParam(distance_offset_, "distance_offset", 2);
   getParam(distance_cost_power_, "distance_cost_power", 1);
   getParam(distance_cost_weight_, "distance_cost_weight", 1.0);
 
@@ -26,36 +27,47 @@ void LocalGoalCritic::initialize()
 
 void LocalGoalCritic::evalScore(models::CriticFunctionData & data)
 {
-  auto last_points_ext = xt::view(data.trajectories, xt::all(), -1, xt::newaxis(), xt::range(0, 2));
+
   auto path_points = xt::view(
     data.path, xt::all(), xt::range(0, 2));
 
-  auto distances = xt::norm_l2(last_points_ext - path_points, {2});
+  auto find_furthest_point = [&] () {
+    auto last_points_ext = xt::view(data.trajectories, xt::all(), -1, xt::newaxis(), xt::range(0, 2));
+    auto distances = xt::norm_l2(last_points_ext - path_points, {2});
+    size_t max_id_by_trajectories = 0;
+    double min_distance_by_path = std::numeric_limits<double>::max();
 
-  size_t max_id_by_trajectories = 0;
-  double min_distance_by_path = std::numeric_limits<double>::max();
-  for (size_t i = 0; i < distances.shape(0); i++) {
-    size_t min_id_by_path = 0;
-    for (size_t j = 0; j < distances.shape(1); j++) {
-      if (min_distance_by_path < distances(i, j)) {
-        min_distance_by_path = distances(i, j);
-        min_id_by_path = j;
+    for (size_t i = 0; i < distances.shape(0); i++) {
+      size_t min_id_by_path = 0;
+      for (size_t j = 0; j < distances.shape(1); j++) {
+        if (min_distance_by_path < distances(i, j)) {
+          min_distance_by_path = distances(i, j);
+          min_id_by_path = j;
+        }
       }
+      max_id_by_trajectories = std::max(max_id_by_trajectories, min_id_by_path);
     }
-    max_id_by_trajectories = std::max(max_id_by_trajectories, min_id_by_path);
+    return max_id_by_trajectories;
+  };
+
+  size_t furthest_reached_path_point;
+  if(data.furthest_reached_path_point) {
+    furthest_reached_path_point = *data.furthest_reached_path_point;
+  } else {
+    furthest_reached_path_point = find_furthest_point();
   }
 
-  auto offset = std::min(max_id_by_trajectories + goal_offset_, path_points.shape(0) - 1);
-  auto upper_distance_offset = std::min(offset + goal_count_, path_points.shape(0) - 1);
+  auto offset = std::min(furthest_reached_path_point + distance_offset_, path_points.shape(0) - 1);
+  auto upper_distance_offset = std::min(offset + distance_goal_count_, path_points.shape(0) - 1);
 
   auto angle_upper_offset = std::min(
-    max_id_by_trajectories + angle_offset_, path_points.shape(
+    furthest_reached_path_point + angle_offset_, path_points.shape(
       0) - 1);
 
   size_t threshold_idx = static_cast<size_t>(
     static_cast<double>(data.path.shape(0) - 1) * stop_usage_path_reached_ratio_);
 
-  if (upper_distance_offset < threshold_idx) {
+  if (consider_distance_ && upper_distance_offset < threshold_idx) {
     auto path_interval = xt::view(path_points, xt::range(offset, upper_distance_offset), xt::all());
     auto trajectories_points = xt::view(
       data.trajectories, xt::all(), xt::all(),
@@ -65,7 +77,7 @@ void LocalGoalCritic::evalScore(models::CriticFunctionData & data)
     data.costs += xt::pow(distance_cost_weight_ * mean_distance_to_furthest, distance_cost_power_);
   }
 
-  if (angle_upper_offset < threshold_idx) {
+  if (consider_angle_ && angle_upper_offset < threshold_idx) {
     auto goal_x = xt::view(data.path, angle_upper_offset, 0);
     auto goal_y = xt::view(data.path, angle_upper_offset, 1);
 

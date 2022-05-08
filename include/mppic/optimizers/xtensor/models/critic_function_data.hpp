@@ -21,6 +21,7 @@ struct CriticFunctionData
 
   xt::xtensor<double, 1> & costs;
   bool & stop_flag;
+  std::optional<size_t> furthest_reached_path_point;
 };
 
 }  // namespace mppi::xtensor::models

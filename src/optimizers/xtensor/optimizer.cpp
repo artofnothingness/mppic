@@ -114,7 +114,7 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
 
     auto data =
       models::CriticFunctionData{state_, generated_trajectories_,
-      utils::toTensor(plan), goal_checker, costs, stop_flag};
+      utils::toTensor(plan), goal_checker, costs, stop_flag, std::nullopt};
 
     critic_manager_.evalTrajectoriesScores(data);
     updateControlSequence(costs);

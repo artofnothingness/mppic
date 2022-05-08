@@ -16,13 +16,15 @@ public:
   void evalScore(models::CriticFunctionData & data) override;
 
 protected:
-  size_t goal_count_{0};
 
+  bool consider_angle_;
   size_t angle_offset_{0};
   unsigned int angle_cost_power_{0};
   double angle_cost_weight_{0};
 
-  size_t goal_offset_{0};
+  bool consider_distance_;
+  size_t distance_goal_count_{0};
+  size_t distance_offset_{0};
   unsigned int distance_cost_power_{0};
   double distance_cost_weight_{0};
 

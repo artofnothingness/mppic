@@ -62,10 +62,12 @@ void ReferenceTrajectoryCritic::evalScore(models::CriticFunctionData & data)
       return std::hypot(dx, dy);
     };
 
+  size_t max_s = 0;
   for (size_t t = 0; t < trajectories_count; ++t) {
     double mean_dist = 0;
     for (size_t p = 0; p < trajectories_points_count; ++p) {
       double min_dist = std::numeric_limits<double>::max();
+      size_t min_s = 0;
       for (size_t s = 0; s < reference_segments_count; s += reference_point_step_) {
         xt::xtensor_fixed<double, xt::xshape<2>> P;
         if (segment_short(s)) {
@@ -82,14 +84,19 @@ void ReferenceTrajectoryCritic::evalScore(models::CriticFunctionData & data)
           P[1] = P1(s, 1) + u * P2_P1_diff(s, 1);
         }
         auto dist = evaluate_dist(std::move(P), t, p);
-        min_dist = std::min(min_dist, dist);
+        if (dist < min_dist) {
+          min_s = s;
+          min_dist = dist;
+        }
       }
+      max_s = std::max(max_s, min_s);
       mean_dist += min_dist;
     }
 
     cost(t) = mean_dist / trajectories_points_count;
   }
 
+  data.furthest_reached_path_point = max_s;
   data.costs += xt::pow(cost * reference_cost_weight_, reference_cost_power_);
 }
 
