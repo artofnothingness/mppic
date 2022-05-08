@@ -56,25 +56,17 @@ struct TestPathSettings
  *
  * @param params_ container for optimizer's parameters.
  */
-void setUpOptimizerParams(
-  int iter, int time_steps, double lookahead_dist, std::string motion_model,
-  bool /*consider_footprint*/, std::vector<rclcpp::Parameter> & params_,
-  std::string node_name = std::string("dummy"))
+void setUpOptimizerParams(const TestOptimizerSettings &s, 
+                          const std::vector<std::string> & critics, 
+                          std::vector<rclcpp::Parameter> & params_, std::string node_name = std::string("dummy"))
 {
-  double dummy_freq = 10.0;
-  params_.emplace_back(rclcpp::Parameter(node_name + ".iteration_count", iter));
-  params_.emplace_back(rclcpp::Parameter(node_name + ".time_steps", time_steps));
-  params_.emplace_back(rclcpp::Parameter(node_name + ".lookahead_dist", lookahead_dist));
-  params_.emplace_back(rclcpp::Parameter(node_name + ".motion_model", motion_model));
+  constexpr double dummy_freq = 10.0;
+  params_.emplace_back(rclcpp::Parameter(node_name + ".iteration_count", s.iteration_count));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".time_steps", s.time_steps));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".lookahead_dist", s.lookahead_distance));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".motion_model", s.motion_model));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".critics", critics));
   params_.emplace_back(rclcpp::Parameter("controller_frequency", dummy_freq));
-
-  std::string critic_scorer_name = node_name;
-
-  std::vector<std::string> critics = {
-    "GoalCritic", "GoalAngleCritic", "PathAngleCritic", "ObstaclesCritic", "PreferForwardCritic",
-    "ReferenceTrajectoryCritic", "TwirlingCritic"};
-
-  params_.emplace_back(rclcpp::Parameter(critic_scorer_name + ".critics", critics));
 }
 
 void setUpControllerParams(

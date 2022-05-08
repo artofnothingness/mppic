@@ -1,6 +1,5 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#ifndef MPPIC__UTILS_HPP_
-#define MPPIC__UTILS_HPP_
+#pragma once
 
 #include <algorithm>
 #include <chrono>
@@ -127,5 +126,3 @@ auto shortest_angular_distance(
 }
 
 }  // namespace mppi::utils
-
-#endif  // MPPIC__UTILS_HPP_

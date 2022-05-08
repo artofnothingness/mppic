@@ -1,22 +1,19 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
+
 #pragma once
+
+#include <experimental/mdspan>
 
 #include <string>
 #include <memory>
 
-// 3rdparty
-#include <experimental/mdspan>
-
-// ros
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
-// msgs
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
 
-// nav2
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav2_core/goal_checker.hpp"
 

@@ -39,4 +39,6 @@ void PreferForwardCritic::evalScore(models::CriticFunctionData & data)
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(mppi::xtensor::critics::PreferForwardCritic, mppi::xtensor::critics::CriticFunction)
+PLUGINLIB_EXPORT_CLASS(
+  mppi::xtensor::critics::PreferForwardCritic,
+  mppi::xtensor::critics::CriticFunction)

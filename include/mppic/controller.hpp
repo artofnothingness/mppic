@@ -1,6 +1,6 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#ifndef MPPIC__CONTROLLER_HPP_
-#define MPPIC__CONTROLLER_HPP_
+//
+#pragma once
 
 #include <string>
 #include <memory>
@@ -62,5 +62,3 @@ protected:
 };
 
 }  // namespace mppi
-
-#endif  // MPPIC__CONTROLLER_HPP_

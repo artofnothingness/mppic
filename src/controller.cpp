@@ -23,7 +23,9 @@ void Controller::configure(
 
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(visualize_, "visualize", false);
-  getParam(optimizer_name_, "optimizer", std::string("mppi::xtensor::Optimizer"), ParameterType::Static);
+  getParam(
+    optimizer_name_, "optimizer", std::string(
+      "mppi::xtensor::Optimizer"), ParameterType::Static);
 
   loader_ = std::make_unique<pluginlib::ClassLoader<IOptimizerCore>>(
     "mppic", "mppi::IOptimizerCore");

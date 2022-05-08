@@ -1,6 +1,5 @@
 // Copyright 2022 FastSense, Samsung Research
-#ifndef MPPIC__MODELS__CONTROL_SEQUENCE_HPP_
-#define MPPIC__MODELS__CONTROL_SEQUENCE_HPP_
+#pragma once
 
 #include <array>
 #include <cstdint>
@@ -59,5 +58,3 @@ struct ControlSequence
 };
 
 }  // namespace mppi::xtensor::models
-
-#endif  // MPPIC__MODELS__CONTROL_SEQUENCE_HPP_

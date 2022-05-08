@@ -111,7 +111,6 @@ void TrajectoryVisualizer::on_deactivate()
 
 void TrajectoryVisualizer::add(const span2d & trajectory)
 {
-
   auto size = trajectory.extent(0);
   if (!size) {
     return;
@@ -169,8 +168,6 @@ void TrajectoryVisualizer::visualize(nav_msgs::msg::Path plan)
 
   auto plan_ptr = std::make_unique<nav_msgs::msg::Path>(std::move(plan));
   transformed_path_pub_->publish(std::move(plan_ptr));
-
 }
-
 
 }  // namespace mppi

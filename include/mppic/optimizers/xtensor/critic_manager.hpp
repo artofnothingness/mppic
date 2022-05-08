@@ -1,6 +1,5 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#ifndef MPPIC__CRITIC_MANAGER_HPP_
-#define MPPIC__CRITIC_MANAGER_HPP_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -53,5 +52,3 @@ protected:
 };
 
 }  // namespace mppi::xtensor
-
-#endif  // MPPIC__CRITIC_MANAGER_HPP_

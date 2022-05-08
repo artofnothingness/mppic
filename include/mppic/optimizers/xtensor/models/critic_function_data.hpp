@@ -1,4 +1,5 @@
 // Copyright 2022 FastSense, Samsung Research
+
 #pragma once
 
 #include <xtensor/xtensor.hpp>
@@ -22,4 +23,4 @@ struct CriticFunctionData
   bool & stop_flag;
 };
 
-}  // namespace mppi::models
+}  // namespace mppi::xtensor::models

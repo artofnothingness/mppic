@@ -86,23 +86,21 @@ void addObstacle(
   }
 }
 
-void print_info(TestOptimizerSettings os, TestPathSettings ps)
+void print_info(TestOptimizerSettings os, TestPathSettings ps, std::vector<std::string> critics)
 {
+  std::stringstream ss;
+  for (auto str : critics) {
+    ss << str << " ";
+  }
+
   std::cout <<
     "Parameters of MPPI Planner:" <<
     "Points in path " << ps.poses_count << "\n" <<
     "Iteration_count " << os.iteration_count << "\n" <<
     "Time_steps " << os.time_steps << "\n" <<
     "Motion model " << os.motion_model << "\n"
-    "Is footprint considering " << os.consider_footprint << "\n" << std::endl;
-}
-
-void print_info(TestOptimizerSettings os, unsigned int poses_count)
-{
-  std::cout <<
-    "Points in path " << poses_count << "\niteration_count " << os.iteration_count
-            << "\ntime_steps " << os.time_steps
-            << "\nMotion model : " << os.motion_model << std::endl;
+    "Is footprint considering " << os.consider_footprint << "\n" <<
+    "critics used: " << ss.str() << std::endl;
 }
 
 void addObstacle(nav2_costmap_2d::Costmap2D * costmap, TestObstaclesSettings s)

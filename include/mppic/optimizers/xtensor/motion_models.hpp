@@ -1,6 +1,5 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#ifndef MPPIC__MOTION_MODELS_HPP_
-#define MPPIC__MOTION_MODELS_HPP_
+#pragma once
 
 #include <cstdint>
 
@@ -58,5 +57,3 @@ public:
 };
 
 }  // namespace mppi::xtensor
-
-#endif  // MPPIC__MOTION_MODELS_HPP_

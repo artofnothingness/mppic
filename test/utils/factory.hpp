@@ -31,13 +31,11 @@ auto setHeader(auto && msg, auto node, std::string frame)
 }
 }  // namespace detail
 
-rclcpp::NodeOptions getOptimizerOptions(TestOptimizerSettings s)
+rclcpp::NodeOptions getOptimizerOptions(TestOptimizerSettings s, const std::vector<std::string> &critics)
 {
   std::vector<rclcpp::Parameter> params;
   rclcpp::NodeOptions options;
-  setUpOptimizerParams(
-    s.iteration_count, s.time_steps, s.lookahead_distance, s.motion_model, s.consider_footprint,
-    params);
+  setUpOptimizerParams(s, critics, params);
   options.parameter_overrides(params);
   return options;
 }
@@ -77,9 +75,12 @@ std::shared_ptr<nav2_costmap_2d::Costmap2DROS> getDummyCostmapRos(TestCostmapSet
 }
 
 std::shared_ptr<rclcpp_lifecycle::LifecycleNode>
-getDummyNode(TestOptimizerSettings s, std::string node_name = std::string("dummy"))
+getDummyNode(
+  TestOptimizerSettings s, std::vector<std::string> critics,
+  std::string node_name = std::string("dummy"))
 {
-  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name, getOptimizerOptions(s));
+  auto node =
+    std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name, getOptimizerOptions(s, critics));
   return node;
 }
 

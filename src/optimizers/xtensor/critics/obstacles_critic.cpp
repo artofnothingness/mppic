@@ -74,7 +74,7 @@ bool ObstaclesCritic::inCollision(unsigned char cost) const
     costmap_ros_->getLayeredCostmap()->isTrackingUnknown();
 
   switch (cost) {
-    using namespace nav2_costmap_2d;
+    using namespace nav2_costmap_2d; // NOLINT
     case (LETHAL_OBSTACLE):
       return true;
     case (INSCRIBED_INFLATED_OBSTACLE):

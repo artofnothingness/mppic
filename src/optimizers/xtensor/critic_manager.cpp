@@ -55,7 +55,6 @@ void CriticManager::evalTrajectoriesScores(
   for (size_t q = 0; q < critics_.size(); q++) {
     critics_[q]->score(data);
   }
-
 }
 
 }  // namespace mppi::xtensor

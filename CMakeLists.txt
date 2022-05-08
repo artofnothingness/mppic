@@ -77,14 +77,10 @@ install(DIRECTORY include/
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_catch2 REQUIRED)
   set(ament_cmake_copyright_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
   add_subdirectory(test)
-endif()
-
-if(BUILD_BENCHMARKS)
-  add_subdirectory(test/benchmarks/optimizers/xtensor)
 endif()
 
 ament_export_libraries(${libraries})

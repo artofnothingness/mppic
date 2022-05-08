@@ -115,8 +115,8 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
     auto data =
       models::CriticFunctionData{state_, generated_trajectories_,
       utils::toTensor(plan), goal_checker, costs, stop_flag};
-    critic_manager_.evalTrajectoriesScores(data);
 
+    critic_manager_.evalTrajectoriesScores(data);
     updateControlSequence(costs);
   }
 
@@ -329,4 +329,4 @@ PLUGINLIB_EXPORT_CLASS(
   mppi::xtensor::Optimizer,
   mppi::IOptimizerCore)
 
-}  // namespace mppi
+}  // namespace mppi::xtensor

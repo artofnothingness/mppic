@@ -1,6 +1,6 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#ifndef MPPIC__MODELS__CONSTRAINTS_HPP_
-#define MPPIC__MODELS__CONSTRAINTS_HPP_
+
+#pragma once
 
 namespace mppi::models
 {
@@ -21,5 +21,3 @@ struct SamplingStd
 };
 
 }  // namespace mppi::models
-
-#endif  // MPPIC__MODELS__CONSTRAINTS_HPP_

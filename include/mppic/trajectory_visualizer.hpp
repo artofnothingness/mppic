@@ -1,19 +1,15 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#ifndef MPPIC__TRAJECTORY_VISUALIZER_HPP_
-#define MPPIC__TRAJECTORY_VISUALIZER_HPP_
+#pragma once
+
+#include <experimental/mdspan>
 
 #include <memory>
 #include <string>
 
-// 3rdparty
-#include <experimental/mdspan>
-
-// ros
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
-// msgs
 #include "nav_msgs/msg/path.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 
@@ -58,5 +54,3 @@ protected:
 };
 
 }  // namespace mppi
-
-#endif  // MPPIC__TRAJECTORY_VISUALIZER_HPP_

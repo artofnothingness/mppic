@@ -1,6 +1,6 @@
-// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#ifndef MPPIC__CRITIC_FUNCTION_HPP_
-#define MPPIC__CRITIC_FUNCTION_HPP_
+// Copyright 2022 artofnothingness Alexey Budyakov, Samsung Research
+
+#pragma once
 
 #include <string>
 #include <memory>
@@ -64,5 +64,3 @@ protected:
 };
 
 }  // namespace mppi::xtensor::critics
-
-#endif  // MPPIC__CRITIC_FUNCTION_HPP_

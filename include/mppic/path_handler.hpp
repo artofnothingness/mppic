@@ -1,6 +1,5 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#ifndef MPPIC__PATH_HANDLER_HPP_
-#define MPPIC__PATH_HANDLER_HPP_
+#pragma once
 
 #include <vector>
 #include <utility>
@@ -78,5 +77,3 @@ protected:
   double transform_tolerance_{0};
 };
 }  // namespace mppi
-
-#endif  // MPPIC__PATH_HANDLER_HPP_

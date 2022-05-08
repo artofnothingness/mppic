@@ -1,6 +1,5 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#ifndef MPPIC__OPTIMIZER_HPP_
-#define MPPIC__OPTIMIZER_HPP_
+#pragma once
 
 #include <string>
 #include <memory>
@@ -110,5 +109,3 @@ protected:
 };
 
 }  // namespace mppi::xtensor
-
-#endif  // MPPIC__OPTIMIZER_HPP_
