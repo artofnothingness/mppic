@@ -52,6 +52,8 @@ protected:
 
   std::unique_ptr<pluginlib::ClassLoader<IOptimizerCore>> loader_;
   std::unique_ptr<IOptimizerCore> optimizer_;
+  std::string optimizer_name_;
+
   std::unique_ptr<ParametersHandler> parameters_handler_;
   PathHandler path_handler_;
   TrajectoryVisualizer trajectory_visualizer_;

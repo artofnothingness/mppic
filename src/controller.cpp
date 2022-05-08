@@ -19,21 +19,18 @@ void Controller::configure(
   parameters_handler_ = std::make_unique<ParametersHandler>(parent);
 
   auto node = parent_.lock();
-  // Get high-level controller parameters
+
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(visualize_, "visualize", false);
+  getParam(optimizer_name_, "optimizer", std::string("mppi::Optimizer"), ParameterType::Static);
 
-
-  // TODO make factory, change name
   loader_ = std::make_unique<pluginlib::ClassLoader<IOptimizerCore>>(
-      "mppic", "mppi::IOptimizerCore");
-
-  std::string fullname = "mppi::Optimizer";
+    "mppic", "mppi::IOptimizerCore");
 
   optimizer_ = std::unique_ptr<IOptimizerCore>(
-    loader_->createUnmanagedInstance(fullname));
+    loader_->createUnmanagedInstance(optimizer_name_));
 
-  RCLCPP_INFO(logger_, "Optimizer loaded : %s", fullname.c_str());
+  RCLCPP_INFO(logger_, "Optimizer loaded : %s", optimizer_name_.c_str());
 
   // Configure composed objects
   optimizer_->initialize(parent_, name_, costmap_ros_, parameters_handler_.get());
