@@ -40,9 +40,9 @@ TEST_CASE("Optimizer doesn't fail")
   auto costmap_ros = getDummyCostmapRos(cost_map_settings);
 
   bool consider_footprint = GENERATE(true, false);
-  std::string motion_model = GENERATE("DiffDrive", "Omni");
   unsigned int path_points = GENERATE(10u);
-  auto critic = GENERATE(as<std::string>{}, 
+  std::string motion_model = GENERATE("DiffDrive", "Omni");
+  std::string critic = GENERATE(as<std::string>{}, 
                         "GoalCritic", 
                         "GoalAngleCritic", 
                         "ObstaclesCritic", 

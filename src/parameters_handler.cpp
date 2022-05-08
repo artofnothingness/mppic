@@ -9,6 +9,7 @@ ParametersHandler::ParametersHandler(
 {
   node_ = parent;
   auto node = node_.lock();
+  node_name_ = node->get_name();
   logger_ = node->get_logger();
 }
 
@@ -19,6 +20,9 @@ void ParametersHandler::start()
     std::bind(
       &ParametersHandler::dynamicParamsCallback, this,
       std::placeholders::_1));
+
+  auto get_param = getParamGetter(node_name_);
+  get_param(verbose_, "verbose", false);
 }
 
 rcl_interfaces::msg::SetParametersResult
