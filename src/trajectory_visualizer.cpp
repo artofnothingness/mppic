@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include <memory>
 
 #include "mppic/trajectory_visualizer.hpp"

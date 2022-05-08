@@ -56,6 +56,10 @@ foreach(lib IN LISTS libraries)
   target_compile_options(${lib} PUBLIC -fconcepts)
   target_include_directories(${lib} PUBLIC include)
   ament_target_dependencies(${lib} ${dependencies_pkgs})
+
+  if(${PROFILE})
+    target_compile_definitions(${lib} PUBLIC -DPROFILE)
+  endif()
 endforeach()
 
 target_link_libraries(xtensor-optimizer xtensor)

@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #pragma once
 
 #include <memory>
@@ -90,9 +90,9 @@ getDummyNode(rclcpp::NodeOptions options, std::string node_name = std::string("d
   return node;
 }
 
-mppi::Optimizer getDummyOptimizer(auto node, auto costmap_ros, auto * params_handler)
+mppi::xtensor::Optimizer getDummyOptimizer(auto node, auto costmap_ros, auto * params_handler)
 {
-  auto optimizer = mppi::Optimizer();
+  auto optimizer = mppi::xtensor::Optimizer();
   std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
 
   optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros, params_handler);

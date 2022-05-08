@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #ifndef MPPIC__OPTIMIZER_HPP_
 #define MPPIC__OPTIMIZER_HPP_
 
@@ -15,7 +15,7 @@
 #include "mppic/optimizers/xtensor/critic_manager.hpp"
 #include "mppic/optimizers/xtensor/models/state.hpp"
 
-namespace mppi
+namespace mppi::xtensor
 {
 
 class Optimizer : public IOptimizerCore
@@ -109,6 +109,6 @@ protected:
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
 
-}  // namespace mppi
+}  // namespace mppi::xtensor
 
 #endif  // MPPIC__OPTIMIZER_HPP_

@@ -1,39 +1,39 @@
 <class_libraries>
   <library path="xtensor-critics">
 
-    <class type="mppi::critics::ObstaclesCritic" base_class_type="mppi::critics::CriticFunction">
+    <class type="mppi::xtensor::critics::ObstaclesCritic" base_class_type="mppi::xtensor::critics::CriticFunction">
       <description>mppi critic for obstacle avoidance</description>
     </class>
 
-    <class type="mppi::critics::GoalCritic" base_class_type="mppi::critics::CriticFunction">
+    <class type="mppi::xtensor::critics::GoalCritic" base_class_type="mppi::xtensor::critics::CriticFunction">
       <description>mppi critic for driving towards the goal</description>
     </class>
 
-    <class type="mppi::critics::ReferenceTrajectoryCritic" base_class_type="mppi::critics::CriticFunction">
+    <class type="mppi::xtensor::critics::ReferenceTrajectoryCritic" base_class_type="mppi::xtensor::critics::CriticFunction">
       <description>mppi critic for trajectory tracking</description>
     </class>
 
-    <class type="mppi::critics::ApproxReferenceTrajectoryCritic" base_class_type="mppi::critics::CriticFunction">
+    <class type="mppi::xtensor::critics::ApproxReferenceTrajectoryCritic" base_class_type="mppi::xtensor::critics::CriticFunction">
       <description>mppi critic for trajectory tracking, approximated</description>
     </class>
 
-    <class type="mppi::critics::GoalAngleCritic" base_class_type="mppi::critics::CriticFunction">
+    <class type="mppi::xtensor::critics::GoalAngleCritic" base_class_type="mppi::xtensor::critics::CriticFunction">
       <description>mppi critic for achieving the goal heading angle</description>
     </class>
 
-    <class type="mppi::critics::PathAngleCritic" base_class_type="mppi::critics::CriticFunction">
+    <class type="mppi::xtensor::critics::PathAngleCritic" base_class_type="mppi::xtensor::critics::CriticFunction">
       <description>mppi critic for tracking the path in the correct heading</description>
     </class>
 
-    <class type="mppi::critics::PreferForwardCritic" base_class_type="mppi::critics::CriticFunction">
+    <class type="mppi::xtensor::critics::PreferForwardCritic" base_class_type="mppi::xtensor::critics::CriticFunction">
       <description></description>
     </class>
 
-    <class type="mppi::critics::TwirlingCritic" base_class_type="mppi::critics::CriticFunction">
+    <class type="mppi::xtensor::critics::TwirlingCritic" base_class_type="mppi::xtensor::critics::CriticFunction">
       <description>mppi critic for preventing twirling behavior when using omnidirectional models</description>
     </class>
 
-    <class type="mppi::critics::LocalGoalCritic" base_class_type="mppi::critics::CriticFunction">
+    <class type="mppi::xtensor::critics::LocalGoalCritic" base_class_type="mppi::xtensor::critics::CriticFunction">
       <description></description>
     </class>
 

@@ -1,7 +1,7 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/optimizers/xtensor/critics/path_angle_critic.hpp"
 
-namespace mppi::critics
+namespace mppi::xtensor::critics
 {
 
 void PathAngleCritic::initialize()
@@ -35,10 +35,10 @@ void PathAngleCritic::evalScore(models::CriticFunctionData & data)
   data.costs += xt::pow(xt::mean(yaws, {1}) * weight_, power_);
 }
 
-}  // namespace mppi::critics
+}  // namespace mppi::xtensor::critics
 
 #include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(
-  mppi::critics::PathAngleCritic,
-  mppi::critics::CriticFunction)
+  mppi::xtensor::critics::PathAngleCritic,
+  mppi::xtensor::critics::CriticFunction)

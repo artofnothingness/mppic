@@ -1,7 +1,9 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/optimizers/xtensor/critic_manager.hpp"
 
-namespace mppi
+#include "mppic/context.hpp"
+
+namespace mppi::xtensor
 {
 
 void CriticManager::on_configure(
@@ -32,7 +34,7 @@ void CriticManager::loadCritics()
 {
   if (!loader_) {
     loader_ = std::make_unique<pluginlib::ClassLoader<critics::CriticFunction>>(
-      "mppic", "mppi::critics::CriticFunction");
+      "mppic", "mppi::xtensor::critics::CriticFunction");
   }
 
   critics_.clear();
@@ -48,14 +50,14 @@ void CriticManager::loadCritics()
 
 std::string CriticManager::getFullName(const std::string & name)
 {
-  return "mppi::critics::" + name;
+  return "mppi::xtensor::critics::" + name;
 }
 
 void CriticManager::evalTrajectoriesScores(
   models::CriticFunctionData & data) const
 {
   for (size_t q = 0; q < critics_.size(); q++) {
-    if (profile_) {
+    if constexpr (context::profile) {
       auto start = std::chrono::high_resolution_clock::now();
       critics_[q]->score(data);
       auto stop = std::chrono::high_resolution_clock::now();
@@ -70,4 +72,4 @@ void CriticManager::evalTrajectoriesScores(
 
 }
 
-}  // namespace mppi
+}  // namespace mppi::xtensor

@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #ifndef MPPIC__TRAJECTORY_VISUALIZER_HPP_
 #define MPPIC__TRAJECTORY_VISUALIZER_HPP_
 

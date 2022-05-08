@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #ifndef MPPIC__MOTION_MODELS_HPP_
 #define MPPIC__MOTION_MODELS_HPP_
 
@@ -6,7 +6,7 @@
 
 #include "mppic/optimizers/xtensor/models/state.hpp"
 
-namespace mppi
+namespace mppi::xtensor
 {
 
 class MotionModel
@@ -57,6 +57,6 @@ public:
   bool isHolonomic() const override {return false;}
 };
 
-}  // namespace mppi
+}  // namespace mppi::xtensor
 
 #endif  // MPPIC__MOTION_MODELS_HPP_

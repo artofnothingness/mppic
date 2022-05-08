@@ -154,7 +154,7 @@ controller_server:
       motion_model: "DiffDrive"
       visualize: true
       profile: true
-      optimizer: "mppi::Optimizer"
+      optimizer: "mppi::xtensor::Optimizer"
       critics: ["LocalGoalCritic", "GoalCritic", "GoalAngleCritic", "ObstaclesCritic", "PreferForwardCritic"]
       GoalCritic:
         goal_cost_power: 1

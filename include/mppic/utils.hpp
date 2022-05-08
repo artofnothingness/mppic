@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #ifndef MPPIC__UTILS_HPP_
 #define MPPIC__UTILS_HPP_
 
@@ -29,9 +29,21 @@ namespace mppi::utils
 {
 
 
+class Timer() {
+  Timer() {
+
+  }
+
+  ~Timer() {
+
+  }
+
+}
+
+
 template<typename T, typename S>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, models::ControlSequnceIdxes idx,
+  const T & velocities, xtensor::models::ControlSequnceIdxes idx,
   const bool & is_holonomic, const S & stamp, const std::string & frame)
 {
   geometry_msgs::msg::TwistStamped twist;

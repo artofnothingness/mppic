@@ -5,7 +5,7 @@
 #include "mppic/optimizers/xtensor/models/state.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::critics
+namespace mppi::xtensor::critics
 {
 
 class PathAngleCritic : public CriticFunction
@@ -26,4 +26,4 @@ protected:
   double weight_{0};
 };
 
-}  // namespace mppi::critics
+}  // namespace mppi::xtensor::critics

@@ -1,10 +1,10 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/optimizers/xtensor/critics/reference_trajectory_critic.hpp"
 
 #include <xtensor/xfixed.hpp>
 #include <xtensor/xmath.hpp>
 
-namespace mppi::critics
+namespace mppi::xtensor::critics
 {
 
 void ReferenceTrajectoryCritic::initialize()
@@ -12,6 +12,7 @@ void ReferenceTrajectoryCritic::initialize()
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(reference_cost_power_, "reference_cost_power", 1);
   getParam(reference_cost_weight_, "reference_cost_weight", 3.0);
+  getParam(reference_point_step_, "reference_point_step", 2);
 
   RCLCPP_INFO(
     logger_,
@@ -65,7 +66,7 @@ void ReferenceTrajectoryCritic::evalScore(models::CriticFunctionData & data)
     double mean_dist = 0;
     for (size_t p = 0; p < trajectories_points_count; ++p) {
       double min_dist = std::numeric_limits<double>::max();
-      for (size_t s = 0; s < reference_segments_count; ++s) {
+      for (size_t s = 0; s < reference_segments_count; ++reference_point_step_) {
         xt::xtensor_fixed<double, xt::xshape<2>> P;
         if (segment_short(s)) {
           P[0] = P1(s, 0);
@@ -92,10 +93,10 @@ void ReferenceTrajectoryCritic::evalScore(models::CriticFunctionData & data)
   data.costs += xt::pow(cost * reference_cost_weight_, reference_cost_power_);
 }
 
-}  // namespace mppi::critics
+}  // namespace mppi::xtensor::critics
 
 #include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(
-  mppi::critics::ReferenceTrajectoryCritic,
-  mppi::critics::CriticFunction)
+  mppi::xtensor::critics::ReferenceTrajectoryCritic,
+  mppi::xtensor::critics::CriticFunction)

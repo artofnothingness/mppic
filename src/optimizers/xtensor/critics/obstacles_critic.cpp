@@ -1,9 +1,9 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/optimizers/xtensor/critics/obstacles_critic.hpp"
 
 #include <xtensor/xaxis_slice_iterator.hpp>
 
-namespace mppi::critics
+namespace mppi::xtensor::critics
 {
 
 void ObstaclesCritic::initialize()
@@ -101,10 +101,10 @@ double ObstaclesCritic::scoreCost(unsigned char cost_arg)
   return pow(cost * weight_, power_);
 }
 
-}  // namespace mppi::critics
+}  // namespace mppi::xtensor::critics
 
 #include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(
-  mppi::critics::ObstaclesCritic,
-  mppi::critics::CriticFunction)
+  mppi::xtensor::critics::ObstaclesCritic,
+  mppi::xtensor::critics::CriticFunction)

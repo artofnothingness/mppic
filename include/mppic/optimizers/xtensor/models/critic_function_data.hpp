@@ -8,7 +8,7 @@
 #include "mppic/optimizers/xtensor/models/state.hpp"
 
 
-namespace mppi::models
+namespace mppi::xtensor::models
 {
 
 struct CriticFunctionData

@@ -9,7 +9,7 @@
 
 #include "mppic/optimizers/xtensor/motion_models.hpp"
 
-namespace mppi::models
+namespace mppi::xtensor::models
 {
 
 /**
@@ -58,6 +58,6 @@ struct ControlSequence
   void reset(unsigned int time_steps) {data = xt::zeros<double>({time_steps, idx.dim()});}
 };
 
-}  // namespace mppi::models
+}  // namespace mppi::xtensor::models
 
 #endif  // MPPIC__MODELS__CONTROL_SEQUENCE_HPP_

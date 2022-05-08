@@ -4,7 +4,7 @@
 #include "mppic/optimizers/xtensor/critic_function.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::critics
+namespace mppi::xtensor::critics
 {
 
 class TwirlingCritic : public CriticFunction
@@ -19,4 +19,4 @@ protected:
   double weight_{0};
 };
 
-}  // namespace mppi::critics
+}  // namespace mppi::xtensor::critics

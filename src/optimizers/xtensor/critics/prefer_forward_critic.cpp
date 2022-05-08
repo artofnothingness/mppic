@@ -1,8 +1,8 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 
 #include "mppic/optimizers/xtensor/critics/prefer_forward_critic.hpp"
 
-namespace mppi::critics
+namespace mppi::xtensor::critics
 {
 
 void PreferForwardCritic::initialize()
@@ -35,8 +35,8 @@ void PreferForwardCritic::evalScore(models::CriticFunctionData & data)
 }
 
 
-}  // namespace mppi::critics
+}  // namespace mppi::xtensor::critics
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(mppi::critics::PreferForwardCritic, mppi::critics::CriticFunction)
+PLUGINLIB_EXPORT_CLASS(mppi::xtensor::critics::PreferForwardCritic, mppi::xtensor::critics::CriticFunction)

@@ -1,10 +1,10 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/optimizers/xtensor/critics/local_goal_critic.hpp"
 
 #include <xtensor/xmath.hpp>
 #include <xtensor/xsort.hpp>
 
-namespace mppi::critics
+namespace mppi::xtensor::critics
 {
 
 void LocalGoalCritic::initialize()
@@ -84,10 +84,10 @@ void LocalGoalCritic::evalScore(models::CriticFunctionData & data)
 }
 
 
-}  // namespace mppi::critics
+}  // namespace mppi::xtensor::critics
 
 #include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(
-  mppi::critics::LocalGoalCritic,
-  mppi::critics::CriticFunction)
+  mppi::xtensor::critics::LocalGoalCritic,
+  mppi::xtensor::critics::CriticFunction)

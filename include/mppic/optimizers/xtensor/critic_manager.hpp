@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #ifndef MPPIC__CRITIC_MANAGER_HPP_
 #define MPPIC__CRITIC_MANAGER_HPP_
 
@@ -19,7 +19,7 @@
 #include "mppic/optimizers/xtensor/models/critic_function_data.hpp"
 #include "mppic/optimizers/xtensor/critic_function.hpp"
 
-namespace mppi
+namespace mppi::xtensor
 {
 
 class CriticManager
@@ -55,6 +55,6 @@ protected:
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
 
-}  // namespace mppi
+}  // namespace mppi::xtensor
 
 #endif  // MPPIC__CRITIC_MANAGER_HPP_

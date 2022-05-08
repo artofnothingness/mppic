@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "gtest/gtest.h"
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -131,9 +131,9 @@ TEST(MPPIOptimizer, OptimizerTestOmniCircle)
 
 TEST(MPPIOptimizer, AckermannException)
 {
-  mppi::AckermannMotionModel model;
+  mppi::xtensor::AckermannMotionModel model;
   xt::xtensor<double, 2> in;
-  mppi::models::StateIdxes idx;
+  mppi::xtensor::models::StateIdxes idx;
   EXPECT_FALSE(model.isHolonomic());
   EXPECT_THROW(model.predict(in, idx), std::runtime_error);
 }

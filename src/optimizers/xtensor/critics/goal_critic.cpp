@@ -1,7 +1,7 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/optimizers/xtensor/critics/goal_critic.hpp"
 
-namespace mppi::critics
+namespace mppi::xtensor::critics
 {
 
 void GoalCritic::initialize()
@@ -30,8 +30,8 @@ void GoalCritic::evalScore(models::CriticFunctionData & data)
   data.costs += xt::pow(std::move(dists_trajectories_end_to_goal) * weight_, power_);
 }
 
-}  // namespace mppi::critics
+}  // namespace mppi::xtensor::critics
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(mppi::critics::GoalCritic, mppi::critics::CriticFunction)
+PLUGINLIB_EXPORT_CLASS(mppi::xtensor::critics::GoalCritic, mppi::xtensor::critics::CriticFunction)

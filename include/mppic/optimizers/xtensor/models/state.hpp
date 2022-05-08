@@ -9,7 +9,7 @@
 #include <xtensor/xview.hpp>
 #include <xtensor/xarray.hpp>
 
-namespace mppi::models
+namespace mppi::xtensor::models
 {
 
 /**
@@ -186,6 +186,6 @@ struct State
   }
 };
 
-}  // namespace mppi::models
+}  // namespace mppi::xtensor::models
 
 #endif  // MPPIC__MODELS__STATE_HPP_

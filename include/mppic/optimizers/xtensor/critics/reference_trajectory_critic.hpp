@@ -5,7 +5,7 @@
 #include "mppic/optimizers/xtensor/models/state.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::critics
+namespace mppi::xtensor::critics
 {
 
 class ReferenceTrajectoryCritic : public CriticFunction
@@ -21,8 +21,10 @@ public:
   void evalScore(models::CriticFunctionData & data) override;
 
 protected:
+  unsigned int reference_point_step_{0};
+
   unsigned int reference_cost_power_{0};
   double reference_cost_weight_{0};
 };
 
-}  // namespace mppi::critics
+}  // namespace mppi::xtensor::critics

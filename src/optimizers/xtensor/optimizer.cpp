@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 
 #include <limits>
 #include <memory>
@@ -13,7 +13,7 @@
 #include "mppic/optimizers/xtensor/optimizer.hpp"
 #include "mppic/optimizers/xtensor/models/critic_function_data.hpp"
 
-namespace mppi
+namespace mppi::xtensor
 {
 
 void Optimizer::initialize(
@@ -326,7 +326,7 @@ span3d Optimizer::getGeneratedTrajectories()
 #include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(
-  mppi::Optimizer,
+  mppi::xtensor::Optimizer,
   mppi::IOptimizerCore)
 
 }  // namespace mppi

@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #ifndef MPPIC__PATH_HANDLER_HPP_
 #define MPPIC__PATH_HANDLER_HPP_
 

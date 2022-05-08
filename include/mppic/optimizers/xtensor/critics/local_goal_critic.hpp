@@ -5,7 +5,7 @@
 #include "mppic/optimizers/xtensor/models/state.hpp"
 #include "mppic/utils.hpp"
 
-namespace mppi::critics
+namespace mppi::xtensor::critics
 {
 
 class LocalGoalCritic : public CriticFunction
@@ -29,4 +29,4 @@ protected:
   double stop_usage_path_reached_ratio_{0};
 };
 
-}  // namespace mppi::critics
+}  // namespace mppi::xtensor::critics
