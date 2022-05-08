@@ -44,6 +44,7 @@ TEST_CASE("Optimizer doesn't fail")
   std::string motion_model = GENERATE("DiffDrive", "Omni");
   std::string critic = GENERATE(
     as<std::string>{},
+     "",
     "GoalCritic",
     "GoalAngleCritic",
     "ObstaclesCritic",
@@ -56,7 +57,10 @@ TEST_CASE("Optimizer doesn't fail")
   TestOptimizerSettings optimizer_settings{1, 15, 10.0, motion_model, consider_footprint};
   TestPathSettings path_settings{start_pose, path_points, path_step, path_step};
 
-  std::vector<std::string> critics = {{critic}};
+  std::vector<std::string> critics;
+  if (!critic.empty()) {
+    critics.push_back(std::move(critic));
+  }
 
   print_info(optimizer_settings, path_settings, critics);
   auto node = getDummyNode(optimizer_settings, critics);

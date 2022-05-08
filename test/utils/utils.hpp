@@ -94,7 +94,7 @@ void print_info(TestOptimizerSettings os, TestPathSettings ps, std::vector<std::
   }
 
   std::cout <<  //
-    "\n\n--------------------OPTIMIZER OPTIONS`----------------------------\n" <<
+    "\n\n--------------------OPTIMIZER OPTIONS-----------------------------\n" <<
     "Critics: " << ss.str() << "\n" \
     "Motion model: " << os.motion_model << "\n"
     "Consider footprint: " << os.consider_footprint << "\n" <<

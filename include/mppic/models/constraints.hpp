@@ -1,5 +1,4 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-
 #pragma once
 
 namespace mppi::models

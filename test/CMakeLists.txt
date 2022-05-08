@@ -18,6 +18,6 @@ foreach(name IN LISTS TEST_NAMES)
   )
 
   if(${DO_BENCHMARKS})
-    target_compile_definitions(${name} PUBLIC -DO_BENCHMARKS)
+    target_compile_definitions(${name} PUBLIC -DDO_BENCHMARKS)
   endif()
 endforeach()
