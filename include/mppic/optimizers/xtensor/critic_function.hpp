@@ -32,6 +32,9 @@ public:
     costmap_ = costmap_ros_->getCostmap();
     parameters_handler_ = param_handler;
 
+    auto getParam = parameters_handler_->getParamGetter(name_);
+    getParam(enabled_, "enabled", true);
+
     initialize();
   }
 
@@ -54,6 +57,7 @@ public:
   }
 
 protected:
+  bool enabled_;
   std::string name_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;

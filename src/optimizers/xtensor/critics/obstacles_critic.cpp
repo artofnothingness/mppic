@@ -24,6 +24,11 @@ void ObstaclesCritic::initialize()
 
 void ObstaclesCritic::evalScore(models::CriticFunctionData & data)
 {
+
+  if(!enabled_) {
+    return;
+  }
+
   bool all_trajectories_collide = true;
   for (size_t i = 0; i < data.trajectories.shape(0); ++i) {
     bool trajectory_collide = false;

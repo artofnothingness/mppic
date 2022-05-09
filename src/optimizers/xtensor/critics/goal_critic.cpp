@@ -17,6 +17,11 @@ void GoalCritic::initialize()
 
 void GoalCritic::evalScore(models::CriticFunctionData & data)
 {
+
+  if(!enabled_) {
+    return;
+  }
+
   const auto goal_points = xt::view(data.path, -1, xt::range(0, 2));
 
   auto trajectories_end =

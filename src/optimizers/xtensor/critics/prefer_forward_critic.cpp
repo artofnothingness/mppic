@@ -17,6 +17,11 @@ void PreferForwardCritic::initialize()
 
 void PreferForwardCritic::evalScore(models::CriticFunctionData & data)
 {
+
+  if(!enabled_) {
+    return;
+  }
+
   using namespace xt::placeholders;  // NOLINT
 
   auto dx = xt::view(data.trajectories, xt::all(), xt::range(1, _), 0) -

@@ -17,6 +17,10 @@ void TwirlingCritic::initialize()
 
 void TwirlingCritic::evalScore(models::CriticFunctionData & data)
 {
+  if(!enabled_) {
+    return;
+  }
+
   auto wz = xt::abs(data.state.getVelocitiesWZ());
   data.costs += xt::pow(xt::mean(wz, {1}) * weight_, power_);
 }

@@ -24,7 +24,7 @@ void ReferenceTrajectoryCritic::initialize()
 
 void ReferenceTrajectoryCritic::evalScore(models::CriticFunctionData & data)
 {
-  if (utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose, data.path)) {
+  if (!enabled_ || utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose, data.path)) {
     return;
   }
 
