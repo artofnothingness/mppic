@@ -50,7 +50,7 @@ add_library(xtensor-critics SHARED
   src/optimizers/xtensor/critics/local_goal_critic.cpp
 )
 
-set(libraries mppic xtensor-critics xtensor-optimizer)
+set(libraries mppic xtensor-optimizer xtensor-critics)
 
 foreach(lib IN LISTS libraries)
   target_compile_options(${lib} PUBLIC -fconcepts)
@@ -87,7 +87,7 @@ ament_export_libraries(${libraries})
 ament_export_dependencies(${dependencies_pkgs})
 ament_export_include_directories(include)
 pluginlib_export_plugin_description_file(nav2_core plugins/mppic.xml)
-pluginlib_export_plugin_description_file(mppic plugins/optimizers.xml)
+pluginlib_export_plugin_description_file(mppic plugins/xtensor-optimizer.xml)
 pluginlib_export_plugin_description_file(mppic plugins/xtensor-critics.xml)
 
 ament_package()

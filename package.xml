@@ -30,11 +30,12 @@
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
-  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_cmake_catch2</test_depend>
   <export>
     <build_type>ament_cmake</build_type>
-    <nav2_core plugin="${prefix}/mppic.xml" />
-    <mppic plugin="${prefix}/critics.xml" />
+    <nav2_core plugin="${prefix}/plugins/mppic.xml" />
+    <mppic plugin="${prefix}/plugins/xtensor-critics.xml" />
+    <mppic plugin="${prefix}/plugins/xtensor-optimizer.xml" />
   </export>
 
 </package>

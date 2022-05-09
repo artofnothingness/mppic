@@ -1,5 +1,5 @@
 <class_libraries>
-  <library path="xtensor-optimizer">
+  <library path="optimizers">
 
     <class type="mppi::xtensor::Optimizer" base_class_type="mppi::IOptimizerCore">
       <description>Optimizer based on xtensor library</description>
