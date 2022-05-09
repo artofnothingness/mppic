@@ -9,7 +9,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 #include "mppic/parameters_handler.hpp"
-#include "mppic/optimizers/xtensor/models/critic_function_data.hpp"
+#include "mppic/models/critic_function_data.hpp"
 
 namespace mppi::critics
 {

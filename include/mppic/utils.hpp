@@ -23,7 +23,7 @@
 #include "nav2_util/node_utils.hpp"
 #include "nav2_core/goal_checker.hpp"
 
-#include "mppic/optimizers/xtensor/models/control_sequence.hpp"
+#include "mppic/models/control_sequence.hpp"
 
 namespace mppi::utils
 {
@@ -31,7 +31,7 @@ namespace mppi::utils
 
 template<typename T, typename S>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, xtensor::models::ControlSequnceIdxes idx,
+  const T & velocities, models::ControlSequnceIdxes idx,
   const bool & is_holonomic, const S & stamp, const std::string & frame)
 {
   geometry_msgs::msg::TwistStamped twist;

@@ -9,9 +9,22 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/optimizers/xtensor/motion_models.hpp"
-#include "mppic/optimizers/xtensor/critic_manager.hpp"
-#include "mppic/optimizers/xtensor/models/state.hpp"
+
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
+#include "nav2_core/goal_checker.hpp"
+
+#include "geometry_msgs/msg/twist.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
+#include "nav_msgs/msg/path.hpp"
+
+#include "mppic/models/optimizer_settings.hpp"
+#include "mppic/motion_models.hpp"
+#include "mppic/critic_manager.hpp"
+#include "mppic/models/state.hpp"
+#include "mppic/parameters_handler.hpp"
 
 namespace mppi
 {
@@ -35,8 +48,8 @@ public:
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan,
     nav2_core::GoalChecker * goal_checker);
 
-  xtensor<double, 3> getGeneratedTrajectories();
-  xtensor<double, 2> getOptimizedTrajectory();
+  xt::xtensor<double, 3> & getGeneratedTrajectories();
+  xt::xtensor<double, 2> getOptimizedTrajectory();
 
   void setSpeedLimit(double speed_limit, bool percentage);
 

@@ -1,27 +1,63 @@
-// Copyright 2022 @artofnothingness Aleksei Budyakov, Samsung Research
+// Copyright 2022 FastSense, Samsung Research
+#ifndef MPPIC__MODELS__CONTROL_SEQUENCE_HPP_
+#define MPPIC__MODELS__CONTROL_SEQUENCE_HPP_
 
-#pragma once
+#include <array>
+#include <cstdint>
 
 #include <xtensor/xtensor.hpp>
 
-#include "geometry_msgs/msg/pose_stamped.hpp"
-#include "nav2_core/goal_checker.hpp"
-#include "mppic/models/state.hpp"
-
+#include "mppic/motion_models.hpp"
 
 namespace mppi::models
 {
 
-struct CriticFunctionData
+/**
+ * @brief Keeps named indexes of control sequence last dimension variables
+ */
+class ControlSequnceIdxes
 {
-  const models::State & state;
-  const xt::xtensor<double, 3> & trajectories;
-  const xt::xtensor<double, 2> & path;
-  nav2_core::GoalChecker * goal_checker;
+public:
+  unsigned int dim() const {return dim_;}
 
-  xt::xtensor<double, 1> & costs;
-  bool & stop_flag;
-  std::optional<size_t> furthest_reached_path_point;
+  uint8_t vx() const {return vx_;}
+  uint8_t vy() const {return vy_;}
+  uint8_t wz() const {return wz_;}
+
+  void setLayout(const bool is_holonomic)
+  {
+    // Layout changes to include "Y" components if holonomic
+    if (is_holonomic) {
+      vx_ = 0;
+      vy_ = 1;
+      wz_ = 2;
+      dim_ = 3;
+    } else {
+      vx_ = 0;
+      wz_ = 1;
+      dim_ = 2;
+    }
+  }
+
+private:
+  uint8_t vx_{0};
+  uint8_t vy_{0};
+  uint8_t wz_{0};
+  unsigned int dim_{0};
+};
+
+/**
+ * @brief Contains trajectory controls (in data) for each time step (vx, wz, [vy])
+ * last dimension layout described by ControlSequnceIdxes
+ */
+struct ControlSequence
+{
+  xt::xtensor<double, 2> data;
+  ControlSequnceIdxes idx;
+
+  void reset(unsigned int time_steps) {data = xt::zeros<double>({time_steps, idx.dim()});}
 };
 
 }  // namespace mppi::models
+
+#endif  // MPPIC__MODELS__CONTROL_SEQUENCE_HPP_

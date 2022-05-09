@@ -42,10 +42,7 @@ public:
   void setSpeedLimit(const double & speed_limit, const bool & percentage) override;
 
 protected:
-  void visualize(
-    const geometry_msgs::msg::PoseStamped & robot_pose,
-    const geometry_msgs::msg::Twist & robot_speed,
-    nav_msgs::msg::Path transformed_plan);
+  void visualize(nav_msgs::msg::Path transformed_plan);
 
   std::string name_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;

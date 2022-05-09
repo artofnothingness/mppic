@@ -221,7 +221,7 @@ void Optimizer::propagateStateVelocitiesFromInitials(
   }
 }
 
-span2d Optimizer::getOptimizedTrajectory()
+xt::xtensor<double, 2> Optimizer::getOptimizedTrajectory()
 {
   models::State state;
   state.idx.setLayout(motion_model_->isHolonomic());
