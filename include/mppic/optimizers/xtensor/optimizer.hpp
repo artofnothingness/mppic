@@ -61,7 +61,7 @@ protected:
    * @return tensor of shape [ batch_size_, time_steps_, 2]
    * where 2 stands for v, w
    */
-  xt::xtensor<double, 3> generateNoisedControls() const;
+  void generateNoisedControls();
 
   void applyControlConstraints();
 
@@ -86,10 +86,8 @@ protected:
   /**
    * @brief Update control_sequence_ with state controls weighted by costs
    * using softmax function
-   *
-   * @param trajectories costs, tensor of shape [ batch_size ]
    */
-  void updateControlSequence(const xt::xtensor<double, 1> & costs);
+  void updateControlSequence();
 
   geometry_msgs::msg::TwistStamped
   getControlFromSequenceAsTwist(const builtin_interfaces::msg::Time & stamp);
@@ -99,12 +97,19 @@ protected:
   void setOffset(double controller_frequency);
 
 protected:
-  models::State state_;
-  models::ControlSequence control_sequence_;
   std::unique_ptr<MotionModel> motion_model_;
   CriticManager critic_manager_;
 
+  models::State state_;
+  models::ControlSequence control_sequence_;
+
   xt::xtensor<double, 3> generated_trajectories_;
+  xt::xtensor<double, 1> costs_;
+
+  xt::xtensor<double, 3> vx_noises_;
+  xt::xtensor<double, 3> vy_noises_;
+  xt::xtensor<double, 3> wz_noises_;
+
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
 

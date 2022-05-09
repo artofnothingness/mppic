@@ -68,6 +68,8 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * goal_checker)
 {
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
   std::lock_guard<std::mutex> lock(*parameters_handler_->getLock());
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
   geometry_msgs::msg::TwistStamped cmd =
@@ -75,6 +77,9 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
 
   visualize(std::move(transformed_plan));
 
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  int duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+  RCLCPP_INFO(logger_, "Controller execution time: %d [ms]", duration);
   return cmd;
 }
 

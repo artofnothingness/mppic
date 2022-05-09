@@ -4,6 +4,7 @@ include(Catch)
 set(TEST_NAMES
   controller_test
   optimizer_test
+  path_handler_test
 )
 
 foreach(name IN LISTS TEST_NAMES)

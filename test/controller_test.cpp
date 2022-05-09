@@ -26,7 +26,7 @@ TEST_CASE("Controller doens't fail")
 {
   const bool visualize = true;
 
-  TestCostmapSettings cost_map_settings{};
+  TestCostmapSettings costmap_settings{};
 
   // Node Options
   rclcpp::NodeOptions options;
@@ -36,13 +36,13 @@ TEST_CASE("Controller doens't fail")
 
   auto node = getDummyNode(options);
   auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
-  auto costmap_ros = getDummyCostmapRos(cost_map_settings);
+  auto costmap_ros = getDummyCostmapRos(costmap_settings);
   costmap_ros->setRobotFootprint(getDummySquareFootprint(0.01));
 
   auto controller = getDummyController(node, tf_buffer, costmap_ros);
 
-  TestPose start_pose = cost_map_settings.getCenterPose();
-  const double path_step = cost_map_settings.resolution;
+  TestPose start_pose = costmap_settings.getCenterPose();
+  const double path_step = costmap_settings.resolution;
   TestPathSettings path_settings{start_pose, 8, path_step, path_step};
 
   // evalControl args

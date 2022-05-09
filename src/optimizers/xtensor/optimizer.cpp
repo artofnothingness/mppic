@@ -92,6 +92,7 @@ void Optimizer::reset()
   state_.reset(settings_.batch_size, settings_.time_steps);
   state_.getTimeIntervals() = settings_.model_dt;
   control_sequence_.reset(settings_.time_steps);
+  costs_ = xt::zeros<double>({settings_.batch_size});
 
   RCLCPP_INFO(logger_, "Optimizer reset");
 }
@@ -105,19 +106,19 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
   state_.speed = robot_speed;
 
   bool stop_flag = false;
+  costs_.fill(0);
 
   for (size_t i = 0; i < settings_.iteration_count; ++i) {
     generated_trajectories_ =
       generateNoisedTrajectories();
 
-    xt::xtensor<double, 1> costs = xt::zeros<double>({settings_.batch_size});
 
     auto data =
       models::CriticFunctionData{state_, generated_trajectories_,
-      utils::toTensor(plan), goal_checker, costs, stop_flag, std::nullopt};
+      utils::toTensor(plan), goal_checker, costs_, stop_flag, std::nullopt};
 
     critic_manager_.evalTrajectoriesScores(data);
-    updateControlSequence(costs);
+    updateControlSequence();
   }
 
   auto control = getControlFromSequenceAsTwist(plan.header.stamp);
@@ -144,31 +145,30 @@ void Optimizer::shiftControlSequence()
 
 xt::xtensor<double, 3> Optimizer::generateNoisedTrajectories()
 {
-  state_.getControls() = generateNoisedControls();
+  generateNoisedControls();
   applyControlConstraints();
   updateStateVelocities(state_);
   return integrateStateVelocities(state_);
 }
 
-xt::xtensor<double, 3> Optimizer::generateNoisedControls() const
+void Optimizer::generateNoisedControls()
 {
   auto & s = settings_;
-  auto vx_noises = xt::random::randn<double>(
-    {s.batch_size, s.time_steps, 1U},
+  vx_noises_ = xt::random::randn<double>({s.batch_size, s.time_steps, 1U},
     0.0, s.sampling_std.vx);
-  auto wz_noises = xt::random::randn<double>(
-    {s.batch_size, s.time_steps, 1U},
+
+  wz_noises_ = xt::random::randn<double>({s.batch_size, s.time_steps, 1U},
     0.0, s.sampling_std.wz);
 
   if (isHolonomic()) {
-    auto vy_noises = xt::random::randn<double>(
+    vy_noises_ = xt::random::randn<double>(
       {s.batch_size, s.time_steps, 1U}, 0.0, s.sampling_std.vy);
-    return control_sequence_.data +
-           xt::concatenate(xt::xtuple(vx_noises, vy_noises, wz_noises), 2);
+    state_.getControls() = control_sequence_.data +
+           xt::concatenate(xt::xtuple(vx_noises_, vy_noises_, wz_noises_), 2);
   }
 
-  return control_sequence_.data +
-         xt::concatenate(xt::xtuple(vx_noises, wz_noises), 2);
+  state_.getControls() = control_sequence_.data +
+         xt::concatenate(xt::xtuple(vx_noises_, wz_noises_), 2);
 }
 
 bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
@@ -273,11 +273,11 @@ xt::xtensor<double, 3> Optimizer::integrateStateVelocities(const models::State &
     2);
 }
 
-void Optimizer::updateControlSequence(const xt::xtensor<double, 1> & costs)
+void Optimizer::updateControlSequence()
 {
   using xt::evaluation_strategy::immediate;
 
-  auto && costs_normalized = costs - xt::amin(costs, immediate);
+  auto && costs_normalized = costs_ - xt::amin(costs_, immediate);
   auto exponents =
     xt::eval(xt::exp(-1 / settings_.temperature * costs_normalized));
   auto softmaxes = exponents / xt::sum(exponents, immediate);

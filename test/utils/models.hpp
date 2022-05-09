@@ -28,6 +28,7 @@ struct TestCostmapSettings
   const double origin_y = 0.0;
   const double resolution = 0.1;
   const unsigned char cost_map_default_value = 0;
+  const double footprint_size = 0.15;
 
   std::pair<unsigned int, unsigned int> getCenterIJ()
   {
@@ -58,4 +59,3 @@ struct TestPathSettings
   double step_x;
   double step_y;
 };
-

@@ -97,12 +97,19 @@ std::shared_ptr<nav2_costmap_2d::Costmap2D> getDummyCostmap(TestCostmapSettings 
   return costmap;
 }
 
+std::vector<geometry_msgs::msg::Point> getDummySquareFootprint(double a)
+{
+  return {getDummyPoint(a, a), getDummyPoint(-a, -a), getDummyPoint(a, -a), getDummyPoint(-a, a)};
+}
+
 std::shared_ptr<nav2_costmap_2d::Costmap2DROS> getDummyCostmapRos(TestCostmapSettings s)
 {
   auto costmap_ros = getDummyCostmapRos();
   auto costmap_ptr = costmap_ros->getCostmap();
   auto costmap = getDummyCostmap(s);
   *(costmap_ptr) = *costmap;
+
+  costmap_ros->setRobotFootprint(getDummySquareFootprint(s.footprint_size));
 
   return costmap_ros;
 }
@@ -132,6 +139,18 @@ mppi::xtensor::Optimizer getDummyOptimizer(auto node, auto costmap_ros, auto * p
   optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros, params_handler);
 
   return optimizer;
+}
+
+mppi::PathHandler getDummyPathHandler(
+  auto node, auto costmap_ros, auto tf_buffer,
+  auto * params_handler)
+{
+  auto path_handler = mppi::PathHandler();
+  std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
+
+  path_handler.initialize(weak_ptr_node, node->get_name(), costmap_ros, tf_buffer, params_handler);
+
+  return path_handler;
 }
 
 mppi::Controller getDummyController(auto node, auto tf_buffer, auto costmap_ros)
@@ -197,9 +216,4 @@ nav_msgs::msg::Path getIncrementalDummyPath(auto node, TestPathSettings s)
   }
 
   return path;
-}
-
-std::vector<geometry_msgs::msg::Point> getDummySquareFootprint(double a)
-{
-  return {getDummyPoint(a, a), getDummyPoint(-a, -a), getDummyPoint(a, -a), getDummyPoint(-a, a)};
 }

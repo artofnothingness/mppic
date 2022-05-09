@@ -26,7 +26,6 @@ class PathHandler
 {
 public:
   PathHandler() = default;
-  ~PathHandler() = default;
 
   void initialize(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
