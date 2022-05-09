@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 
 #pragma once
 
@@ -65,11 +65,15 @@ private:
   template<typename T>
   static auto as(const rclcpp::Parameter & parameter);
 
+private:
   std::mutex parameters_change_mutex_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr
     on_set_param_handler_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr node_;
+  std::string node_name_;
+
+  bool verbose_{false};
 
   std::unordered_map<std::string, std::function<get_param_func_t>>
   get_param_callbacks_;
@@ -144,12 +148,17 @@ void ParametersHandler::setDynamicParamCallback(T & setting, const std::string &
 
   auto callback = [this, &setting, name](const rclcpp::Parameter & param) {
       setting = as<T>(param);
-      RCLCPP_INFO(logger_, "Dynamic parameter changed: %s", std::to_string(param).c_str());
+
+      if (verbose_) {
+        RCLCPP_INFO(logger_, "Dynamic parameter changed: %s", std::to_string(param).c_str());
+      }
     };
 
   addDynamicParamCallback(name, callback);
 
-  RCLCPP_INFO(logger_, "Dynamic Parameter added %s", name.c_str());
+  if (verbose_) {
+    RCLCPP_INFO(logger_, "Dynamic Parameter added %s", name.c_str());
+  }
 }
 
 template<typename T>

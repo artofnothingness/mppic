@@ -1,4 +1,5 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
+
 #ifndef MPPIC__CRITIC_MANAGER_HPP_
 #define MPPIC__CRITIC_MANAGER_HPP_
 
@@ -8,16 +9,16 @@
 #include <pluginlib/class_loader.hpp>
 #include <xtensor/xtensor.hpp>
 
-#include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
-#include "mppic/critic_function.hpp"
-#include "mppic/models/state.hpp"
-#include "mppic/utils.hpp"
+
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
-#include "nav_msgs/msg/path.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+
 #include "mppic/parameters_handler.hpp"
+#include "mppic/utils.hpp"
+#include "mppic/models/critic_function_data.hpp"
+#include "mppic/critic_function.hpp"
 
 namespace mppi
 {
@@ -31,19 +32,8 @@ public:
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS>, ParametersHandler *);
 
-  /**
-   * @brief Evaluate cost for each trajectory
-   *
-   * @param trajectories: tensor of shape [ ..., ..., 3 ]
-   * where 3 stands for x, y, yaw
-   * @return Cost for each trajectory
-   */
-  xt::xtensor<double, 1> evalTrajectoriesScores(
-    const models::State &,
-    const xt::xtensor<double, 3> & trajectories,
-    const nav_msgs::msg::Path & global_plan,
-    const geometry_msgs::msg::PoseStamped & robot_pose,
-    nav2_core::GoalChecker *) const;
+  void evalTrajectoriesScores(
+    models::CriticFunctionData & data) const;
 
 protected:
   void getParams();

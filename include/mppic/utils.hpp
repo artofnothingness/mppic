@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #ifndef MPPIC__UTILS_HPP_
 #define MPPIC__UTILS_HPP_
 
@@ -11,15 +11,19 @@
 #include <xtensor/xmath.hpp>
 #include <xtensor/xview.hpp>
 
-#include "geometry_msgs/msg/twist_stamped.hpp"
-#include "mppic/models/control_sequence.hpp"
-#include "nav2_util/node_utils.hpp"
-#include "nav2_core/goal_checker.hpp"
-#include "nav_msgs/msg/path.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "tf2/utils.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+
+#include "geometry_msgs/msg/twist_stamped.hpp"
+#include "nav_msgs/msg/path.hpp"
+
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+
+#include "nav2_util/node_utils.hpp"
+#include "nav2_core/goal_checker.hpp"
+
+#include "mppic/optimizers/xtensor/models/control_sequence.hpp"
 
 namespace mppi::utils
 {
@@ -27,7 +31,7 @@ namespace mppi::utils
 
 template<typename T, typename S>
 geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, models::ControlSequnceIdxes idx,
+  const T & velocities, xtensor::models::ControlSequnceIdxes idx,
   const bool & is_holonomic, const S & stamp, const std::string & frame)
 {
   geometry_msgs::msg::TwistStamped twist;
@@ -96,10 +100,10 @@ inline bool withinPositionGoalTolerance(
   *
   */
 template<typename T>
-xt::xtensor<double, 2> normalize_angles(const T & angles)
+auto normalize_angles(const T & angles)
 {
-  xt::xtensor<double, 2> theta = xt::fmod(angles + M_PI, 2.0 * M_PI);
-  return xt::where(theta <= 0.0, theta + M_PI, theta - M_PI);
+  auto theta = xt::eval(xt::fmod(angles + M_PI, 2.0 * M_PI));
+  return xt::eval(xt::where(theta <= 0.0, theta + M_PI, theta - M_PI));
 }
 
 
@@ -115,7 +119,7 @@ xt::xtensor<double, 2> normalize_angles(const T & angles)
   *
   */
 template<typename F, typename T>
-xt::xtensor<double, 2> shortest_angular_distance(
+auto shortest_angular_distance(
   const F & from,
   const T & to)
 {
@@ -123,5 +127,5 @@ xt::xtensor<double, 2> shortest_angular_distance(
 }
 
 }  // namespace mppi::utils
-
+//
 #endif  // MPPIC__UTILS_HPP_
