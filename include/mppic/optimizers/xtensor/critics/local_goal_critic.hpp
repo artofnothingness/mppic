@@ -16,7 +16,6 @@ public:
   void evalScore(models::CriticFunctionData & data) override;
 
 protected:
-
   bool consider_angle_;
   size_t angle_offset_{0};
   unsigned int angle_cost_power_{0};

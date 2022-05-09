@@ -42,29 +42,28 @@ TEST_CASE("Optimizer doesn't fail")
 
   bool consider_footprint = GENERATE(true, false);
   std::string motion_model = GENERATE("DiffDrive", "Omni");
-  std::string critic = GENERATE(
-    as<std::string>{},
-     "",
-    "GoalCritic",
-    "GoalAngleCritic",
-    "ObstaclesCritic",
-    "LocalGoalCritic",
-    "PreferForwardCritic",
-    "ReferenceTrajectoryCritic",
-    "PathAngleCritic",
-    "TwirlingCritic");
+
+  std::vector<std::string> critics = GENERATE(
+    std::vector<std::string>{},
+    std::vector<std::string>{{"GoalCritic"}, {"GoalAngleCritic"}, {"ObstaclesCritic"},
+      {"ReferenceTrajectoryCritic"}, {"LocalGoalCritic"}},
+    std::vector<std::string>{{"GoalCritic"}},
+    std::vector<std::string>{{"GoalAngleCritic"}},
+    std::vector<std::string>{{"ObstaclesCritic"}},
+    std::vector<std::string>{{"LocalGoalCritic"}},
+    std::vector<std::string>{{"PreferForwardCritic"}},
+    std::vector<std::string>{{"ReferenceTrajectoryCritic"}},
+    std::vector<std::string>{{"PathAngleCritic"}},
+    std::vector<std::string>{{"TwirlingCritic"}}
+  );
 
   TestCostmapSettings cost_map_settings{};
   TestPose start_pose = cost_map_settings.getCenterPose();
-  TestOptimizerSettings optimizer_settings{batch_size, time_steps, iteration_count, lookahead_distance, motion_model, consider_footprint};
+  TestOptimizerSettings optimizer_settings{batch_size, time_steps, iteration_count,
+    lookahead_distance, motion_model, consider_footprint};
 
   double path_step = cost_map_settings.resolution;
   TestPathSettings path_settings{start_pose, path_points, path_step, path_step};
-
-  std::vector<std::string> critics;
-  if (!critic.empty()) {
-    critics.push_back(std::move(critic));
-  }
 
   print_info(optimizer_settings, path_settings, critics);
   auto costmap_ros = getDummyCostmapRos(cost_map_settings);
