@@ -19,7 +19,7 @@
 #include "mppic/parameters_handler.hpp"
 #include "mppic/controller.hpp"
 
-#include "config.hpp"
+#include "models.hpp"
 
 namespace detail
 {
@@ -29,7 +29,38 @@ auto setHeader(auto && msg, auto node, std::string frame)
   msg.header.frame_id = frame;
   msg.header.stamp = time;
 }
+
 }  // namespace detail
+//
+//
+/**
+ * Adds some parameters for the optimizer to a special container.
+ *
+ * @param params_ container for optimizer's parameters.
+ */
+void setUpOptimizerParams(
+  const TestOptimizerSettings & s,
+  const std::vector<std::string> & critics,
+  std::vector<rclcpp::Parameter> & params_, std::string node_name = std::string("dummy"))
+{
+  constexpr double dummy_freq = 10.0;
+  params_.emplace_back(rclcpp::Parameter(node_name + ".iteration_count", s.iteration_count));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".batch_size", s.batch_size));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".time_steps", s.time_steps));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".lookahead_dist", s.lookahead_distance));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".motion_model", s.motion_model));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".critics", critics));
+  params_.emplace_back(rclcpp::Parameter("controller_frequency", dummy_freq));
+}
+
+void setUpControllerParams(
+  bool visualize, std::vector<rclcpp::Parameter> & params_,
+  std::string node_name = std::string("dummy"))
+{
+  double dummy_freq = 10.0;
+  params_.emplace_back(rclcpp::Parameter(node_name + ".visualize", visualize));
+  params_.emplace_back(rclcpp::Parameter("controller_frequency", dummy_freq));
+}
 
 rclcpp::NodeOptions getOptimizerOptions(
   TestOptimizerSettings s,

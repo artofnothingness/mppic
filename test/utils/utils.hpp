@@ -8,7 +8,7 @@
 #include "nav2_costmap_2d/costmap_2d.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
-#include "config.hpp"
+#include "models.hpp"
 #include "factory.hpp"
 
 /**
@@ -86,7 +86,7 @@ void addObstacle(
   }
 }
 
-void print_info(TestOptimizerSettings os, TestPathSettings ps, std::vector<std::string> critics)
+void printInfo(TestOptimizerSettings os, TestPathSettings ps, std::vector<std::string> critics)
 {
   std::stringstream ss;
   for (auto str : critics) {
@@ -130,6 +130,14 @@ bool inCollision(const auto & trajectory, const nav2_costmap_2d::Costmap2D & cos
     }
   }
   return false;
+}
+
+unsigned char getCost(const nav2_costmap_2d::Costmap2D & costmap, double x, double y) {
+  unsigned int point_mx = 0;
+  unsigned int point_my = 0;
+
+    costmap.worldToMap(x, y, point_mx, point_my);
+    return costmap.getCost(point_mx, point_my);
 }
 
 bool isGoalReached(
