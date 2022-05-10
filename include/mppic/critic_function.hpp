@@ -38,18 +38,9 @@ public:
     initialize();
   }
 
-  void score(models::CriticFunctionData & data)
-  {
-    if (data.stop_flag) {
-      return;
-    }
-
-    evalScore(data);
-  }
+  virtual void score(models::CriticFunctionData & data) = 0;
 
   virtual void initialize() = 0;
-
-  virtual void evalScore(models::CriticFunctionData & data) = 0;
 
   std::string getName()
   {

@@ -15,9 +15,9 @@ void PreferForwardCritic::initialize()
     logger_, "PreferForwardCritic instantiated with %d power and %f weight.", power_, weight_);
 }
 
-void PreferForwardCritic::evalScore(models::CriticFunctionData & data)
+void PreferForwardCritic::score(models::CriticFunctionData & data)
 {
-  if(!enabled_) {
+  if (!enabled_) {
     return;
   }
 

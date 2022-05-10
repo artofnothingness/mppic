@@ -15,10 +15,10 @@ void GoalCritic::initialize()
     power_, weight_);
 }
 
-void GoalCritic::evalScore(models::CriticFunctionData & data)
+void GoalCritic::score(models::CriticFunctionData & data)
 {
 
-  if(!enabled_) {
+  if (!enabled_) {
     return;
   }
 

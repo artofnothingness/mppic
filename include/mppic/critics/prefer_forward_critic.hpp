@@ -13,7 +13,7 @@ class PreferForwardCritic : public CriticFunction
 public:
   void initialize() override;
 
-  void evalScore(models::CriticFunctionData & data) override;
+  void score(models::CriticFunctionData & data) override;
 
 protected:
   unsigned int power_{0};

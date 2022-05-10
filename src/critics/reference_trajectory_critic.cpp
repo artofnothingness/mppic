@@ -22,9 +22,11 @@ void ReferenceTrajectoryCritic::initialize()
     reference_cost_power_, reference_cost_weight_);
 }
 
-void ReferenceTrajectoryCritic::evalScore(models::CriticFunctionData & data)
+void ReferenceTrajectoryCritic::score(models::CriticFunctionData & data)
 {
-  if (!enabled_ || utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose, data.path)) {
+  if (!enabled_ ||
+    utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose, data.path))
+  {
     return;
   }
 

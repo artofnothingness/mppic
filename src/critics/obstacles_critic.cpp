@@ -20,10 +20,10 @@ void ObstaclesCritic::initialize()
     power_, weight_, consider_footprint_ ? "footprint" : "circular");
 }
 
-void ObstaclesCritic::evalScore(models::CriticFunctionData & data)
+void ObstaclesCritic::score(models::CriticFunctionData & data)
 {
 
-  if(!enabled_) {
+  if (!enabled_) {
     return;
   }
 

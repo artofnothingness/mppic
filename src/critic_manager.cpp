@@ -53,6 +53,9 @@ void CriticManager::evalTrajectoriesScores(
   models::CriticFunctionData & data) const
 {
   for (size_t q = 0; q < critics_.size(); q++) {
+    if (data.stop_flag) {
+      break;
+    }
     critics_[q]->score(data);
   }
 }

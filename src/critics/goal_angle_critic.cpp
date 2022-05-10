@@ -22,9 +22,9 @@ void GoalAngleCritic::initialize()
     power_, weight_, threshold_to_consider_goal_angle_);
 }
 
-void GoalAngleCritic::evalScore(models::CriticFunctionData & data)
+void GoalAngleCritic::score(models::CriticFunctionData & data)
 {
-  if(!enabled_) {
+  if (!enabled_) {
     return;
   }
 

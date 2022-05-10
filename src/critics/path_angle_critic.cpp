@@ -17,10 +17,10 @@ void PathAngleCritic::initialize()
     power_, weight_);
 }
 
-void PathAngleCritic::evalScore(models::CriticFunctionData & data)
+void PathAngleCritic::score(models::CriticFunctionData & data)
 {
 
-  if(!enabled_) {
+  if (!enabled_) {
     return;
   }
 

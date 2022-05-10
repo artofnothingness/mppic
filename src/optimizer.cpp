@@ -153,21 +153,23 @@ xt::xtensor<double, 3> Optimizer::generateNoisedTrajectories()
 void Optimizer::generateNoisedControls()
 {
   auto & s = settings_;
-  vx_noises_ = xt::random::randn<double>({s.batch_size, s.time_steps, 1U},
+  vx_noises_ = xt::random::randn<double>(
+    {s.batch_size, s.time_steps, 1U},
     0.0, s.sampling_std.vx);
 
-  wz_noises_ = xt::random::randn<double>({s.batch_size, s.time_steps, 1U},
+  wz_noises_ = xt::random::randn<double>(
+    {s.batch_size, s.time_steps, 1U},
     0.0, s.sampling_std.wz);
 
   if (isHolonomic()) {
     vy_noises_ = xt::random::randn<double>(
       {s.batch_size, s.time_steps, 1U}, 0.0, s.sampling_std.vy);
     state_.getControls() = control_sequence_.data +
-           xt::concatenate(xt::xtuple(vx_noises_, vy_noises_, wz_noises_), 2);
+      xt::concatenate(xt::xtuple(vx_noises_, vy_noises_, wz_noises_), 2);
   }
 
   state_.getControls() = control_sequence_.data +
-         xt::concatenate(xt::xtuple(vx_noises_, wz_noises_), 2);
+    xt::concatenate(xt::xtuple(vx_noises_, wz_noises_), 2);
 }
 
 bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}

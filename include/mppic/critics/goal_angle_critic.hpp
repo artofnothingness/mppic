@@ -19,7 +19,7 @@ public:
    *
    * @param costs [out] add goal angle cost values to this tensor
    */
-  void evalScore(models::CriticFunctionData & data) override;
+  void score(models::CriticFunctionData & data) override;
 
 protected:
   double threshold_to_consider_goal_angle_{0};

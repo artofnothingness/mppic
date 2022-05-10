@@ -18,7 +18,7 @@ public:
    *
    * @param costs [out] add reference cost values to this tensor
    */
-  void evalScore(models::CriticFunctionData & data) override;
+  void score(models::CriticFunctionData & data) override;
 
 protected:
   unsigned int reference_point_step_{0};
