@@ -11,7 +11,7 @@ void LocalGoalCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
 
-  getParam(consider_angle_, "consider_angle_", true);
+  getParam(consider_angle_, "consider_angle", true);
   getParam(angle_offset_, "angle_offset", 6);
   getParam(angle_cost_power_, "angle_cost_power", 1);
   getParam(angle_cost_weight_, "angle_cost_weight", 3.0);
