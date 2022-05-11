@@ -15,6 +15,8 @@ public:
 
   void score(models::CriticFunctionData & data) override;
 
+  size_t findPathFurthestPoint();
+
 protected:
   bool consider_angle_;
   size_t angle_offset_{0};
