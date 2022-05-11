@@ -17,7 +17,7 @@ void LocalGoalCritic::initialize()
   getParam(angle_cost_weight_, "angle_cost_weight", 3.0);
 
   getParam(consider_distance_, "consider_distance", true);
-  getParam(distance_goal_count_, "disance_goal_count", 2);
+  getParam(distance_goal_count_, "distance_goal_count", 2);
   getParam(distance_offset_, "distance_offset", 6);
   getParam(distance_cost_power_, "distance_cost_power", 2);
   getParam(distance_cost_weight_, "distance_cost_weight", 3.0);
