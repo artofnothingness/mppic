@@ -104,18 +104,15 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
   state_.pose = robot_pose;
   state_.speed = robot_speed;
 
-  bool stop_flag = false;
+  auto plan_tensor = utils::toTensor(plan);
+
   costs_.fill(0);
-
+  bool stop_flag = false;
   for (size_t i = 0; i < settings_.iteration_count; ++i) {
-    generated_trajectories_ =
-      generateNoisedTrajectories();
-
-
+    generated_trajectories_ = generateNoisedTrajectories();
     auto data =
       models::CriticFunctionData{state_, generated_trajectories_,
-      utils::toTensor(plan), goal_checker, costs_, stop_flag, std::nullopt};
-
+      plan_tensor, costs_, stop_flag, goal_checker, std::nullopt};
     critic_manager_.evalTrajectoriesScores(data);
     updateControlSequence();
   }
@@ -126,9 +123,9 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
     shiftControlSequence();
   }
 
-
   if (stop_flag) {
     reset();
+    throw std::runtime_error("All trajectories collide");
   }
   return control;
 }
