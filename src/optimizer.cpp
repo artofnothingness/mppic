@@ -125,7 +125,6 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
 
   if (stop_flag) {
     reset();
-    throw std::runtime_error("All trajectories collide");
   }
   return control;
 }

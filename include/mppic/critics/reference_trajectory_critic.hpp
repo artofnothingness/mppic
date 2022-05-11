@@ -21,7 +21,7 @@ public:
   void score(models::CriticFunctionData & data) override;
 
 protected:
-  unsigned int reference_point_step_{0};
+  unsigned int path_point_step_{0};
   unsigned int trajectory_point_step_{0};
 
   unsigned int reference_cost_power_{0};
