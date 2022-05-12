@@ -42,11 +42,9 @@ void ObstaclesCritic::score(models::CriticFunctionData & data)
         break;
       }
 
-      if (j == data.trajectories.shape(1) - 1) {
-        all_trajectories_collide = false;
-      }
     }
 
+    if (!trajectory_collide) {all_trajectories_collide = false;}
     data.costs[i] += trajectory_collide ? collision_cost_ : scoreCost(trajectory_cost);
   }
 
