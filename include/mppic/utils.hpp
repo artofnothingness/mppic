@@ -28,7 +28,6 @@
 namespace mppi::utils
 {
 
-
 template<typename T, typename S>
 geometry_msgs::msg::TwistStamped toTwistStamped(
   const T & velocities, models::ControlSequnceIdxes idx,

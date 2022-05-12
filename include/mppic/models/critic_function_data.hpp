@@ -17,9 +17,10 @@ struct CriticFunctionData
   const models::State & state;
   const xt::xtensor<double, 3> & trajectories;
   const xt::xtensor<double, 2> & path;
-  xt::xtensor<double, 1> & costs;
-  bool & stop_flag;
 
+  xt::xtensor<double, 1> & costs;
+
+  bool fail_flag;
   nav2_core::GoalChecker * goal_checker;
   std::optional<size_t> furthest_reached_path_point;
 };

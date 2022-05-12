@@ -25,6 +25,7 @@
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
 #include "mppic/parameters_handler.hpp"
+#include "mppic/utils.hpp"
 
 namespace mppi
 {
@@ -54,6 +55,11 @@ public:
   void setSpeedLimit(double speed_limit, bool percentage);
 
 protected:
+  void prepare(
+    const geometry_msgs::msg::PoseStamped & robot_pose,
+    const geometry_msgs::msg::Twist & robot_speed,
+    const nav_msgs::msg::Path & plan, nav2_core::GoalChecker * goal_checker);
+
   void getParams();
   void reset();
 
@@ -110,6 +116,8 @@ protected:
 
   void setOffset(double controller_frequency);
 
+  void fallback(bool fail);
+
 protected:
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
@@ -127,11 +135,15 @@ protected:
   models::ControlSequence control_sequence_;
 
   xt::xtensor<double, 3> generated_trajectories_;
+  xt::xtensor<double, 2> plan_;
   xt::xtensor<double, 1> costs_;
 
   xt::xtensor<double, 3> vx_noises_;
   xt::xtensor<double, 3> vy_noises_;
   xt::xtensor<double, 3> wz_noises_;
+
+  models::CriticFunctionData critics_data_ =
+  {state_, generated_trajectories_, plan_, costs_, false, nullptr, std::nullopt};
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };

@@ -54,6 +54,8 @@ void Optimizer::getParams()
   getParam(s.sampling_std.vx, "vx_std", 0.2);
   getParam(s.sampling_std.vy, "vy_std", 0.2);
   getParam(s.sampling_std.wz, "wz_std", 1.0);
+  getParam(s.retry_attempt_limit, "retry_attempt_limit", 1);
+
   getParam(motion_model_name, "motion_model", std::string("DiffDrive"));
 
   s.constraints = s.base_constraints;
@@ -101,19 +103,11 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
   const geometry_msgs::msg::Twist & robot_speed,
   const nav_msgs::msg::Path & plan, nav2_core::GoalChecker * goal_checker)
 {
-  state_.pose = robot_pose;
-  state_.speed = robot_speed;
+  prepare(robot_pose, robot_speed, plan, goal_checker);
 
-  auto plan_tensor = utils::toTensor(plan);
-
-  costs_.fill(0);
-  bool stop_flag = false;
   for (size_t i = 0; i < settings_.iteration_count; ++i) {
     generated_trajectories_ = generateNoisedTrajectories();
-    auto data =
-      models::CriticFunctionData{state_, generated_trajectories_,
-      plan_tensor, costs_, stop_flag, goal_checker, std::nullopt};
-    critic_manager_.evalTrajectoriesScores(data);
+    critic_manager_.evalTrajectoriesScores(critics_data_);
     updateControlSequence();
   }
 
@@ -123,10 +117,41 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
     shiftControlSequence();
   }
 
-  if (stop_flag) {
-    reset();
-  }
+  fallback(critics_data_.fail_flag);
+
   return control;
+}
+
+void Optimizer::fallback(bool fail)
+{
+  static size_t counter = 0;
+
+  if (!fail) {
+    counter = 0;
+    return;
+  }
+
+  if (counter > settings_.retry_attempt_limit) {
+    counter = 0;
+    reset();
+    throw std::runtime_error("Optimizer fail to compute path");
+  }
+
+  counter++;
+}
+
+void Optimizer::prepare(
+  const geometry_msgs::msg::PoseStamped & robot_pose,
+  const geometry_msgs::msg::Twist & robot_speed,
+  const nav_msgs::msg::Path & plan, nav2_core::GoalChecker * goal_checker)
+{
+  state_.pose = robot_pose;
+  state_.speed = robot_speed;
+  plan_ = utils::toTensor(plan);
+  costs_.fill(0);
+
+  critics_data_.fail_flag = false;
+  critics_data_.goal_checker = goal_checker;
 }
 
 void Optimizer::shiftControlSequence()
