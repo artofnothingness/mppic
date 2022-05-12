@@ -65,7 +65,6 @@ protected:
   template<typename T>
   static auto as(const rclcpp::Parameter & parameter);
 
-protected:
   std::mutex parameters_change_mutex_;
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr
