@@ -131,11 +131,12 @@ void Optimizer::fallback(bool fail)
     return;
   }
 
+  reset();
+
   if (counter > settings_.retry_attempt_limit) {
     counter = 0;
-    reset();
     throw std::runtime_error("Optimizer fail to compute path");
-  }
+  } 
 
   counter++;
 }
