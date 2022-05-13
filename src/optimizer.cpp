@@ -107,7 +107,7 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
 
   do {
     optimize();
-  } while (fallback(critics_data_.fail_flag))
+  } while (fallback(critics_data_.fail_flag));
 
   auto control = getControlFromSequenceAsTwist(plan.header.stamp);
 
@@ -129,7 +129,9 @@ void Optimizer::optimize()
 
 bool Optimizer::fallback(bool fail)
 {
+  static size_t counter = 0;
   bool continue_optimization = false;
+
   if (!fail) {
     counter = 0;
     return continue_optimization;
@@ -137,7 +139,6 @@ bool Optimizer::fallback(bool fail)
 
   reset();
 
-  static size_t counter = 0;
   if (counter > settings_.retry_attempt_limit) {
     counter = 0;
     throw std::runtime_error("Optimizer fail to compute path");
