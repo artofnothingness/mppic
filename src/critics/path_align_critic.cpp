@@ -37,7 +37,6 @@ void PathAlignCritic::score(models::CriticFunctionData & data)
   auto P1 = xt::view(data.path, xt::range(_, -1), xt::all());  // segments start points
   auto P2 = xt::view(data.path, xt::range(1, _), xt::all());  // segments end points
 
-
   size_t trajectories_count = P3.shape(0);
   size_t trajectories_points_count = P3.shape(1);
   size_t reference_segments_count = data.path.shape(0) - 1;

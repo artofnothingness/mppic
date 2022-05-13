@@ -130,11 +130,10 @@ void Optimizer::optimize()
 bool Optimizer::fallback(bool fail)
 {
   static size_t counter = 0;
-  bool continue_optimization = false;
 
   if (!fail) {
     counter = 0;
-    return continue_optimization;
+    return false;
   }
 
   reset();
@@ -142,12 +141,10 @@ bool Optimizer::fallback(bool fail)
   if (counter > settings_.retry_attempt_limit) {
     counter = 0;
     throw std::runtime_error("Optimizer fail to compute path");
-  } else {
-    continue_optimization = true;
   }
 
   counter++;
-  return continue_optimization;
+  return true;
 }
 
 void Optimizer::prepare(
