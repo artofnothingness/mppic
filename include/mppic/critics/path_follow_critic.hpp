@@ -8,7 +8,7 @@
 namespace mppi::critics
 {
 
-class LocalGoalCritic : public CriticFunction
+class PathFollowCritic : public CriticFunction
 {
 public:
   void initialize() override;
@@ -19,7 +19,7 @@ public:
 
 protected:
   bool consider_angle_;
-  size_t angle_offset_{0};
+  size_t furthest_angle_point_offset_{0};
   unsigned int angle_cost_power_{0};
   double angle_cost_weight_{0};
 
@@ -29,7 +29,7 @@ protected:
   unsigned int distance_cost_power_{0};
   double distance_cost_weight_{0};
 
-  double stop_usage_path_reached_ratio_{0};
+  double distance_to_goal_upper_activation_threshold_{0};
 };
 
 }  // namespace mppi::critics

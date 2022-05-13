@@ -1,5 +1,5 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#include "mppic/critics/local_goal_critic.hpp"
+#include "mppic/critics/path_follow_critic.hpp"
 
 #include <xtensor/xmath.hpp>
 #include <xtensor/xsort.hpp>
@@ -7,25 +7,27 @@
 namespace mppi::critics
 {
 
-void LocalGoalCritic::initialize()
+void PathFollowCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
 
+  getParam(
+    distance_to_goal_upper_activation_threshold_,
+    "distance_to_goal_upper_activation_threshold", 0.5);
+
   getParam(consider_angle_, "consider_angle", true);
-  getParam(angle_offset_, "angle_offset", 6);
+  getParam(offset_from_furthest_for_angle_penalize_, "offset_from_furthest_for_angle_penalize", 6);
   getParam(angle_cost_power_, "angle_cost_power", 1);
   getParam(angle_cost_weight_, "angle_cost_weight", 3.0);
 
   getParam(consider_distance_, "consider_distance", true);
+  getParam(offset_from_furthest_for_distance_penalize_, "offset_from_furthest_for_distance_penalize", 6);
   getParam(distance_goal_count_, "distance_goal_count", 2);
-  getParam(distance_offset_, "distance_offset", 6);
   getParam(distance_cost_power_, "distance_cost_power", 2);
   getParam(distance_cost_weight_, "distance_cost_weight", 3.0);
-
-  getParam(stop_usage_path_reached_ratio_, "stop_usage_path_reached_ratio", 0.35);
 }
 
-void LocalGoalCritic::score(models::CriticFunctionData & data)
+void PathFollowCritic::score(models::CriticFunctionData & data)
 {
   if(!enabled_) {
     return;
@@ -41,22 +43,26 @@ void LocalGoalCritic::score(models::CriticFunctionData & data)
     furthest_reached_path_point_idx = findPathFurthestPoint(data);
   }
 
+
+  auto furthest_reached_path_point = xt::view(path_points, furthest_reached_path_point_idx, xt::all());
+  auto goal_point = xt::view(path_points, -1, xt::all());
+
+  auto distance_from_goal_to_furthest_point = xt::norm_l2(furthest_reached_path_point - goal_point);
+
+  if (distance_from_goal_to_furthest_point > distance_to_goal_upper_activation_threshold_) {
+    return;
+  }
+
   // calculate range of points to consider as local goals
-  auto lower_distance_offset = std::min(furthest_reached_path_point_idx + distance_offset_, path_points.shape(0) - 1);
+  auto lower_distance_offset = std::min(furthest_reached_path_point_idx + offset_from_furthest_for_distance_penalize, path_points.shape(0) - 1);
   auto upper_distance_offset = std::min(lower_distance_offset + distance_goal_count_, path_points.shape(0) - 1);
 
   // calculate angle point as local goal
   auto angle_offset = std::min(
-    furthest_reached_path_point_idx + angle_offset_, path_points.shape(
+    furthest_reached_path_point_idx + offset_from_furthest_for_angle_penalize_, path_points.shape(
       0) - 1);
 
   // portion of the path which if reached by trajectories then critic returns
-  size_t threshold_idx = static_cast<size_t>(
-    static_cast<double>(data.path.shape(0) - 1) * stop_usage_path_reached_ratio_);
-
-  if (lower_distance_offset < threshold_idx) {
-    return;
-  }
 
   if (consider_distance_ ) {
     auto path_interval = xt::view(path_points, xt::range(lower_distance_offset, upper_distance_offset), xt::all());
@@ -83,7 +89,7 @@ void LocalGoalCritic::score(models::CriticFunctionData & data)
   }
 }
 
-size_t LocalGoalCritic::findPathFurthestPoint(models::CriticFunctionData & data) {
+size_t PathFollowCritic::findPathFurthestPoint(models::CriticFunctionData & data) {
   auto last_points_ext =
     xt::view(data.trajectories, xt::all(), -1, xt::newaxis(), xt::range(0, 2));
   auto distances = xt::norm_l2(last_points_ext - path_points, {2});
@@ -109,5 +115,5 @@ size_t LocalGoalCritic::findPathFurthestPoint(models::CriticFunctionData & data)
 #include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(
-  mppi::xtensor::critics::LocalGoalCritic,
-  mppi::xtensor::critics::CriticFunction)
+  mppi::critics::PathFollowCritic,
+  mppi::critics::CriticFunction)

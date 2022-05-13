@@ -22,7 +22,7 @@ public:
   void score(models::CriticFunctionData & data) override;
 
 protected:
-  double threshold_to_consider_goal_angle_{0};
+  double distance_to_goal_upper_activation_threshold_{0};
   unsigned int power_{0};
   double weight_{0};
 };
