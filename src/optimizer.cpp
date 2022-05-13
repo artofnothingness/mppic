@@ -105,9 +105,9 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
 {
   prepare(robot_pose, robot_speed, plan, goal_checker);
 
-  while (fallback(critics_data_.fail_flag)) {
+  do {
     optimize();
-  }
+  } while (fallback(critics_data_.fail_flag))
 
   auto control = getControlFromSequenceAsTwist(plan.header.stamp);
 

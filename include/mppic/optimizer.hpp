@@ -118,7 +118,7 @@ protected:
 
   void setOffset(double controller_frequency);
 
-  void fallback(bool fail);
+  bool fallback(bool fail);
 
 protected:
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
