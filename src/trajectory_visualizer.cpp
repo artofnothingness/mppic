@@ -40,6 +40,25 @@ std_msgs::msg::ColorRGBA createColor(float r, float g, float b, float a)
   return color;
 }
 
+visualization_msgs::msg::Marker createMarker(
+  int id, const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & scale,
+  const std_msgs::msg::ColorRGBA & color, const std::string & frame_id)
+{
+  using visualization_msgs::msg::Marker;
+  Marker marker;
+  marker.header.frame_id = frame_id;
+  marker.header.stamp = rclcpp::Time(0, 0);
+  marker.ns = "MarkerNS";
+  marker.id = id;
+  marker.type = Marker::SPHERE;
+  marker.action = Marker::ADD;
+
+  marker.pose = pose;
+  marker.scale = scale;
+  marker.color = color;
+  return marker;
+}
+
 }  // namespace
 
 void TrajectoryVisualizer::on_configure(
@@ -130,25 +149,6 @@ void TrajectoryVisualizer::visualize(nav_msgs::msg::Path plan)
 
   auto plan_ptr = std::make_unique<nav_msgs::msg::Path>(std::move(plan));
   transformed_path_pub_->publish(std::move(plan_ptr));
-}
-
-visualization_msgs::msg::Marker TrajectoryVisualizer::createMarker(
-  int id, const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & scale,
-  const std_msgs::msg::ColorRGBA & color, const std::string & frame_id)
-{
-  using visualization_msgs::msg::Marker;
-  Marker marker;
-  marker.header.frame_id = frame_id;
-  marker.header.stamp = rclcpp::Time(0, 0);
-  marker.ns = "MarkerNS";
-  marker.id = id;
-  marker.type = Marker::SPHERE;
-  marker.action = Marker::ADD;
-
-  marker.pose = pose;
-  marker.scale = scale;
-  marker.color = color;
-  return marker;
 }
 
 }  // namespace mppi

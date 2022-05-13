@@ -9,12 +9,8 @@
       <description>mppi critic for driving towards the goal</description>
     </class>
 
-    <class type="mppi::critics::ReferenceTrajectoryCritic" base_class_type="mppi::critics::CriticFunction">
-      <description>mppi critic for trajectory tracking</description>
-    </class>
-
-    <class type="mppi::critics::ApproxReferenceTrajectoryCritic" base_class_type="mppi::critics::CriticFunction">
-      <description>mppi critic for trajectory tracking, approximated</description>
+    <class type="mppi::critics::PathAlignCritic" base_class_type="mppi::critics::CriticFunction">
+      <description>mppi critic for aligning to path</description>
     </class>
 
     <class type="mppi::critics::GoalAngleCritic" base_class_type="mppi::critics::CriticFunction">

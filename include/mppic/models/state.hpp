@@ -9,6 +9,9 @@
 #include <xtensor/xview.hpp>
 #include <xtensor/xarray.hpp>
 
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+
 namespace mppi::models
 {
 
@@ -84,6 +87,8 @@ private:
  **/
 struct State
 {
+  geometry_msgs::msg::PoseStamped pose;
+  geometry_msgs::msg::Twist speed;
   xt::xtensor<double, 3> data;
   StateIdxes idx;
 

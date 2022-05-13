@@ -8,19 +8,22 @@
 namespace mppi::critics
 {
 
-class GoalCritic : public CriticFunction
+class PathAlignCritic : public CriticFunction
 {
 public:
   void initialize() override;
 
   /**
-   * @brief Evaluate cost related to goal following
+   * @brief Evaluate cost related to trajectories path alignment
    *
    * @param costs [out] add reference cost values to this tensor
    */
   void score(models::CriticFunctionData & data) override;
 
 protected:
+  unsigned int path_point_step_{0};
+  unsigned int trajectory_point_step_{0};
+
   unsigned int power_{0};
   double weight_{0};
 };

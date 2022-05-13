@@ -1,10 +1,11 @@
 // Copyright 2022 FastSense, Samsung Research
 #pragma once
 
+#include "nav2_costmap_2d/footprint_collision_checker.hpp"
+
 #include "mppic/critic_function.hpp"
 #include "mppic/models/state.hpp"
 #include "mppic/utils.hpp"
-#include "nav2_costmap_2d/footprint_collision_checker.hpp"
 
 namespace mppi::critics
 {
@@ -19,13 +20,7 @@ public:
    *
    * @param costs [out] add obstacle cost values to this tensor
    */
-  void score(
-    const geometry_msgs::msg::PoseStamped & /*robot_pose*/,
-    const models::State & state,
-    const xt::xtensor<double, 3> & trajectories,
-    const xt::xtensor<double, 2> & /*path*/,
-    xt::xtensor<double, 1> & costs,
-    nav2_core::GoalChecker * goal_checker) override;
+  void score(models::CriticFunctionData & data) override;
 
 protected:
   bool inCollision(unsigned char cost) const;
