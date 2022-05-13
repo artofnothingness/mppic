@@ -51,7 +51,6 @@ void ObstaclesCritic::score(models::CriticFunctionData & data)
 
   if (all_trajectories_collide) {
     data.fail_flag = true;
-    RCLCPP_WARN(logger_, "All trajectories collide! Reset Optimizer");
   }
 }
 

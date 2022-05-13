@@ -105,10 +105,8 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
 {
   prepare(robot_pose, robot_speed, plan, goal_checker);
 
-  for (size_t i = 0; i < settings_.iteration_count; ++i) {
-    generated_trajectories_ = generateNoisedTrajectories();
-    critic_manager_.evalTrajectoriesScores(critics_data_);
-    updateControlSequence();
+  while (fallback(critics_data_.fail_flag)) {
+    optimize();
   }
 
   auto control = getControlFromSequenceAsTwist(plan.header.stamp);
@@ -117,28 +115,38 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
     shiftControlSequence();
   }
 
-  fallback(critics_data_.fail_flag);
-
   return control;
 }
 
-void Optimizer::fallback(bool fail)
+void Optimizer::optimize()
 {
-  static size_t counter = 0;
+  for (size_t i = 0; i < settings_.iteration_count; ++i) {
+    generated_trajectories_ = generateNoisedTrajectories();
+    critic_manager_.evalTrajectoriesScores(critics_data_);
+    updateControlSequence();
+  }
+}
 
+bool Optimizer::fallback(bool fail)
+{
+  bool continue_optimization = false;
   if (!fail) {
     counter = 0;
-    return;
+    return continue_optimization;
   }
 
   reset();
 
+  static size_t counter = 0;
   if (counter > settings_.retry_attempt_limit) {
     counter = 0;
     throw std::runtime_error("Optimizer fail to compute path");
-  } 
+  } else {
+    continue_optimization = true;
+  }
 
   counter++;
+  return continue_optimization;
 }
 
 void Optimizer::prepare(
