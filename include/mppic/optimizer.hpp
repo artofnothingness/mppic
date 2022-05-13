@@ -145,7 +145,7 @@ protected:
   xt::xtensor<double, 3> wz_noises_;
 
   models::CriticFunctionData critics_data_ =
-  {state_, generated_trajectories_, plan_, costs_, false, nullptr, std::nullopt};
+  {state_, generated_trajectories_, plan_, costs_, false, nullptr, std::nullopt}; /// Caution, keep references
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };

@@ -99,6 +99,7 @@ sudo make install
  | path_align_cost_power      | int    |                                                                                                                         |
  | enable_nearest_goal_critic | bool   | enable critic that scores by mean distance from generated trajectories to nearest to generated trajectories path points |
  | path_point_step            | int    | Consider path points with given step                                                                                    |
+ | trajectory_point_step      | int    | Consider generated trajectories points with given step                                                                  |
 
 
 #### ObstaclesCritic params
