@@ -8,7 +8,7 @@
 namespace mppi::critics
 {
 
-class ReferenceTrajectoryCritic : public CriticFunction
+class PathAlignCritic : public CriticFunction
 {
 public:
   void initialize() override;
@@ -24,8 +24,8 @@ protected:
   unsigned int path_point_step_{0};
   unsigned int trajectory_point_step_{0};
 
-  unsigned int reference_cost_power_{0};
-  double reference_cost_weight_{0};
+  unsigned int power_{0};
+  double weight_{0};
 };
 
 }  // namespace mppi::critics

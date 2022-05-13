@@ -1,5 +1,5 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#include "mppic/critics/reference_trajectory_critic.hpp"
+#include "mppic/critics/path_align_critic.hpp"
 
 #include <xtensor/xfixed.hpp>
 #include <xtensor/xmath.hpp>
@@ -7,11 +7,11 @@
 namespace mppi::critics
 {
 
-void ReferenceTrajectoryCritic::initialize()
+void PathAlignCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
-  getParam(reference_cost_power_, "reference_cost_power", 1);
-  getParam(reference_cost_weight_, "reference_cost_weight", 3.0);
+  getParam(power_, "path_align_cost_power", 1);
+  getParam(weight_, "path_aling_cost_weight", 3.0);
 
   getParam(path_point_step_, "path_point_step", 1);
   getParam(trajectory_point_step_, "trajectory_point_step", 2);
@@ -19,10 +19,10 @@ void ReferenceTrajectoryCritic::initialize()
   RCLCPP_INFO(
     logger_,
     "ReferenceTrajectoryCritic instantiated with %d power and %f weight",
-    reference_cost_power_, reference_cost_weight_);
+    power_, weight_);
 }
 
-void ReferenceTrajectoryCritic::score(models::CriticFunctionData & data)
+void PathAlignCritic::score(models::CriticFunctionData & data)
 {
   if (!enabled_ ||
     utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose, data.path))
@@ -101,7 +101,7 @@ void ReferenceTrajectoryCritic::score(models::CriticFunctionData & data)
   }
 
   data.furthest_reached_path_point = max_s;
-  data.costs += xt::pow(cost * reference_cost_weight_, reference_cost_power_);
+  data.costs += xt::pow(cost * weight_, power_);
 }
 
 }  // namespace mppi::critics
@@ -109,5 +109,5 @@ void ReferenceTrajectoryCritic::score(models::CriticFunctionData & data)
 #include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(
-  mppi::critics::ReferenceTrajectoryCritic,
+  mppi::critics::PathAlignCritic,
   mppi::critics::CriticFunction)

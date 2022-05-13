@@ -90,19 +90,12 @@ sudo make install
  | path_angle_cost_weight    | double |                                                                                                             |
  | path_angle_cost_power     | int    |                                                                                                             |
 
-#### ReferenceTrajectoryCritic params
+#### PathAlignCritic params
  | Parameter                        | Type   | Definition                                                                                                                         |
  | ---------------                  | ------ | -----------------------------------------------------------------------------------------------------------                        |
- | reference_cost_weight            | double |                                                                                                                                    |
- | reference_cost_power             | int    |                                                                                                                                    |
+ | path_align_cost_weight            | double |                                                                                                                                    |
+ | path_align_cost_power             | int    |                                                                                                                                    |
  | enable_nearest_goal_critic       | bool   | enable critic that scores by mean distance from generated trajectories to nearest to generated trajectories path points            |
- | nearest_goal_offset              | int    | take offseted nearest path point [nearest + offset] in considiration                                                               |
- | nearest_goal_count               | int    | take nearest path points [nearest + offset, nearest + offset + count] in considiration                                             |
- | nearset_goal_cost_weight         | int    |                                                                                                                                    |
- | enable_nearest_path_angle_critic | bool   | enable critic that scores by mean angle difference between generated trajectories and nearest to generated trajectories path point |
- | nearest_path_angle_offset        | int    | take offseted nearest path point [nearest + offset] in considiration                                                               |
- | nearest_path_angle_cost_power    | int    |                                                                                                                                    |
- | nearest_path_angle_cost_weight   | int    |                                                                                                                                    |
 
 #### ObstaclesCritic params
  | Parameter            | Type   | Definition                                                                                                  |
