@@ -89,27 +89,6 @@ void PathFollowCritic::score(models::CriticFunctionData & data)
   }
 }
 
-size_t PathFollowCritic::findPathFurthestPoint(models::CriticFunctionData & data) {
-  auto last_points_ext =
-    xt::view(data.trajectories, xt::all(), -1, xt::newaxis(), xt::range(0, 2));
-  auto distances = xt::norm_l2(last_points_ext - path_points, {2});
-  size_t max_id_by_trajectories = 0;
-  double min_distance_by_path = std::numeric_limits<double>::max();
-
-  for (size_t i = 0; i < distances.shape(0); i++) {
-    size_t min_id_by_path = 0;
-    for (size_t j = 0; j < distances.shape(1); j++) {
-      if (min_distance_by_path < distances(i, j)) {
-        min_distance_by_path = distances(i, j);
-        min_id_by_path = j;
-      }
-    }
-    max_id_by_trajectories = std::max(max_id_by_trajectories, min_id_by_path);
-  }
-  return max_id_by_trajectories;
-}
-
-
 }  // namespace mppi::critics
 
 #include <pluginlib/class_list_macros.hpp>
