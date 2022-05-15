@@ -12,19 +12,14 @@ void PathFollowCritic::initialize()
   auto getParam = parameters_handler_->getParamGetter(name_);
 
   getParam(
-    distance_to_goal_upper_activation_threshold_,
-    "distance_to_goal_upper_activation_threshold", 0.5);
+    deactivate_if_distance_to_goal_less_than_threshold_,
+    "activate_if_distance_to_goal_less_than_threshold", 0.5);
 
-  getParam(consider_angle_, "consider_angle", true);
-  getParam(offset_from_furthest_for_angle_penalize_, "offset_from_furthest_for_angle_penalize", 6);
-  getParam(angle_cost_power_, "angle_cost_power", 1);
-  getParam(angle_cost_weight_, "angle_cost_weight", 3.0);
+  getParam(offset_from_furthest_, "offset_from_furthest", 6);
+  getParam(path_point_count_from_offseted_furthest_, "path_point_count_from_offseted_furthest", 2);
 
-  getParam(consider_distance_, "consider_distance", true);
-  getParam(offset_from_furthest_for_distance_penalize_, "offset_from_furthest_for_distance_penalize", 6);
-  getParam(distance_goal_count_, "distance_goal_count", 2);
-  getParam(distance_cost_power_, "distance_cost_power", 2);
-  getParam(distance_cost_weight_, "distance_cost_weight", 3.0);
+  getParam(power_, "path_follow_power", 2);
+  getParam(weight_, "path_follow_weight", 3.0);
 }
 
 void PathFollowCritic::score(models::CriticFunctionData & data)
@@ -33,60 +28,27 @@ void PathFollowCritic::score(models::CriticFunctionData & data)
     return;
   }
 
-  auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
-
-  // get furthest point among trajectories nearest points to path
-  size_t furthest_reached_path_point_idx;
-  if (data.furthest_reached_path_point) {
-    furthest_reached_path_point_idx = *data.furthest_reached_path_point;
-  } else {
-    furthest_reached_path_point_idx = findPathFurthestPoint(data);
-  }
-
-
-  auto furthest_reached_path_point = xt::view(path_points, furthest_reached_path_point_idx, xt::all());
-  auto goal_point = xt::view(path_points, -1, xt::all());
-
-  auto distance_from_goal_to_furthest_point = xt::norm_l2(furthest_reached_path_point - goal_point);
-
-  if (distance_from_goal_to_furthest_point > distance_to_goal_upper_activation_threshold_) {
+  utils::setPathFurthestPointIfNotSet(data);
+  if (deactivate_if_distance_to_goal_less_than_threshold_ < 
+      utils::distanceFromFurthestToGoal(data)) {
     return;
   }
 
-  // calculate range of points to consider as local goals
-  auto lower_distance_offset = std::min(furthest_reached_path_point_idx + offset_from_furthest_for_distance_penalize, path_points.shape(0) - 1);
-  auto upper_distance_offset = std::min(lower_distance_offset + distance_goal_count_, path_points.shape(0) - 1);
+  auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
+  auto trajectories_last_points_extended = xt::view(data.trajectories, xt::all(), -1, xt::newaxis(), xt::range(0, 2));
 
-  // calculate angle point as local goal
-  auto angle_offset = std::min(
-    furthest_reached_path_point_idx + offset_from_furthest_for_angle_penalize_, path_points.shape(
-      0) - 1);
+  auto first_considered_point = std::min(
+      *data.furthest_reached_path_point + offset_from_furthest_, path_points.shape(0) - 1);
 
-  // portion of the path which if reached by trajectories then critic returns
+  auto last_considered_point = std::min(
+      first_considered_point + path_point_count_from_offseted_furthest_, path_points.shape(0) - 1);
 
-  if (consider_distance_ ) {
-    auto path_interval = xt::view(path_points, xt::range(lower_distance_offset, upper_distance_offset), xt::all());
-    auto trajectories_last_points = xt::view(data.trajectories, xt::all(), -1, xt::newaxis(), xt::range(0, 2));
-    auto distance_to_furthest = xt::norm_l2(trajectories_last_points - path_interval, {2});
-    auto mean_distance_to_furthest = xt::mean(distance_to_furthest, {1});
-    data.costs += xt::pow(distance_cost_weight_ * mean_distance_to_furthest, distance_cost_power_);
-  }
+  auto considered_path_points = xt::range(first_considered_point, last_considered_point);
+  auto path_interval = xt::view(path_points, considered_path_points, xt::all());
 
-  // GoalAngleCritic for local goal
-  if (consider_angle_) {
-    auto goal_x = xt::view(data.path, angle_offset, 0);
-    auto goal_y = xt::view(data.path, angle_offset, 1);
-    auto traj_xs = xt::view(data.trajectories, xt::all(), xt::all(), 0);
-    auto traj_ys = xt::view(data.trajectories, xt::all(), xt::all(), 1);
-
-    auto traj_yaws = xt::view(data.trajectories, xt::all(), xt::all(), 2);
-    auto yaws_between_points = xt::atan2(goal_y - traj_ys, goal_x - traj_xs);
-    auto yaws = xt::abs(utils::shortest_angular_distance(traj_yaws, yaws_between_points));
-
-    auto mean_angles_to_furthest = xt::mean(yaws, {1});
-
-    data.costs += xt::pow(angle_cost_weight_ * mean_angles_to_furthest, angle_cost_power_);
-  }
+  auto distance_to_furthest = xt::norm_l2(trajectories_last_points_extended - path_interval, {2});
+  auto mean_distance_to_furthest = xt::mean(distance_to_furthest, {1});
+  data.costs += xt::pow(weight_ * mean_distance_to_furthest, power_);
 }
 
 }  // namespace mppi::critics

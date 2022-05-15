@@ -126,7 +126,7 @@ auto shortest_angular_distance(
   return normalize_angles(to - from);
 }
 
-inline size_t findPathFurthestPoint(models::CriticFunctionData & data) {
+inline size_t findPathFurthestPoint(const models::CriticFunctionData & data) {
   auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
 
   auto last_points_ext =
@@ -146,6 +146,26 @@ inline size_t findPathFurthestPoint(models::CriticFunctionData & data) {
     max_id_by_trajectories = std::max(max_id_by_trajectories, min_id_by_path);
   }
   return max_id_by_trajectories;
+}
+
+
+inline void setPathFurthestPointIfNotSet(models::CriticFunctionData & data) {
+  if (data.furthest_reached_path_point) {
+    return;
+  }
+
+  data.furthest_reached_path_point = findPathFurthestPoint(data);
+}
+
+inline double distanceFromFurthestToGoal(const models::CriticFunctionData & data) {
+  if (!data.furthest_reached_path_point) {
+    throw std::runtime_error("Furthest point not computed yet");
+  }
+  auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
+  auto furthest_reached_path_point = xt::view(path_points, *data.furthest_reached_path_point, xt::all());
+  auto goal_point = xt::view(path_points, -1, xt::all());
+
+  return xt::norm_l2(furthest_reached_path_point - goal_point)();
 }
 
 }  // namespace mppi::utils

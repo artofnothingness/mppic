@@ -36,14 +36,14 @@ add_library(mppic SHARED
 )
 
 add_library(critics SHARED
-  src/critics/path_align_critic.cpp
-  src/critics/goal_angle_critic.cpp
-  src/critics/path_angle_critic.cpp
-  src/critics/goal_critic.cpp
   src/critics/obstacles_critic.cpp
+  src/critics/goal_critic.cpp
+  src/critics/goal_angle_critic.cpp
+  src/critics/path_align_critic.cpp
+  src/critics/path_follow_critic.cpp
+  src/critics/path_angle_critic.cpp
   src/critics/prefer_forward_critic.cpp
   src/critics/twirling_critic.cpp
-  src/critics/path_follow_critic.cpp
 )
 
 set(libraries mppic critics)
