@@ -150,11 +150,9 @@ inline size_t findPathFurthestPoint(const models::CriticFunctionData & data) {
 
 
 inline void setPathFurthestPointIfNotSet(models::CriticFunctionData & data) {
-  if (data.furthest_reached_path_point) {
-    return;
+  if (!data.furthest_reached_path_point) {
+    data.furthest_reached_path_point = findPathFurthestPoint(data);
   }
-
-  data.furthest_reached_path_point = findPathFurthestPoint(data);
 }
 
 inline double distanceFromFurthestToGoal(const models::CriticFunctionData & data) {
