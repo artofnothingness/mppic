@@ -12,8 +12,8 @@ void PathAngleCritic::initialize()
   getParam(weight_, "path_angle_cost_weight", 0.5);
 
   getParam(
-    deactivate_if_distance_to_goal_less_than_threshold_,
-    "deactivate_if_distance_to_goal_less_than_threshold", 0.5);
+    activate_if_path_reached_ratio_less_than_threshold_,
+    "activate_if_path_reached_ratio_less_than_threshold", 0.35);
 
 
   RCLCPP_INFO(
@@ -33,8 +33,7 @@ void PathAngleCritic::score(models::CriticFunctionData & data)
   }
 
   utils::setPathFurthestPointIfNotSet(data);
-  if (deactivate_if_distance_to_goal_less_than_threshold_ < 
-      utils::distanceFromFurthestToGoal(data)) {
+  if (utils::pathRatioReached(data) > activate_if_path_reached_ratio_less_than_threshold_) {
     return;
   }
 

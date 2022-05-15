@@ -126,7 +126,8 @@ auto shortest_angular_distance(
   return normalize_angles(to - from);
 }
 
-inline size_t findPathFurthestPoint(const models::CriticFunctionData & data) {
+inline size_t findPathFurthestPoint(const models::CriticFunctionData & data)
+{
   auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
 
   auto last_points_ext =
@@ -149,21 +150,36 @@ inline size_t findPathFurthestPoint(const models::CriticFunctionData & data) {
 }
 
 
-inline void setPathFurthestPointIfNotSet(models::CriticFunctionData & data) {
+inline void setPathFurthestPointIfNotSet(models::CriticFunctionData & data)
+{
   if (!data.furthest_reached_path_point) {
     data.furthest_reached_path_point = findPathFurthestPoint(data);
   }
 }
 
-inline double distanceFromFurthestToGoal(const models::CriticFunctionData & data) {
+inline double distanceFromFurthestToGoal(const models::CriticFunctionData & data)
+{
   if (!data.furthest_reached_path_point) {
     throw std::runtime_error("Furthest point not computed yet");
   }
   auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
-  auto furthest_reached_path_point = xt::view(path_points, *data.furthest_reached_path_point, xt::all());
+  auto furthest_reached_path_point = xt::view(
+    path_points, *data.furthest_reached_path_point,
+    xt::all());
   auto goal_point = xt::view(path_points, -1, xt::all());
 
-  return xt::norm_l2(furthest_reached_path_point - goal_point)();
+  return xt::norm_l2(furthest_reached_path_point - goal_point, {0})();
+}
+
+inline double pathRatioReached(const models::CriticFunctionData & data)
+{
+  if (!data.furthest_reached_path_point) {
+    throw std::runtime_error("Furthest point not computed yet");
+  }
+
+  auto path_points_count = static_cast<double>(data.path.shape(0));
+  auto furthest_reached_path_point = static_cast<double>(*data.furthest_reached_path_point);
+  return furthest_reached_path_point / path_points_count;
 }
 
 }  // namespace mppi::utils
