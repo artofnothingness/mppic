@@ -3,7 +3,6 @@
 
 #include <limits>
 #include <memory>
-#include <rclcpp/logging.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -142,7 +141,6 @@ bool Optimizer::fallback(bool fail)
   if (counter > settings_.retry_attempt_limit) {
     counter = 0;
     throw std::runtime_error("Optimizer fail to compute path");
-    return false;
   }
 
   counter++;
