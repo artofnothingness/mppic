@@ -129,53 +129,60 @@ controller_server:
       plugin: "mppi::Controller"
       time_steps: 15
       model_dt: 0.1
-      batch_size: 400
+      batch_size: 300
       vx_std: 0.2
       vy_std: 0.2
       wz_std: 1.0
       vx_max: 0.5
       vy_max: 0.5
       wz_max: 1.3
-      iteration_count: 2
-      prune_distance: 1.5
+      iteration_count: 1
+      prune_distance: 1.2
       transform_tolerance: 0.1
       temperature: 0.25
       motion_model: "DiffDrive"
       visualize: false
-      critics: ["ReferenceTrajectoryCritic", "GoalCritic", "GoalAngleCritic", "ObstaclesCritic", "PreferForwardCritic" ]
-      ReferenceTrajectoryCritic:
-        reference_cost_power: 1
-        reference_cost_weight: 3.0
-        enable_nearest_goal_critic: true
-        nearest_goal_offset: 2
-        nearest_goal_count: 2
-        nearest_goal_cost_power: 1
-        nearset_goal_cost_weight: 1.0
-        enable_nearest_path_angle_critic: true
-        nearest_path_angle_offset: 6
-        nearest_path_angle_cost_power: 1
-        nearest_path_angle_cost_weight: 1.0
+      optimizer: "mppi::Optimizer"
+      critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic" ]
       GoalCritic:
+        enabled: true
         goal_cost_power: 1
-        goal_cost_weight: 5.0
+        goal_cost_weight: 3.0
       GoalAngleCritic:
+        enabled: true
         goal_angle_cost_power: 1
-        goal_angle_cost_weight: 5.0
+        goal_angle_cost_weight: 3.0
         threshold_to_consider_goal_angle: 0.20
       ObstaclesCritic:
+        enabled: true
         consider_footprint: true
         collision_cost: 2000.0
         obstacle_cost_power: 2
-        obstacle_cost_weight: 1.5
-      PreferForwardCritic:
-        prefer_forward_cost_power: 1
-        prefer_forward_cost_weight: 5.0
+        obstacle_cost_weight: 1.15
+      PathAlignCritic:
+        enabled: true
+        path_align_cost_power: 1
+        path_align_cost_weight: 4.0
+        trajectory_point_step: 2
+        reference_point_step: 1
+      PathFollowCritic:
+        enabled: true
+        offset_from_furthest: 6
+        path_follow_cost_power: 1
+        path_follow_cost_weight: 1.0
+        activate_if_path_reached_ratio_less_than_threshold: 0.35
       PathAngleCritic:
+        enabled: true
+        offset_from_furthest: 6
         path_angle_cost_power: 1
-        path_angle_cost_weight: 0.5
-      TwirlingCritic:
-        twirling_cost_power: 1
-        twirling_cost_weight: 25.0
+        path_angle_cost_weight: 2.0
+        activate_if_path_reached_ratio_less_than_threshold: 0.35
+      # PreferForwardCritic:
+      #   prefer_forward_cost_power: 1
+      #   prefer_forward_cost_weight: 10.0
+      # TwirlingCritic:
+      #   twirling_cost_power: 1
+      #   twirling_cost_weight: 25.0
 ```
 
 ## Topics
