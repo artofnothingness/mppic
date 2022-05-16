@@ -18,7 +18,6 @@ public:
 protected:
   double activate_if_path_reached_ratio_less_than_threshold_{0};
   size_t offset_from_furthest_{0};
-  size_t path_point_count_from_offseted_furthest_{0};
 
   unsigned int power_{0};
   double weight_{0};
