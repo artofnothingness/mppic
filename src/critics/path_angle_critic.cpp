@@ -40,8 +40,7 @@ void PathAngleCritic::score(models::CriticFunctionData & data)
   auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
 
   auto offseted_idx = std::min(
-    *data.furthest_reached_path_point + offset_from_furthest_, path_points.shape(
-      0) - 1);
+    *data.furthest_reached_path_point + offset_from_furthest_, path_points.shape(0) - 1);
 
   auto goal_x = xt::view(data.path, offseted_idx, 0);
   auto goal_y = xt::view(data.path, offseted_idx, 1);

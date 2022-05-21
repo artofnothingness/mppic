@@ -142,7 +142,6 @@ controller_server:
       temperature: 0.25
       motion_model: "DiffDrive"
       visualize: false
-      optimizer: "mppi::Optimizer"
       critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic" ]
       GoalCritic:
         enabled: true
