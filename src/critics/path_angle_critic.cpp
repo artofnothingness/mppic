@@ -1,6 +1,8 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/critics/path_angle_critic.hpp"
 
+#include "math.h"
+
 namespace mppi::critics
 {
 
@@ -10,6 +12,10 @@ void PathAngleCritic::initialize()
   getParam(offset_from_furthest_, "offset_from_furthest", 6);
   getParam(power_, "path_angle_cost_power", 1);
   getParam(weight_, "path_angle_cost_weight", 0.5);
+
+  getParam(
+    activate_if_angle_to_furthest_more_than_threshold_,
+    "activate_if_angle_to_furthest_more_than_threshold", M_PI_2);
 
   getParam(
     activate_if_path_reached_ratio_less_than_threshold_,
@@ -33,17 +39,24 @@ void PathAngleCritic::score(models::CriticFunctionData & data)
   }
 
   utils::setPathFurthestPointIfNotSet(data);
-  if (utils::pathRatioReached(data) > activate_if_path_reached_ratio_less_than_threshold_) {
+
+  auto offseted_idx = std::min(
+    *data.furthest_reached_path_point + offset_from_furthest_, data.path.shape(0) - 1);
+
+  double goal_x = xt::view(data.path, offseted_idx, 0);
+  double goal_y = xt::view(data.path, offseted_idx, 1);
+
+  bool angle_to_furthest_more_than_threshold = utils::pose_point_angle(
+    data.state.pose.pose, goal_x,
+    goal_y) >
+    activate_if_angle_to_furthest_more_than_threshold_;
+  bool path_reached_ratio_less_than_threshold = utils::pathRatioReached(data) >
+    activate_if_path_reached_ratio_less_than_threshold_;
+
+  if (!angle_to_furthest_more_than_threshold && path_reached_ratio_less_than_threshold) {
     return;
   }
 
-  auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
-
-  auto offseted_idx = std::min(
-    *data.furthest_reached_path_point + offset_from_furthest_, path_points.shape(0) - 1);
-
-  auto goal_x = xt::view(data.path, offseted_idx, 0);
-  auto goal_y = xt::view(data.path, offseted_idx, 1);
   auto traj_xs = xt::view(data.trajectories, xt::all(), xt::all(), 0);
   auto traj_ys = xt::view(data.trajectories, xt::all(), xt::all(), 1);
   auto yaws_between_points = xt::atan2(goal_y - traj_ys, goal_x - traj_xs);

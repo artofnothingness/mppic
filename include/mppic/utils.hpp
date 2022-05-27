@@ -6,10 +6,13 @@
 #include <chrono>
 #include <string>
 
+
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
 #include <xtensor/xmath.hpp>
 #include <xtensor/xview.hpp>
+
+#include "angles/angles.h"
 
 #include "tf2/utils.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
@@ -126,7 +129,11 @@ auto shortest_angular_distance(
   return normalize_angles(to - from);
 }
 
-inline size_t findPathFurthestPoint(const models::CriticFunctionData & data)
+/**
+ * @brief Evaluate furthest point idx of data.path which is
+ * nearset to some trajectory in data.trajectories
+ */
+inline size_t findPathFurthestReachedPoint(const models::CriticFunctionData & data)
 {
   auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
 
@@ -153,24 +160,23 @@ inline size_t findPathFurthestPoint(const models::CriticFunctionData & data)
 inline void setPathFurthestPointIfNotSet(models::CriticFunctionData & data)
 {
   if (!data.furthest_reached_path_point) {
-    data.furthest_reached_path_point = findPathFurthestPoint(data);
+    data.furthest_reached_path_point = findPathFurthestReachedPoint(data);
   }
 }
 
-inline double distanceFromFurthestToGoal(const models::CriticFunctionData & data)
+inline auto pose_point_angle(geometry_msgs::msg::Pose pose, double point_x, double point_y)
 {
-  if (!data.furthest_reached_path_point) {
-    throw std::runtime_error("Furthest point not computed yet");
-  }
-  auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
-  auto furthest_reached_path_point = xt::view(
-    path_points, *data.furthest_reached_path_point,
-    xt::all());
-  auto goal_point = xt::view(path_points, -1, xt::all());
+  double robot_x = pose.position.x;
+  double robot_y = pose.position.y;
+  double robot_yaw = tf2::getYaw(pose.orientation);
 
-  return xt::norm_l2(furthest_reached_path_point - goal_point, {0})();
+  double yaw = atan2(point_y - robot_y, point_x - robot_x);
+  return abs(angles::shortest_angular_distance(yaw, robot_yaw));
 }
 
+/**
+ * @brief Evaluate ratio of data.path which reached by all trajectories in data.trajectories
+ */
 inline double pathRatioReached(const models::CriticFunctionData & data)
 {
   if (!data.furthest_reached_path_point) {
