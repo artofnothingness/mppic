@@ -157,6 +157,9 @@ inline size_t findPathFurthestReachedPoint(const models::CriticFunctionData & da
 }
 
 
+/**
+ * @brief evaluate path furthest point if it is not set
+ */
 inline void setPathFurthestPointIfNotSet(models::CriticFunctionData & data)
 {
   if (!data.furthest_reached_path_point) {
@@ -164,6 +167,9 @@ inline void setPathFurthestPointIfNotSet(models::CriticFunctionData & data)
   }
 }
 
+/**
+ * @brief evaluate angle from pose (have angle) to point (no angle)
+ */
 inline double posePointAngle(const geometry_msgs::msg::Pose & pose, double point_x, double point_y)
 {
   double pose_x = pose.position.x;
