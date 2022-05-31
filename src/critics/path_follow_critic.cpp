@@ -12,8 +12,8 @@ void PathFollowCritic::initialize()
   auto getParam = parameters_handler_->getParamGetter(name_);
 
   getParam(
-    activate_if_path_reached_ratio_less_than_threshold_,
-    "activate_if_path_reached_ratio_less_than_threshold", 0.35);
+    max_path_ratio_,
+    "max_path_ratio", 0.35);
 
   getParam(offset_from_furthest_, "offset_from_furthest", 6);
 
@@ -28,7 +28,7 @@ void PathFollowCritic::score(models::CriticFunctionData & data)
   }
 
   utils::setPathFurthestPointIfNotSet(data);
-  if (utils::pathRatioReached(data) > activate_if_path_reached_ratio_less_than_threshold_) {
+  if (utils::getPathRatioReached(data) > max_path_ratio_) {
     return;
   }
 

@@ -16,7 +16,7 @@ public:
   void score(models::CriticFunctionData & data) override;
 
 protected:
-  double activate_if_path_reached_ratio_less_than_threshold_{0};
+  double max_path_ratio_{0};
   size_t offset_from_furthest_{0};
 
   unsigned int power_{0};

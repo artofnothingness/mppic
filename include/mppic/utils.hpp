@@ -177,7 +177,7 @@ inline double posePointAngle(const geometry_msgs::msg::Pose & pose, double point
 /**
  * @brief Evaluate ratio of data.path which reached by all trajectories in data.trajectories
  */
-inline double pathRatioReached(const models::CriticFunctionData & data)
+inline double getPathRatioReached(const models::CriticFunctionData & data)
 {
   if (!data.furthest_reached_path_point) {
     throw std::runtime_error("Furthest point not computed yet");
