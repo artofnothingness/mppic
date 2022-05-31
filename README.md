@@ -141,12 +141,13 @@ controller_server:
       transform_tolerance: 0.1
       temperature: 0.25
       motion_model: "DiffDrive"
-      visualize: false
+      visualize: true
+      optimizer: "mppi::Optimizer"
       critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic" ]
       GoalCritic:
         enabled: true
         goal_cost_power: 1
-        goal_cost_weight: 3.0
+        goal_cost_weight: 4.0
       GoalAngleCritic:
         enabled: true
         goal_angle_cost_power: 1
@@ -168,20 +169,14 @@ controller_server:
         enabled: true
         offset_from_furthest: 6
         path_follow_cost_power: 1
-        path_follow_cost_weight: 1.0
-        activate_if_path_reached_ratio_less_than_threshold: 0.35
+        path_follow_cost_weight: 2.0
+        max_path_ratio: 0.35
       PathAngleCritic:
         enabled: true
-        offset_from_furthest: 6
+        offset_from_furthest: 4
         path_angle_cost_power: 1
         path_angle_cost_weight: 2.0
-        activate_if_path_reached_ratio_less_than_threshold: 0.35
-      # PreferForwardCritic:
-      #   prefer_forward_cost_power: 1
-      #   prefer_forward_cost_weight: 10.0
-      # TwirlingCritic:
-      #   twirling_cost_power: 1
-      #   twirling_cost_weight: 25.0
+        max_path_ratio: 0.35
 ```
 
 ## Topics
