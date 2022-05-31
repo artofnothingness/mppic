@@ -164,14 +164,14 @@ inline void setPathFurthestPointIfNotSet(models::CriticFunctionData & data)
   }
 }
 
-inline auto pose_point_angle(geometry_msgs::msg::Pose pose, double point_x, double point_y)
+inline double posePointAngle(const geometry_msgs::msg::Pose & pose, double point_x, double point_y)
 {
-  double robot_x = pose.position.x;
-  double robot_y = pose.position.y;
-  double robot_yaw = tf2::getYaw(pose.orientation);
+  double pose_x = pose.position.x;
+  double pose_y = pose.position.y;
+  double pose_yaw = tf2::getYaw(pose.orientation);
 
-  double yaw = atan2(point_y - robot_y, point_x - robot_x);
-  return abs(angles::shortest_angular_distance(yaw, robot_yaw));
+  double yaw = atan2(point_y - pose_y, point_x - pose_x);
+  return abs(angles::shortest_angular_distance(yaw, pose_yaw));
 }
 
 /**

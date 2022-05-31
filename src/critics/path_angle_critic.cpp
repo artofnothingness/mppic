@@ -46,10 +46,10 @@ void PathAngleCritic::score(models::CriticFunctionData & data)
   double goal_x = xt::view(data.path, offseted_idx, 0);
   double goal_y = xt::view(data.path, offseted_idx, 1);
 
-  bool angle_to_furthest_more_than_threshold = utils::pose_point_angle(
-    data.state.pose.pose, goal_x,
-    goal_y) >
+  bool angle_to_furthest_more_than_threshold =
+    utils::posePointAngle(data.state.pose.pose, goal_x, goal_y) >
     activate_if_angle_to_furthest_more_than_threshold_;
+
   bool path_reached_ratio_less_than_threshold = utils::pathRatioReached(data) >
     activate_if_path_reached_ratio_less_than_threshold_;
 
