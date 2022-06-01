@@ -20,7 +20,6 @@ public:
   void score(models::CriticFunctionData & data) override;
 
 protected:
-  double max_path_ratio_{0};
   double max_angle_to_furthest_{0};
 
   size_t offset_from_furthest_{0};

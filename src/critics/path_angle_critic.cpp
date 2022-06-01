@@ -10,16 +10,12 @@ void PathAngleCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(offset_from_furthest_, "offset_from_furthest", 6);
-  getParam(power_, "path_angle_cost_power", 1);
-  getParam(weight_, "path_angle_cost_weight", 0.5);
+  getParam(power_, "cost_power", 1);
+  getParam(weight_, "cost_weight", 0.5);
 
   getParam(
     max_angle_to_furthest_,
     "max_angle_to_furthest", M_PI_2);
-
-  getParam(
-    max_path_ratio_,
-    "max_path_ratio", 0.35);
 
 
   RCLCPP_INFO(
@@ -46,12 +42,7 @@ void PathAngleCritic::score(models::CriticFunctionData & data)
   double goal_x = xt::view(data.path, offseted_idx, 0);
   double goal_y = xt::view(data.path, offseted_idx, 1);
 
-  bool angle_to_furthest_more_than_threshold =
-    utils::posePointAngle(data.state.pose.pose, goal_x, goal_y) > max_angle_to_furthest_;
-
-  bool path_reachd_ratio_more_than_threshold = utils::getPathRatioReached(data) > max_path_ratio_;
-
-  if (!angle_to_furthest_more_than_threshold && path_reachd_ratio_more_than_threshold) {
+  if (utils::posePointAngle(data.state.pose.pose, goal_x, goal_y) < max_angle_to_furthest_) {
     return;
   }
 
