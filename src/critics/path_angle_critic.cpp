@@ -9,9 +9,9 @@ namespace mppi::critics
 void PathAngleCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
-  getParam(offset_from_furthest_, "offset_from_furthest", 6);
+  getParam(offset_from_furthest_, "offset_from_furthest", 4);
   getParam(power_, "cost_power", 1);
-  getParam(weight_, "cost_weight", 0.5);
+  getParam(weight_, "cost_weight", 2.0);
 
   getParam(
     max_angle_to_furthest_,

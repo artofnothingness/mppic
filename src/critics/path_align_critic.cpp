@@ -11,7 +11,7 @@ void PathAlignCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(power_, "cost_power", 1);
-  getParam(weight_, "cost_weight", 3.0);
+  getParam(weight_, "cost_weight", 2.0);
 
   getParam(path_point_step_, "path_point_step", 1);
   getParam(trajectory_point_step_, "trajectory_point_step", 2);

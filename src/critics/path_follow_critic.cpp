@@ -17,8 +17,8 @@ void PathFollowCritic::initialize()
 
   getParam(offset_from_furthest_, "offset_from_furthest", 6);
 
-  getParam(power_, "cost_power", 2);
-  getParam(weight_, "cost_weight", 3.0);
+  getParam(power_, "cost_power", 1);
+  getParam(weight_, "cost_weight", 2.0);
 }
 
 void PathFollowCritic::score(models::CriticFunctionData & data)

@@ -162,8 +162,8 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 2.0
+        path_point_step: 1
         trajectory_point_step: 2
-        reference_point_step: 1
       PathFollowCritic:
         enabled: true
         cost_power: 1
@@ -181,7 +181,7 @@ controller_server:
         cost_weight: 3.0
       # TwirlingCritic:
       #   twirling_cost_power: 1
-      #   twirling_cost_weight: 25.0
+      #   twirling_cost_weight: 10.0
 ```
 
 ## Topics
