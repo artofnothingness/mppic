@@ -69,14 +69,14 @@ void PathAlignCritic::score(models::CriticFunctionData & data)
     };
 
 
-  xt::xtensor<double, 1> trajectories_len;
+  xt::xtensor<double, 1> trajectories_lengths;
   {
     auto next = xt::view(P3, xt::all(), xt::range(1, _), xt::range(0, 2));
     auto prev = xt::view(P3, xt::all(), xt::range(_, -1), xt::range(0, 2));
     auto dist = xt::norm_sq(next - prev, {2});
-    trajectories_len = xt::sum(dist, {1});
+    trajectories_lengths = xt::sum(dist, {1});
   }
-  auto accumulated_distances = xt::cumsum(P2_P1_norm_sq);
+  auto accumulated_path_distances = xt::cumsum(P2_P1_norm_sq);
 
   std::atomic<size_t> max_s = 0;
 
@@ -113,7 +113,7 @@ void PathAlignCritic::score(models::CriticFunctionData & data)
             min_dist = dist;
           }
 
-          if (accumulated_distances(s) > trajectory_len) {
+          if (accumulated_path_distances(s) > trajectories_lengths(t)) {
             break;
           }
         }
