@@ -33,9 +33,6 @@ namespace mppi
 class Optimizer
 {
 public:
-  using model_t = xt::xtensor<double, 2>(
-    const xt::xtensor<double, 2> & state, const models::StateIdxes & idx);
-
   Optimizer() = default;
 
   void initialize(

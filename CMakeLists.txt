@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(mppic)
 
+set(XTENSOR_USE_XSIMD 1)
+set(XTENSOR_USE_OPENMP 1)
+
 find_package(ament_cmake REQUIRED)
 find_package(xtensor REQUIRED)
 
@@ -36,11 +39,12 @@ add_library(mppic SHARED
 )
 
 add_library(critics SHARED
-  src/critics/path_align_critic.cpp
-  src/critics/goal_angle_critic.cpp
-  src/critics/path_angle_critic.cpp
-  src/critics/goal_critic.cpp
   src/critics/obstacles_critic.cpp
+  src/critics/goal_critic.cpp
+  src/critics/goal_angle_critic.cpp
+  src/critics/path_align_critic.cpp
+  src/critics/path_follow_critic.cpp
+  src/critics/path_angle_critic.cpp
   src/critics/prefer_forward_critic.cpp
   src/critics/twirling_critic.cpp
 )
@@ -50,7 +54,7 @@ set(libraries mppic critics)
 foreach(lib IN LISTS libraries)
   target_compile_options(${lib} PUBLIC -fconcepts)
   target_include_directories(${lib} PUBLIC include)
-  target_link_libraries(${lib} xtensor)
+  target_link_libraries(${lib} xtensor xtensor::optimize xtensor::use_xsimd)
   ament_target_dependencies(${lib} ${dependencies_pkgs})
 endforeach()
 

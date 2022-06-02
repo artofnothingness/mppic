@@ -8,8 +8,8 @@ void GoalCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
 
-  getParam(power_, "goal_cost_power", 1);
-  getParam(weight_, "goal_cost_weight", 5.0);
+  getParam(power_, "cost_power", 1);
+  getParam(weight_, "cost_weight", 4.0);
   RCLCPP_INFO(
     logger_, "GoalCritic instantiated with %d power and %f weight.",
     power_, weight_);

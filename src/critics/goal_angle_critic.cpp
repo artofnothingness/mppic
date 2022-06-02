@@ -8,8 +8,8 @@ void GoalAngleCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
 
-  getParam(power_, "goal_angle_cost_power", 1);
-  getParam(weight_, "goal_angle_cost_weight", 5.0);
+  getParam(power_, "cost_power", 1);
+  getParam(weight_, "cost_weight", 3.0);
 
   getParam(
     threshold_to_consider_goal_angle_,

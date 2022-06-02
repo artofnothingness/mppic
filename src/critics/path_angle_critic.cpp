@@ -1,14 +1,21 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/critics/path_angle_critic.hpp"
 
+#include "math.h"
+
 namespace mppi::critics
 {
 
 void PathAngleCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
-  getParam(power_, "path_angle_cost_power", 1);
-  getParam(weight_, "path_angle_cost_weight", 0.5);
+  getParam(offset_from_furthest_, "offset_from_furthest", 4);
+  getParam(power_, "cost_power", 1);
+  getParam(weight_, "cost_weight", 2.0);
+
+  getParam(
+    max_angle_to_furthest_,
+    "max_angle_to_furthest", M_PI_2);
 
 
   RCLCPP_INFO(
@@ -19,7 +26,6 @@ void PathAngleCritic::initialize()
 
 void PathAngleCritic::score(models::CriticFunctionData & data)
 {
-
   if (!enabled_) {
     return;
   }
@@ -28,16 +34,27 @@ void PathAngleCritic::score(models::CriticFunctionData & data)
     return;
   }
 
-  auto goal_x = xt::view(data.path, -1, 0);
-  auto goal_y = xt::view(data.path, -1, 1);
+  utils::setPathFurthestPointIfNotSet(data);
+
+  auto offseted_idx = std::min(
+    *data.furthest_reached_path_point + offset_from_furthest_, data.path.shape(0) - 1);
+
+  double goal_x = xt::view(data.path, offseted_idx, 0);
+  double goal_y = xt::view(data.path, offseted_idx, 1);
+
+  if (utils::posePointAngle(data.state.pose.pose, goal_x, goal_y) < max_angle_to_furthest_) {
+    return;
+  }
+
   auto traj_xs = xt::view(data.trajectories, xt::all(), xt::all(), 0);
   auto traj_ys = xt::view(data.trajectories, xt::all(), xt::all(), 1);
-  auto traj_yaws = xt::view(data.trajectories, xt::all(), xt::all(), 2);
-
   auto yaws_between_points = xt::atan2(goal_y - traj_ys, goal_x - traj_xs);
 
+  auto traj_yaws = xt::view(data.trajectories, xt::all(), xt::all(), 2);
   auto yaws = xt::abs(utils::shortest_angular_distance(traj_yaws, yaws_between_points));
-  data.costs += xt::pow(xt::mean(yaws, {1}) * weight_, power_);
+  auto mean_yaws = xt::mean(yaws, {1});
+
+  data.costs += xt::pow(mean_yaws * weight_, power_);
 }
 
 }  // namespace mppi::critics

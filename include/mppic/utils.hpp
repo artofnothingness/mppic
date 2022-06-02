@@ -6,10 +6,13 @@
 #include <chrono>
 #include <string>
 
+
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
 #include <xtensor/xmath.hpp>
 #include <xtensor/xview.hpp>
+
+#include "angles/angles.h"
 
 #include "tf2/utils.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
@@ -24,6 +27,7 @@
 #include "nav2_core/goal_checker.hpp"
 
 #include "mppic/models/control_sequence.hpp"
+#include "mppic/models/critic_function_data.hpp"
 
 namespace mppi::utils
 {
@@ -123,6 +127,71 @@ auto shortest_angular_distance(
   const T & to)
 {
   return normalize_angles(to - from);
+}
+
+/**
+ * @brief Evaluate furthest point idx of data.path which is
+ * nearset to some trajectory in data.trajectories
+ */
+inline size_t findPathFurthestReachedPoint(const models::CriticFunctionData & data)
+{
+  auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
+
+  auto last_points_ext =
+    xt::view(data.trajectories, xt::all(), -1, xt::newaxis(), xt::range(0, 2));
+  auto distances = xt::norm_l2(last_points_ext - path_points, {2});
+  size_t max_id_by_trajectories = 0;
+  double min_distance_by_path = std::numeric_limits<double>::max();
+
+  for (size_t i = 0; i < distances.shape(0); i++) {
+    size_t min_id_by_path = 0;
+    for (size_t j = 0; j < distances.shape(1); j++) {
+      if (min_distance_by_path < distances(i, j)) {
+        min_distance_by_path = distances(i, j);
+        min_id_by_path = j;
+      }
+    }
+    max_id_by_trajectories = std::max(max_id_by_trajectories, min_id_by_path);
+  }
+  return max_id_by_trajectories;
+}
+
+
+/**
+ * @brief evaluate path furthest point if it is not set
+ */
+inline void setPathFurthestPointIfNotSet(models::CriticFunctionData & data)
+{
+  if (!data.furthest_reached_path_point) {
+    data.furthest_reached_path_point = findPathFurthestReachedPoint(data);
+  }
+}
+
+/**
+ * @brief evaluate angle from pose (have angle) to point (no angle)
+ */
+inline double posePointAngle(const geometry_msgs::msg::Pose & pose, double point_x, double point_y)
+{
+  double pose_x = pose.position.x;
+  double pose_y = pose.position.y;
+  double pose_yaw = tf2::getYaw(pose.orientation);
+
+  double yaw = atan2(point_y - pose_y, point_x - pose_x);
+  return abs(angles::shortest_angular_distance(yaw, pose_yaw));
+}
+
+/**
+ * @brief Evaluate ratio of data.path which reached by all trajectories in data.trajectories
+ */
+inline double getPathRatioReached(const models::CriticFunctionData & data)
+{
+  if (!data.furthest_reached_path_point) {
+    throw std::runtime_error("Furthest point not computed yet");
+  }
+
+  auto path_points_count = static_cast<double>(data.path.shape(0));
+  auto furthest_reached_path_point = static_cast<double>(*data.furthest_reached_path_point);
+  return furthest_reached_path_point / path_points_count;
 }
 
 }  // namespace mppi::utils

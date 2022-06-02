@@ -10,8 +10,8 @@ namespace mppi::critics
 void PathAlignCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
-  getParam(power_, "path_align_cost_power", 1);
-  getParam(weight_, "path_aling_cost_weight", 3.0);
+  getParam(power_, "cost_power", 1);
+  getParam(weight_, "cost_weight", 2.0);
 
   getParam(path_point_step_, "path_point_step", 1);
   getParam(trajectory_point_step_, "trajectory_point_step", 2);
