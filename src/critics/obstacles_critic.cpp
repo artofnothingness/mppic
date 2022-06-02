@@ -1,6 +1,9 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/critics/obstacles_critic.hpp"
 
+#include "execution"
+#include "atomic"
+
 namespace mppi::critics
 {
 
@@ -22,36 +25,39 @@ void ObstaclesCritic::initialize()
 
 void ObstaclesCritic::score(models::CriticFunctionData & data)
 {
-
   if (!enabled_) {
     return;
   }
 
-  bool all_trajectories_collide = true;
-  for (size_t i = 0; i < data.trajectories.shape(0); ++i) {
-    bool trajectory_collide = false;
+  std::atomic<bool> all_trajectories_collide = true;
 
-    unsigned char trajectory_cost = nav2_costmap_2d::FREE_SPACE;
-    for (size_t j = 0; j < data.trajectories.shape(1); ++j) {
-      unsigned char pose_cost = costAtPose(
-        data.trajectories(i, j, 0), data.trajectories(i, j, 1), data.trajectories(i, j, 2));
-      trajectory_cost = std::max(trajectory_cost, pose_cost);
+  std::vector<size_t> trajectories_idxs(data.trajectories.shape(0));
+  std::iota(trajectories_idxs.begin(), trajectories_idxs.end(), 0);
 
-      if (inCollision(trajectory_cost)) {
-        trajectory_collide = true;
-        break;
+  std::for_each(
+    std::execution::par_unseq, trajectories_idxs.begin(), trajectories_idxs.end(),
+    [&](int i) {
+      bool trajectory_collide = false;
+      unsigned char trajectory_cost = nav2_costmap_2d::FREE_SPACE;
+
+      for (size_t j = 0; j < data.trajectories.shape(1); j++) {
+        unsigned char pose_cost = costAtPose(
+          data.trajectories(i, j, 0), data.trajectories(i, j, 1), data.trajectories(i, j, 2));
+        trajectory_cost = std::max(trajectory_cost, pose_cost);
+
+        if (inCollision(trajectory_cost)) {
+          trajectory_collide = true;
+          break;
+        }
       }
 
-    }
+      if (!trajectory_collide) {all_trajectories_collide.store(false);}
+      data.costs[i] +=
+      trajectory_collide ? collision_cost_ : scoreCost(trajectory_cost);
 
-    if (!trajectory_collide) {all_trajectories_collide = false;}
-    data.costs[i] += trajectory_collide ? collision_cost_ : scoreCost(trajectory_cost);
-  }
+    });
 
-
-  if (all_trajectories_collide) {
-    data.fail_flag = true;
-  }
+  data.fail_flag = all_trajectories_collide;
 }
 
 unsigned char ObstaclesCritic::costAtPose(double x, double y, double theta)

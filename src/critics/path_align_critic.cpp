@@ -1,6 +1,9 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/critics/path_align_critic.hpp"
 
+#include <execution>
+#include <atomic>
+
 #include <xtensor/xfixed.hpp>
 #include <xtensor/xmath.hpp>
 
@@ -58,46 +61,68 @@ void PathAlignCritic::score(models::CriticFunctionData & data)
 
   static constexpr double eps = static_cast<double>(1e-3);  // meters
   auto segment_short = P2_P1_norm_sq < eps;
-  auto evaluate_dist = [&P3](xt::xtensor_fixed<double, xt::xshape<2>> P,
+  auto evaluate_dist = [&P3](const xt::xtensor_fixed<double, xt::xshape<2>> & P,
       size_t t, size_t p) {
       double dx = P(0) - P3(t, p, 0);
       double dy = P(1) - P3(t, p, 1);
       return std::hypot(dx, dy);
     };
 
-  size_t max_s = 0;
-  for (size_t t = 0; t < trajectories_count; ++t) {
-    double mean_dist = 0;
-    for (size_t p = 0; p < trajectories_points_count; p += trajectory_point_step_) {
-      double min_dist = std::numeric_limits<double>::max();
-      size_t min_s = 0;
-      for (size_t s = 0; s < reference_segments_count; s += path_point_step_) {
-        xt::xtensor_fixed<double, xt::xshape<2>> P;
-        if (segment_short(s)) {
-          P[0] = P1(s, 0);
-          P[1] = P1(s, 1);
-        } else if (double u = evaluate_u(t, p, s); u <= 0) {
-          P[0] = P1(s, 0);
-          P[1] = P1(s, 1);
-        } else if (u >= 1) {
-          P[0] = P2(s, 0);
-          P[1] = P2(s, 1);
-        } else {
-          P[0] = P1(s, 0) + u * P2_P1_diff(s, 0);
-          P[1] = P1(s, 1) + u * P2_P1_diff(s, 1);
-        }
-        auto dist = evaluate_dist(std::move(P), t, p);
-        if (dist < min_dist) {
-          min_s = s;
-          min_dist = dist;
-        }
-      }
-      max_s = std::max(max_s, min_s);
-      mean_dist += min_dist;
-    }
 
-    cost(t) = mean_dist / trajectories_points_count;
+  xt::xtensor<double, 1> trajectories_len;
+  {
+    auto next = xt::view(P3, xt::all(), xt::range(1, _), xt::range(0, 2));
+    auto prev = xt::view(P3, xt::all(), xt::range(_, -1), xt::range(0, 2));
+    auto dist = xt::norm_sq(next - prev, {2});
+    trajectories_len = xt::sum(dist, {1});
   }
+  auto accumulated_distances = xt::cumsum(P2_P1_norm_sq);
+
+  std::atomic<size_t> max_s = 0;
+
+  std::vector<size_t> trajectories_idxs(trajectories_count);
+  std::iota(trajectories_idxs.begin(), trajectories_idxs.end(), 0);
+
+  std::for_each(
+    std::execution::par_unseq, trajectories_idxs.begin(), trajectories_idxs.end(),
+    [&](int t) {
+      double mean_dist = 0;
+      double trajectory_len = trajectories_len(t);
+      for (size_t p = 0; p < trajectories_points_count; p += trajectory_point_step_) {
+        double min_dist = std::numeric_limits<double>::max();
+        size_t min_s = 0;
+
+        for (size_t s = 0; s < reference_segments_count; s += path_point_step_) {
+          xt::xtensor_fixed<double, xt::xshape<2>> P;
+          if (segment_short(s)) {
+            P[0] = P1(s, 0);
+            P[1] = P1(s, 1);
+          } else if (double u = evaluate_u(t, p, s); u <= 0) {
+            P[0] = P1(s, 0);
+            P[1] = P1(s, 1);
+          } else if (u >= 1) {
+            P[0] = P2(s, 0);
+            P[1] = P2(s, 1);
+          } else {
+            P[0] = P1(s, 0) + u * P2_P1_diff(s, 0);
+            P[1] = P1(s, 1) + u * P2_P1_diff(s, 1);
+          }
+          auto dist = evaluate_dist(P, t, p);
+          if (dist < min_dist) {
+            min_s = s;
+            min_dist = dist;
+          }
+
+          if (accumulated_distances(s) > trajectory_len) {
+            break;
+          }
+        }
+        max_s = std::max(max_s.load(), min_s);
+        mean_dist += min_dist;
+
+        cost(t) = mean_dist / trajectories_points_count;
+      }
+    });
 
   data.furthest_reached_path_point = max_s;
   data.costs += xt::pow(cost * weight_, power_);

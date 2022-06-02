@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 3.5)
 project(mppic)
 
 set(XTENSOR_USE_XSIMD 1)
-set(XTENSOR_USE_OPENMP 1)
+set(XTENSOR_USE_TBB 1)
 
 find_package(ament_cmake REQUIRED)
 find_package(xtensor REQUIRED)
+find_package(TBB)
 
 set(dependencies_pkgs
   rclcpp
@@ -54,7 +55,7 @@ set(libraries mppic critics)
 foreach(lib IN LISTS libraries)
   target_compile_options(${lib} PUBLIC -fconcepts)
   target_include_directories(${lib} PUBLIC include)
-  target_link_libraries(${lib} xtensor xtensor::optimize xtensor::use_xsimd)
+  target_link_libraries(${lib} xtensor xtensor::optimize xtensor::use_xsimd TBB::tbb)
   ament_target_dependencies(${lib} ${dependencies_pkgs})
 endforeach()
 
