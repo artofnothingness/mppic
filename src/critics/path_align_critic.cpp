@@ -58,12 +58,22 @@ void PathAlignCritic::score(models::CriticFunctionData & data)
 
   static constexpr double eps = static_cast<double>(1e-3);  // meters
   auto segment_short = P2_P1_norm_sq < eps;
-  auto evaluate_dist = [&P3](xt::xtensor_fixed<double, xt::xshape<2>> P,
+  auto evaluate_dist = [&P3](const xt::xtensor_fixed<double, xt::xshape<2>> & P,
       size_t t, size_t p) {
       double dx = P(0) - P3(t, p, 0);
       double dy = P(1) - P3(t, p, 1);
       return std::hypot(dx, dy);
     };
+
+
+  xt::xtensor<double, 1> trajectories_lengths;
+  {
+    auto next = xt::view(P3, xt::all(), xt::range(1, _), xt::range(0, 2));
+    auto prev = xt::view(P3, xt::all(), xt::range(_, -1), xt::range(0, 2));
+    auto dist = xt::norm_sq(next - prev, {2});
+    trajectories_lengths = xt::sum(dist, {1});
+  }
+  auto accumulated_path_distances = xt::cumsum(P2_P1_norm_sq);
 
   size_t max_s = 0;
   for (size_t t = 0; t < trajectories_count; ++t) {
@@ -71,6 +81,8 @@ void PathAlignCritic::score(models::CriticFunctionData & data)
     for (size_t p = 0; p < trajectories_points_count; p += trajectory_point_step_) {
       double min_dist = std::numeric_limits<double>::max();
       size_t min_s = 0;
+      bool is_path_longer_than_trajectory = false;
+
       for (size_t s = 0; s < reference_segments_count; s += path_point_step_) {
         xt::xtensor_fixed<double, xt::xshape<2>> P;
         if (segment_short(s)) {
@@ -86,10 +98,18 @@ void PathAlignCritic::score(models::CriticFunctionData & data)
           P[0] = P1(s, 0) + u * P2_P1_diff(s, 0);
           P[1] = P1(s, 1) + u * P2_P1_diff(s, 1);
         }
-        auto dist = evaluate_dist(std::move(P), t, p);
+        auto dist = evaluate_dist(P, t, p);
         if (dist < min_dist) {
           min_s = s;
           min_dist = dist;
+        }
+
+        if (is_path_longer_than_trajectory) {
+          break;
+        }
+
+        if (accumulated_path_distances(s) > trajectories_lengths(t)) {
+          bool is_path_longer_than_trajectory = true;
         }
       }
       max_s = std::max(max_s, min_s);

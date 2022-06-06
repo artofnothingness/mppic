@@ -22,7 +22,6 @@ void ObstaclesCritic::initialize()
 
 void ObstaclesCritic::score(models::CriticFunctionData & data)
 {
-
   if (!enabled_) {
     return;
   }
@@ -30,9 +29,9 @@ void ObstaclesCritic::score(models::CriticFunctionData & data)
   bool all_trajectories_collide = true;
   for (size_t i = 0; i < data.trajectories.shape(0); ++i) {
     bool trajectory_collide = false;
-
     unsigned char trajectory_cost = nav2_costmap_2d::FREE_SPACE;
-    for (size_t j = 0; j < data.trajectories.shape(1); ++j) {
+
+    for (size_t j = 0; j < data.trajectories.shape(1); j++) {
       unsigned char pose_cost = costAtPose(
         data.trajectories(i, j, 0), data.trajectories(i, j, 1), data.trajectories(i, j, 2));
       trajectory_cost = std::max(trajectory_cost, pose_cost);
@@ -41,17 +40,15 @@ void ObstaclesCritic::score(models::CriticFunctionData & data)
         trajectory_collide = true;
         break;
       }
-
     }
 
     if (!trajectory_collide) {all_trajectories_collide = false;}
-    data.costs[i] += trajectory_collide ? collision_cost_ : scoreCost(trajectory_cost);
+    data.costs[i] +=
+      trajectory_collide ? collision_cost_ : scoreCost(trajectory_cost);
+
   }
 
-
-  if (all_trajectories_collide) {
-    data.fail_flag = true;
-  }
+  data.fail_flag = all_trajectories_collide;
 }
 
 unsigned char ObstaclesCritic::costAtPose(double x, double y, double theta)
