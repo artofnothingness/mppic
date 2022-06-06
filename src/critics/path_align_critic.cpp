@@ -108,10 +108,11 @@ void PathAlignCritic::score(models::CriticFunctionData & data)
           min_dist = dist;
         }
 
+        if (is_path_longer_than_trajectory) {
+          break;
+        }
+
         if (accumulated_path_distances(s) > trajectories_lengths(t)) {
-          if (is_path_longer_than_trajectory) {
-            break;
-          }
           bool is_path_longer_than_trajectory = true;
         }
       }
