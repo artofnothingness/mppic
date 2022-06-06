@@ -4,6 +4,8 @@
 #include "execution"
 #include "atomic"
 
+#include "chrono"
+
 namespace mppi::critics
 {
 
@@ -29,33 +31,27 @@ void ObstaclesCritic::score(models::CriticFunctionData & data)
     return;
   }
 
-  std::atomic<bool> all_trajectories_collide = true;
+  bool all_trajectories_collide = true;
+  for (size_t i = 0; i < data.trajectories.shape(0); ++i) {
+    bool trajectory_collide = false;
+    unsigned char trajectory_cost = nav2_costmap_2d::FREE_SPACE;
 
-  std::vector<size_t> trajectories_idxs(data.trajectories.shape(0));
-  std::iota(trajectories_idxs.begin(), trajectories_idxs.end(), 0);
+    for (size_t j = 0; j < data.trajectories.shape(1); j++) {
+      unsigned char pose_cost = costAtPose(
+        data.trajectories(i, j, 0), data.trajectories(i, j, 1), data.trajectories(i, j, 2));
+      trajectory_cost = std::max(trajectory_cost, pose_cost);
 
-  std::for_each(
-    std::execution::par_unseq, trajectories_idxs.begin(), trajectories_idxs.end(),
-    [&](int i) {
-      bool trajectory_collide = false;
-      unsigned char trajectory_cost = nav2_costmap_2d::FREE_SPACE;
-
-      for (size_t j = 0; j < data.trajectories.shape(1); j++) {
-        unsigned char pose_cost = costAtPose(
-          data.trajectories(i, j, 0), data.trajectories(i, j, 1), data.trajectories(i, j, 2));
-        trajectory_cost = std::max(trajectory_cost, pose_cost);
-
-        if (inCollision(trajectory_cost)) {
-          trajectory_collide = true;
-          break;
-        }
+      if (inCollision(trajectory_cost)) {
+        trajectory_collide = true;
+        break;
       }
+    }
 
-      if (!trajectory_collide) {all_trajectories_collide.store(false);}
-      data.costs[i] +=
+    if (!trajectory_collide) {all_trajectories_collide = false;}
+    data.costs[i] +=
       trajectory_collide ? collision_cost_ : scoreCost(trajectory_cost);
 
-    });
+  }
 
   data.fail_flag = all_trajectories_collide;
 }
