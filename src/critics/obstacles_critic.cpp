@@ -1,11 +1,6 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/critics/obstacles_critic.hpp"
 
-#include "execution"
-#include "atomic"
-
-#include "chrono"
-
 namespace mppi::critics
 {
 

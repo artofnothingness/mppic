@@ -1,10 +1,6 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/critics/path_align_critic.hpp"
 
-#include <chrono>
-#include <execution>
-#include <atomic>
-
 #include <xtensor/xfixed.hpp>
 #include <xtensor/xmath.hpp>
 
@@ -118,9 +114,9 @@ void PathAlignCritic::score(models::CriticFunctionData & data)
       }
       max_s = std::max(max_s, min_s);
       mean_dist += min_dist;
-
-      cost(t) = mean_dist / trajectories_points_count;
     }
+
+    cost(t) = mean_dist / trajectories_points_count;
   }
 
   data.furthest_reached_path_point = max_s;
