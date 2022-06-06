@@ -85,6 +85,7 @@ void PathAlignCritic::score(models::CriticFunctionData & data)
     for (size_t p = 0; p < trajectories_points_count; p += trajectory_point_step_) {
       double min_dist = std::numeric_limits<double>::max();
       size_t min_s = 0;
+      bool is_path_longer_than_trajectory = false;
 
       for (size_t s = 0; s < reference_segments_count; s += path_point_step_) {
         xt::xtensor_fixed<double, xt::xshape<2>> P;
@@ -108,7 +109,10 @@ void PathAlignCritic::score(models::CriticFunctionData & data)
         }
 
         if (accumulated_path_distances(s) > trajectories_lengths(t)) {
-          break;
+          if (is_path_longer_than_trajectory) {
+            break;
+          }
+          bool is_path_longer_than_trajectory = true;
         }
       }
       max_s = std::max(max_s, min_s);
