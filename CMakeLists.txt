@@ -6,7 +6,6 @@ set(XTENSOR_USE_OPENMP 1)
 
 find_package(ament_cmake REQUIRED)
 find_package(xtensor REQUIRED)
-find_package(TBB)
 
 set(dependencies_pkgs
   rclcpp
