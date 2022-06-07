@@ -7,8 +7,6 @@
 
 #include <xtensor/xtensor.hpp>
 
-#include "mppic/motion_models.hpp"
-
 namespace mppi::models
 {
 

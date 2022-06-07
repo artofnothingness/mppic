@@ -12,7 +12,6 @@ struct ControlConstraints
   double wz;
 };
 
-
 struct SamplingStd
 {
   double vx;

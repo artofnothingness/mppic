@@ -21,7 +21,7 @@
 #include "nav_msgs/msg/path.hpp"
 
 #include "mppic/models/optimizer_settings.hpp"
-#include "mppic/motion_models.hpp"
+#include "mppic/motion_model.hpp"
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
 #include "mppic/parameters_handler.hpp"
@@ -32,6 +32,7 @@ namespace mppi
 
 class Optimizer
 {
+  using prediction_model_t = xt::xtensor<double, 2>(const xt::xtensor<double, 2> &, const models::StateIdxes &);
 public:
   Optimizer() = default;
 
@@ -123,15 +124,17 @@ protected:
   nav2_costmap_2d::Costmap2D * costmap_;
   std::string name_;
 
-  ParametersHandler * parameters_handler_;
+  MotionModelType motion_model_type_;
+  std::unique_ptr<IModelConstraints> model_constraints_;
 
-  std::unique_ptr<MotionModel> motion_model_;
+  ParametersHandler * parameters_handler_;
   CriticManager critic_manager_;
 
   models::OptimizerSettings settings_;
 
   models::State state_;
   models::ControlSequence control_sequence_;
+  std::function<prediction_model_t> prediction_model_;
 
   xt::xtensor<double, 3> generated_trajectories_;
   xt::xtensor<double, 2> plan_;

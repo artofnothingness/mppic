@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <chrono>
 #include "mppic/controller.hpp"
-#include "mppic/motion_models.hpp"
 #include "mppic/utils.hpp"
 
 namespace mppi

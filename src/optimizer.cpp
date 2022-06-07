@@ -12,6 +12,8 @@
 #include "nav2_core/exceptions.hpp"
 #include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
 
+#include "mppic/motion_model.hpp"
+
 namespace mppi
 {
 
@@ -25,6 +27,12 @@ void Optimizer::initialize(
   costmap_ros_ = costmap_ros;
   costmap_ = costmap_ros_->getCostmap();
   parameters_handler_ = param_handler;
+
+  // predicted velocities at the next time step equals to current controls for naive model
+  // left it like that until we get some neural nets capabilities
+  prediction_model_ = [] (const xt::xtensor<double, 2> & state, const models::StateIdxes & idx) { 
+    return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
+  };
 
   auto node = parent_.lock();
   logger_ = node->get_logger();
@@ -200,7 +208,7 @@ void Optimizer::generateNoisedControls()
   }
 }
 
-bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
+bool Optimizer::isHolonomic() const {return ::mppi::isHolonomic(motion_model_type_);}
 
 void Optimizer::applyControlConstraints()
 {
@@ -211,6 +219,10 @@ void Optimizer::applyControlConstraints()
   if (isHolonomic()) {
     auto vy = state_.getControlVelocitiesVY();
     vy = xt::clip(vy, -s.constraints.vy, s.constraints.vy);
+  }
+
+  if (model_constraints_) {
+    model_constraints_->applyConstraints(state_);
   }
 
   vx = xt::clip(vx, -s.constraints.vx, s.constraints.vx);
@@ -247,14 +259,14 @@ void Optimizer::propagateStateVelocitiesFromInitials(
       state.data, xt::all(), i + 1,
       xt::range(state.idx.vbegin(), state.idx.vend()));
 
-    next_velocities = motion_model_->predict(curr_state, state.idx);
+    next_velocities = prediction_model_(curr_state, state.idx);
   }
 }
 
 xt::xtensor<double, 2> Optimizer::getOptimizedTrajectory()
 {
   models::State state;
-  state.idx.setLayout(motion_model_->isHolonomic());
+  state.idx.setLayout(isHolonomic());
   state.reset(1U, settings_.time_steps);
   state.getControls() = control_sequence_.data;
   state.getTimeIntervals() = settings_.model_dt;
@@ -329,11 +341,11 @@ geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
 void Optimizer::setMotionModel(const std::string & model)
 {
   if (model == "DiffDrive") {
-    motion_model_ = std::make_unique<DiffDriveMotionModel>();
+    motion_model_type_ = MotionModelType::DiffDrive;
   } else if (model == "Omni") {
-    motion_model_ = std::make_unique<OmniMotionModel>();
+    motion_model_type_ = MotionModelType::Omni;
   } else if (model == "Ackermann") {
-    motion_model_ = std::make_unique<AckermannMotionModel>();
+    motion_model_type_ = MotionModelType::Ackermann;
   } else {
     throw std::runtime_error(
             std::string(
@@ -342,8 +354,9 @@ void Optimizer::setMotionModel(const std::string & model)
               model.c_str()));
   }
 
-  state_.idx.setLayout(motion_model_->isHolonomic());
-  control_sequence_.idx.setLayout(motion_model_->isHolonomic());
+  model_constraints_ = getModelConstraintsUniquePtr(parameters_handler_, motion_model_type_);
+  state_.idx.setLayout(isHolonomic());
+  control_sequence_.idx.setLayout(isHolonomic());
 }
 
 void Optimizer::setSpeedLimit(double speed_limit, bool percentage)

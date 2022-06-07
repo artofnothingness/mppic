@@ -2,6 +2,7 @@
 #pragma once
 
 #include "mppic/models/constraints.hpp"
+#include "optional"
 
 namespace mppi::models
 {
@@ -18,6 +19,9 @@ struct OptimizerSettings
   unsigned int iteration_count{0};
   bool shift_control_sequence{false};
   size_t retry_attempt_limit{0};
+
+
+  std::optional<AckermannConstraints> ackermann_constraints;
 };
 
 }  // namespace mppi::models
