@@ -1,5 +1,9 @@
-// Copyright 2022 FastSense, Samsung Research
-#pragma once
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
+
+#ifndef MPPIC__MOTION_MODELS_HPP_
+#define MPPIC__MOTION_MODELS_HPP_
+
+#include <cstdint>
 
 #include "mppic/models/state.hpp"
 #include <xtensor/xmath.hpp>
@@ -67,3 +71,5 @@ public:
 };
 
 }  // namespace mppi::models
+
+#endif  // MPPIC__MOTION_MODELS_HPP_
