@@ -10,36 +10,13 @@
 namespace mppi
 {
 
-enum class MotionModelType
-{
-  DiffDrive,
-  Omni,
-  Ackermann
-};
-
-
-inline bool isHolonomic(MotionModelType type)
-{
-  switch (type) {
-    case MotionModelType::Omni:
-      return true;
-    case MotionModelType::Ackermann:
-    case MotionModelType::DiffDrive:
-      return false;
-  }
-
-  return false;
-}
-
 class IMotionModel
 {
 public:
   virtual ~IMotionModel() = default;
 
-  virtual MotionModelType getMotionModelType() = 0;
-
+  virtual bool isHolonomic() = 0;
   virtual void applyConstraints(models::State & /*state*/) {}
-  bool isHolonomic() {return ::mppi::isHolonomic(getMotionModelType());}
 };
 
 class AckermannMotionModel final : public IMotionModel
@@ -51,9 +28,8 @@ public:
     getParam(min_turning_r_, "min_turning_r", 0.2);
   }
 
-  MotionModelType getMotionModelType() override
-  {
-    return MotionModelType::Ackermann;
+  bool isHolonomic() override {
+      return false;
   }
 
   void applyConstraints(models::State & state) override
@@ -69,26 +45,23 @@ private:
   double min_turning_r_{0};
 };
 
-class OmniMotionModel final : public IMotionModel
-{
-public:
-  OmniMotionModel() = default;
-
-  MotionModelType getMotionModelType() override
-  {
-    return MotionModelType::Omni;
-  }
-
-};
-
 class DiffDriveMotionModel final : public IMotionModel
 {
 public:
   DiffDriveMotionModel() = default;
 
-  MotionModelType getMotionModelType() override
-  {
-    return MotionModelType::DiffDrive;
+  bool isHolonomic() override {
+      return false;
+  }
+};
+
+class OmniMotionModel final : public IMotionModel
+{
+public:
+  OmniMotionModel() = default;
+
+  bool isHolonomic() override {
+      return true;
   }
 
 };
