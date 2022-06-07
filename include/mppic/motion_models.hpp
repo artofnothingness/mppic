@@ -23,7 +23,7 @@ public:
   virtual void applyConstraints(models::State & /*state*/) {}
 };
 
-class AckermannMotionModel override : public IMotionModel
+class AckermannMotionModel : public IMotionModel
 {
 public:
   explicit AckermannMotionModel(ParametersHandler * param_handler)
@@ -32,8 +32,9 @@ public:
     getParam(min_turning_r_, "min_turning_r", 0.2);
   }
 
-  bool isHolonomic() override {
-      return false;
+  bool isHolonomic() override
+  {
+    return false;
   }
 
   void applyConstraints(models::State & state) override
@@ -49,23 +50,25 @@ private:
   double min_turning_r_{0};
 };
 
-class DiffDriveMotionModel override : public IMotionModel
+class DiffDriveMotionModel : public IMotionModel
 {
 public:
   DiffDriveMotionModel() = default;
 
-  bool isHolonomic() override {
-      return false;
+  bool isHolonomic() override
+  {
+    return false;
   }
 };
 
-class OmniMotionModel override : public IMotionModel
+class OmniMotionModel : public IMotionModel
 {
 public:
   OmniMotionModel() = default;
 
-  bool isHolonomic() override {
-      return true;
+  bool isHolonomic() override
+  {
+    return true;
   }
 
 };
