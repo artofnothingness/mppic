@@ -124,8 +124,8 @@ protected:
   nav2_costmap_2d::Costmap2D * costmap_;
   std::string name_;
 
-  MotionModelType motion_model_type_;
-  std::unique_ptr<IModelConstraints> model_constraints_;
+  std::function<prediction_model_t> prediction_model_;
+  std::unique_ptr<IMotionModel> motion_model_;
 
   ParametersHandler * parameters_handler_;
   CriticManager critic_manager_;
@@ -134,7 +134,6 @@ protected:
 
   models::State state_;
   models::ControlSequence control_sequence_;
-  std::function<prediction_model_t> prediction_model_;
 
   xt::xtensor<double, 3> generated_trajectories_;
   xt::xtensor<double, 2> plan_;

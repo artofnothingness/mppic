@@ -208,7 +208,7 @@ void Optimizer::generateNoisedControls()
   }
 }
 
-bool Optimizer::isHolonomic() const {return ::mppi::isHolonomic(motion_model_type_);}
+bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
 
 void Optimizer::applyControlConstraints()
 {
@@ -221,9 +221,7 @@ void Optimizer::applyControlConstraints()
     vy = xt::clip(vy, -s.constraints.vy, s.constraints.vy);
   }
 
-  if (model_constraints_) {
-    model_constraints_->applyConstraints(state_);
-  }
+  motion_model_->applyConstraints(state_);
 
   vx = xt::clip(vx, -s.constraints.vx, s.constraints.vx);
   wz = xt::clip(wz, -s.constraints.wz, s.constraints.wz);
@@ -340,12 +338,12 @@ geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
 
 void Optimizer::setMotionModel(const std::string & model)
 {
-  if (model == "DiffDrive") {
-    motion_model_type_ = MotionModelType::DiffDrive;
+if (model == "DiffDrive") {
+    motion_model_ = std::make_unique<DiffDriveMotionModel>();
   } else if (model == "Omni") {
-    motion_model_type_ = MotionModelType::Omni;
+    motion_model_ = std::make_unique<OmniMotionModel>();
   } else if (model == "Ackermann") {
-    motion_model_type_ = MotionModelType::Ackermann;
+    motion_model_ = std::make_unique<AckermannMotionModel>(parameters_handler_);
   } else {
     throw std::runtime_error(
             std::string(
@@ -354,7 +352,6 @@ void Optimizer::setMotionModel(const std::string & model)
               model.c_str()));
   }
 
-  model_constraints_ = getModelConstraintsUniquePtr(parameters_handler_, motion_model_type_);
   state_.idx.setLayout(isHolonomic());
   control_sequence_.idx.setLayout(isHolonomic());
 }

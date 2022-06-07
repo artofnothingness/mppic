@@ -29,44 +29,58 @@ inline bool isHolonomic(MotionModelType type) {
   return false;
 }
 
-class IModelConstraints {
+class IMotionModel {
 public:
-  virtual ~IModelConstraints() = default;
-  virtual void applyConstraints(const models::State & state) = 0;
+  virtual ~IMotionModel() = default;
+
+  virtual MotionModelType getMotionModelType() = 0;
+
+  virtual void applyConstraints(models::State & /*state*/) {};
+  bool isHolonomic() { return ::mppi::isHolonomic(getMotionModelType());};
 };
 
-class AckermannConstraints final : public IModelConstraints {
+class AckermannMotionModel final : public IMotionModel {
 public:
-  AckermannConstraints(ParametersHandler * param_handler) {
+  explicit AckermannMotionModel(ParametersHandler * param_handler) {
 
   auto getParam = param_handler->getParamGetter("AckermannConstraints");
   getParam(min_turning_r_, "min_turning_r", 0.2);
 }
 
-void applyConstraints(const models::State & state) override {
+MotionModelType getMotionModelType() override {
+    return MotionModelType::Ackermann;
+};
+
+void applyConstraints(models::State & state) override {
   auto v = state.getVelocitiesVX();
   auto w = state.getVelocitiesWZ();
 
-  auto mask = v / w > min_turning_r_; 
-  auto w_masked = xt::masked_view(w, mask);
-  w_masked = xt::sign(v) /  min_turning_r_;
+  auto view = xt::masked_view(w, v / w > min_turning_r_);
+  view = xt::sign(v) /  min_turning_r_;
 }
 
 private:
   double min_turning_r_{0};
 };
 
-inline std::unique_ptr<IModelConstraints> 
-getModelConstraintsUniquePtr(ParametersHandler * param_handler, MotionModelType type) {
-    switch (type) {
-    case MotionModelType::Omni:
-    case MotionModelType::DiffDrive:
-      return{};
-    case MotionModelType::Ackermann:
-      return std::make_unique<AckermannConstraints>(param_handler);
-    }
+class OmniMotionModel final : public IMotionModel {
+public:
+  OmniMotionModel() = default;
 
-    return {};
+MotionModelType getMotionModelType() override {
+    return MotionModelType::Omni;
 }
+
+};
+
+class DiffDriveMotionModel final : public IMotionModel {
+public:
+  DiffDriveMotionModel() = default;
+
+MotionModelType getMotionModelType() override {
+    return MotionModelType::DiffDrive;
+}
+
+};
 
 }  // namespace mppi::models

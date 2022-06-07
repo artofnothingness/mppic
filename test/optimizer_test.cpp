@@ -15,7 +15,7 @@
 
 #include "mppic/optimizer.hpp"
 #include "mppic/parameters_handler.hpp"
-#include "mppic/motion_models.hpp"
+#include "mppic/motion_model.hpp"
 
 #include "utils/utils.hpp"
 
@@ -126,13 +126,4 @@ TEST(MPPIOptimizer, OptimizerTestOmniCircle)
 #endif
   EXPECT_TRUE(!inCollision(trajectory, *costmap));
   EXPECT_TRUE(isGoalReached(trajectory, *costmap, goal_point));
-}
-
-TEST(MPPIOptimizer, AckermannException)
-{
-  mppi::AckermannMotionModel model;
-  xt::xtensor<double, 2> in;
-  mppi::models::StateIdxes idx;
-  EXPECT_FALSE(model.isHolonomic());
-  EXPECT_THROW(model.predict(in, idx), std::runtime_error);
 }
