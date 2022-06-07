@@ -30,9 +30,9 @@ void Optimizer::initialize(
 
   // predicted velocities at the next time step equals to current controls for naive model
   // left it like that until we get some neural nets capabilities
-  prediction_model_ = [] (const xt::xtensor<double, 2> & state, const models::StateIdxes & idx) { 
-    return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
-  };
+  prediction_model_ = [](const xt::xtensor<double, 2> & state, const models::StateIdxes & idx) {
+      return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
+    };
 
   auto node = parent_.lock();
   logger_ = node->get_logger();
@@ -338,7 +338,7 @@ geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
 
 void Optimizer::setMotionModel(const std::string & model)
 {
-if (model == "DiffDrive") {
+  if (model == "DiffDrive") {
     motion_model_ = std::make_unique<DiffDriveMotionModel>();
   } else if (model == "Omni") {
     motion_model_ = std::make_unique<OmniMotionModel>();

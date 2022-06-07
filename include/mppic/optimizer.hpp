@@ -32,7 +32,10 @@ namespace mppi
 
 class Optimizer
 {
-  using prediction_model_t = xt::xtensor<double, 2>(const xt::xtensor<double, 2> &, const models::StateIdxes &);
+  using prediction_model_t = xt::xtensor<double, 2>(
+    const xt::xtensor<double, 2> &,
+    const models::StateIdxes &);
+
 public:
   Optimizer() = default;
 
