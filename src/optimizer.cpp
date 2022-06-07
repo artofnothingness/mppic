@@ -12,7 +12,7 @@
 #include "nav2_core/exceptions.hpp"
 #include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
 
-#include "mppic/motion_model.hpp"
+#include "mppic/motion_models.hpp"
 
 namespace mppi
 {

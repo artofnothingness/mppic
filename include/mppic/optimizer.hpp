@@ -21,7 +21,7 @@
 #include "nav_msgs/msg/path.hpp"
 
 #include "mppic/models/optimizer_settings.hpp"
-#include "mppic/motion_model.hpp"
+#include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
 #include "mppic/parameters_handler.hpp"
