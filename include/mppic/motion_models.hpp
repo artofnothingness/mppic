@@ -19,7 +19,7 @@ public:
   virtual void applyConstraints(models::State & /*state*/) {}
 };
 
-class AckermannMotionModel final : public IMotionModel
+class AckermannMotionModel override : public IMotionModel
 {
 public:
   explicit AckermannMotionModel(ParametersHandler * param_handler)
@@ -45,7 +45,7 @@ private:
   double min_turning_r_{0};
 };
 
-class DiffDriveMotionModel final : public IMotionModel
+class DiffDriveMotionModel override : public IMotionModel
 {
 public:
   DiffDriveMotionModel() = default;
@@ -55,7 +55,7 @@ public:
   }
 };
 
-class OmniMotionModel final : public IMotionModel
+class OmniMotionModel override : public IMotionModel
 {
 public:
   OmniMotionModel() = default;
