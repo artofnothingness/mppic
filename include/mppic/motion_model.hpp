@@ -47,7 +47,6 @@ class AckermannMotionModel final : public IMotionModel
 public:
   explicit AckermannMotionModel(ParametersHandler * param_handler)
   {
-
     auto getParam = param_handler->getParamGetter("AckermannConstraints");
     getParam(min_turning_r_, "min_turning_r", 0.2);
   }
