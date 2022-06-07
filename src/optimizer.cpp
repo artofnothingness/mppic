@@ -194,10 +194,10 @@ void Optimizer::generateNoisedControls()
       {s.batch_size, s.time_steps, 1U}, 0.0, s.sampling_std.vy);
     state_.getControls() = control_sequence_.data +
       xt::concatenate(xt::xtuple(vx_noises_, vy_noises_, wz_noises_), 2);
+  } else {
+    state_.getControls() = control_sequence_.data +
+      xt::concatenate(xt::xtuple(vx_noises_, wz_noises_), 2);
   }
-
-  state_.getControls() = control_sequence_.data +
-    xt::concatenate(xt::xtuple(vx_noises_, wz_noises_), 2);
 }
 
 bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}

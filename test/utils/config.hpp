@@ -71,8 +71,8 @@ void setUpOptimizerParams(
   std::string critic_scorer_name = node_name;
 
   std::vector<std::string> critics = {
-    "GoalCritic", "GoalAngleCritic", "PathAngleCritic", "ObstaclesCritic", "PreferForwardCritic",
-    "ReferenceTrajectoryCritic", "TwirlingCritic"};
+    "GoalCritic", "GoalAngleCritic", "PathFollowCritic", "ObstaclesCritic", "PreferForwardCritic",
+    "PathAngleCritic", "PathAlignCritic"};
 
   params_.emplace_back(rclcpp::Parameter(critic_scorer_name + ".critics", critics));
 }
