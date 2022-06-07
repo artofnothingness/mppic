@@ -17,7 +17,23 @@ namespace mppi
 class IMotionModel
 {
 public:
+  IMotionModel() = default;
   virtual ~IMotionModel() = default;
+
+  /**
+   * @brief Predict velocities for given trajectories the next time step
+   *
+   * @param state for given time_step, tensor of shape
+   * [batch_size, ...] where last dim could be 5 or 7 depending on motion model used
+   *
+   * @return predicted velocities of the robot: tensor of shape [batch_size, ... ]
+   * where last dim could be 2 or 3 depending on motion model used
+   */
+  virtual xt::xtensor<double, 2> predict(
+    const xt::xtensor<double, 2> & state, const models::StateIdxes & idx)
+  {
+    return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
+  }
 
   virtual bool isHolonomic() = 0;
   virtual void applyConstraints(models::State & /*state*/) {}
@@ -32,9 +48,8 @@ public:
     getParam(min_turning_r_, "min_turning_r", 0.2);
   }
 
-  bool isHolonomic() override
-  {
-    return false;
+  bool isHolonomic() override {
+      return false;
   }
 
   void applyConstraints(models::State & state) override
@@ -55,9 +70,8 @@ class DiffDriveMotionModel : public IMotionModel
 public:
   DiffDriveMotionModel() = default;
 
-  bool isHolonomic() override
-  {
-    return false;
+  bool isHolonomic() override {
+      return false;
   }
 };
 
@@ -66,9 +80,8 @@ class OmniMotionModel : public IMotionModel
 public:
   OmniMotionModel() = default;
 
-  bool isHolonomic() override
-  {
-    return true;
+  bool isHolonomic() override {
+      return true;
   }
 
 };

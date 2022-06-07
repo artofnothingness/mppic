@@ -28,12 +28,6 @@ void Optimizer::initialize(
   costmap_ = costmap_ros_->getCostmap();
   parameters_handler_ = param_handler;
 
-  // predicted velocities at the next time step equals to current controls for naive model
-  // left it like that until we get some neural nets capabilities
-  prediction_model_ = [](const xt::xtensor<double, 2> & state, const models::StateIdxes & idx) {
-      return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
-    };
-
   auto node = parent_.lock();
   logger_ = node->get_logger();
 
@@ -257,7 +251,7 @@ void Optimizer::propagateStateVelocitiesFromInitials(
       state.data, xt::all(), i + 1,
       xt::range(state.idx.vbegin(), state.idx.vend()));
 
-    next_velocities = prediction_model_(curr_state, state.idx);
+    next_velocities = motion_model_->predict(curr_state, state.idx);
   }
 }
 

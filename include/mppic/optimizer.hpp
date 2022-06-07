@@ -32,10 +32,6 @@ namespace mppi
 
 class Optimizer
 {
-  using prediction_model_t = xt::xtensor<double, 2>(
-    const xt::xtensor<double, 2> &,
-    const models::StateIdxes &);
-
 public:
   Optimizer() = default;
 
@@ -127,7 +123,6 @@ protected:
   nav2_costmap_2d::Costmap2D * costmap_;
   std::string name_;
 
-  std::function<prediction_model_t> prediction_model_;
   std::unique_ptr<IMotionModel> motion_model_;
 
   ParametersHandler * parameters_handler_;
