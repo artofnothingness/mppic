@@ -213,6 +213,8 @@ void Optimizer::applyControlConstraints()
     vy = xt::clip(vy, -s.constraints.vy, s.constraints.vy);
   }
 
+  motion_model_->applyConstraints(state_);
+
   vx = xt::clip(vx, -s.constraints.vx, s.constraints.vx);
   wz = xt::clip(wz, -s.constraints.wz, s.constraints.wz);
 }
@@ -254,7 +256,7 @@ void Optimizer::propagateStateVelocitiesFromInitials(
 xt::xtensor<double, 2> Optimizer::getOptimizedTrajectory()
 {
   models::State state;
-  state.idx.setLayout(motion_model_->isHolonomic());
+  state.idx.setLayout(isHolonomic());
   state.reset(1U, settings_.time_steps);
   state.getControls() = control_sequence_.data;
   state.getTimeIntervals() = settings_.model_dt;
@@ -333,7 +335,7 @@ void Optimizer::setMotionModel(const std::string & model)
   } else if (model == "Omni") {
     motion_model_ = std::make_unique<OmniMotionModel>();
   } else if (model == "Ackermann") {
-    motion_model_ = std::make_unique<AckermannMotionModel>();
+    motion_model_ = std::make_unique<AckermannMotionModel>(parameters_handler_);
   } else {
     throw std::runtime_error(
             std::string(
@@ -342,8 +344,8 @@ void Optimizer::setMotionModel(const std::string & model)
               model.c_str()));
   }
 
-  state_.idx.setLayout(motion_model_->isHolonomic());
-  control_sequence_.idx.setLayout(motion_model_->isHolonomic());
+  state_.idx.setLayout(isHolonomic());
+  control_sequence_.idx.setLayout(isHolonomic());
 }
 
 void Optimizer::setSpeedLimit(double speed_limit, bool percentage)

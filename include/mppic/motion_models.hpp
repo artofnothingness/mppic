@@ -1,19 +1,24 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
+
 #ifndef MPPIC__MOTION_MODELS_HPP_
 #define MPPIC__MOTION_MODELS_HPP_
 
 #include <cstdint>
 
 #include "mppic/models/state.hpp"
+#include <xtensor/xmath.hpp>
+#include <xtensor/xmasked_view.hpp>
+
+#include "mppic/parameters_handler.hpp"
 
 namespace mppi
 {
 
-class MotionModel
+class IMotionModel
 {
 public:
-  MotionModel() = default;
-  virtual ~MotionModel() = default;
+  IMotionModel() = default;
+  virtual ~IMotionModel() = default;
 
   /**
    * @brief Predict velocities for given trajectories the next time step
@@ -30,33 +35,60 @@ public:
     return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
   }
 
-  virtual bool isHolonomic() const = 0;
+  virtual bool isHolonomic() = 0;
+  virtual void applyConstraints(models::State & /*state*/) {}
 };
 
-class DiffDriveMotionModel : public MotionModel
+class AckermannMotionModel : public IMotionModel
 {
 public:
-  bool isHolonomic() const override {return false;}
-};
-
-class OmniMotionModel : public MotionModel
-{
-public:
-  bool isHolonomic() const override {return true;}
-};
-
-class AckermannMotionModel : public MotionModel
-{
-public:
-  xt::xtensor<double, 2> predict(
-    const xt::xtensor<double, 2> & /*state*/, const models::StateIdxes & /*idx*/) override
+  explicit AckermannMotionModel(ParametersHandler * param_handler)
   {
-    throw std::runtime_error("Ackermann motion model not yet implemented");
+    auto getParam = param_handler->getParamGetter("AckermannConstraints");
+    getParam(min_turning_r_, "min_turning_r", 0.2);
   }
 
-  bool isHolonomic() const override {return false;}
+  bool isHolonomic() override
+  {
+    return false;
+  }
+
+  void applyConstraints(models::State & state) override
+  {
+    auto v = state.getVelocitiesVX();
+    auto w = state.getVelocitiesWZ();
+
+    auto view = xt::masked_view(w, v / w > min_turning_r_);
+    view = xt::sign(v) / min_turning_r_;
+  }
+
+private:
+  double min_turning_r_{0};
 };
 
-}  // namespace mppi
+class DiffDriveMotionModel : public IMotionModel
+{
+public:
+  DiffDriveMotionModel() = default;
+
+  bool isHolonomic() override
+  {
+    return false;
+  }
+};
+
+class OmniMotionModel : public IMotionModel
+{
+public:
+  OmniMotionModel() = default;
+
+  bool isHolonomic() override
+  {
+    return true;
+  }
+
+};
+
+}  // namespace mppi::models
 
 #endif  // MPPIC__MOTION_MODELS_HPP_

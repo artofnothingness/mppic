@@ -2,6 +2,7 @@
 #pragma once
 
 #include "mppic/models/constraints.hpp"
+#include <cstddef>
 
 namespace mppi::models
 {
