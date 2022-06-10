@@ -73,6 +73,12 @@ sudo make install
  | retry_attempt_limit        | int    | Number of attempts to find feasible trajectory before failure                                                                                                                                                                                                                                                      |
 
 
+#### AckermannConstrains params
+ | Parameter            | Type   | Definition                                                                                                  |
+ | -------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+ | min_turning_r        | double | minimum turning radius for ackermann motion model                                                           |
+
+
 #### GoalCritic params
  | Parameter            | Type   | Definition                                                                                                  |
  | -------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
@@ -142,6 +148,8 @@ controller_server:
       temperature: 0.25
       motion_model: "DiffDrive"
       visualize: false
+      AckermannConstrains:
+        min_turning_r: 0.2
       critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic" ]
       GoalCritic:
         enabled: true
