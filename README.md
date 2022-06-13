@@ -142,7 +142,7 @@ controller_server:
       vx_max: 0.5
       vy_max: 0.5
       wz_max: 1.3
-      iteration_count: 2
+      iteration_count: 1
       prune_distance: 1.2
       transform_tolerance: 0.1
       temperature: 0.25
