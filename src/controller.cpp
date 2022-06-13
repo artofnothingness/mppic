@@ -61,17 +61,16 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   geometry_msgs::msg::TwistStamped cmd =
     optimizer_.evalControl(robot_pose, robot_speed, transformed_plan, goal_checker);
 
-  visualize(std::move(transformed_plan));
+  if (visualize_) {
+    visualize(std::move(transformed_plan));
+  }
+
 
   return cmd;
 }
 
 void Controller::visualize(nav_msgs::msg::Path transformed_plan)
 {
-  if (!visualize_) {
-    return;
-  }
-
   trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories(), 5, 2);
   trajectory_visualizer_.add(optimizer_.getOptimizedTrajectory());
   trajectory_visualizer_.visualize(std::move(transformed_plan));
