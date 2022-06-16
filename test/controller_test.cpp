@@ -9,7 +9,6 @@
 #include <nav2_costmap_2d/costmap_2d_ros.hpp>
 
 #include "mppic/controller.hpp"
-#include "mppic/optimizer.hpp"
 
 #include "utils/utils.hpp"
 
@@ -50,7 +49,6 @@ TEST(ControllerTest, ControllerNotFail)
   auto path = getIncrementalDummyPath(node, path_settings);
 
   controller.setPlan(path);
-  controller.computeVelocityCommands(pose, velocity, {});
 
   EXPECT_NO_THROW(controller.computeVelocityCommands(pose, velocity, {}));
 

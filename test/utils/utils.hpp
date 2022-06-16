@@ -21,21 +21,21 @@ void waitSome(const std::chrono::nanoseconds & duration, auto & node)
   rclcpp::Time start_time = node->now();
   while (rclcpp::ok() && node->now() - start_time <= rclcpp::Duration(duration)) {
     rclcpp::spin_some(node->get_node_base_interface());
-    std::this_thread::sleep_for(10ms);
+    std::this_thread::sleep_for(3ms);
   }
 }
 
 void sendTf(
   std::string_view source, std::string_view dest,
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster,
-  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node, std::atomic_bool & stop_flag)
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node, size_t n)
 {
-  while (!stop_flag.load()) {
+  while (--n != 0u) {
     auto t = geometry_msgs::msg::TransformStamped();
     t.header.frame_id = source;
     t.child_frame_id = dest;
 
-    t.header.stamp = node->now() + rclcpp::Duration(20ms);
+    t.header.stamp = node->now() + rclcpp::Duration(3ms);
     t.transform.translation.x = 0.0;
     t.transform.translation.y = 0.0;
     t.transform.translation.z = 0.0;
@@ -47,7 +47,7 @@ void sendTf(
     tf_broadcaster->sendTransform(t);
 
     // Allow tf_buffer_ to be filled by listener
-    waitSome(20ms, node);
+    waitSome(10ms, node);
   }
 }
 

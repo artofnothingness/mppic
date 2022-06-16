@@ -3,7 +3,6 @@
 #include <benchmark/benchmark.h>
 #include <string>
 
-#include "gtest/gtest.h"
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/path.hpp>
@@ -17,10 +16,8 @@
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
-#include "mppic/optimizer.hpp"
 #include "mppic/motion_models.hpp"
-
-#include "mppic/parameters_handler.hpp"
+#include "mppic/controller.hpp"
 
 #include "utils.hpp"
 
@@ -35,8 +32,10 @@ RosLockGuard g_rclcpp;
 
 void prepareAndRunBenchmark(
   bool consider_footprint, std::string motion_model,
-  std::vector<std::string> critics, benchmark::State & state)
-{
+  std::vector<std::string> critics, benchmark::State & state) {
+
+  bool visualize = false;
+
   int batch_size = 300;
   int time_steps = 12;
   unsigned int path_points = 50u;
@@ -66,20 +65,45 @@ void prepareAndRunBenchmark(
   addObstacle(costmap, {obst_x, obst_y, obstacle_size, obstacle_cost});
 
   printInfo(optimizer_settings, path_settings, critics);
-  auto node = getDummyNode(optimizer_settings, critics);
-  auto parameters_handler = std::make_unique<mppi::ParametersHandler>(node);
-  auto optimizer = getDummyOptimizer(node, costmap_ros, parameters_handler.get());
+
+  rclcpp::NodeOptions options;
+  std::vector<rclcpp::Parameter> params;
+  setUpControllerParams(visualize, params);
+  setUpOptimizerParams(optimizer_settings, critics, params);
+  options.parameter_overrides(params);
+  auto node = getDummyNode(options);
+
+  auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  tf_buffer->setUsingDedicatedThread(true);  // One-thread broadcasting-listening model
+  
+  auto broadcaster =
+    std::make_shared<tf2_ros::TransformBroadcaster>(node);
+  auto tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
+
+  auto map_odom_broadcaster = std::async(
+      std::launch::async, sendTf, "map", "odom", broadcaster, node, 
+      20);
+
+  auto odom_base_link_broadcaster = std::async(
+    std::launch::async, sendTf, "odom", "base_link", broadcaster, node, 
+      20);
+
+  auto controller = getDummyController(node, tf_buffer, costmap_ros);
 
   // evalControl args
   auto pose = getDummyPointStamped(node, start_pose);
   auto velocity = getDummyTwist();
   auto path = getIncrementalDummyPath(node, path_settings);
+
+  controller.setPlan(path);
+
   nav2_core::GoalChecker * dummy_goal_checker{nullptr};
 
   for (auto _ : state) {
-    optimizer.evalControl(pose, velocity, path, dummy_goal_checker);
+    controller.computeVelocityCommands(pose, velocity, dummy_goal_checker);
   }
-
+  map_odom_broadcaster.wait();
+  odom_base_link_broadcaster.wait();
 }
 
 static void BM_DiffDrivePointFootprint(benchmark::State & state)
