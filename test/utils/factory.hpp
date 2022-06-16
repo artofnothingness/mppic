@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #pragma once
 
 #include <memory>
@@ -15,11 +15,11 @@
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 #include "mppic/motion_models.hpp"
-#include "mppic/parameters_handler.hpp"
 #include "mppic/optimizer.hpp"
+#include "mppic/parameters_handler.hpp"
 #include "mppic/controller.hpp"
 
-#include "config.hpp"
+#include "models.hpp"
 
 namespace detail
 {
@@ -29,15 +29,46 @@ auto setHeader(auto && msg, auto node, std::string frame)
   msg.header.frame_id = frame;
   msg.header.stamp = time;
 }
+
 }  // namespace detail
 
-rclcpp::NodeOptions getOptimizerOptions(TestOptimizerSettings s)
+
+/**
+ * Adds some parameters for the optimizer to a special container.
+ *
+ * @param params_ container for optimizer's parameters.
+ */
+void setUpOptimizerParams(
+  const TestOptimizerSettings & s,
+  const std::vector<std::string> & critics,
+  std::vector<rclcpp::Parameter> & params_, std::string node_name = std::string("dummy"))
+{
+  constexpr double dummy_freq = 10.0;
+  params_.emplace_back(rclcpp::Parameter(node_name + ".iteration_count", s.iteration_count));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".batch_size", s.batch_size));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".time_steps", s.time_steps));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".lookahead_dist", s.lookahead_distance));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".motion_model", s.motion_model));
+  params_.emplace_back(rclcpp::Parameter(node_name + ".critics", critics));
+  params_.emplace_back(rclcpp::Parameter("controller_frequency", dummy_freq));
+}
+
+void setUpControllerParams(
+  bool visualize, std::vector<rclcpp::Parameter> & params_,
+  std::string node_name = std::string("dummy"))
+{
+  double dummy_freq = 10.0;
+  params_.emplace_back(rclcpp::Parameter(node_name + ".visualize", visualize));
+  params_.emplace_back(rclcpp::Parameter("controller_frequency", dummy_freq));
+}
+
+rclcpp::NodeOptions getOptimizerOptions(
+  TestOptimizerSettings s,
+  const std::vector<std::string> & critics)
 {
   std::vector<rclcpp::Parameter> params;
   rclcpp::NodeOptions options;
-  setUpOptimizerParams(
-    s.iteration_count, s.time_steps, s.lookahead_distance, s.motion_model, s.consider_footprint,
-    params);
+  setUpOptimizerParams(s, critics, params);
   options.parameter_overrides(params);
   return options;
 }
@@ -66,6 +97,11 @@ std::shared_ptr<nav2_costmap_2d::Costmap2D> getDummyCostmap(TestCostmapSettings 
   return costmap;
 }
 
+std::vector<geometry_msgs::msg::Point> getDummySquareFootprint(double a)
+{
+  return {getDummyPoint(a, a), getDummyPoint(-a, -a), getDummyPoint(a, -a), getDummyPoint(-a, a)};
+}
+
 std::shared_ptr<nav2_costmap_2d::Costmap2DROS> getDummyCostmapRos(TestCostmapSettings s)
 {
   auto costmap_ros = getDummyCostmapRos();
@@ -73,13 +109,18 @@ std::shared_ptr<nav2_costmap_2d::Costmap2DROS> getDummyCostmapRos(TestCostmapSet
   auto costmap = getDummyCostmap(s);
   *(costmap_ptr) = *costmap;
 
+  costmap_ros->setRobotFootprint(getDummySquareFootprint(s.footprint_size));
+
   return costmap_ros;
 }
 
 std::shared_ptr<rclcpp_lifecycle::LifecycleNode>
-getDummyNode(TestOptimizerSettings s, std::string node_name = std::string("dummy"))
+getDummyNode(
+  TestOptimizerSettings s, std::vector<std::string> critics,
+  std::string node_name = std::string("dummy"))
 {
-  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name, getOptimizerOptions(s));
+  auto node =
+    std::make_shared<rclcpp_lifecycle::LifecycleNode>(node_name, getOptimizerOptions(s, critics));
   return node;
 }
 
@@ -98,6 +139,18 @@ mppi::Optimizer getDummyOptimizer(auto node, auto costmap_ros, auto * params_han
   optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros, params_handler);
 
   return optimizer;
+}
+
+mppi::PathHandler getDummyPathHandler(
+  auto node, auto costmap_ros, auto tf_buffer,
+  auto * params_handler)
+{
+  auto path_handler = mppi::PathHandler();
+  std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
+
+  path_handler.initialize(weak_ptr_node, node->get_name(), costmap_ros, tf_buffer, params_handler);
+
+  return path_handler;
 }
 
 mppi::Controller getDummyController(auto node, auto tf_buffer, auto costmap_ros)
@@ -163,9 +216,4 @@ nav_msgs::msg::Path getIncrementalDummyPath(auto node, TestPathSettings s)
   }
 
   return path;
-}
-
-std::vector<geometry_msgs::msg::Point> getDummySquareFootprint(double a)
-{
-  return {getDummyPoint(a, a), getDummyPoint(-a, -a), getDummyPoint(a, -a), getDummyPoint(-a, a)};
 }

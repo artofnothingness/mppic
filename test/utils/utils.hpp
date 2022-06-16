@@ -1,15 +1,55 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #pragma once
 
 #include <algorithm>
 #include <iostream>
+#include <string_view>
 #include <rclcpp/executors.hpp>
+
+#include <tf2_ros/transform_broadcaster.h>
 
 #include "nav2_costmap_2d/costmap_2d.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
-#include "config.hpp"
+#include "models.hpp"
 #include "factory.hpp"
+
+using namespace std::chrono_literals;
+
+void waitSome(const std::chrono::nanoseconds & duration, auto & node)
+{
+  rclcpp::Time start_time = node->now();
+  while (rclcpp::ok() && node->now() - start_time <= rclcpp::Duration(duration)) {
+    rclcpp::spin_some(node->get_node_base_interface());
+    std::this_thread::sleep_for(3ms);
+  }
+}
+
+void sendTf(
+  std::string_view source, std::string_view dest,
+  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster,
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node, size_t n)
+{
+  while (--n != 0u) {
+    auto t = geometry_msgs::msg::TransformStamped();
+    t.header.frame_id = source;
+    t.child_frame_id = dest;
+
+    t.header.stamp = node->now() + rclcpp::Duration(3ms);
+    t.transform.translation.x = 0.0;
+    t.transform.translation.y = 0.0;
+    t.transform.translation.z = 0.0;
+    t.transform.rotation.x = 0.0;
+    t.transform.rotation.y = 0.0;
+    t.transform.rotation.z = 0.0;
+    t.transform.rotation.w = 1.0;
+
+    tf_broadcaster->sendTransform(t);
+
+    // Allow tf_buffer_ to be filled by listener
+    waitSome(10ms, node);
+  }
+}
 
 /**
  * Print costmap to stdout.
@@ -86,23 +126,25 @@ void addObstacle(
   }
 }
 
-void print_info(TestOptimizerSettings os, TestPathSettings ps)
+void printInfo(
+  TestOptimizerSettings os, TestPathSettings ps,
+  const std::vector<std::string> & critics)
 {
-  std::cout <<
-    "Parameters of MPPI Planner:" <<
-    "Points in path " << ps.poses_count << "\n" <<
-    "Iteration_count " << os.iteration_count << "\n" <<
-    "Time_steps " << os.time_steps << "\n" <<
-    "Motion model " << os.motion_model << "\n"
-    "Is footprint considering " << os.consider_footprint << "\n" << std::endl;
-}
+  std::stringstream ss;
+  for (auto str : critics) {
+    ss << str << " ";
+  }
 
-void print_info(TestOptimizerSettings os, unsigned int poses_count)
-{
-  std::cout <<
-    "Points in path " << poses_count << "\niteration_count " << os.iteration_count
-            << "\ntime_steps " << os.time_steps
-            << "\nMotion model : " << os.motion_model << std::endl;
+  std::cout <<  //
+    "\n\n--------------------OPTIMIZER OPTIONS-----------------------------\n" <<
+    "Critics: " << ss.str() << "\n" \
+    "Motion model: " << os.motion_model << "\n"
+    "Consider footprint: " << os.consider_footprint << "\n" <<
+    "Iterations: " << os.iteration_count << "\n" <<
+    "Batch size: " << os.batch_size << "\n" <<
+    "Time steps: " << os.time_steps << "\n" <<
+    "Path points: " << ps.poses_count << "\n" <<
+    "\n-------------------------------------------------------------------\n\n";
 }
 
 void addObstacle(nav2_costmap_2d::Costmap2D * costmap, TestObstaclesSettings s)
@@ -122,7 +164,7 @@ bool inCollision(const auto & trajectory, const nav2_costmap_2d::Costmap2D & cos
   unsigned int point_mx = 0;
   unsigned int point_my = 0;
 
-  for (size_t i = 0; i < trajectory.shape()[0]; ++i) {
+  for (size_t i = 0; i < trajectory.shape(0); ++i) {
     costmap.worldToMap(trajectory(i, 0), trajectory(i, 1), point_mx, point_my);
     auto cost_ = costmap.getCost(point_mx, point_my);
     if (cost_ > nav2_costmap_2d::FREE_SPACE || cost_ == nav2_costmap_2d::NO_INFORMATION) {
@@ -130,6 +172,15 @@ bool inCollision(const auto & trajectory, const nav2_costmap_2d::Costmap2D & cos
     }
   }
   return false;
+}
+
+unsigned char getCost(const nav2_costmap_2d::Costmap2D & costmap, double x, double y)
+{
+  unsigned int point_mx = 0;
+  unsigned int point_my = 0;
+
+  costmap.worldToMap(x, y, point_mx, point_my);
+  return costmap.getCost(point_mx, point_my);
 }
 
 bool isGoalReached(
@@ -167,7 +218,7 @@ bool isGoalReached(
     };
   // clang-format on
 
-  for (size_t i = 0; i < trajectory.shape()[0]; ++i) {
+  for (size_t i = 0; i < trajectory.shape(0); ++i) {
     costmap.worldToMap(trajectory(i, 0), trajectory(i, 1), trajectory_j, trajectory_i);
     if (match_near(trajectory_i, trajectory_j)) {
       return true;
