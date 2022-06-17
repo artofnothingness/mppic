@@ -133,7 +133,7 @@ template<typename ParamT, typename SettingT, typename NodeT>
 void ParametersHandler::setParam(
   SettingT & setting, const std::string & name, NodeT node) const
 {
-  ParamT param_in;
+  ParamT param_in{};
   node->get_parameter(name, param_in);
   setting = static_cast<SettingT>(param_in);
 }
