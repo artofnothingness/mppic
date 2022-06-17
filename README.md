@@ -164,7 +164,7 @@ controller_server:
         enabled: true
         cost_power: 2
         cost_weight: 1.25
-        consider_footprint: true
+        consider_footprint: false
         collision_cost: 2000.0
       PathAlignCritic:
         enabled: true
