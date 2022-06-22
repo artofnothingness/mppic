@@ -44,8 +44,8 @@ void Optimizer::getParams()
   auto getParam = parameters_handler_->getParamGetter(name_);
   auto getParentParam = parameters_handler_->getParamGetter("");
   getParam(s.model_dt, "model_dt", 0.1);
-  getParam(s.time_steps, "time_steps", 15);
-  getParam(s.batch_size, "batch_size", 400);
+  getParam(s.time_steps, "time_steps", 12);
+  getParam(s.batch_size, "batch_size", 500);
   getParam(s.iteration_count, "iteration_count", 1);
   getParam(s.temperature, "temperature", 0.25);
   getParam(s.base_constraints.vx, "vx_max", 0.5);
@@ -323,7 +323,7 @@ geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
 {
   unsigned int offset = settings_.shift_control_sequence ? 1 : 0;
   return utils::toTwistStamped(
-    xt::view(control_sequence_.data, offset),
+    xt::view(control_sequence_.data, offset, xt::all()),
     control_sequence_.idx, isHolonomic(), stamp,
     costmap_ros_->getBaseFrameID());
 }
