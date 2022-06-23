@@ -127,6 +127,16 @@ sudo make install
  | twirling_cost_weight | double |                                                                                                             |
  | twirling_cost_power  | int    |                                                                                                             |
 
+#### SmootherCritic params
+ | Parameter       | Type   | Definition                                                                                                  |
+ | --------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+ | vx_cost_power   | int |                                                                                                             |
+ | vx_cost_weight  | double |                                                                                                             |
+ | vy_cost_power   | int    |                                                                                                             |
+ | vy_cost_weight  | double |                                                                                                             |
+ | wz_cost_power   | int    |                                                                                                             |
+ | wz_cost_weight  | double |                                                                                                             |
+
 ### XML configuration example
 ```
 controller_server:
@@ -190,11 +200,11 @@ controller_server:
       SmoothnessCritic:
         enabled: true
         vx_cost_power: 1
-        vx_cost_weight: 0.1
+        vx_cost_weight: 0.2
         vy_cost_power: 1
-        vy_cost_weight: 0.1
+        vy_cost_weight: 0.2
         wz_cost_power: 1
-        wz_cost_weight: 0.1
+        wz_cost_weight: 0.2
       # TwirlingCritic:
       #   twirling_cost_power: 1
       #   twirling_cost_weight: 10.0
