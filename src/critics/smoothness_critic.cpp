@@ -27,25 +27,30 @@ void SmoothnessCritic::score(models::CriticFunctionData & data)
   }
 
   auto vx = data.state.getControlVelocitiesVX();
-  auto vx_diff = xt::abs(
-    xt::view(vx, xt::all(), xt::range(1, _)) -
-    xt::view(vx, xt::all(), xt::range(0, -1)));
-  auto vx_cost = xt::pow(xt::mean(vx, {1}) * vx_weight_, vx_power_);
+  auto dvx = xt::xtensor<double, 2>::from_shape(vx.shape());
+  xt::view(dvx, xt::all(), xt::range(1, _)) = xt::abs(
+    xt::view(vx, xt::all(), xt::range(1, _)) - xt::view(vx, xt::all(), xt::range(0, -1)));
+  xt::view(dvx, xt::all(), 0) = xt::view(vx, xt::all(), 0) - data.state.speed.linear.x;
+  auto vx_cost = xt::pow(xt::mean(dvx, {1}) * vx_weight_, vx_power_);
   data.costs += vx_cost;
 
   auto wz = data.state.getControlVelocitiesWZ();
-  auto wz_diff = xt::abs(
+  auto dwz = xt::xtensor<double, 2>::from_shape(wz.shape());
+  xt::view(dwz, xt::all(), xt::range(1, _)) = xt::abs(
     xt::view(wz, xt::all(), xt::range(1, _)) -
     xt::view(wz, xt::all(), xt::range(0, -1)));
-  auto wz_cost = xt::pow(xt::mean(wz, {1}) * wz_weight_, wz_power_);
+  xt::view(dwz, xt::all(), 0) = xt::view(wz, xt::all(), 0) - data.state.speed.angular.z;
+  auto wz_cost = xt::pow(xt::mean(dwz, {1}) * wz_weight_, wz_power_);
   data.costs += wz_cost;
 
   if (data.state.idx.isHolonomic()) {
     auto vy = data.state.getControlVelocitiesVY();
-    auto vy_diff = xt::abs(
+    auto dvy = xt::xtensor<double, 2>::from_shape(vy.shape());
+    xt::view(dvy, xt::all(), xt::range(1, _)) = xt::abs(
       xt::view(vy, xt::all(), xt::range(1, _)) -
       xt::view(vy, xt::all(), xt::range(0, -1)));
-    auto vy_cost = xt::pow(xt::mean(vy, {1}) * vy_weight_, vy_power_);
+    xt::view(dvy, xt::all(), 0) = xt::view(vy, xt::all(), 0) - data.state.speed.linear.y;
+    auto vy_cost = xt::pow(xt::mean(dvy, {1}) * vy_weight_, vy_power_);
     data.costs += vy_cost;
   }
 }
