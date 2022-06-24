@@ -13,11 +13,46 @@ void ObstaclesCritic::initialize()
   getParam(collision_cost_, "collision_cost", 2000.0);
 
   collision_checker_.setCostmap(costmap_);
+  possibly_inscribed_cost_ = findCircumscribedCost(costmap_ros_);
   RCLCPP_INFO(
     logger_,
     "ObstaclesCritic instantiated with %d power and %f weight. "
     "Critic will collision check based on %s cost.",
     power_, weight_, consider_footprint_ ? "footprint" : "circular");
+}
+
+unsigned char ObstaclesCritic::findCircumscribedCost(
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap)
+{
+  double result = -1.0;
+  bool inflation_layer_found = false;
+  // check if the costmap has an inflation layer
+  for (auto layer = costmap->getLayeredCostmap()->getPlugins()->begin();
+    layer != costmap->getLayeredCostmap()->getPlugins()->end();
+    ++layer)
+  {
+    auto inflation_layer = std::dynamic_pointer_cast<nav2_costmap_2d::InflationLayer>(*layer);
+    if (!inflation_layer) {
+      continue;
+    }
+
+    inflation_layer_found = true;
+    double circum_radius = costmap->getLayeredCostmap()->getCircumscribedRadius();
+    double resolution = costmap->getCostmap()->getResolution();
+    result = inflation_layer->computeCost(circum_radius / resolution);
+  }
+
+  if (!inflation_layer_found) {
+    RCLCPP_WARN(
+      rclcpp::get_logger("computeCircumscribedCost"),
+      "No inflation layer found in costmap configuration. "
+      "If this is an SE2-collision checking plugin, it cannot use costmap potential "
+      "field to speed up collision checking by only checking the full footprint "
+      "when robot is within possibly-inscribed radius of an obstacle. This may "
+      "significantly slow down planning times!");
+  }
+
+  return result;
 }
 
 void ObstaclesCritic::score(models::CriticFunctionData & data)
@@ -54,14 +89,15 @@ void ObstaclesCritic::score(models::CriticFunctionData & data)
 unsigned char ObstaclesCritic::costAtPose(double x, double y, double theta)
 {
   unsigned char cost;
-  if (consider_footprint_) {
+  unsigned int x_i, y_i;
+  collision_checker_.worldToMap(x, y, x_i, y_i);
+  cost = static_cast<unsigned char>(collision_checker_.pointCost(x_i, y_i));
+
+  if (consider_footprint_ && cost >= possibly_inscribed_cost_) {
     cost = static_cast<unsigned char>(collision_checker_.footprintCostAtPose(
         x, y, theta, costmap_ros_->getRobotFootprint()));
-  } else {
-    unsigned int x_i, y_i;
-    collision_checker_.worldToMap(x, y, x_i, y_i);
-    cost = static_cast<unsigned char>(collision_checker_.pointCost(x_i, y_i));
   }
+
   return cost;
 }
 
