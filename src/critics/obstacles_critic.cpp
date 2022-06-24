@@ -26,10 +26,8 @@ unsigned char ObstaclesCritic::findCircumscribedCost(
 {
   double result = -1.0;
   bool inflation_layer_found = false;
-  std::vector<std::shared_ptr<nav2_costmap_2d::Layer>>::iterator layer;
-
   // check if the costmap has an inflation layer
-  for (layer = costmap->getLayeredCostmap()->getPlugins()->begin();
+  for (auto layer = costmap->getLayeredCostmap()->getPlugins()->begin();
     layer != costmap->getLayeredCostmap()->getPlugins()->end();
     ++layer)
   {
