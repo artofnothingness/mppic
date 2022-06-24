@@ -32,7 +32,8 @@ RosLockGuard g_rclcpp;
 
 void prepareAndRunBenchmark(
   bool consider_footprint, std::string motion_model,
-  std::vector<std::string> critics, benchmark::State & state) {
+  std::vector<std::string> critics, benchmark::State & state)
+{
 
   bool visualize = false;
 
@@ -75,18 +76,18 @@ void prepareAndRunBenchmark(
 
   auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
   tf_buffer->setUsingDedicatedThread(true);  // One-thread broadcasting-listening model
-  
+
   auto broadcaster =
     std::make_shared<tf2_ros::TransformBroadcaster>(node);
   auto tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
 
   auto map_odom_broadcaster = std::async(
-      std::launch::async, sendTf, "map", "odom", broadcaster, node, 
-      20);
+    std::launch::async, sendTf, "map", "odom", broadcaster, node,
+    20);
 
   auto odom_base_link_broadcaster = std::async(
-    std::launch::async, sendTf, "odom", "base_link", broadcaster, node, 
-      20);
+    std::launch::async, sendTf, "odom", "base_link", broadcaster, node,
+    20);
 
   auto controller = getDummyController(node, tf_buffer, costmap_ros);
 
