@@ -31,8 +31,7 @@ unsigned char ObstaclesCritic::findCircumscribedCost(
     layer != costmap->getLayeredCostmap()->getPlugins()->end();
     ++layer)
   {
-    std::shared_ptr<nav2_costmap_2d::InflationLayer> inflation_layer =
-      std::dynamic_pointer_cast<nav2_costmap_2d::InflationLayer>(*layer);
+    auto inflation_layer = std::dynamic_pointer_cast<nav2_costmap_2d::InflationLayer>(*layer);
     if (!inflation_layer) {
       continue;
     }
