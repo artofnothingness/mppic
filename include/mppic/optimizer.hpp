@@ -9,7 +9,6 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
@@ -22,6 +21,8 @@
 
 #include "mppic/models/optimizer_settings.hpp"
 #include "mppic/motion_models.hpp"
+#include "mppic/tools/noise_generator.hpp"
+#include "mppic/tools/trajectory_integrator.hpp"
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
 #include "mppic/parameters_handler.hpp"
@@ -68,10 +69,9 @@ protected:
 
   /**
    *
-   * @return trajectories: tensor of shape [ batch_size_, time_steps_, 3 ]
-   * where 3 stands for x, y, yaw
+   * @brief updates generated_trajectories_ 
    */
-  xt::xtensor<double, 3> generateNoisedTrajectories();
+  void generateNoisedTrajectories();
 
   /**
    * @brief Generate random controls by gaussian noise with mean in
@@ -129,6 +129,9 @@ protected:
   CriticManager critic_manager_;
 
   models::OptimizerSettings settings_;
+
+  NoiseGenerator noise_generator_;
+  TrajectoryIntegrator trajectory_integrator_;
 
   models::State state_;
   models::ControlSequence control_sequence_;

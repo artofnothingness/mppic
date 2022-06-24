@@ -1,4 +1,4 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #ifndef MPPIC__MODELS__STATE_HPP_
 #define MPPIC__MODELS__STATE_HPP_
 
