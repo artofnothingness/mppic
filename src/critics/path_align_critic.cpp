@@ -62,7 +62,7 @@ void PathAlignCritic::score(models::CriticFunctionData & data)
       size_t t, size_t p) {
       double dx = P(0) - P3(t, p, 0);
       double dy = P(1) - P3(t, p, 1);
-      return std::hypot(dx, dy);
+      return std::sqrt(dx * dx + dy * dy);
     };
 
 
