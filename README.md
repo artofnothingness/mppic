@@ -170,8 +170,8 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 2.0
-        path_point_step: 1
-        trajectory_point_step: 2
+        path_point_step: 2
+        trajectory_point_step: 3
       PathFollowCritic:
         enabled: true
         cost_power: 1
