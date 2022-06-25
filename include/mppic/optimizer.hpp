@@ -67,7 +67,7 @@ protected:
 
   /**
    *
-   * @brief updates generated_trajectories_ 
+   * @brief updates generated_trajectories_
    */
   void generateNoisedTrajectories();
 
@@ -98,7 +98,9 @@ protected:
    */
   void propagateStateVelocitiesFromInitials(models::State & state) const;
 
-  void integrateStateVelocities(xt::xtensor<double, 3> &trajectories, const models::State & state) const;
+  void integrateStateVelocities(
+    xt::xtensor<double, 3> & trajectories,
+    const models::State & state) const;
 
   /**
    * @brief Update control_sequence_ with state controls weighted by costs

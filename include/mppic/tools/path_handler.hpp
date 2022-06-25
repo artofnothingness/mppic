@@ -1,5 +1,5 @@
 // Copyright 2022 FastSense, Samsung Research
-#pragma once 
+#pragma once
 
 #include <vector>
 #include <utility>
