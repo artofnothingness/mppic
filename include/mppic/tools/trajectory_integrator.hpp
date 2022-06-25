@@ -19,11 +19,20 @@ namespace mppi
 class TrajectoryIntegrator
 {
 public:
+  void reset(const models::OptimizerSettings & s)
+  {
+    xt::noalias(dx) = xt::zeros<double>({s.batch_size, s.time_steps});
+    xt::noalias(dy) = xt::zeros<double>({s.batch_size, s.time_steps});
+    xt::noalias(yaw_cos) = xt::zeros<double>({s.batch_size, s.time_steps});
+    xt::noalias(yaw_sin) = xt::zeros<double>({s.batch_size, s.time_steps});
+    xt::noalias(yaw_offseted) = xt::zeros<double>({s.batch_size, s.time_steps});
+  }
+
   void integrate(xt::xtensor<double, 3> & trajectories, const models::OptimizerSettings & optimizer_settings,
                  const models::State & state, bool is_holonomic) {
     using namespace xt::placeholders;  // NOLINT
 
-    const auto w = state.getVelocitiesWZ();
+    auto w = state.getVelocitiesWZ();
     const double initial_yaw = tf2::getYaw(state.pose.pose.orientation);
 
     auto yaw = xt::view(trajectories, xt::all(), xt::all(), 2);
@@ -38,12 +47,12 @@ public:
     xt::noalias(yaw_cos) = xt::eval(xt::cos(yaw_offseted));
     xt::noalias(yaw_sin) = xt::eval(xt::sin(yaw_offseted));
 
-    const auto vx = state.getVelocitiesVX();
-    xt::noalias(dx) = xt::eval(vx * yaw_cos);
-    xt::noalias(dy) = xt::eval(vx * yaw_sin);
+    auto vx = state.getVelocitiesVX();
+    xt::noalias(dx) = vx * yaw_cos;
+    xt::noalias(dy) = vx * yaw_sin;
 
     if (is_holonomic) {
-      const auto vy = state.getVelocitiesVY();
+      auto vy = state.getVelocitiesVY();
       dx = dx - vy * yaw_sin;
       dy = dy + vy * yaw_cos;
     }
@@ -56,13 +65,12 @@ public:
   }
 
 private:
-
-xt::xtensor<double, 2> yaw_offseted;
 xt::xtensor<double, 2> dx;
 xt::xtensor<double, 2> dy;
 
 xt::xtensor<double, 2> yaw_cos;
 xt::xtensor<double, 2> yaw_sin;
+xt::xtensor<double, 2> yaw_offseted;
 };
 
 }  // namespace mppi

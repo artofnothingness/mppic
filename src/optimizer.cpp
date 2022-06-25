@@ -48,7 +48,8 @@ void Optimizer::getParams()
   getParam(s.batch_size, "batch_size", 400);
   getParam(s.iteration_count, "iteration_count", 1);
   getParam(s.temperature, "temperature", 0.25);
-  getParam(s.base_constraints.vx, "vx_max", 0.5);
+  getParam(s.base_constraints.vx_max, "vx_max", 0.5);
+  getParam(s.base_constraints.vx_min, "vx_min", -0.2);
   getParam(s.base_constraints.vy, "vy_max", 0.5);
   getParam(s.base_constraints.wz, "wz_max", 1.3);
   getParam(s.sampling_std.vx, "vx_std", 0.2);
@@ -94,8 +95,10 @@ void Optimizer::reset()
   state_.getTimeIntervals() = settings_.model_dt;
   control_sequence_.reset(settings_.time_steps);
   costs_ = xt::zeros<double>({settings_.batch_size});
+  generated_trajectories_ = xt::zeros<double>({settings_.batch_size, settings_.time_steps, 3u});
 
   noise_generator_.reset(settings_, isHolonomic());
+  trajectory_integrator_.reset(settings_);
 
   RCLCPP_INFO(logger_, "Optimizer reset");
 }
@@ -182,7 +185,7 @@ void Optimizer::generateNoisedTrajectories()
 
 void Optimizer::generateNoisedControls()
 {
-  state_.getControls() = control_sequence_.data + noise_generator_.generate();
+  state_.getControls() = control_sequence_.data + noise_generator_.generate(settings_);
 }
 
 bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
@@ -200,7 +203,7 @@ void Optimizer::applyControlConstraints()
 
   motion_model_->applyConstraints(state_);
 
-  vx = xt::clip(vx, -s.constraints.vx, s.constraints.vx);
+  vx = xt::clip(vx, s.constraints.vx_min, s.constraints.vx_max);
   wz = xt::clip(wz, -s.constraints.wz, s.constraints.wz);
 }
 
@@ -303,21 +306,24 @@ void Optimizer::setSpeedLimit(double speed_limit, bool percentage)
 {
   auto & s = settings_;
   if (speed_limit == nav2_costmap_2d::NO_SPEED_LIMIT) {
-    s.constraints.vx = s.base_constraints.vx;
+    s.constraints.vx_max = s.base_constraints.vx_max;
+    s.constraints.vx_min = s.base_constraints.vx_min;
     s.constraints.vy = s.base_constraints.vy;
     s.constraints.wz = s.base_constraints.wz;
   } else {
     if (percentage) {
       // Speed limit is expressed in % from maximum speed of robot
       double ratio = speed_limit / 100.0;
-      s.constraints.vx = s.base_constraints.vx * ratio;
+      s.constraints.vx_max = s.base_constraints.vx_max * ratio;
+      s.constraints.vx_min = s.base_constraints.vx_min * ratio;
       s.constraints.vy = s.base_constraints.vy * ratio;
       s.constraints.wz = s.base_constraints.wz * ratio;
     } else {
       // Speed limit is expressed in absolute value
-      double ratio = speed_limit / s.base_constraints.vx;
-      s.constraints.vx = speed_limit;
-      s.constraints.vy = s.base_constraints.vx * ratio;
+      double ratio = speed_limit / s.base_constraints.vx_max;
+      s.constraints.vx_max = s.base_constraints.vx_max * ratio;
+      s.constraints.vx_min = s.base_constraints.vx_min * ratio;
+      s.constraints.vy = s.base_constraints.vy * ratio;
       s.constraints.wz = s.base_constraints.wz * ratio;
     }
   }

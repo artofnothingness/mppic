@@ -100,29 +100,25 @@ struct NoiseGenerator
 
   xt::xtensor<double, 3> const & getNoises() const { return data;};
 
-  xt::xtensor<double, 3> const & generate() {
-    auto & s = optimizer_settings_;
-    getNoiseVX() = xt::random::randn<double>({s.batch_size, s.time_steps, 1U}, 0.0, s.sampling_std.vx);
-
-    getNoiseWZ() = xt::random::randn<double>({s.batch_size, s.time_steps, 1U}, 0.0, s.sampling_std.wz);
+  xt::xtensor<double, 3> const & generate(const models::OptimizerSettings & s) {
+    getNoiseVX() = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vx);
+    getNoiseWZ() = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.wz);
 
     if (idx.isHolonomic()) {
-      getNoiseVY() = xt::random::randn<double>({s.batch_size, s.time_steps, 1U}, 0.0, s.sampling_std.vy);
+      getNoiseVY() = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vy);
     } 
 
     return getNoises();
   }
 
 
-  void reset(const models::OptimizerSettings & optimizer_settings, bool is_holonomic)
+  void reset(const models::OptimizerSettings & s, bool is_holonomic)
   {
     idx.setLayout(is_holonomic);
-    optimizer_settings_ = optimizer_settings;
-    data = xt::zeros<double>({optimizer_settings_.batch_size, optimizer_settings_.time_steps, idx.dim()});
+    data = xt::zeros<double>({s.batch_size, s.time_steps, idx.dim()});
   }
 
 private:
-models::OptimizerSettings optimizer_settings_;
 xt::xtensor<double, 3> data;
 NoisesIdxes idx;
 };

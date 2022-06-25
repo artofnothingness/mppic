@@ -7,7 +7,8 @@ namespace mppi::models
 
 struct ControlConstraints
 {
-  double vx;
+  double vx_max;
+  double vx_min;
   double vy;
   double wz;
 };
