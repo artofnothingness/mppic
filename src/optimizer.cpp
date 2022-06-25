@@ -96,9 +96,7 @@ void Optimizer::reset()
   control_sequence_.reset(settings_.time_steps);
   costs_ = xt::zeros<double>({settings_.batch_size});
   generated_trajectories_ = xt::zeros<double>({settings_.batch_size, settings_.time_steps, 3u});
-
-  noise_generator_.reset(settings_, isHolonomic());
-  trajectory_integrator_.reset(settings_);
+  noises_ = xt::zeros<double>({settings_.batch_size, settings_.time_steps, isHolonomic() ? 3u : 2u});
 
   RCLCPP_INFO(logger_, "Optimizer reset");
 }
@@ -180,21 +178,32 @@ void Optimizer::generateNoisedTrajectories()
   generateNoisedControls();
   applyControlConstraints();
   updateStateVelocities(state_);
-  trajectory_integrator_.integrate(generated_trajectories_, settings_, state_, isHolonomic());
+  integrateStateVelocities(generated_trajectories_, state_);
 }
 
 void Optimizer::generateNoisedControls()
 {
-  state_.getControls() = control_sequence_.data + noise_generator_.generate(settings_);
+  auto & s = settings_;
+  auto vx = xt::view(noises_, xt::all(), xt::all(), 0);
+  auto wz = xt::view(noises_, xt::all(), xt::all(), isHolonomic() ? 2 : 1);
+
+  vx = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vx);
+  wz = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.wz);
+  if (isHolonomic()) {
+    auto vy = xt::view(noises_, xt::all(), xt::all(), 1);
+    vy = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vy);
+  } 
+
+  state_.getControls() = control_sequence_.data + noises_;
 }
 
 bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
 
 void Optimizer::applyControlConstraints()
 {
+  auto & s = settings_;
   auto vx = state_.getControlVelocitiesVX();
   auto wz = state_.getControlVelocitiesWZ();
-  auto & s = settings_;
 
   if (isHolonomic()) {
     auto vy = state_.getControlVelocitiesVY();
@@ -240,6 +249,39 @@ void Optimizer::propagateStateVelocitiesFromInitials(
     next_velocities = motion_model_->predict(curr_state, state.idx);
   }
 }
+void Optimizer::integrateStateVelocities(xt::xtensor<double, 3> &trajectories, const models::State & state) const
+{
+  using namespace xt::placeholders;  // NOLINT
+  
+  auto x = xt::view(trajectories, xt::all(), xt::all(), 0);
+  auto y = xt::view(trajectories, xt::all(), xt::all(), 1);
+  auto yaw = xt::view(trajectories, xt::all(), xt::all(), 2);
+
+  auto w = state.getVelocitiesWZ();
+    double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
+    yaw = xt::cumsum(w * settings_.model_dt, 1) + initial_yaw;
+    xt::xtensor<double, 2> yaw_offseted = yaw;
+
+    xt::view(yaw_offseted, xt::all(), xt::range(1, _)) =
+      xt::view(yaw, xt::all(), xt::range(_, -1));
+    xt::view(yaw_offseted, xt::all(), 0) = initial_yaw;
+
+    auto yaw_cos = xt::eval(xt::cos(yaw_offseted));
+    auto yaw_sin = xt::eval(xt::sin(yaw_offseted));
+
+    auto vx = state.getVelocitiesVX();
+    auto dx = xt::eval(vx * yaw_cos);
+    auto dy = xt::eval(vx * yaw_sin);
+
+    if (isHolonomic()) {
+      auto vy = state.getVelocitiesVY();
+      dx = dx - vy * yaw_sin;
+      dy = dy + vy * yaw_cos;
+    }
+
+    x = state_.pose.pose.position.x + xt::cumsum(dx * settings_.model_dt, 1);
+    y = state_.pose.pose.position.y + xt::cumsum(dy * settings_.model_dt, 1);
+}
 
 xt::xtensor<double, 2> Optimizer::getOptimizedTrajectory()
 {
@@ -253,7 +295,7 @@ xt::xtensor<double, 2> Optimizer::getOptimizedTrajectory()
 
   auto trajectories = xt::xtensor<double, 3>::from_shape(generated_trajectories_.shape());
 
-  trajectory_integrator_.integrate(trajectories, settings_, state, isHolonomic());
+  integrateStateVelocities(trajectories, state);
   return xt::squeeze(trajectories);
 }
 

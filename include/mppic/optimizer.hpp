@@ -21,8 +21,6 @@
 
 #include "mppic/models/optimizer_settings.hpp"
 #include "mppic/motion_models.hpp"
-#include "mppic/tools/noise_generator.hpp"
-#include "mppic/tools/trajectory_integrator.hpp"
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
 #include "mppic/parameters_handler.hpp"
@@ -100,7 +98,7 @@ protected:
    */
   void propagateStateVelocitiesFromInitials(models::State & state) const;
 
-  xt::xtensor<double, 3> integrateStateVelocities(const models::State & state) const;
+  void integrateStateVelocities(xt::xtensor<double, 3> &trajectories, const models::State & state) const;
 
   /**
    * @brief Update control_sequence_ with state controls weighted by costs
@@ -130,9 +128,6 @@ protected:
 
   models::OptimizerSettings settings_;
 
-  NoiseGenerator noise_generator_;
-  TrajectoryIntegrator trajectory_integrator_;
-
   models::State state_;
   models::ControlSequence control_sequence_;
 
@@ -140,9 +135,7 @@ protected:
   xt::xtensor<double, 2> plan_;
   xt::xtensor<double, 1> costs_;
 
-  xt::xtensor<double, 3> vx_noises_;
-  xt::xtensor<double, 3> vy_noises_;
-  xt::xtensor<double, 3> wz_noises_;
+  xt::xtensor<double, 3> noises_;
 
   models::CriticFunctionData critics_data_ =
   {state_, generated_trajectories_, plan_, costs_, false, nullptr, std::nullopt}; /// Caution, keep references
