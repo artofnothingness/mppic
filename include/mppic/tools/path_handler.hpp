@@ -1,6 +1,5 @@
 // Copyright 2022 FastSense, Samsung Research
-#ifndef MPPIC__PATH_HANDLER_HPP_
-#define MPPIC__PATH_HANDLER_HPP_
+#pragma once 
 
 #include <vector>
 #include <utility>
@@ -15,7 +14,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav2_util/geometry_utils.hpp"
 
-#include "mppic/parameters_handler.hpp"
+#include "mppic/tools/parameters_handler.hpp"
 
 namespace mppi
 {
@@ -78,5 +77,3 @@ protected:
   double transform_tolerance_{0};
 };
 }  // namespace mppi
-
-#endif  // MPPIC__PATH_HANDLER_HPP_

@@ -27,7 +27,7 @@
 #include "nav2_core/goal_checker.hpp"
 
 #include "mppic/models/control_sequence.hpp"
-#include "mppic/models/critic_function_data.hpp"
+#include "mppic/critic_data.hpp"
 
 namespace mppi::utils
 {
@@ -133,7 +133,7 @@ auto shortest_angular_distance(
  * @brief Evaluate furthest point idx of data.path which is
  * nearset to some trajectory in data.trajectories
  */
-inline size_t findPathFurthestReachedPoint(const models::CriticFunctionData & data)
+inline size_t findPathFurthestReachedPoint(const CriticData & data)
 {
   auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
 
@@ -160,7 +160,7 @@ inline size_t findPathFurthestReachedPoint(const models::CriticFunctionData & da
 /**
  * @brief evaluate path furthest point if it is not set
  */
-inline void setPathFurthestPointIfNotSet(models::CriticFunctionData & data)
+inline void setPathFurthestPointIfNotSet(CriticData & data)
 {
   if (!data.furthest_reached_path_point) {
     data.furthest_reached_path_point = findPathFurthestReachedPoint(data);
@@ -183,7 +183,7 @@ inline double posePointAngle(const geometry_msgs::msg::Pose & pose, double point
 /**
  * @brief Evaluate ratio of data.path which reached by all trajectories in data.trajectories
  */
-inline double getPathRatioReached(const models::CriticFunctionData & data)
+inline double getPathRatioReached(const CriticData & data)
 {
   if (!data.furthest_reached_path_point) {
     throw std::runtime_error("Furthest point not computed yet");

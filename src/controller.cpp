@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <chrono>
 #include "mppic/controller.hpp"
-#include "mppic/utils.hpp"
+#include "mppic/tools/utils.hpp"
 
 namespace mppi
 {

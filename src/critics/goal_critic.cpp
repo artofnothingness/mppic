@@ -15,7 +15,7 @@ void GoalCritic::initialize()
     power_, weight_);
 }
 
-void GoalCritic::score(models::CriticFunctionData & data)
+void GoalCritic::score(CriticData & data)
 {
 
   if (!enabled_) {

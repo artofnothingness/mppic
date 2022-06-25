@@ -15,7 +15,7 @@ void TwirlingCritic::initialize()
     logger_, "TwirlingCritic instantiated with %d power and %f weight.", power_, weight_);
 }
 
-void TwirlingCritic::score(models::CriticFunctionData & data)
+void TwirlingCritic::score(CriticData & data)
 {
   if (!enabled_) {
     return;

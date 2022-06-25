@@ -9,7 +9,7 @@
 #include <xtensor/xmath.hpp>
 #include <xtensor/xmasked_view.hpp>
 
-#include "mppic/parameters_handler.hpp"
+#include "mppic/tools/parameters_handler.hpp"
 
 namespace mppi
 {

@@ -55,7 +55,7 @@ unsigned char ObstaclesCritic::findCircumscribedCost(
   return result;
 }
 
-void ObstaclesCritic::score(models::CriticFunctionData & data)
+void ObstaclesCritic::score(CriticData & data)
 {
   if (!enabled_) {
     return;

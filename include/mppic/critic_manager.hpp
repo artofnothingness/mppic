@@ -15,9 +15,9 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
-#include "mppic/parameters_handler.hpp"
-#include "mppic/utils.hpp"
-#include "mppic/models/critic_function_data.hpp"
+#include "mppic/tools/parameters_handler.hpp"
+#include "mppic/tools/utils.hpp"
+#include "mppic/critic_data.hpp"
 #include "mppic/critic_function.hpp"
 
 namespace mppi
@@ -32,8 +32,7 @@ public:
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS>, ParametersHandler *);
 
-  void evalTrajectoriesScores(
-    models::CriticFunctionData & data) const;
+  void score(CriticData & data) const;
 
 protected:
   void getParams();

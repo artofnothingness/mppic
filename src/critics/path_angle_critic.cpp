@@ -24,7 +24,7 @@ void PathAngleCritic::initialize()
     power_, weight_);
 }
 
-void PathAngleCritic::score(models::CriticFunctionData & data)
+void PathAngleCritic::score(CriticData & data)
 {
   if (!enabled_) {
     return;

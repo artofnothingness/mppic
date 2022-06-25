@@ -23,8 +23,8 @@
 #include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
-#include "mppic/parameters_handler.hpp"
-#include "mppic/utils.hpp"
+#include "mppic/tools/parameters_handler.hpp"
+#include "mppic/tools/utils.hpp"
 
 namespace mppi
 {
@@ -132,12 +132,12 @@ protected:
   models::ControlSequence control_sequence_;
 
   xt::xtensor<double, 3> generated_trajectories_;
+  xt::xtensor<double, 3> noises_;
   xt::xtensor<double, 2> plan_;
   xt::xtensor<double, 1> costs_;
 
-  xt::xtensor<double, 3> noises_;
 
-  models::CriticFunctionData critics_data_ =
+  CriticData critics_data_ =
   {state_, generated_trajectories_, plan_, costs_, false, nullptr, std::nullopt}; /// Caution, keep references
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};

@@ -125,7 +125,7 @@ void Optimizer::optimize()
 {
   for (size_t i = 0; i < settings_.iteration_count; ++i) {
     generateNoisedTrajectories();
-    critic_manager_.evalTrajectoriesScores(critics_data_);
+    critic_manager_.score(critics_data_);
     updateControlSequence();
   }
 }

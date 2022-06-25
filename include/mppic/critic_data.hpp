@@ -9,10 +9,10 @@
 #include "mppic/models/state.hpp"
 
 
-namespace mppi::models
+namespace mppi
 {
 
-struct CriticFunctionData
+struct CriticData
 {
   const models::State & state;
   const xt::xtensor<double, 3> & trajectories;

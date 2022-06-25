@@ -3,7 +3,7 @@
 
 #include "mppic/critic_function.hpp"
 #include "mppic/models/state.hpp"
-#include "mppic/utils.hpp"
+#include "mppic/tools/utils.hpp"
 
 namespace mppi::critics
 {
@@ -18,7 +18,7 @@ public:
    *
    * @param costs [out] add reference cost values to this tensor
    */
-  void score(models::CriticFunctionData & data) override;
+  void score(CriticData & data) override;
 
 protected:
   unsigned int path_point_step_{0};

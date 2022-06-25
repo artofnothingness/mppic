@@ -8,8 +8,8 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
-#include "mppic/parameters_handler.hpp"
-#include "mppic/models/critic_function_data.hpp"
+#include "mppic/tools/parameters_handler.hpp"
+#include "mppic/critic_data.hpp"
 
 namespace mppi::critics
 {
@@ -38,7 +38,7 @@ public:
     initialize();
   }
 
-  virtual void score(models::CriticFunctionData & data) = 0;
+  virtual void score(CriticData & data) = 0;
 
   virtual void initialize() = 0;
 

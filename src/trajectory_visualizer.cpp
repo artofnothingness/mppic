@@ -1,7 +1,7 @@
 // Copyright 2022 FastSense, Samsung Research
 #include <memory>
 
-#include "mppic/trajectory_visualizer.hpp"
+#include "mppic/tools/trajectory_visualizer.hpp"
 
 namespace mppi
 {
