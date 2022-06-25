@@ -123,7 +123,7 @@ protected:
   nav2_costmap_2d::Costmap2D * costmap_;
   std::string name_;
 
-  std::unique_ptr<IMotionModel> motion_model_;
+  std::unique_ptr<MotionModel> motion_model_;
 
   ParametersHandler * parameters_handler_;
   CriticManager critic_manager_;
