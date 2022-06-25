@@ -77,10 +77,10 @@ public:
   }
 };
 
-class OmnMotionModel : public MotionModel
+class OmniMotionModel : public MotionModel
 {
 public:
-  OmnMotionModel() = default;
+  OmniMotionModel() = default;
 
   bool isHolonomic() override
   {

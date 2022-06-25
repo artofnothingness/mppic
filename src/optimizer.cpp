@@ -332,7 +332,7 @@ void Optimizer::setMotionModel(const std::string & model)
   if (model == "DiffDrive") {
     motion_model_ = std::make_unique<DiffDriveMotionModel>();
   } else if (model == "Omni") {
-    motion_model_ = std::make_unique<OmnMotionModel>();
+    motion_model_ = std::make_unique<OmniMotionModel>();
   } else if (model == "Ackermann") {
     motion_model_ = std::make_unique<AckermannMotionModel>(parameters_handler_);
   } else {
