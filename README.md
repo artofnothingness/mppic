@@ -141,6 +141,7 @@ controller_server:
       vy_std: 0.2
       wz_std: 1.0
       vx_max: 0.5
+      vx_min: -0.2
       vy_max: 0.5
       wz_max: 1.3
       iteration_count: 1
@@ -151,7 +152,7 @@ controller_server:
       visualize: false
       AckermannConstrains:
         min_turning_r: 0.2
-      critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic" ]
+      critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic" ]
       GoalCritic:
         enabled: true
         cost_power: 1
@@ -184,10 +185,10 @@ controller_server:
         cost_power: 1
         cost_weight: 2.0
         offset_from_furthest: 4
-      PreferForwardCritic:
-        enabled: true
-        cost_power: 1
-        cost_weight: 3.0
+      # PreferForwardCritic:
+      #   enabled: true
+      #   cost_power: 1
+      #   cost_weight: 3.0
       # TwirlingCritic:
       #   twirling_cost_power: 1
       #   twirling_cost_weight: 10.0

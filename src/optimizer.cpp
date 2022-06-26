@@ -211,10 +211,10 @@ void Optimizer::applyControlConstraints()
     vy = xt::clip(vy, -s.constraints.vy, s.constraints.vy);
   }
 
-  motion_model_->applyConstraints(state_);
-
   vx = xt::clip(vx, s.constraints.vx_min, s.constraints.vx_max);
   wz = xt::clip(wz, -s.constraints.wz, s.constraints.wz);
+
+  motion_model_->applyConstraints(state_);
 }
 
 void Optimizer::updateStateVelocities(
