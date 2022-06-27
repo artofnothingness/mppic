@@ -57,8 +57,6 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   nav2_core::GoalChecker * goal_checker)
 {
   std::lock_guard<std::mutex> lock(*parameters_handler_->getLock());
-
-  auto start = std::chrono::high_resolution_clock::now();
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
   geometry_msgs::msg::TwistStamped cmd =
     optimizer_.evalControl(robot_pose, robot_speed, transformed_plan, goal_checker);
@@ -67,9 +65,6 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
     visualize(std::move(transformed_plan));
   }
 
-  auto finish = std::chrono::high_resolution_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
-  RCLCPP_INFO(logger_, "Controller loop took: %ld", elapsed);
 
   return cmd;
 }
