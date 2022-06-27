@@ -35,13 +35,11 @@ public:
 
   uint8_t dt() const {return dt_;}
   unsigned int dim() const {return dim_;}
-  unsigned int isHolonomic() const {return is_holonomic_;}
 
-  void setLayout(bool is_holonomic)
+  void setLayout(const bool is_holonomic)
   {
-    is_holonomic_ = is_holonomic;
     // Layout changes to include "Y" components if holonomic
-    if (is_holonomic_) {
+    if (is_holonomic) {
       vx_ = 0;
       vy_ = 1;
       wz_ = 2;
@@ -77,7 +75,6 @@ private:
   std::array<uint8_t, 2> control_range_{0, 0};
 
   unsigned int dim_{0};
-  bool is_holonomic_{false};
 };
 
 /**

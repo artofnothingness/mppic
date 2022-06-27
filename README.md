@@ -127,25 +127,15 @@ sudo make install
  | twirling_cost_weight | double |                                                                                                             |
  | twirling_cost_power  | int    |                                                                                                             |
 
-#### SmootherCritic params
- | Parameter       | Type   | Definition                                                                                                  |
- | --------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
- | vx_cost_power   | int |                                                                                                             |
- | vx_cost_weight  | double |                                                                                                             |
- | vy_cost_power   | int    |                                                                                                             |
- | vy_cost_weight  | double |                                                                                                             |
- | wz_cost_power   | int    |                                                                                                             |
- | wz_cost_weight  | double |                                                                                                             |
-
 ### XML configuration example
 ```
 controller_server:
   ros__parameters:
     FollowPath:
       plugin: "mppi::Controller"
-      time_steps: 12
+      time_steps: 15
       model_dt: 0.1
-      batch_size: 500
+      batch_size: 300
       vx_std: 0.2
       vy_std: 0.2
       wz_std: 1.0
@@ -160,7 +150,7 @@ controller_server:
       visualize: false
       AckermannConstrains:
         min_turning_r: 0.2
-      critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic", "SmoothnessCritic"]
+      critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic" ]
       GoalCritic:
         enabled: true
         cost_power: 1
@@ -173,7 +163,7 @@ controller_server:
       ObstaclesCritic:
         enabled: true
         cost_power: 2
-        cost_weight: 1.65
+        cost_weight: 1.25
         consider_footprint: false
         collision_cost: 2000.0
       PathAlignCritic:
@@ -197,14 +187,6 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 3.0
-      SmoothnessCritic:
-        enabled: true
-        vx_cost_power: 1
-        vx_cost_weight: 0.2
-        vy_cost_power: 1
-        vy_cost_weight: 0.2
-        wz_cost_power: 1
-        wz_cost_weight: 0.2
       # TwirlingCritic:
       #   twirling_cost_power: 1
       #   twirling_cost_weight: 10.0
