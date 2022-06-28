@@ -1,7 +1,7 @@
 // Copyright 2022 FastSense, Samsung Research
-#include "mppic/path_handler.hpp"
+#include "mppic/tools/path_handler.hpp"
 
-#include "mppic/utils.hpp"
+#include "mppic/tools/utils.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
 namespace mppi

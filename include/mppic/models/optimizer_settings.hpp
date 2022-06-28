@@ -9,8 +9,8 @@ namespace mppi::models
 
 struct OptimizerSettings
 {
-  models::ControlConstraints base_constraints{0, 0, 0};
-  models::ControlConstraints constraints{0, 0, 0};
+  models::ControlConstraints base_constraints{0, 0, 0, 0};
+  models::ControlConstraints constraints{0, 0, 0, 0};
   models::SamplingStd sampling_std{0, 0, 0};
   double model_dt{0};
   double temperature{0};

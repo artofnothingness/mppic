@@ -50,7 +50,7 @@ std::string CriticManager::getFullName(const std::string & name)
 }
 
 void CriticManager::evalTrajectoriesScores(
-  models::CriticFunctionData & data) const
+  CriticData & data) const
 {
   for (size_t q = 0; q < critics_.size(); q++) {
     if (data.fail_flag) {

@@ -2,7 +2,7 @@
 #pragma once
 
 #include "mppic/critic_function.hpp"
-#include "mppic/utils.hpp"
+#include "mppic/tools/utils.hpp"
 
 namespace mppi::critics
 {
@@ -12,7 +12,7 @@ class TwirlingCritic : public CriticFunction
 public:
   void initialize() override;
 
-  void score(models::CriticFunctionData & data) override;
+  void score(CriticData & data) override;
 
 protected:
   unsigned int power_{0};

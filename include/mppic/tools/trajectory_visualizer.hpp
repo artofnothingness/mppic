@@ -12,6 +12,8 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 
+#include "mppic/tools/parameters_handler.hpp"
+
 namespace mppi
 {
 
@@ -20,15 +22,16 @@ class TrajectoryVisualizer
 public:
   TrajectoryVisualizer() = default;
 
-  void on_configure(rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & frame_id);
+  void on_configure(
+    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
+    const std::string & frame_id, ParametersHandler * parameters_handler);
   void on_cleanup();
   void on_activate();
   void on_deactivate();
 
   void add(const xt::xtensor<double, 2> & trajectory);
   void add(
-    const xt::xtensor<double, 3> & trajectories, const size_t batch_step,
-    const size_t time_step);
+    const xt::xtensor<double, 3> & trajectories);
   void visualize(nav_msgs::msg::Path plan);
   void reset();
 
@@ -40,6 +43,11 @@ protected:
 
   std::unique_ptr<visualization_msgs::msg::MarkerArray> points_;
   int marker_id_ = 0;
+
+  ParametersHandler * parameters_handler_;
+
+  size_t trajectory_step_{0};
+  size_t time_step_{0};
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };

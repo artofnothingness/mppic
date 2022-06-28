@@ -67,6 +67,7 @@ sudo make install
  | wx_std                     | double | Sampling standart deviation for WX                                                                                                                                                                                                                                                                                   |
  | vx_max                     | double | Max VX                                                                                                                                                                                                                                                                                                               |
  | vy_max                     | double | Max VY                                                                                                                                                                                                                                                                                                               |
+ | vx_min                     | double | Min VX                                                                                                                                                                                                                                                                                                               |
  | wz_max                     | double | Max WZ                                                                                                                                                                                                                                                                                                               |
  | temperature                | double | Selectiveness of trajectories by their costs (The closer this value to 0, the "more" we take in considiration controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories without cost consideration                                                   |
  | visualize                  | bool   | Use visualization                                                                                                                                                                                                                                                                                                    |
@@ -140,6 +141,7 @@ controller_server:
       vy_std: 0.2
       wz_std: 1.0
       vx_max: 0.5
+      vx_min: -0.35
       vy_max: 0.5
       wz_max: 1.3
       iteration_count: 1
@@ -148,6 +150,9 @@ controller_server:
       temperature: 0.25
       motion_model: "DiffDrive"
       visualize: false
+      TrajectoryVisualizer:
+        trajectory_step: 5
+        time_step: 3
       AckermannConstrains:
         min_turning_r: 0.2
       critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic" ]

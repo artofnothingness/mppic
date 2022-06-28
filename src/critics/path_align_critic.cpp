@@ -22,7 +22,7 @@ void PathAlignCritic::initialize()
     power_, weight_);
 }
 
-void PathAlignCritic::score(models::CriticFunctionData & data)
+void PathAlignCritic::score(CriticData & data)
 {
   if (!enabled_ ||
     utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose, data.path))

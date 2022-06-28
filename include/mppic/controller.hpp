@@ -5,11 +5,11 @@
 #include <string>
 #include <memory>
 
-#include "mppic/path_handler.hpp"
+#include "mppic/tools/path_handler.hpp"
 #include "mppic/optimizer.hpp"
-#include "mppic/trajectory_visualizer.hpp"
+#include "mppic/tools/trajectory_visualizer.hpp"
 #include "mppic/models/constraints.hpp"
-#include "mppic/utils.hpp"
+#include "mppic/tools/utils.hpp"
 
 #include "nav2_core/controller.hpp"
 #include "nav2_core/goal_checker.hpp"

@@ -48,7 +48,8 @@ void Optimizer::getParams()
   getParam(s.batch_size, "batch_size", 400);
   getParam(s.iteration_count, "iteration_count", 1);
   getParam(s.temperature, "temperature", 0.25);
-  getParam(s.base_constraints.vx, "vx_max", 0.5);
+  getParam(s.base_constraints.vx_max, "vx_max", 0.5);
+  getParam(s.base_constraints.vx_min, "vx_min", -0.35);
   getParam(s.base_constraints.vy, "vy_max", 0.5);
   getParam(s.base_constraints.wz, "wz_max", 1.3);
   getParam(s.sampling_std.vx, "vx_std", 0.2);
@@ -94,6 +95,9 @@ void Optimizer::reset()
   state_.getTimeIntervals() = settings_.model_dt;
   control_sequence_.reset(settings_.time_steps);
   costs_ = xt::zeros<double>({settings_.batch_size});
+  generated_trajectories_ = xt::zeros<double>({settings_.batch_size, settings_.time_steps, 3u});
+  noises_ =
+    xt::zeros<double>({settings_.batch_size, settings_.time_steps, isHolonomic() ? 3u : 2u});
 
   RCLCPP_INFO(logger_, "Optimizer reset");
 }
@@ -121,7 +125,7 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
 void Optimizer::optimize()
 {
   for (size_t i = 0; i < settings_.iteration_count; ++i) {
-    generated_trajectories_ = generateNoisedTrajectories();
+    generateNoisedTrajectories();
     critic_manager_.evalTrajectoriesScores(critics_data_);
     updateControlSequence();
   }
@@ -170,53 +174,47 @@ void Optimizer::shiftControlSequence()
     xt::view(control_sequence_.data, -2, xt::all());
 }
 
-xt::xtensor<double, 3> Optimizer::generateNoisedTrajectories()
+void Optimizer::generateNoisedTrajectories()
 {
   generateNoisedControls();
   applyControlConstraints();
   updateStateVelocities(state_);
-  return integrateStateVelocities(state_);
+  integrateStateVelocities(generated_trajectories_, state_);
 }
 
 void Optimizer::generateNoisedControls()
 {
   auto & s = settings_;
-  vx_noises_ = xt::random::randn<double>(
-    {s.batch_size, s.time_steps, 1U},
-    0.0, s.sampling_std.vx);
+  auto vx = xt::view(noises_, xt::all(), xt::all(), 0);
+  auto wz = xt::view(noises_, xt::all(), xt::all(), isHolonomic() ? 2 : 1);
 
-  wz_noises_ = xt::random::randn<double>(
-    {s.batch_size, s.time_steps, 1U},
-    0.0, s.sampling_std.wz);
-
+  vx = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vx);
+  wz = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.wz);
   if (isHolonomic()) {
-    vy_noises_ = xt::random::randn<double>(
-      {s.batch_size, s.time_steps, 1U}, 0.0, s.sampling_std.vy);
-    state_.getControls() = control_sequence_.data +
-      xt::concatenate(xt::xtuple(vx_noises_, vy_noises_, wz_noises_), 2);
-  } else {
-    state_.getControls() = control_sequence_.data +
-      xt::concatenate(xt::xtuple(vx_noises_, wz_noises_), 2);
+    auto vy = xt::view(noises_, xt::all(), xt::all(), 1);
+    vy = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vy);
   }
+
+  state_.getControls() = control_sequence_.data + noises_;
 }
 
 bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
 
 void Optimizer::applyControlConstraints()
 {
+  auto & s = settings_;
   auto vx = state_.getControlVelocitiesVX();
   auto wz = state_.getControlVelocitiesWZ();
-  auto & s = settings_;
 
   if (isHolonomic()) {
     auto vy = state_.getControlVelocitiesVY();
     vy = xt::clip(vy, -s.constraints.vy, s.constraints.vy);
   }
 
-  motion_model_->applyConstraints(state_);
-
-  vx = xt::clip(vx, -s.constraints.vx, s.constraints.vx);
+  vx = xt::clip(vx, s.constraints.vx_min, s.constraints.vx_max);
   wz = xt::clip(wz, -s.constraints.wz, s.constraints.wz);
+
+  motion_model_->applyConstraints(state_);
 }
 
 void Optimizer::updateStateVelocities(
@@ -252,27 +250,19 @@ void Optimizer::propagateStateVelocitiesFromInitials(
     next_velocities = motion_model_->predict(curr_state, state.idx);
   }
 }
-
-xt::xtensor<double, 2> Optimizer::getOptimizedTrajectory()
-{
-  models::State state;
-  state.idx.setLayout(isHolonomic());
-  state.reset(1U, settings_.time_steps);
-  state.getControls() = control_sequence_.data;
-  state.getTimeIntervals() = settings_.model_dt;
-
-  updateStateVelocities(state);
-  return xt::squeeze(integrateStateVelocities(state));
-}
-
-xt::xtensor<double, 3> Optimizer::integrateStateVelocities(const models::State & state) const
+void Optimizer::integrateStateVelocities(
+  xt::xtensor<double, 3> & trajectories,
+  const models::State & state) const
 {
   using namespace xt::placeholders;  // NOLINT
 
+  auto x = xt::view(trajectories, xt::all(), xt::all(), 0);
+  auto y = xt::view(trajectories, xt::all(), xt::all(), 1);
+  auto yaw = xt::view(trajectories, xt::all(), xt::all(), 2);
+
   auto w = state.getVelocitiesWZ();
   double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
-  xt::xtensor<double, 2> yaw =
-    xt::cumsum(w * settings_.model_dt, 1) + initial_yaw;
+  yaw = xt::cumsum(w * settings_.model_dt, 1) + initial_yaw;
   xt::xtensor<double, 2> yaw_offseted = yaw;
 
   xt::view(yaw_offseted, xt::all(), xt::range(1, _)) =
@@ -292,15 +282,24 @@ xt::xtensor<double, 3> Optimizer::integrateStateVelocities(const models::State &
     dy = dy + vy * yaw_cos;
   }
 
-  auto x = state_.pose.pose.position.x + xt::cumsum(dx * settings_.model_dt, 1);
-  auto y = state_.pose.pose.position.y + xt::cumsum(dy * settings_.model_dt, 1);
+  x = state_.pose.pose.position.x + xt::cumsum(dx * settings_.model_dt, 1);
+  y = state_.pose.pose.position.y + xt::cumsum(dy * settings_.model_dt, 1);
+}
 
-  return xt::concatenate(
-    xt::xtuple(
-      xt::view(x, xt::all(), xt::all(), xt::newaxis()),
-      xt::view(y, xt::all(), xt::all(), xt::newaxis()),
-      xt::view(yaw, xt::all(), xt::all(), xt::newaxis())),
-    2);
+xt::xtensor<double, 2> Optimizer::getOptimizedTrajectory()
+{
+  models::State state;
+  state.idx.setLayout(isHolonomic());
+  state.reset(1U, settings_.time_steps);
+  state.getControls() = control_sequence_.data;
+  state.getTimeIntervals() = settings_.model_dt;
+
+  updateStateVelocities(state);
+
+  auto trajectories = xt::xtensor<double, 3>::from_shape({1u, settings_.time_steps, 3});
+
+  integrateStateVelocities(trajectories, state);
+  return xt::squeeze(trajectories);
 }
 
 void Optimizer::updateControlSequence()
@@ -352,21 +351,24 @@ void Optimizer::setSpeedLimit(double speed_limit, bool percentage)
 {
   auto & s = settings_;
   if (speed_limit == nav2_costmap_2d::NO_SPEED_LIMIT) {
-    s.constraints.vx = s.base_constraints.vx;
+    s.constraints.vx_max = s.base_constraints.vx_max;
+    s.constraints.vx_min = s.base_constraints.vx_min;
     s.constraints.vy = s.base_constraints.vy;
     s.constraints.wz = s.base_constraints.wz;
   } else {
     if (percentage) {
       // Speed limit is expressed in % from maximum speed of robot
       double ratio = speed_limit / 100.0;
-      s.constraints.vx = s.base_constraints.vx * ratio;
+      s.constraints.vx_max = s.base_constraints.vx_max * ratio;
+      s.constraints.vx_min = s.base_constraints.vx_min * ratio;
       s.constraints.vy = s.base_constraints.vy * ratio;
       s.constraints.wz = s.base_constraints.wz * ratio;
     } else {
       // Speed limit is expressed in absolute value
-      double ratio = speed_limit / s.base_constraints.vx;
-      s.constraints.vx = speed_limit;
-      s.constraints.vy = s.base_constraints.vx * ratio;
+      double ratio = speed_limit / s.base_constraints.vx_max;
+      s.constraints.vx_max = s.base_constraints.vx_max * ratio;
+      s.constraints.vx_min = s.base_constraints.vx_min * ratio;
+      s.constraints.vy = s.base_constraints.vy * ratio;
       s.constraints.wz = s.base_constraints.wz * ratio;
     }
   }

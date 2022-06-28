@@ -9,16 +9,16 @@
 #include <xtensor/xmath.hpp>
 #include <xtensor/xmasked_view.hpp>
 
-#include "mppic/parameters_handler.hpp"
+#include "mppic/tools/parameters_handler.hpp"
 
 namespace mppi
 {
 
-class IMotionModel
+class MotionModel
 {
 public:
-  IMotionModel() = default;
-  virtual ~IMotionModel() = default;
+  MotionModel() = default;
+  virtual ~MotionModel() = default;
 
   /**
    * @brief Predict velocities for given trajectories the next time step
@@ -39,7 +39,7 @@ public:
   virtual void applyConstraints(models::State & /*state*/) {}
 };
 
-class AckermannMotionModel : public IMotionModel
+class AckermannMotionModel : public MotionModel
 {
 public:
   explicit AckermannMotionModel(ParametersHandler * param_handler)
@@ -66,7 +66,7 @@ private:
   double min_turning_r_{0};
 };
 
-class DiffDriveMotionModel : public IMotionModel
+class DiffDriveMotionModel : public MotionModel
 {
 public:
   DiffDriveMotionModel() = default;
@@ -77,7 +77,7 @@ public:
   }
 };
 
-class OmniMotionModel : public IMotionModel
+class OmniMotionModel : public MotionModel
 {
 public:
   OmniMotionModel() = default;

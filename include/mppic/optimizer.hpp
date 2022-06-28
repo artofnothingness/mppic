@@ -9,7 +9,6 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
@@ -24,8 +23,8 @@
 #include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
-#include "mppic/parameters_handler.hpp"
-#include "mppic/utils.hpp"
+#include "mppic/tools/parameters_handler.hpp"
+#include "mppic/tools/utils.hpp"
 
 namespace mppi
 {
@@ -68,10 +67,9 @@ protected:
 
   /**
    *
-   * @return trajectories: tensor of shape [ batch_size_, time_steps_, 3 ]
-   * where 3 stands for x, y, yaw
+   * @brief updates generated_trajectories_
    */
-  xt::xtensor<double, 3> generateNoisedTrajectories();
+  void generateNoisedTrajectories();
 
   /**
    * @brief Generate random controls by gaussian noise with mean in
@@ -100,7 +98,9 @@ protected:
    */
   void propagateStateVelocitiesFromInitials(models::State & state) const;
 
-  xt::xtensor<double, 3> integrateStateVelocities(const models::State & state) const;
+  void integrateStateVelocities(
+    xt::xtensor<double, 3> & trajectories,
+    const models::State & state) const;
 
   /**
    * @brief Update control_sequence_ with state controls weighted by costs
@@ -123,7 +123,7 @@ protected:
   nav2_costmap_2d::Costmap2D * costmap_;
   std::string name_;
 
-  std::unique_ptr<IMotionModel> motion_model_;
+  std::unique_ptr<MotionModel> motion_model_;
 
   ParametersHandler * parameters_handler_;
   CriticManager critic_manager_;
@@ -134,14 +134,12 @@ protected:
   models::ControlSequence control_sequence_;
 
   xt::xtensor<double, 3> generated_trajectories_;
+  xt::xtensor<double, 3> noises_;
   xt::xtensor<double, 2> plan_;
   xt::xtensor<double, 1> costs_;
 
-  xt::xtensor<double, 3> vx_noises_;
-  xt::xtensor<double, 3> vy_noises_;
-  xt::xtensor<double, 3> wz_noises_;
 
-  models::CriticFunctionData critics_data_ =
+  CriticData critics_data_ =
   {state_, generated_trajectories_, plan_, costs_, false, nullptr, std::nullopt}; /// Caution, keep references
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};

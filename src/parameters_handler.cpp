@@ -1,5 +1,5 @@
 // Copyright 2022 FastSense, Samsung Research
-#include "mppic/parameters_handler.hpp"
+#include "mppic/tools/parameters_handler.hpp"
 
 namespace mppi
 {

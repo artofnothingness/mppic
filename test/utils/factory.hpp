@@ -16,7 +16,7 @@
 
 #include "mppic/motion_models.hpp"
 #include "mppic/optimizer.hpp"
-#include "mppic/parameters_handler.hpp"
+#include "mppic/tools/parameters_handler.hpp"
 #include "mppic/controller.hpp"
 
 #include "models.hpp"

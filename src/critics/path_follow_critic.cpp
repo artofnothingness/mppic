@@ -21,7 +21,7 @@ void PathFollowCritic::initialize()
   getParam(weight_, "cost_weight", 2.0);
 }
 
-void PathFollowCritic::score(models::CriticFunctionData & data)
+void PathFollowCritic::score(CriticData & data)
 {
   if (!enabled_) {
     return;

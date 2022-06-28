@@ -3,7 +3,7 @@
 
 #include "mppic/critic_function.hpp"
 #include "mppic/models/state.hpp"
-#include "mppic/utils.hpp"
+#include "mppic/tools/utils.hpp"
 
 namespace mppi::critics
 {
@@ -17,7 +17,7 @@ public:
    * @brief Evaluate cost related to robot orientation at goal pose
    * (considered only if robot near last goal in current plan)
    */
-  void score(models::CriticFunctionData & data) override;
+  void score(CriticData & data) override;
 
 protected:
   double max_angle_to_furthest_{0};
