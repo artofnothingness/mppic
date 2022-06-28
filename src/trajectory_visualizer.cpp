@@ -108,7 +108,7 @@ void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
     return;
   }
 
-  auto create_color = [&] (auto i) {
+  auto add_marker = [&] (auto i) {
     float component = static_cast<float>(i) / static_cast<float>(size);
 
     auto pose = createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
@@ -118,11 +118,11 @@ void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
     points_->markers.push_back(marker);
   };
 
-  for (size_t i = 0; i < time_step_ - 1; i++) {
-    create_color(i);
+  for (size_t i = 0; i < size - 1; i+= time_step_) {
+    add_marker(i);
   }
 
-  create_color(time_step_ - 1);
+  add_marker(size - 1);
 }
 
 void TrajectoryVisualizer::add(
