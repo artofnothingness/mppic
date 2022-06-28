@@ -49,7 +49,7 @@ void Optimizer::getParams()
   getParam(s.iteration_count, "iteration_count", 1);
   getParam(s.temperature, "temperature", 0.25);
   getParam(s.base_constraints.vx_max, "vx_max", 0.5);
-  getParam(s.base_constraints.vx_min, "vx_min", -0.2);
+  getParam(s.base_constraints.vx_min, "vx_min", -0.35);
   getParam(s.base_constraints.vy, "vy_max", 0.5);
   getParam(s.base_constraints.wz, "wz_max", 1.3);
   getParam(s.sampling_std.vx, "vx_std", 0.2);
@@ -296,7 +296,7 @@ xt::xtensor<double, 2> Optimizer::getOptimizedTrajectory()
 
   updateStateVelocities(state);
 
-  auto trajectories = xt::xtensor<double, 3>::from_shape(generated_trajectories_.shape());
+  auto trajectories = xt::xtensor<double, 3>::from_shape({1u, settings_.time_steps, 3});
 
   integrateStateVelocities(trajectories, state);
   return xt::squeeze(trajectories);

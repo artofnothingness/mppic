@@ -62,7 +62,8 @@ visualization_msgs::msg::Marker createMarker(
 }  // namespace
 
 void TrajectoryVisualizer::on_configure(
-  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & frame_id)
+  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & frame_id,
+  ParametersHandler * parameters_handler)
 {
   auto node = parent.lock();
   logger_ = node->get_logger();
@@ -70,6 +71,14 @@ void TrajectoryVisualizer::on_configure(
   trajectories_publisher_ =
     node->create_publisher<visualization_msgs::msg::MarkerArray>("/trajectories", 1);
   transformed_path_pub_ = node->create_publisher<nav_msgs::msg::Path>("transformed_global_plan", 1);
+  parameters_handler_ = parameters_handler;
+
+  auto getParam = parameters_handler->getParamGetter(
+    std::string(
+      parent.lock()->get_name()) + ".TrajectoryVisualizer");
+
+  getParam(trajectory_step_, "trajectory_step", 5);
+  getParam(time_step_, "time_step", 3);
 
   reset();
 }
@@ -99,7 +108,7 @@ void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
     return;
   }
 
-  for (size_t i = 0; i < size; i++) {
+  for (size_t i = 0; i < time_step_; i++) {
     float red_component = static_cast<float>(i) / static_cast<float>(size);
 
     auto pose = createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
@@ -113,7 +122,7 @@ void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
 }
 
 void TrajectoryVisualizer::add(
-  const xt::xtensor<double, 3> & trajectories, const size_t batch_step, const size_t time_step)
+  const xt::xtensor<double, 3> & trajectories)
 {
   if (!trajectories.shape()[0]) {
     return;
@@ -121,8 +130,8 @@ void TrajectoryVisualizer::add(
 
   auto & shape = trajectories.shape();
 
-  for (size_t i = 0; i < shape[0]; i += batch_step) {
-    for (size_t j = 0; j < shape[1]; j += time_step) {
+  for (size_t i = 0; i < shape[0]; i += trajectory_step_) {
+    for (size_t j = 0; j < shape[1]; j += time_step_) {
       float blue_component = 1.0f - static_cast<float>(j) / static_cast<float>(shape[1]);
       float green_component = static_cast<float>(j) / static_cast<float>(shape[1]);
 
