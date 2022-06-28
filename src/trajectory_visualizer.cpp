@@ -108,17 +108,21 @@ void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
     return;
   }
 
-  for (size_t i = 0; i < time_step_; i++) {
-    float red_component = static_cast<float>(i) / static_cast<float>(size);
+  auto create_color = [&] (auto i) {
+    float component = static_cast<float>(i) / static_cast<float>(size);
 
     auto pose = createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
-    auto scale = i != size - 1 ? createScale(0.03, 0.03, 0.07) : createScale(0.10, 0.10, 0.10);
-
-    auto color = createColor(red_component, 0, 0, 1);
+    auto scale = i != size - 1 ? createScale(0.03, 0.03, 0.07) : createScale(0.07, 0.07, 0.07);
+    auto color = createColor(0, component, component, 1);
     auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
-
     points_->markers.push_back(marker);
+  };
+
+  for (size_t i = 0; i < time_step_ - 1; i++) {
+    create_color(i);
   }
+
+  create_color(time_step_ - 1);
 }
 
 void TrajectoryVisualizer::add(
