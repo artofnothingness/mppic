@@ -63,8 +63,7 @@ visualization_msgs::msg::Marker createMarker(
 
 void TrajectoryVisualizer::on_configure(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
-  const std::string & frame_id,
-  ParametersHandler * parameters_handler)
+  const std::string & frame_id, ParametersHandler * parameters_handler)
 {
   auto node = parent.lock();
   logger_ = node->get_logger();
