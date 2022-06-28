@@ -23,7 +23,8 @@ public:
   TrajectoryVisualizer() = default;
 
   void on_configure(
-    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & frame_id,
+    rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
+    const std::string & frame_id,
     ParametersHandler * parameters_handler);
   void on_cleanup();
   void on_activate();

@@ -62,7 +62,8 @@ visualization_msgs::msg::Marker createMarker(
 }  // namespace
 
 void TrajectoryVisualizer::on_configure(
-  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & frame_id,
+  rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
+  const std::string & frame_id,
   ParametersHandler * parameters_handler)
 {
   auto node = parent.lock();
@@ -73,9 +74,7 @@ void TrajectoryVisualizer::on_configure(
   transformed_path_pub_ = node->create_publisher<nav_msgs::msg::Path>("transformed_global_plan", 1);
   parameters_handler_ = parameters_handler;
 
-  auto getParam = parameters_handler->getParamGetter(
-    std::string(
-      parent.lock()->get_name()) + ".TrajectoryVisualizer");
+  auto getParam = parameters_handler->getParamGetter(name + ".TrajectoryVisualizer");
 
   getParam(trajectory_step_, "trajectory_step", 5);
   getParam(time_step_, "time_step", 3);
@@ -108,17 +107,17 @@ void TrajectoryVisualizer::add(const xt::xtensor<double, 2> & trajectory)
     return;
   }
 
-  auto add_marker = [&] (auto i) {
-    float component = static_cast<float>(i) / static_cast<float>(size);
+  auto add_marker = [&](auto i) {
+      float component = static_cast<float>(i) / static_cast<float>(size);
 
-    auto pose = createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
-    auto scale = i != size - 1 ? createScale(0.03, 0.03, 0.07) : createScale(0.07, 0.07, 0.07);
-    auto color = createColor(0, component, component, 1);
-    auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
-    points_->markers.push_back(marker);
-  };
+      auto pose = createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
+      auto scale = i != size - 1 ? createScale(0.03, 0.03, 0.07) : createScale(0.07, 0.07, 0.09);
+      auto color = createColor(0, component, component, 1);
+      auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
+      points_->markers.push_back(marker);
+    };
 
-  for (size_t i = 0; i < size - 1; i+= time_step_) {
+  for (size_t i = 0; i < size - 1; i += time_step_) {
     add_marker(i);
   }
 
