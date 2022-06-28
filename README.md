@@ -134,9 +134,9 @@ controller_server:
   ros__parameters:
     FollowPath:
       plugin: "mppi::Controller"
-      time_steps: 15
-      model_dt: 0.1
-      batch_size: 300
+      time_steps: 40
+      model_dt: 0.075
+      batch_size: 1000
       vx_std: 0.2
       vy_std: 0.2
       wz_std: 1.0
@@ -147,7 +147,7 @@ controller_server:
       iteration_count: 1
       prune_distance: 1.2
       transform_tolerance: 0.1
-      temperature: 0.25
+      temperature: 0.35
       motion_model: "DiffDrive"
       visualize: false
       TrajectoryVisualizer:
@@ -155,7 +155,7 @@ controller_server:
         time_step: 3
       AckermannConstrains:
         min_turning_r: 0.2
-      critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic" ]
+      critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
       GoalCritic:
         enabled: true
         cost_power: 1
@@ -168,7 +168,7 @@ controller_server:
       ObstaclesCritic:
         enabled: true
         cost_power: 2
-        cost_weight: 1.25
+        cost_weight: 1.65
         consider_footprint: false
         collision_cost: 2000.0
       PathAlignCritic:
