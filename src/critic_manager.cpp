@@ -49,7 +49,7 @@ std::string CriticManager::getFullName(const std::string & name)
   return "mppi::critics::" + name;
 }
 
-void CriticManager::score(
+void CriticManager::evalTrajectoriesScores(
   CriticData & data) const
 {
   for (size_t q = 0; q < critics_.size(); q++) {
