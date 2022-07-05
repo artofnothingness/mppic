@@ -41,13 +41,10 @@ void PathAlignCritic::score(CriticData & data)
   size_t trajectories_points_count = P3.shape(1);
   size_t reference_segments_count = data.path.shape(0) - 1;
 
-  auto && cost = xt::xtensor<double, 1>::from_shape({trajectories_count});
+  auto cost = xt::xtensor<double, 1>::from_shape({trajectories_count});
 
   xt::xtensor<double, 2> P2_P1_diff = P2 - P1;
-  xt::xtensor<double, 1> P2_P1_norm_sq =
-    xt::norm_sq(
-    P2_P1_diff, {P2_P1_diff.dimension() - 1},
-    xt::evaluation_strategy::immediate);
+  xt::xtensor<double, 1> P2_P1_norm_sq = xt::norm_sq(P2_P1_diff, {1});
 
   auto evaluate_u = [&P1, &P3, &P2_P1_diff, &P2_P1_norm_sq](
     size_t t, size_t p, size_t s) -> double {
