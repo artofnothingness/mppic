@@ -132,22 +132,23 @@ sudo make install
 ```
 controller_server:
   ros__parameters:
+    controller_frequency: 30.0
     FollowPath:
       plugin: "mppi::Controller"
-      time_steps: 15
+      time_steps: 30
       model_dt: 0.1
-      batch_size: 300
+      batch_size: 2000
       vx_std: 0.2
       vy_std: 0.2
-      wz_std: 1.0
+      wz_std: 0.4
       vx_max: 0.5
       vx_min: -0.35
       vy_max: 0.5
       wz_max: 1.3
       iteration_count: 1
-      prune_distance: 1.2
+      prune_distance: 1.7
       transform_tolerance: 0.1
-      temperature: 0.25
+      temperature: 0.35
       motion_model: "DiffDrive"
       visualize: false
       TrajectoryVisualizer:
@@ -155,7 +156,7 @@ controller_server:
         time_step: 3
       AckermannConstrains:
         min_turning_r: 0.2
-      critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic" ]
+      critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
       GoalCritic:
         enabled: true
         cost_power: 1
@@ -168,7 +169,7 @@ controller_server:
       ObstaclesCritic:
         enabled: true
         cost_power: 2
-        cost_weight: 1.25
+        cost_weight: 1.65
         consider_footprint: false
         collision_cost: 2000.0
       PathAlignCritic:
@@ -196,7 +197,6 @@ controller_server:
       #   twirling_cost_power: 1
       #   twirling_cost_weight: 10.0
 ```
-
 ## Topics
 
 | Topic                     | Type                             | Description                                                           |

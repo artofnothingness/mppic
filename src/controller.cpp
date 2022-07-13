@@ -66,7 +66,6 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
     visualize(std::move(transformed_plan));
   }
 
-
   return cmd;
 }
 
