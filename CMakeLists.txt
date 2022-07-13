@@ -28,6 +28,13 @@ foreach(pkg IN LISTS dependencies_pkgs)
 endforeach()
 
 nav2_package()
+add_compile_options(-O3 -mavx2 -mfma -finline-limit=1000000 -ffp-contract=fast)
+
+include_directories(
+  include
+  ${xsimd_INCLUDE_DIRS}
+  ${OpenMP_INCLUDE_DIRS}
+)
 
 add_library(mppic SHARED
   src/controller.cpp
@@ -52,8 +59,6 @@ add_library(critics SHARED
 set(libraries mppic critics)
 
 foreach(lib IN LISTS libraries)
-  target_compile_options(${lib} PUBLIC -fconcepts)
-  target_include_directories(${lib} PUBLIC include)
   target_link_libraries(${lib} xtensor xtensor::optimize xtensor::use_xsimd)
   ament_target_dependencies(${lib} ${dependencies_pkgs})
 endforeach()
