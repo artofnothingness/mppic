@@ -32,8 +32,19 @@ void Optimizer::initialize(
   getParams();
 
   critic_manager_.on_configure(parent_, name_, costmap_ros_, parameters_handler_);
+  noise_thread_ = std::thread(std::bind(&Optimizer::noiseThread, this)); //TODO join / shutdown
 
   reset();
+}
+
+void Optimizer::noiseThread()
+{
+  do {
+    std::unique_lock<std::mutex> guard(noise_lock_);
+    noise_cond_.wait(guard, [this](){return !active_ || ready_;});
+    ready_ = false;
+    generateNoisedControls();
+  } while (active_);
 }
 
 void Optimizer::getParams()
@@ -99,6 +110,12 @@ void Optimizer::reset()
   noises_ =
     xt::zeros<double>({settings_.batch_size, settings_.time_steps, isHolonomic() ? 3u : 2u});
 
+  // Recompute the noises on reset, initialization, and fallback
+  {
+    std::unique_lock<std::mutex> guard(noise_lock_);
+    ready_ = true;
+  }
+  noise_cond_.notify_all();
   RCLCPP_INFO(logger_, "Optimizer reset");
 }
 
@@ -176,7 +193,16 @@ void Optimizer::shiftControlSequence()
 
 void Optimizer::generateNoisedTrajectories()
 {
-  generateNoisedControls();
+  // Add in the generated noises from the noise generation thread
+  // Then, trigger the thread to run in parallel to this iteration
+  // to generate the next iteration's noises.
+  {
+    std::unique_lock<std::mutex> guard(noise_lock_);
+    state_.getControls() = control_sequence_.data + noises_;
+    ready_ = true;
+  }
+
+  noise_cond_.notify_all();
   applyControlConstraints();
   updateStateVelocities(state_);
   integrateStateVelocities(generated_trajectories_, state_);
@@ -194,8 +220,6 @@ void Optimizer::generateNoisedControls()
     auto vy = xt::view(noises_, xt::all(), xt::all(), 1);
     vy = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vy);
   }
-
-  state_.getControls() = control_sequence_.data + noises_;
 }
 
 bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}

@@ -117,6 +117,8 @@ protected:
 
   bool fallback(bool fail);
 
+  void noiseThread();
+
 protected:
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
@@ -138,11 +140,15 @@ protected:
   xt::xtensor<double, 2> plan_;
   xt::xtensor<double, 1> costs_;
 
-
   CriticData critics_data_ =
   {state_, generated_trajectories_, plan_, costs_, false, nullptr, std::nullopt}; /// Caution, keep references
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
+
+  std::thread noise_thread_;
+  std::condition_variable noise_cond_;
+  std::mutex noise_lock_;
+  bool active_{true}, ready_{false};
 };
 
 }  // namespace mppi
