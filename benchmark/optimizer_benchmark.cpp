@@ -77,7 +77,7 @@ void prepareAndRunBenchmark(
   nav2_core::GoalChecker * dummy_goal_checker{nullptr};
 
   for (auto _ : state) {
-    optimizer.evalControl(pose, velocity, path, dummy_goal_checker);
+    optimizer->evalControl(pose, velocity, path, dummy_goal_checker);
   }
 
 }

@@ -48,13 +48,13 @@ TEST(ControllerTest, ControllerNotFail)
   auto velocity = getDummyTwist();
   auto path = getIncrementalDummyPath(node, path_settings);
 
-  controller.setPlan(path);
+  controller->setPlan(path);
 
-  EXPECT_NO_THROW(controller.computeVelocityCommands(pose, velocity, {}));
+  EXPECT_NO_THROW(controller->computeVelocityCommands(pose, velocity, {}));
 
-  controller.setSpeedLimit(0.5, true);
-  controller.setSpeedLimit(0.5, false);
-  controller.setSpeedLimit(1.0, true);
-  controller.deactivate();
-  controller.cleanup();
+  controller->setSpeedLimit(0.5, true);
+  controller->setSpeedLimit(0.5, false);
+  controller->setSpeedLimit(1.0, true);
+  controller->deactivate();
+  controller->cleanup();
 }
