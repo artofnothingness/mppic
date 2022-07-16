@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(mppic)
 
-set(XTENSOR_USE_XSIMD 1)
-set(XTENSOR_USE_OPENMP 1)
+add_definitions(-DXTENSOR_ENABLE_XSIMD)
+add_definitions(-DXTENSOR_USE_XSIMD)
 
 find_package(ament_cmake REQUIRED)
 find_package(xtensor REQUIRED)
@@ -28,7 +28,7 @@ foreach(pkg IN LISTS dependencies_pkgs)
 endforeach()
 
 nav2_package()
-add_compile_options(-O3 -mavx2 -mfma -finline-limit=1000000 -ffp-contract=fast)
+add_compile_options(-O3 -mavx2 -mfma -finline-limit=1000000 -ffp-contract=fast -march=native -ffast-math)
 
 add_library(mppic SHARED
   src/controller.cpp

@@ -106,7 +106,7 @@ protected:
   geometry_msgs::msg::TwistStamped
   getControlFromSequenceAsTwist(const builtin_interfaces::msg::Time & stamp);
 
-  bool isHolonomic() const;
+  inline bool isHolonomic() const;
 
   void setOffset(double controller_frequency);
 
