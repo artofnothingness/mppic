@@ -18,4 +18,5 @@ foreach(name IN LISTS TEST_NAMES)
   if(${TEST_DEBUG_INFO})
     target_compile_definitions(${name} PUBLIC -DTEST_DEBUG_INFO)
   endif()
+
 endforeach()

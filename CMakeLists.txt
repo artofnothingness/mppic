@@ -30,12 +30,6 @@ endforeach()
 nav2_package()
 add_compile_options(-O3 -mavx2 -mfma -finline-limit=1000000 -ffp-contract=fast)
 
-include_directories(
-  include
-  ${xsimd_INCLUDE_DIRS}
-  ${OpenMP_INCLUDE_DIRS}
-)
-
 add_library(mppic SHARED
   src/controller.cpp
   src/optimizer.cpp
@@ -60,9 +54,19 @@ add_library(critics SHARED
 set(libraries mppic critics)
 
 foreach(lib IN LISTS libraries)
+  target_include_directories(${lib} PUBLIC include ${xsimd_INCLUDE_DIRS} ${OpenMP_INCLUDE_DIRS})
   target_link_libraries(${lib} xtensor xtensor::optimize xtensor::use_xsimd)
   ament_target_dependencies(${lib} ${dependencies_pkgs})
 endforeach()
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
+  set(ament_cmake_copyright_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+  add_subdirectory(test)
+  add_subdirectory(benchmark)
+endif()
 
 install(TARGETS mppic critics
   ARCHIVE DESTINATION lib
@@ -73,15 +77,6 @@ install(TARGETS mppic critics
 install(DIRECTORY include/
   DESTINATION include/
 )
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  find_package(ament_cmake_gtest REQUIRED)
-  set(ament_cmake_copyright_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-  add_subdirectory(test)
-  add_subdirectory(benchmark)
-endif()
 
 ament_export_libraries(${libraries})
 ament_export_dependencies(${dependencies_pkgs})
