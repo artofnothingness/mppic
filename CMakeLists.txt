@@ -60,15 +60,6 @@ foreach(lib IN LISTS libraries)
   ament_target_dependencies(${lib} ${dependencies_pkgs})
 endforeach()
 
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  find_package(ament_cmake_gtest REQUIRED)
-  set(ament_cmake_copyright_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-  add_subdirectory(test)
-  add_subdirectory(benchmark)
-endif()
-
 install(TARGETS mppic critics
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -78,6 +69,15 @@ install(TARGETS mppic critics
 install(DIRECTORY include/
   DESTINATION include/
 )
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
+  set(ament_cmake_copyright_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+  add_subdirectory(test)
+  add_subdirectory(benchmark)
+endif()
 
 ament_export_libraries(${libraries})
 ament_export_dependencies(${dependencies_pkgs})
