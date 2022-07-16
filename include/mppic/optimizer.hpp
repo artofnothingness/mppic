@@ -23,6 +23,7 @@
 #include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
+#include "mppic/tools/noise_generator.hpp"
 #include "mppic/tools/parameters_handler.hpp"
 #include "mppic/tools/utils.hpp"
 
@@ -39,6 +40,7 @@ public:
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros,
     ParametersHandler * dynamic_parameters_handler);
 
+  void shutdown();
 
   geometry_msgs::msg::TwistStamped evalControl(
     const geometry_msgs::msg::PoseStamped & robot_pose,
@@ -70,15 +72,6 @@ protected:
    * @brief updates generated_trajectories_
    */
   void generateNoisedTrajectories();
-
-  /**
-   * @brief Generate random controls by gaussian noise with mean in
-   * control_sequence_
-   *
-   * @return tensor of shape [ batch_size_, time_steps_, 2]
-   * where 2 stands for v, w
-   */
-  void generateNoisedControls();
 
   void applyControlConstraints();
 
@@ -127,6 +120,7 @@ protected:
 
   ParametersHandler * parameters_handler_;
   CriticManager critic_manager_;
+  NoiseGenerator noise_generator_;
 
   models::OptimizerSettings settings_;
 
@@ -134,10 +128,8 @@ protected:
   models::ControlSequence control_sequence_;
 
   xt::xtensor<double, 3> generated_trajectories_;
-  xt::xtensor<double, 3> noises_;
   xt::xtensor<double, 2> plan_;
   xt::xtensor<double, 1> costs_;
-
 
   CriticData critics_data_ =
   {state_, generated_trajectories_, plan_, costs_, false, nullptr, std::nullopt}; /// Caution, keep references

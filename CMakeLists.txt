@@ -43,6 +43,7 @@ add_library(mppic SHARED
   src/trajectory_visualizer.cpp
   src/path_handler.cpp
   src/parameters_handler.cpp
+  src/noise_generator.cpp
 )
 
 add_library(critics SHARED

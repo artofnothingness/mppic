@@ -34,6 +34,7 @@ void Controller::configure(
 
 void Controller::cleanup()
 {
+  optimizer_.shutdown();
   trajectory_visualizer_.on_cleanup();
   parameters_handler_.reset();
   RCLCPP_INFO(logger_, "Cleaned up MPPI Controller: %s", name_.c_str());
