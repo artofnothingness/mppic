@@ -45,7 +45,7 @@ public:
    * @brief Get the current noises
    * @return noises Reference to current noises
    */
-  xt::xtensor<double, 3> & getNoises();
+  xt::xtensor<float, 3> & getNoises();
 
   /**
    * @brief Reset noise generator with settings and model types
@@ -69,7 +69,7 @@ protected:
    */
   void generateNoisedControls();
 
-  xt::xtensor<double, 3> noises_;
+  xt::xtensor<float, 3> noises_;
 
   mppi::models::OptimizerSettings settings_;
   bool is_holonomic_;

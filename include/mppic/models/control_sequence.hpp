@@ -50,10 +50,10 @@ private:
  */
 struct ControlSequence
 {
-  xt::xtensor<double, 2> data;
+  xt::xtensor<float, 2> data;
   ControlSequnceIdxes idx;
 
-  void reset(unsigned int time_steps) {data = xt::zeros<double>({time_steps, idx.dim()});}
+  void reset(unsigned int time_steps) {data = xt::zeros<float>({time_steps, idx.dim()});}
 };
 
 }  // namespace mppi::models

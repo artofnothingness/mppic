@@ -36,7 +36,7 @@ void NoiseGenerator::generateNextNoises()
   noise_cond_.notify_all();
 }
 
-xt::xtensor<double, 3> & NoiseGenerator::getNoises()
+xt::xtensor<float, 3> & NoiseGenerator::getNoises()
 {
   std::unique_lock<std::mutex> guard(noise_lock_);
   return noises_;
@@ -51,7 +51,7 @@ void NoiseGenerator::reset(mppi::models::OptimizerSettings & settings, bool is_h
   {
     std::unique_lock<std::mutex> guard(noise_lock_);
     noises_ =
-      xt::zeros<double>({settings_.batch_size, settings_.time_steps, is_holonomic_ ? 3u : 2u});
+      xt::zeros<float>({settings_.batch_size, settings_.time_steps, is_holonomic_ ? 3u : 2u});
     ready_ = true;
   }
   noise_cond_.notify_all();
@@ -73,11 +73,11 @@ void NoiseGenerator::generateNoisedControls()
   auto vx = xt::view(noises_, xt::all(), xt::all(), 0);
   auto wz = xt::view(noises_, xt::all(), xt::all(), is_holonomic_ ? 2 : 1);
 
-  vx = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vx);
-  wz = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.wz);
+  vx = xt::random::randn<float>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vx);
+  wz = xt::random::randn<float>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.wz);
   if (is_holonomic_) {
     auto vy = xt::view(noises_, xt::all(), xt::all(), 1);
-    vy = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vy);
+    vy = xt::random::randn<float>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vy);
   }
 }
 

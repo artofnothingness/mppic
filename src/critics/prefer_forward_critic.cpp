@@ -28,11 +28,11 @@ void PreferForwardCritic::score(CriticData & data)
   auto dy = xt::view(data.trajectories, xt::all(), xt::range(1, _), 1) -
     xt::view(data.trajectories, xt::all(), xt::range(_, -1), 1);
 
-  auto thetas = xt::atan2(dy, dx);
+  auto thetas = xt::eval(xt::atan2(dy, dx));
   auto yaws = xt::view(data.trajectories, xt::all(), xt::range(_, -1), 2);
 
   auto yaws_local = xt::abs(utils::shortest_angular_distance(thetas, yaws));
-  auto forward_translation_reversed = -xt::cos(yaws_local) * xt::hypot(dx, dy);
+  auto forward_translation_reversed = -xt::eval(xt::cos(yaws_local)) * xt::hypot(dx, dy);
   auto backward_translation = xt::maximum(forward_translation_reversed, 0);
 
   data.costs += xt::pow(xt::sum(backward_translation, {1}) * weight_, power_);

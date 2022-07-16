@@ -29,8 +29,8 @@ public:
    * @return predicted velocities of the robot: tensor of shape [batch_size, ... ]
    * where last dim could be 2 or 3 depending on motion model used
    */
-  virtual xt::xtensor<double, 2> predict(
-    const xt::xtensor<double, 2> & state, const models::StateIdxes & idx)
+  virtual xt::xtensor<float, 2> predict(
+    const xt::xtensor<float, 2> & state, const models::StateIdxes & idx)
   {
     return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
   }
@@ -63,7 +63,7 @@ public:
   }
 
 private:
-  double min_turning_r_{0};
+  float min_turning_r_{0};
 };
 
 class DiffDriveMotionModel : public MotionModel

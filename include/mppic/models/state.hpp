@@ -89,12 +89,12 @@ struct State
 {
   geometry_msgs::msg::PoseStamped pose;
   geometry_msgs::msg::Twist speed;
-  xt::xtensor<double, 3> data;
+  xt::xtensor<float, 3> data;
   StateIdxes idx;
 
   void reset(unsigned int batch_size, unsigned int time_steps)
   {
-    data = xt::zeros<double>({batch_size, time_steps, idx.dim()});
+    data = xt::zeros<float>({batch_size, time_steps, idx.dim()});
   }
 
   auto getVelocitiesVX() const

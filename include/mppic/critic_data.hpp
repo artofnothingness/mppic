@@ -15,10 +15,10 @@ namespace mppi
 struct CriticData
 {
   const models::State & state;
-  const xt::xtensor<double, 3> & trajectories;
-  const xt::xtensor<double, 2> & path;
+  const xt::xtensor<float, 3> & trajectories;
+  const xt::xtensor<float, 2> & path;
 
-  xt::xtensor<double, 1> & costs;
+  xt::xtensor<float, 1> & costs;
 
   bool fail_flag;
   nav2_core::GoalChecker * goal_checker;

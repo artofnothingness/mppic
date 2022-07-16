@@ -50,18 +50,18 @@ geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
-inline xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
+inline xt::xtensor<float, 2> toTensor(const nav_msgs::msg::Path & path)
 {
   size_t path_size = path.poses.size();
   static constexpr size_t last_dim_size = 3;
 
-  xt::xtensor<double, 2> points = xt::empty<double>({path_size, last_dim_size});
+  xt::xtensor<float, 2> points = xt::empty<float>({path_size, last_dim_size});
 
   for (size_t i = 0; i < path_size; ++i) {
-    points(i, 0) = static_cast<double>(path.poses[i].pose.position.x);
-    points(i, 1) = static_cast<double>(path.poses[i].pose.position.y);
+    points(i, 0) = static_cast<float>(path.poses[i].pose.position.x);
+    points(i, 1) = static_cast<float>(path.poses[i].pose.position.y);
     points(i, 2) =
-      static_cast<double>(tf2::getYaw(path.poses[i].pose.orientation));
+      static_cast<float>(tf2::getYaw(path.poses[i].pose.orientation));
   }
 
   return points;
@@ -70,18 +70,18 @@ inline xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
 inline bool withinPositionGoalTolerance(
   nav2_core::GoalChecker * goal_checker,
   const geometry_msgs::msg::PoseStamped & robot_pose_arg,
-  const xt::xtensor<double, 2> & path)
+  const xt::xtensor<float, 2> & path)
 {
   if (goal_checker) {
     geometry_msgs::msg::Pose pose_tol;
     geometry_msgs::msg::Twist vel_tol;
     goal_checker->getTolerances(pose_tol, vel_tol);
 
-    const double & goal_tol = pose_tol.position.x;
+    const float & goal_tol = pose_tol.position.x;
 
-    xt::xtensor<double, 1> robot_pose = {
-      static_cast<double>(robot_pose_arg.pose.position.x),
-      static_cast<double>(robot_pose_arg.pose.position.y)};
+    xt::xtensor<float, 1> robot_pose = {
+      static_cast<float>(robot_pose_arg.pose.position.x),
+      static_cast<float>(robot_pose_arg.pose.position.y)};
     auto goal_pose = xt::view(path, -1, xt::range(0, 2));
 
     double dist_to_goal = xt::norm_l2(robot_pose - goal_pose, {0})();

@@ -14,6 +14,8 @@
 
 namespace mppi
 {
+using xt::evaluation_strategy::immediate;
+using namespace xt::placeholders;  // NOLINT
 
 void Optimizer::initialize(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
@@ -100,8 +102,8 @@ void Optimizer::reset()
   state_.reset(settings_.batch_size, settings_.time_steps);
   state_.getTimeIntervals() = settings_.model_dt;
   control_sequence_.reset(settings_.time_steps);
-  costs_ = xt::zeros<double>({settings_.batch_size});
-  generated_trajectories_ = xt::zeros<double>({settings_.batch_size, settings_.time_steps, 3u});
+  costs_ = xt::zeros<float>({settings_.batch_size});
+  generated_trajectories_ = xt::zeros<float>({settings_.batch_size, settings_.time_steps, 3u});
 
   noise_generator_.reset(settings_, isHolonomic());
   RCLCPP_INFO(logger_, "Optimizer reset");
@@ -172,7 +174,6 @@ void Optimizer::prepare(
 
 void Optimizer::shiftControlSequence()
 {
-  using namespace xt::placeholders;  // NOLINT
   control_sequence_.data = xt::roll(control_sequence_.data, -1, 0);
 
   xt::view(control_sequence_.data, -1, xt::all()) =
@@ -228,8 +229,6 @@ void Optimizer::updateInitialStateVelocities(
 void Optimizer::propagateStateVelocitiesFromInitials(
   models::State & state) const
 {
-  using namespace xt::placeholders;  // NOLINT
-
   for (size_t i = 0; i < settings_.time_steps - 1; i++) {
     auto curr_state = xt::view(state.data, xt::all(), i, xt::all());
     auto next_velocities =
@@ -241,19 +240,17 @@ void Optimizer::propagateStateVelocitiesFromInitials(
   }
 }
 void Optimizer::integrateStateVelocities(
-  xt::xtensor<double, 3> & trajectories,
+  xt::xtensor<float, 3> & trajectories,
   const models::State & state) const
 {
-  using namespace xt::placeholders;  // NOLINT
-
   auto x = xt::view(trajectories, xt::all(), xt::all(), 0);
   auto y = xt::view(trajectories, xt::all(), xt::all(), 1);
   auto yaw = xt::view(trajectories, xt::all(), xt::all(), 2);
 
   auto w = state.getVelocitiesWZ();
-  double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
+  float initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
   yaw = xt::cumsum(w * settings_.model_dt, 1) + initial_yaw;
-  xt::xtensor<double, 2> yaw_offseted = yaw;
+  xt::xtensor<float, 2> yaw_offseted = yaw;
 
   xt::view(yaw_offseted, xt::all(), xt::range(1, _)) =
     xt::view(yaw, xt::all(), xt::range(_, -1));
@@ -276,7 +273,7 @@ void Optimizer::integrateStateVelocities(
   y = state_.pose.pose.position.y + xt::cumsum(dy * settings_.model_dt, 1);
 }
 
-xt::xtensor<double, 2> Optimizer::getOptimizedTrajectory()
+xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
 {
   models::State state;
   state.idx.setLayout(isHolonomic());
@@ -286,7 +283,7 @@ xt::xtensor<double, 2> Optimizer::getOptimizedTrajectory()
 
   updateStateVelocities(state);
 
-  auto trajectories = xt::xtensor<double, 3>::from_shape({1u, settings_.time_steps, 3});
+  auto trajectories = xt::xtensor<float, 3>::from_shape({1u, settings_.time_steps, 3});
 
   integrateStateVelocities(trajectories, state);
   return xt::squeeze(trajectories);
@@ -294,8 +291,6 @@ xt::xtensor<double, 2> Optimizer::getOptimizedTrajectory()
 
 void Optimizer::updateControlSequence()
 {
-  using xt::evaluation_strategy::immediate;
-
   auto && costs_normalized = costs_ - xt::amin(costs_, immediate);
   auto exponents =
     xt::eval(xt::exp(-1 / settings_.temperature * costs_normalized));
@@ -304,7 +299,7 @@ void Optimizer::updateControlSequence()
     xt::view(softmaxes, xt::all(), xt::newaxis(), xt::newaxis());
 
   control_sequence_.data =
-    xt::sum(state_.getControls() * softmaxes_expanded, 0);
+    xt::sum(state_.getControls() * softmaxes_expanded, 0, immediate);
 }
 
 geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
@@ -364,7 +359,7 @@ void Optimizer::setSpeedLimit(double speed_limit, bool percentage)
   }
 }
 
-xt::xtensor<double, 3> & Optimizer::getGeneratedTrajectories()
+xt::xtensor<float, 3> & Optimizer::getGeneratedTrajectories()
 {
   return generated_trajectories_;
 }
