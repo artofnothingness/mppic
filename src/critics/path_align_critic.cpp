@@ -41,29 +41,28 @@ void PathAlignCritic::score(CriticData & data)
   size_t trajectories_points_count = P3.shape(1);
   size_t reference_segments_count = data.path.shape(0) - 1;
 
-  auto cost = xt::xtensor<double, 1>::from_shape({trajectories_count});
+  auto cost = xt::xtensor<float, 1>::from_shape({trajectories_count});
 
-  xt::xtensor<double, 2> P2_P1_diff = P2 - P1;
-  xt::xtensor<double, 1> P2_P1_norm_sq = xt::norm_sq(P2_P1_diff, {1});
+  xt::xtensor<float, 2> P2_P1_diff = P2 - P1;
+  xt::xtensor<float, 1> P2_P1_norm_sq = xt::norm_sq(P2_P1_diff, {1});
 
   auto evaluate_u = [&P1, &P3, &P2_P1_diff, &P2_P1_norm_sq](
-    size_t t, size_t p, size_t s) -> double {
+    size_t t, size_t p, size_t s) {
       return ((P3(t, p, 0) - P1(s, 0)) * (P2_P1_diff(s, 0)) +
              (P3(t, p, 1) - P1(s, 1)) * (P2_P1_diff(s, 1))) /
              P2_P1_norm_sq(s);
     };
 
-  static constexpr double eps = static_cast<double>(1e-3);  // meters
-  auto segment_short = P2_P1_norm_sq < eps;
-  auto evaluate_dist = [&P3](const xt::xtensor_fixed<double, xt::xshape<2>> & P,
+  auto segment_short = P2_P1_norm_sq < 1e-3f;
+  auto evaluate_dist = [&P3](const auto & P,
       size_t t, size_t p) {
-      double dx = P(0) - P3(t, p, 0);
-      double dy = P(1) - P3(t, p, 1);
+      auto dx = P(0) - P3(t, p, 0);
+      auto dy = P(1) - P3(t, p, 1);
       return std::sqrt(dx * dx + dy * dy);
     };
 
 
-  xt::xtensor<double, 1> trajectories_lengths;
+  xt::xtensor<float, 1> trajectories_lengths;
   {
     auto next = xt::view(P3, xt::all(), xt::range(1, _), xt::range(0, 2));
     auto prev = xt::view(P3, xt::all(), xt::range(_, -1), xt::range(0, 2));
@@ -74,18 +73,18 @@ void PathAlignCritic::score(CriticData & data)
 
   size_t max_s = 0;
   for (size_t t = 0; t < trajectories_count; ++t) {
-    double mean_dist = 0;
+    float mean_dist = 0;
     for (size_t p = 0; p < trajectories_points_count; p += trajectory_point_step_) {
-      double min_dist = std::numeric_limits<double>::max();
+      double min_dist = std::numeric_limits<float>::max();
       size_t min_s = 0;
       bool is_path_longer_than_trajectory = false;
 
       for (size_t s = 0; s < reference_segments_count; s += path_point_step_) {
-        xt::xtensor_fixed<double, xt::xshape<2>> P;
+        xt::xtensor_fixed<float, xt::xshape<2>> P;
         if (segment_short(s)) {
           P[0] = P1(s, 0);
           P[1] = P1(s, 1);
-        } else if (double u = evaluate_u(t, p, s); u <= 0) {
+        } else if (auto u = evaluate_u(t, p, s); u <= 0) {
           P[0] = P1(s, 0);
           P[1] = P1(s, 1);
         } else if (u >= 1) {

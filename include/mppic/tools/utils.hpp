@@ -50,18 +50,17 @@ geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
-inline xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
+inline xt::xtensor<float, 2> toTensor(const nav_msgs::msg::Path & path)
 {
   size_t path_size = path.poses.size();
   static constexpr size_t last_dim_size = 3;
 
-  xt::xtensor<double, 2> points = xt::empty<double>({path_size, last_dim_size});
+  auto points = xt::empty<float>({path_size, last_dim_size});
 
   for (size_t i = 0; i < path_size; ++i) {
-    points(i, 0) = static_cast<double>(path.poses[i].pose.position.x);
-    points(i, 1) = static_cast<double>(path.poses[i].pose.position.y);
-    points(i, 2) =
-      static_cast<double>(tf2::getYaw(path.poses[i].pose.orientation));
+    points(i, 0) = path.poses[i].pose.position.x;
+    points(i, 1) = path.poses[i].pose.position.y;
+    points(i, 2) = tf2::getYaw(path.poses[i].pose.orientation);
   }
 
   return points;
@@ -70,7 +69,7 @@ inline xt::xtensor<double, 2> toTensor(const nav_msgs::msg::Path & path)
 inline bool withinPositionGoalTolerance(
   nav2_core::GoalChecker * goal_checker,
   const geometry_msgs::msg::PoseStamped & robot_pose_arg,
-  const xt::xtensor<double, 2> & path)
+  const xt::xtensor<float, 2> & path)
 {
   if (goal_checker) {
     geometry_msgs::msg::Pose pose_tol;
@@ -79,12 +78,12 @@ inline bool withinPositionGoalTolerance(
 
     const double & goal_tol = pose_tol.position.x;
 
-    xt::xtensor<double, 1> robot_pose = {
-      static_cast<double>(robot_pose_arg.pose.position.x),
-      static_cast<double>(robot_pose_arg.pose.position.y)};
+    xt::xtensor<float, 1> robot_pose = {
+      static_cast<float>(robot_pose_arg.pose.position.x),
+      static_cast<float>(robot_pose_arg.pose.position.y)};
     auto goal_pose = xt::view(path, -1, xt::range(0, 2));
 
-    double dist_to_goal = xt::norm_l2(robot_pose - goal_pose, {0})();
+    auto dist_to_goal = xt::norm_l2(robot_pose - goal_pose, {0})();
 
     if (dist_to_goal < goal_tol) {
       return true;
@@ -141,7 +140,7 @@ inline size_t findPathFurthestReachedPoint(const CriticData & data)
     xt::view(data.trajectories, xt::all(), -1, xt::newaxis(), xt::range(0, 2));
   auto distances = xt::norm_l2(last_points_ext - path_points, {2});
   size_t max_id_by_trajectories = 0;
-  double min_distance_by_path = std::numeric_limits<double>::max();
+  double min_distance_by_path = std::numeric_limits<float>::max();
 
   for (size_t i = 0; i < distances.shape(0); i++) {
     size_t min_id_by_path = 0;
@@ -183,14 +182,14 @@ inline double posePointAngle(const geometry_msgs::msg::Pose & pose, double point
 /**
  * @brief Evaluate ratio of data.path which reached by all trajectories in data.trajectories
  */
-inline double getPathRatioReached(const CriticData & data)
+inline float getPathRatioReached(const CriticData & data)
 {
   if (!data.furthest_reached_path_point) {
     throw std::runtime_error("Furthest point not computed yet");
   }
 
-  auto path_points_count = static_cast<double>(data.path.shape(0));
-  auto furthest_reached_path_point = static_cast<double>(*data.furthest_reached_path_point);
+  auto path_points_count = static_cast<float>(data.path.shape(0));
+  auto furthest_reached_path_point = static_cast<float>(*data.furthest_reached_path_point);
   return furthest_reached_path_point / path_points_count;
 }
 

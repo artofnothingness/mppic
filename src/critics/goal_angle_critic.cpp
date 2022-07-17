@@ -28,13 +28,13 @@ void GoalAngleCritic::score(CriticData & data)
     return;
   }
 
-  xt::xtensor<double, 1> tensor_pose = {
-    static_cast<double>(data.state.pose.pose.position.x),
-    static_cast<double>(data.state.pose.pose.position.y)};
+  xt::xtensor<float, 1> tensor_pose = {
+    static_cast<float>(data.state.pose.pose.position.x),
+    static_cast<float>(data.state.pose.pose.position.y)};
 
   auto path_points = xt::view(data.path, -1, xt::range(0, 2));
 
-  double points_to_goal_dists = xt::norm_l2(tensor_pose - path_points, {0})();
+  auto points_to_goal_dists = xt::norm_l2(tensor_pose - path_points, {0})();
 
   if (points_to_goal_dists < threshold_to_consider_goal_angle_) {
     auto yaws = xt::view(data.trajectories, xt::all(), xt::all(), 2);

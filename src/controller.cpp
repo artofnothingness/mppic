@@ -26,7 +26,8 @@ void Controller::configure(
   // Configure composed objects
   optimizer_.initialize(parent_, name_, costmap_ros_, parameters_handler_.get());
   path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_, parameters_handler_.get());
-  trajectory_visualizer_.on_configure(parent_, name_,
+  trajectory_visualizer_.on_configure(
+    parent_, name_,
     costmap_ros_->getGlobalFrameID(), parameters_handler_.get());
 
   RCLCPP_INFO(logger_, "Configured MPPI Controller: %s", name_.c_str());

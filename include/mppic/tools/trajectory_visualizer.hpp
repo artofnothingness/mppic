@@ -29,9 +29,9 @@ public:
   void on_activate();
   void on_deactivate();
 
-  void add(const xt::xtensor<double, 2> & trajectory);
+  void add(const xt::xtensor<float, 2> & trajectory);
   void add(
-    const xt::xtensor<double, 3> & trajectories);
+    const xt::xtensor<float, 3> & trajectories);
   void visualize(nav_msgs::msg::Path plan);
   void reset();
 

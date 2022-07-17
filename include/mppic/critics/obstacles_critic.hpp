@@ -47,7 +47,7 @@ protected:
   unsigned char possibly_inscribed_cost_;
 
   unsigned int power_{0};
-  double weight_{0};
+  float weight_{0};
 };
 
 }  // namespace mppi::critics

@@ -39,8 +39,8 @@ void PathAngleCritic::score(CriticData & data)
   auto offseted_idx = std::min(
     *data.furthest_reached_path_point + offset_from_furthest_, data.path.shape(0) - 1);
 
-  double goal_x = xt::view(data.path, offseted_idx, 0);
-  double goal_y = xt::view(data.path, offseted_idx, 1);
+  float goal_x = xt::view(data.path, offseted_idx, 0);
+  float goal_y = xt::view(data.path, offseted_idx, 1);
 
   if (utils::posePointAngle(data.state.pose.pose, goal_x, goal_y) < max_angle_to_furthest_) {
     return;
