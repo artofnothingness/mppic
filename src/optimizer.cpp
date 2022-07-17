@@ -218,11 +218,11 @@ void Optimizer::updateStateVelocities(
 void Optimizer::updateInitialStateVelocities(
   models::State & state) const
 {
-  xt::view(state.v, xt::all(), 0, state.idx.vx()) = state_.speed.linear.x;
-  xt::view(state.v, xt::all(), 0, state.idx.wz()) = state_.speed.angular.z;
+  xt::view(state.velocities, xt::all(), 0, state.idx.vx()) = state_.speed.linear.x;
+  xt::view(state.velocities, xt::all(), 0, state.idx.wz()) = state_.speed.angular.z;
 
   if (isHolonomic()) {
-    xt::view(state.v, xt::all(), 0, state.idx.vy()) = state_.speed.linear.y;
+    xt::view(state.velocities, xt::all(), 0, state.idx.vy()) = state_.speed.linear.y;
   }
 }
 
@@ -232,15 +232,15 @@ void Optimizer::propagateStateVelocitiesFromInitials(
   using namespace xt::placeholders;  // NOLINT
 
   if (motion_model_->isNaive()) {
-    xt::view(state.v, xt::all(), xt::range(1, _), xt::all()) = 
-      xt::view(state.c, xt::all(), xt::range(0, -1), xt::all());
+    xt::view(state.velocities, xt::all(), xt::range(1, _), xt::all()) = 
+      xt::view(state.controls, xt::all(), xt::range(0, -1), xt::all());
   } else {
     for (size_t i = 0; i < settings_.time_steps - 1; i++) {
-      auto curr_v = xt::view(state.v, xt::all(), i, xt::all());
-      auto curr_c = xt::view(state.c, xt::all(), i, xt::all());
+      auto curr_v = xt::view(state.velocities, xt::all(), i, xt::all());
+      auto curr_c = xt::view(state.controls, xt::all(), i, xt::all());
       auto curr_dt = xt::view(state.dt, xt::all(), i);
 
-      auto next_v = xt::view(state.v, xt::all(), i + 1, xt::all());
+      auto next_v = xt::view(state.velocities, xt::all(), i + 1, xt::all());
       next_v = motion_model_->predict(curr_v, curr_c, curr_dt);
     }
   }

@@ -64,7 +64,7 @@ public:
       cwz_ = 1;
       control_range_[0] = 0;
       control_range_[1] = 2;
-      cdim_ = 3u;
+      cdim_ = 2u;
     }
   }
 
@@ -95,81 +95,96 @@ struct State
 {
   geometry_msgs::msg::PoseStamped pose;
   geometry_msgs::msg::Twist speed;
-  xt::xtensor<float, 3> v;
-  xt::xtensor<float, 3> c;
+  xt::xtensor<float, 3> velocities;
+  xt::xtensor<float, 3> controls;
   xt::xtensor<float, 2> dt;
   StateIdxes idx;
 
   void reset(unsigned int batch_size, unsigned int time_steps)
   {
-    v = xt::zeros<float>({batch_size, time_steps, idx.vdim()});
-    c = xt::zeros<float>({batch_size, time_steps, idx.cdim()});
+    velocities = xt::zeros<float>({batch_size, time_steps, idx.vdim()});
+    controls = xt::zeros<float>({batch_size, time_steps, idx.cdim()});
     dt = xt::zeros<float>({batch_size, time_steps});
   }
 
   auto getVelocitiesVX() const
   {
-    return xt::view(v, xt::all(), xt::all(), idx.vx());
+    return xt::view(velocities, xt::all(), xt::all(), idx.vx());
   }
 
   auto getVelocitiesVX()
   {
-    return xt::view(v, xt::all(), xt::all(), idx.vx());
+    return xt::view(velocities, xt::all(), xt::all(), idx.vx());
   }
 
   auto getVelocitiesVY()
   {
-    return xt::view(v, xt::all(), xt::all(), idx.vy());
+    return xt::view(velocities, xt::all(), xt::all(), idx.vy());
   }
 
   auto getVelocitiesVY() const
   {
-    return xt::view(v, xt::all(), xt::all(), idx.vy());
+    return xt::view(velocities, xt::all(), xt::all(), idx.vy());
   }
 
   auto getVelocitiesWZ() const
   {
-    return xt::view(v, xt::all(), xt::all(), idx.wz());
+    return xt::view(velocities, xt::all(), xt::all(), idx.wz());
   }
 
   auto getVelocitiesWZ()
   {
-    return xt::view(v, xt::all(), xt::all(), idx.wz());
+    return xt::view(velocities, xt::all(), xt::all(), idx.wz());
+  }
+
+  auto getVelocities() const
+  {
+    return xt::view(velocities, xt::all(), xt::all(), xt::all());
+  }
+
+  auto getVelocities()
+  {
+    return xt::view(velocities, xt::all(), xt::all(), xt::all());
   }
 
   auto getControlVelocitiesVX() const
   {
-    return xt::view(c, xt::all(), xt::all(), idx.cvx());
+    return xt::view(controls, xt::all(), xt::all(), idx.cvx());
   }
 
   auto getControlVelocitiesVX()
   {
-    return xt::view(c, xt::all(), xt::all(), idx.cvx());
+    return xt::view(controls, xt::all(), xt::all(), idx.cvx());
   }
 
   auto getControlVelocitiesVY()
   {
-    return xt::view(c, xt::all(), xt::all(), idx.cvy());
+    return xt::view(controls, xt::all(), xt::all(), idx.cvy());
   }
 
   auto getControlVelocitiesVY() const
   {
-    return xt::view(c, xt::all(), xt::all(), idx.cvy());
+    return xt::view(controls, xt::all(), xt::all(), idx.cvy());
   }
 
   auto getControlVelocitiesWZ() const
   {
-    return xt::view(c, xt::all(), xt::all(), idx.cwz());
+    return xt::view(controls, xt::all(), xt::all(), idx.cwz());
   }
 
   auto getControlVelocitiesWZ()
   {
-    return xt::view(c, xt::all(), xt::all(), idx.cwz());
+    return xt::view(controls, xt::all(), xt::all(), idx.cwz());
   }
 
-  auto getTimeIntervals()
+  auto getControls() const
   {
-    return xt::view(dt, xt::all(), xt::all());
+    return xt::view(controls, xt::all(), xt::all(), xt::all());
+  }
+
+  auto getControls()
+  {
+    return xt::view(controls, xt::all(), xt::all(), xt::all());
   }
 
   auto getTimeIntervals() const
@@ -177,26 +192,12 @@ struct State
     return xt::view(dt, xt::all(), xt::all());
   }
 
-  auto getControls() const
+  auto getTimeIntervals()
   {
-    return xt::view(c, xt::all(), xt::all(), xt::range(idx.cbegin(), idx.cend()));
-  }
-
-  auto getControls()
-  {
-    return xt::view(c, xt::all(), xt::all(), xt::range(idx.cbegin(), idx.cend()));
-  }
-
-  auto getVelocities() const
-  {
-    return xt::view(v, xt::all(), xt::all(), xt::range(idx.vbegin(), idx.vend()));
-  }
-
-  auto getVelocities()
-  {
-    return xt::view(v, xt::all(), xt::all(), xt::range(idx.vbegin(), idx.vend()));
+    return xt::view(dt, xt::all(), xt::all());
   }
 };
+
 
 }  // namespace mppi::models
 
