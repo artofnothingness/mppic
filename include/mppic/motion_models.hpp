@@ -20,20 +20,12 @@ public:
   MotionModel() = default;
   virtual ~MotionModel() = default;
 
-  /**
-   * @brief Predict velocities for given trajectories the next time step
-   *
-   * @param state for given time_step, tensor of shape
-   * [batch_size, ...] where last dim could be 5 or 7 depending on motion model used
-   *
-   * @return predicted velocities of the robot: tensor of shape [batch_size, ... ]
-   * where last dim could be 2 or 3 depending on motion model used
-   */
   virtual xt::xtensor<float, 2> predict(
-    const xt::xtensor<float, 2> & /* state */, const models::StateIdxes & /* idx */) { 
+    const xt::xtensor<float, 2> & /* velocities */, 
+      const xt::xtensor<float, 2> & /* controls */, 
+      const xt::xtensor<float, 1> & /* dt */) { 
       throw std::runtime_error("Predict not implemened");
   };
-
 
   virtual bool isHolonomic() = 0;
   virtual bool isNaive() {return true;}
