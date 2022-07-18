@@ -27,25 +27,29 @@
 #include "nav2_core/goal_checker.hpp"
 
 #include "mppic/models/control_sequence.hpp"
+#include "builtin_interfaces/msg/time.hpp"
 #include "mppic/critic_data.hpp"
 
 namespace mppi::utils
 {
 
-template<typename T, typename S>
-geometry_msgs::msg::TwistStamped toTwistStamped(
-  const T & velocities, models::ControlSequnceIdxes idx,
-  const bool & is_holonomic, const S & stamp, const std::string & frame)
+inline geometry_msgs::msg::TwistStamped toTwistStamped(
+  float vx, float wz, const builtin_interfaces::msg::Time & stamp, const std::string & frame)
 {
   geometry_msgs::msg::TwistStamped twist;
   twist.header.frame_id = frame;
   twist.header.stamp = stamp;
-  twist.twist.linear.x = velocities(idx.vx());
-  twist.twist.angular.z = velocities(idx.wz());
+  twist.twist.linear.x = vx;
+  twist.twist.angular.z = wz;
 
-  if (is_holonomic) {
-    twist.twist.linear.y = velocities(idx.vy());
-  }
+  return twist;
+}
+
+inline geometry_msgs::msg::TwistStamped toTwistStamped(
+  float vx, float wz, float vy, const builtin_interfaces::msg::Time & stamp, const std::string & frame)
+{
+  auto twist = toTwistStamped(vx, wz, stamp, frame);
+  twist.twist.linear.y = vy;
 
   return twist;
 }

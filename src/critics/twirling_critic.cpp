@@ -21,7 +21,7 @@ void TwirlingCritic::score(CriticData & data)
     return;
   }
 
-  auto wz = xt::abs(data.state.getVelocitiesWZ());
+  auto wz = xt::abs(data.state.wz);
   data.costs += xt::pow(xt::mean(wz, {1}) * weight_, power_);
 }
 

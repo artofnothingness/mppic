@@ -2,58 +2,22 @@
 #ifndef MPPIC__MODELS__CONTROL_SEQUENCE_HPP_
 #define MPPIC__MODELS__CONTROL_SEQUENCE_HPP_
 
-#include <array>
-#include <cstdint>
-
 #include <xtensor/xtensor.hpp>
 
 namespace mppi::models
 {
 
-/**
- * @brief Keeps named indexes of control sequence last dimension variables
- */
-class ControlSequnceIdxes
-{
-public:
-  unsigned int dim() const {return dim_;}
-
-  uint8_t vx() const {return vx_;}
-  uint8_t vy() const {return vy_;}
-  uint8_t wz() const {return wz_;}
-
-  void setLayout(const bool is_holonomic)
-  {
-    // Layout changes to include "Y" components if holonomic
-    if (is_holonomic) {
-      vx_ = 0;
-      vy_ = 1;
-      wz_ = 2;
-      dim_ = 3;
-    } else {
-      vx_ = 0;
-      wz_ = 1;
-      dim_ = 2;
-    }
-  }
-
-private:
-  uint8_t vx_{0};
-  uint8_t vy_{0};
-  uint8_t wz_{0};
-  unsigned int dim_{0};
-};
-
-/**
- * @brief Contains trajectory controls (in data) for each time step (vx, wz, [vy])
- * last dimension layout described by ControlSequnceIdxes
- */
 struct ControlSequence
 {
-  xt::xtensor<float, 2> data;
-  ControlSequnceIdxes idx;
+  xt::xtensor<float, 1> vx;
+  xt::xtensor<float, 1> vy;
+  xt::xtensor<float, 1> wz;
 
-  void reset(unsigned int time_steps) {data = xt::zeros<float>({time_steps, idx.dim()});}
+  void reset(unsigned int time_steps) {
+      vx = xt::zeros<float>({time_steps});
+      vy = xt::zeros<float>({time_steps});
+      wz = xt::zeros<float>({time_steps});
+    }
 };
 
 }  // namespace mppi::models

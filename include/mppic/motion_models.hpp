@@ -48,11 +48,11 @@ public:
 
   void applyConstraints(models::State & state) override
   {
-    auto v = state.getVelocitiesVX();
-    auto w = state.getVelocitiesWZ();
+    auto & vx = state.vx;
+    auto & wz = state.wz;
 
-    auto view = xt::masked_view(w, v / w > min_turning_r_);
-    view = xt::sign(v) / min_turning_r_;
+    auto view = xt::masked_view(wz, vx / wz > min_turning_r_);
+    view = xt::sign(vx) / min_turning_r_;
   }
 
 private:
