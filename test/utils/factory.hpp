@@ -131,12 +131,12 @@ getDummyNode(rclcpp::NodeOptions options, std::string node_name = std::string("d
   return node;
 }
 
-mppi::Optimizer getDummyOptimizer(auto node, auto costmap_ros, auto * params_handler)
+std::shared_ptr<mppi::Optimizer> getDummyOptimizer(auto node, auto costmap_ros, auto * params_handler)
 {
-  auto optimizer = mppi::Optimizer();
+  std::shared_ptr<mppi::Optimizer> optimizer = std::make_shared<mppi::Optimizer>();
   std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
 
-  optimizer.initialize(weak_ptr_node, node->get_name(), costmap_ros, params_handler);
+  optimizer->initialize(weak_ptr_node, node->get_name(), costmap_ros, params_handler);
 
   return optimizer;
 }
@@ -145,7 +145,7 @@ mppi::PathHandler getDummyPathHandler(
   auto node, auto costmap_ros, auto tf_buffer,
   auto * params_handler)
 {
-  auto path_handler = mppi::PathHandler();
+  mppi::PathHandler path_handler;
   std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
 
   path_handler.initialize(weak_ptr_node, node->get_name(), costmap_ros, tf_buffer, params_handler);
@@ -153,13 +153,13 @@ mppi::PathHandler getDummyPathHandler(
   return path_handler;
 }
 
-mppi::Controller getDummyController(auto node, auto tf_buffer, auto costmap_ros)
+std::shared_ptr<mppi::Controller> getDummyController(auto node, auto tf_buffer, auto costmap_ros)
 {
-  auto controller = mppi::Controller();
+  std::shared_ptr<mppi::Controller> controller = std::make_shared<mppi::Controller>();
   std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
 
-  controller.configure(weak_ptr_node, node->get_name(), tf_buffer, costmap_ros);
-  controller.activate();
+  controller->configure(weak_ptr_node, node->get_name(), tf_buffer, costmap_ros);
+  controller->activate();
   return controller;
 }
 

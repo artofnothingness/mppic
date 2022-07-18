@@ -32,8 +32,14 @@ void Optimizer::initialize(
   getParams();
 
   critic_manager_.on_configure(parent_, name_, costmap_ros_, parameters_handler_);
+  noise_generator_.initialize(settings_, isHolonomic());
 
   reset();
+}
+
+void Optimizer::shutdown()
+{
+  noise_generator_.shutdown();
 }
 
 void Optimizer::getParams()
@@ -96,9 +102,8 @@ void Optimizer::reset()
   control_sequence_.reset(settings_.time_steps);
   costs_ = xt::zeros<double>({settings_.batch_size});
   generated_trajectories_ = xt::zeros<double>({settings_.batch_size, settings_.time_steps, 3u});
-  noises_ =
-    xt::zeros<double>({settings_.batch_size, settings_.time_steps, isHolonomic() ? 3u : 2u});
 
+  noise_generator_.reset(settings_, isHolonomic());
   RCLCPP_INFO(logger_, "Optimizer reset");
 }
 
@@ -176,26 +181,11 @@ void Optimizer::shiftControlSequence()
 
 void Optimizer::generateNoisedTrajectories()
 {
-  generateNoisedControls();
+  state_.getControls() = control_sequence_.data + noise_generator_.getNoises();
+  noise_generator_.generateNextNoises();
   applyControlConstraints();
   updateStateVelocities(state_);
   integrateStateVelocities(generated_trajectories_, state_);
-}
-
-void Optimizer::generateNoisedControls()
-{
-  auto & s = settings_;
-  auto vx = xt::view(noises_, xt::all(), xt::all(), 0);
-  auto wz = xt::view(noises_, xt::all(), xt::all(), isHolonomic() ? 2 : 1);
-
-  vx = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vx);
-  wz = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.wz);
-  if (isHolonomic()) {
-    auto vy = xt::view(noises_, xt::all(), xt::all(), 1);
-    vy = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vy);
-  }
-
-  state_.getControls() = control_sequence_.data + noises_;
 }
 
 bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
