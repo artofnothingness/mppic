@@ -194,7 +194,11 @@ void Optimizer::shiftControlSequence()
 
 void Optimizer::generateNoisedTrajectories()
 {
-  state_.getControls() = control_sequence_.data + noise_generator_.getNoises();
+  const auto &[vx_noise, vy_noise, wz_noise] = noise_generator_.getNoises();
+  state_.cvx = control_sequence_.vx + vx_noise;
+  state_.cvy = control_sequence_.vy + vy_noise;
+  state_.cwz = control_sequence_.wz + wz_noise;
+
   noise_generator_.generateNextNoises();
   applyControlConstraints();
   updateStateVelocities(state_);
@@ -301,10 +305,10 @@ xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
   models::State state;
   state.reset(1U, settings_.time_steps);
 
-  xt::view(state.vx, 0, xt::all()) = control_sequence_.vx;
-  xt::view(state.wz, 0, xt::all()) = control_sequence_.wz;
+  xt::view(state.cvx, 0, xt::all()) = control_sequence_.vx;
+  xt::view(state.cwz, 0, xt::all()) = control_sequence_.wz;
   if (isHolonomic()) {
-    xt::view(state.vy, 0, xt::all()) = control_sequence_.vy;
+    xt::view(state.cvy, 0, xt::all()) = control_sequence_.vy;
   }
 
   state.dt.fill(settings_.model_dt);
