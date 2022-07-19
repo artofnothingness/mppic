@@ -8,6 +8,7 @@
 #include "mppic/models/state.hpp"
 #include <xtensor/xmath.hpp>
 #include <xtensor/xmasked_view.hpp>
+#include <xtensor/xview.hpp>
 
 #include "mppic/tools/parameters_handler.hpp"
 
@@ -20,15 +21,22 @@ public:
   MotionModel() = default;
   virtual ~MotionModel() = default;
 
-  virtual xt::xtensor<float, 2> predict(
-    const xt::xtensor<float, 2> & /* velocities */, 
-      const xt::xtensor<float, 2> & /* controls */, 
-      const xt::xtensor<float, 1> & /* dt */) { 
-      throw std::runtime_error("Predict not implemened");
-  };
+  virtual void predict(models::State & state)
+  {
+    using namespace xt::placeholders;  // NOLINT
+    xt::view(state.vx, xt::all(), xt::range(1, _)) =
+      xt::view(state.cvx, xt::all(), xt::range(0, -1));
+
+    xt::view(state.wz, xt::all(), xt::range(1, _)) =
+      xt::view(state.cwz, xt::all(), xt::range(0, -1));
+
+    if (isHolonomic()) {
+      xt::view(state.vy, xt::all(), xt::range(1, _)) =
+        xt::view(state.cvy, xt::all(), xt::range(0, -1));
+    }
+  }
 
   virtual bool isHolonomic() = 0;
-  virtual bool isNaive() {return true;}
   virtual void applyConstraints(models::State & /*state*/) {}
 };
 

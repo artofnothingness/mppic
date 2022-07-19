@@ -46,7 +46,8 @@ inline geometry_msgs::msg::TwistStamped toTwistStamped(
 }
 
 inline geometry_msgs::msg::TwistStamped toTwistStamped(
-  float vx, float wz, float vy, const builtin_interfaces::msg::Time & stamp, const std::string & frame)
+  float vx, float vy, float wz, const builtin_interfaces::msg::Time & stamp,
+  const std::string & frame)
 {
   auto twist = toTwistStamped(vx, wz, stamp, frame);
   twist.twist.linear.y = vy;

@@ -13,11 +13,12 @@ struct ControlSequence
   xt::xtensor<float, 1> vy;
   xt::xtensor<float, 1> wz;
 
-  void reset(unsigned int time_steps) {
-      vx = xt::zeros<float>({time_steps});
-      vy = xt::zeros<float>({time_steps});
-      wz = xt::zeros<float>({time_steps});
-    }
+  void reset(unsigned int time_steps)
+  {
+    vx = xt::zeros<float>({time_steps});
+    vy = xt::zeros<float>({time_steps});
+    wz = xt::zeros<float>({time_steps});
+  }
 };
 
 }  // namespace mppi::models

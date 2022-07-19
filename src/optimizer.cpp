@@ -185,7 +185,7 @@ void Optimizer::shiftControlSequence()
     xt::view(control_sequence_.wz, -2);
 
 
-  if (isHolonomic()) { 
+  if (isHolonomic()) {
     control_sequence_.vy = xt::roll(control_sequence_.vy, -1);
     xt::view(control_sequence_.vy, -1) =
       xt::view(control_sequence_.vy, -2);
@@ -210,16 +210,16 @@ bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
 void Optimizer::applyControlConstraints()
 {
   auto & s = settings_;
-  auto & vx = state_.vx;
-  auto & wz = state_.wz;
+  auto & cvx = state_.cvx;
+  auto & cwz = state_.cwz;
 
   if (isHolonomic()) {
-    auto & vy = state_.vy;
-    vy = xt::clip(vy, -s.constraints.vy, s.constraints.vy);
+    auto & cvy = state_.cvy;
+    cvy = xt::clip(cvy, -s.constraints.vy, s.constraints.vy);
   }
 
-  vx = xt::clip(vx, s.constraints.vx_min, s.constraints.vx_max);
-  wz = xt::clip(wz, -s.constraints.wz, s.constraints.wz);
+  cvx = xt::clip(cvx, s.constraints.vx_min, s.constraints.vx_max);
+  cwz = xt::clip(cwz, -s.constraints.wz, s.constraints.wz);
 
   motion_model_->applyConstraints(state_);
 }
@@ -245,24 +245,7 @@ void Optimizer::updateInitialStateVelocities(
 void Optimizer::propagateStateVelocitiesFromInitials(
   models::State & state) const
 {
-  using namespace xt::placeholders;  // NOLINT
-
-  if (motion_model_->isNaive()) {
-    xt::view(state.vx, xt::all(), xt::range(1, _)) = 
-      xt::view(state.cvx, xt::all(), xt::range(0, -1));
-
-    xt::view(state.wz, xt::all(), xt::range(1, _)) = 
-      xt::view(state.cwz, xt::all(), xt::range(0, -1));
-
-    if (isHolonomic()) {
-
-      xt::view(state.vy, xt::all(), xt::range(1, _)) = 
-        xt::view(state.cvy, xt::all(), xt::range(0, -1));
-    }
-  } else {
-    std::runtime_error("Not implemented");
-  }
-
+  motion_model_->predict(state);
 }
 void Optimizer::integrateStateVelocities(
   xt::xtensor<float, 3> & trajectories,
@@ -274,7 +257,7 @@ void Optimizer::integrateStateVelocities(
   auto y = xt::view(trajectories, xt::all(), xt::all(), 1);
   auto yaw = xt::view(trajectories, xt::all(), xt::all(), 2);
 
-  auto &w = state.wz;
+  auto & w = state.wz;
   double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
   yaw = xt::cumsum(w * settings_.model_dt, 1) + initial_yaw;
   xt::xtensor<float, 2> yaw_offseted = yaw;
@@ -291,7 +274,7 @@ void Optimizer::integrateStateVelocities(
   xt::xtensor<float, 2> dy = vx * yaw_sin;
 
   if (isHolonomic()) {
-    auto &vy = state.vy;
+    auto & vy = state.vy;
     dx = dx - vy * yaw_sin;
     dy = dy + vy * yaw_cos;
   }
@@ -326,7 +309,8 @@ void Optimizer::updateControlSequence()
   using xt::evaluation_strategy::immediate;
 
   auto && costs_normalized = costs_ - xt::amin(costs_, immediate);
-  xt::xtensor<float, 1> exponents = xt::eval(xt::exp(-1 / settings_.temperature * costs_normalized));
+  xt::xtensor<float,
+    1> exponents = xt::eval(xt::exp(-1 / settings_.temperature * costs_normalized));
   xt::xtensor<float, 1> softmaxes = exponents / xt::sum(exponents, immediate);
   auto softmaxes_extened = xt::view(softmaxes, xt::all(), xt::newaxis());
 
@@ -345,7 +329,7 @@ geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
 
   if (isHolonomic()) {
     auto vy = control_sequence_.vy(offset);
-    return utils::toTwistStamped(vx, wz, vy, stamp, costmap_ros_->getBaseFrameID());
+    return utils::toTwistStamped(vx, vy, wz, stamp, costmap_ros_->getBaseFrameID());
   }
 
   return utils::toTwistStamped(vx, wz, stamp, costmap_ros_->getBaseFrameID());

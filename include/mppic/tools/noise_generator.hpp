@@ -45,8 +45,8 @@ public:
    * @brief Get the current noises
    * @return noises vx, vy, wz
    */
-  std::tuple<xt::xtensor<float, 2> &, xt::xtensor<float, 2> &, xt::xtensor<float, 2> &> 
-    getNoises();
+  std::tuple<xt::xtensor<float, 2> &, xt::xtensor<float, 2> &, xt::xtensor<float, 2> &>
+  getNoises();
 
   /**
    * @brief Reset noise generator with settings and model types

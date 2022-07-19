@@ -28,7 +28,7 @@ foreach(pkg IN LISTS dependencies_pkgs)
 endforeach()
 
 nav2_package()
-add_compile_options(-O3 -mavx2 -mfma -finline-limit=1000000 -ffp-contract=fast -march=native -ffast-math)
+add_compile_options(-O3 -mavx2 -mfma -finline-limit=1000000 -ffp-contract=fast -ffast-math)
 
 add_library(mppic SHARED
   src/controller.cpp

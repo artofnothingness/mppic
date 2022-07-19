@@ -131,7 +131,9 @@ getDummyNode(rclcpp::NodeOptions options, std::string node_name = std::string("d
   return node;
 }
 
-std::shared_ptr<mppi::Optimizer> getDummyOptimizer(auto node, auto costmap_ros, auto * params_handler)
+std::shared_ptr<mppi::Optimizer> getDummyOptimizer(
+  auto node, auto costmap_ros,
+  auto * params_handler)
 {
   std::shared_ptr<mppi::Optimizer> optimizer = std::make_shared<mppi::Optimizer>();
   std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};

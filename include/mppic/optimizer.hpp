@@ -35,7 +35,7 @@ class Optimizer
 public:
   Optimizer() = default;
 
-  ~Optimizer(){shutdown();}
+  ~Optimizer() {shutdown();}
 
   void initialize(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
