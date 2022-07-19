@@ -11,9 +11,9 @@ void GoalAngleCritic::initialize()
   getParam(power_, "cost_power", 1);
   getParam(weight_, "cost_weight", 3.0);
 
-  getParam(
-    threshold_to_consider_goal_angle_,
-    "threshold_to_consider_goal_angle", 0.20);
+  float thresh;
+  getParam(thresh, "threshold_to_consider_goal_angle", 0.20);
+  threshold_to_consider_goal_angle_ = thresh * thresh;
 
   RCLCPP_INFO(
     logger_,
@@ -34,7 +34,8 @@ void GoalAngleCritic::score(CriticData & data)
 
   auto path_points = xt::view(data.path, -1, xt::range(0, 2));
 
-  auto points_to_goal_dists = xt::norm_l2(tensor_pose - path_points, {0})();
+  // Compare the squares to remove a sqrt evaluation
+  auto points_to_goal_dists = xt::norm_sq(tensor_pose - path_points, {0})();
 
   if (points_to_goal_dists < threshold_to_consider_goal_angle_) {
     auto yaws = xt::view(data.trajectories, xt::all(), xt::all(), 2);
