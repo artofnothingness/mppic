@@ -80,16 +80,16 @@ inline bool withinPositionGoalTolerance(
     geometry_msgs::msg::Twist vel_tol;
     goal_checker->getTolerances(pose_tol, vel_tol);
 
-    const double & goal_tol = pose_tol.position.x;
+    const double & goal_tol2 = pose_tol.position.x * pose_tol.position.x;
 
     xt::xtensor<float, 1> robot_pose = {
       static_cast<float>(robot_pose_arg.pose.position.x),
       static_cast<float>(robot_pose_arg.pose.position.y)};
     auto goal_pose = xt::view(path, -1, xt::range(0, 2));
 
-    auto dist_to_goal = xt::norm_l2(robot_pose - goal_pose, {0})();
+    auto dist_to_goal = xt::norm_sq(robot_pose - goal_pose, {0})();
 
-    if (dist_to_goal < goal_tol) {
+    if (dist_to_goal < goal_tol2) {
       return true;
     }
   }
