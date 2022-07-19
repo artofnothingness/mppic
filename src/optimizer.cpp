@@ -101,7 +101,6 @@ void Optimizer::setOffset(double controller_frequency)
 void Optimizer::reset()
 {
   state_.reset(settings_.batch_size, settings_.time_steps);
-  state_.dt.fill(settings_.model_dt);
   control_sequence_.reset(settings_.time_steps);
 
   costs_ = xt::zeros<float>({settings_.batch_size});
@@ -294,8 +293,6 @@ xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
   if (isHolonomic()) {
     xt::view(state.cvy, 0, xt::all()) = control_sequence_.vy;
   }
-
-  state.dt.fill(settings_.model_dt);
 
   updateStateVelocities(state);
 

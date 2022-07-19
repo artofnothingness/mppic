@@ -20,8 +20,6 @@ struct State
   xt::xtensor<float, 2> cvy;
   xt::xtensor<float, 2> cwz;
 
-  xt::xtensor<float, 2> dt;
-
   geometry_msgs::msg::PoseStamped pose;
   geometry_msgs::msg::Twist speed;
 
@@ -34,8 +32,6 @@ struct State
     cvx = xt::zeros<float>({batch_size, time_steps});
     cvy = xt::zeros<float>({batch_size, time_steps});
     cwz = xt::zeros<float>({batch_size, time_steps});
-
-    dt = xt::zeros<float>({batch_size, time_steps});
   }
 
 };
