@@ -44,7 +44,7 @@ void GoalAngleCritic::score(CriticData & data)
     auto goal_yaw = xt::view(data.path, -1, 2);
 
     data.costs += xt::pow(
-      xt::eval(xt::mean(xt::abs(utils::shortest_angular_distance(yaws, goal_yaw)), {1})) *
+      xt::mean(xt::abs(utils::shortest_angular_distance(yaws, goal_yaw)), {1}) *
       weight_, power_);
   }
 }
