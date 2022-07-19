@@ -8,6 +8,7 @@
 #include "mppic/models/state.hpp"
 #include <xtensor/xmath.hpp>
 #include <xtensor/xmasked_view.hpp>
+#include <xtensor/xview.hpp>
 
 #include "mppic/tools/parameters_handler.hpp"
 
@@ -20,19 +21,19 @@ public:
   MotionModel() = default;
   virtual ~MotionModel() = default;
 
-  /**
-   * @brief Predict velocities for given trajectories the next time step
-   *
-   * @param state for given time_step, tensor of shape
-   * [batch_size, ...] where last dim could be 5 or 7 depending on motion model used
-   *
-   * @return predicted velocities of the robot: tensor of shape [batch_size, ... ]
-   * where last dim could be 2 or 3 depending on motion model used
-   */
-  virtual xt::xtensor<double, 2> predict(
-    const xt::xtensor<double, 2> & state, const models::StateIdxes & idx)
+  virtual void predict(models::State & state)
   {
-    return xt::view(state, xt::all(), xt::range(idx.cbegin(), idx.cend()));
+    using namespace xt::placeholders;  // NOLINT
+    xt::view(state.vx, xt::all(), xt::range(1, _)) =
+      xt::view(state.cvx, xt::all(), xt::range(0, -1));
+
+    xt::view(state.wz, xt::all(), xt::range(1, _)) =
+      xt::view(state.cwz, xt::all(), xt::range(0, -1));
+
+    if (isHolonomic()) {
+      xt::view(state.vy, xt::all(), xt::range(1, _)) =
+        xt::view(state.cvy, xt::all(), xt::range(0, -1));
+    }
   }
 
   virtual bool isHolonomic() = 0;
@@ -55,11 +56,11 @@ public:
 
   void applyConstraints(models::State & state) override
   {
-    auto v = state.getVelocitiesVX();
-    auto w = state.getVelocitiesWZ();
+    auto & vx = state.vx;
+    auto & wz = state.wz;
 
-    auto view = xt::masked_view(w, v / w > min_turning_r_);
-    view = xt::sign(v) / min_turning_r_;
+    auto view = xt::masked_view(wz, vx / wz > min_turning_r_);
+    view = xt::sign(vx) / min_turning_r_;
   }
 
 private:

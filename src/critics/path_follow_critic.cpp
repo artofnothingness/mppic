@@ -13,7 +13,7 @@ void PathFollowCritic::initialize()
 
   getParam(
     max_path_ratio_,
-    "max_path_ratio", 0.35);
+    "max_path_ratio", 0.35f);
 
   getParam(offset_from_furthest_, "offset_from_furthest", 6);
 

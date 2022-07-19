@@ -17,7 +17,7 @@ public:
 
 protected:
   unsigned int power_{0};
-  double weight_{0};
+  float weight_{0};
 };
 
 }  // namespace mppi::critics

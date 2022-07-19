@@ -36,10 +36,11 @@ void NoiseGenerator::generateNextNoises()
   noise_cond_.notify_all();
 }
 
-xt::xtensor<double, 3> & NoiseGenerator::getNoises()
+std::tuple<xt::xtensor<float, 2> &, xt::xtensor<float, 2> &, xt::xtensor<float, 2> &>
+NoiseGenerator::getNoises()
 {
   std::unique_lock<std::mutex> guard(noise_lock_);
-  return noises_;
+  return std::tie(noises_vx_, noises_vy_, noises_wz_);
 }
 
 void NoiseGenerator::reset(mppi::models::OptimizerSettings & settings, bool is_holonomic)
@@ -50,8 +51,9 @@ void NoiseGenerator::reset(mppi::models::OptimizerSettings & settings, bool is_h
   // Recompute the noises on reset, initialization, and fallback
   {
     std::unique_lock<std::mutex> guard(noise_lock_);
-    noises_ =
-      xt::zeros<double>({settings_.batch_size, settings_.time_steps, is_holonomic_ ? 3u : 2u});
+    noises_vx_ = xt::zeros<float>({settings_.batch_size, settings_.time_steps});
+    noises_vy_ = xt::zeros<float>({settings_.batch_size, settings_.time_steps});
+    noises_wz_ = xt::zeros<float>({settings_.batch_size, settings_.time_steps});
     ready_ = true;
   }
   noise_cond_.notify_all();
@@ -61,7 +63,7 @@ void NoiseGenerator::noiseThread()
 {
   do {
     std::unique_lock<std::mutex> guard(noise_lock_);
-    noise_cond_.wait(guard, [this](){return ready_;});
+    noise_cond_.wait(guard, [this]() {return ready_;});
     ready_ = false;
     generateNoisedControls();
   } while (active_);
@@ -70,14 +72,11 @@ void NoiseGenerator::noiseThread()
 void NoiseGenerator::generateNoisedControls()
 {
   auto & s = settings_;
-  auto vx = xt::view(noises_, xt::all(), xt::all(), 0);
-  auto wz = xt::view(noises_, xt::all(), xt::all(), is_holonomic_ ? 2 : 1);
 
-  vx = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vx);
-  wz = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.wz);
+  noises_vx_ = xt::random::randn<float>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vx);
+  noises_wz_ = xt::random::randn<float>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.wz);
   if (is_holonomic_) {
-    auto vy = xt::view(noises_, xt::all(), xt::all(), 1);
-    vy = xt::random::randn<double>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vy);
+    noises_vy_ = xt::random::randn<float>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vy);
   }
 }
 

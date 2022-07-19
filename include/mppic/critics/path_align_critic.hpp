@@ -25,7 +25,7 @@ protected:
   unsigned int trajectory_point_step_{0};
 
   unsigned int power_{0};
-  double weight_{0};
+  float weight_{0};
 };
 
 }  // namespace mppi::critics

@@ -26,7 +26,8 @@ void Controller::configure(
   // Configure composed objects
   optimizer_.initialize(parent_, name_, costmap_ros_, parameters_handler_.get());
   path_handler_.initialize(parent_, name_, costmap_ros_, tf_buffer_, parameters_handler_.get());
-  trajectory_visualizer_.on_configure(parent_, name_,
+  trajectory_visualizer_.on_configure(
+    parent_, name_,
     costmap_ros_->getGlobalFrameID(), parameters_handler_.get());
 
   RCLCPP_INFO(logger_, "Configured MPPI Controller: %s", name_.c_str());
@@ -58,10 +59,19 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * goal_checker)
 {
+  auto start = std::chrono::system_clock::now();
+
   std::lock_guard<std::mutex> lock(*parameters_handler_->getLock());
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
+
   geometry_msgs::msg::TwistStamped cmd =
     optimizer_.evalControl(robot_pose, robot_speed, transformed_plan, goal_checker);
+
+  auto end = std::chrono::system_clock::now();
+
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+  RCLCPP_INFO(logger_, "Control loop execution time: %ld [ms]", duration);
 
   if (visualize_) {
     visualize(std::move(transformed_plan));

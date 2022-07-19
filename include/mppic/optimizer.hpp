@@ -35,7 +35,7 @@ class Optimizer
 public:
   Optimizer() = default;
 
-  ~Optimizer(){shutdown();}
+  ~Optimizer() {shutdown();}
 
   void initialize(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
@@ -49,8 +49,8 @@ public:
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan,
     nav2_core::GoalChecker * goal_checker);
 
-  xt::xtensor<double, 3> & getGeneratedTrajectories();
-  xt::xtensor<double, 2> getOptimizedTrajectory();
+  xt::xtensor<float, 3> & getGeneratedTrajectories();
+  xt::xtensor<float, 2> getOptimizedTrajectory();
 
   void setSpeedLimit(double speed_limit, bool percentage);
 
@@ -94,7 +94,7 @@ protected:
   void propagateStateVelocitiesFromInitials(models::State & state) const;
 
   void integrateStateVelocities(
-    xt::xtensor<double, 3> & trajectories,
+    xt::xtensor<float, 3> & trajectories,
     const models::State & state) const;
 
   /**
@@ -129,9 +129,9 @@ protected:
   models::State state_;
   models::ControlSequence control_sequence_;
 
-  xt::xtensor<double, 3> generated_trajectories_;
-  xt::xtensor<double, 2> plan_;
-  xt::xtensor<double, 1> costs_;
+  xt::xtensor<float, 3> generated_trajectories_;
+  xt::xtensor<float, 2> plan_;
+  xt::xtensor<float, 1> costs_;
 
   CriticData critics_data_ =
   {state_, generated_trajectories_, plan_, costs_, false, nullptr, std::nullopt}; /// Caution, keep references
