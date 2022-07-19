@@ -15,6 +15,9 @@
 namespace mppi
 {
 
+using namespace xt::placeholders;  // NOLINT
+using xt::evaluation_strategy::immediate;
+
 void Optimizer::initialize(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros,
@@ -251,8 +254,6 @@ void Optimizer::integrateStateVelocities(
   xt::xtensor<float, 3> & trajectories,
   const models::State & state) const
 {
-  using namespace xt::placeholders;  // NOLINT
-
   auto x = xt::view(trajectories, xt::all(), xt::all(), 0);
   auto y = xt::view(trajectories, xt::all(), xt::all(), 1);
   auto yaw = xt::view(trajectories, xt::all(), xt::all(), 2);
@@ -306,17 +307,15 @@ xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
 
 void Optimizer::updateControlSequence()
 {
-  using xt::evaluation_strategy::immediate;
-
   auto && costs_normalized = costs_ - xt::amin(costs_, immediate);
-  xt::xtensor<float,
-    1> exponents = xt::eval(xt::exp(-1 / settings_.temperature * costs_normalized));
+  xt::xtensor<float, 1> exponents =
+    xt::eval(xt::exp(-1 / settings_.temperature * costs_normalized));
   xt::xtensor<float, 1> softmaxes = exponents / xt::sum(exponents, immediate);
   auto softmaxes_extened = xt::view(softmaxes, xt::all(), xt::newaxis());
 
-  control_sequence_.vx = xt::sum(state_.cvx * softmaxes_extened, 0);
-  control_sequence_.vy = xt::sum(state_.cvy * softmaxes_extened, 0);
-  control_sequence_.wz = xt::sum(state_.cwz * softmaxes_extened, 0);
+  control_sequence_.vx = xt::sum(state_.cvx * softmaxes_extened, 0, immediate);
+  control_sequence_.vy = xt::sum(state_.cvy * softmaxes_extened, 0, immediate);
+  control_sequence_.wz = xt::sum(state_.cwz * softmaxes_extened, 0, immediate);
 }
 
 geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
