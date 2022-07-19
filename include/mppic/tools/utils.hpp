@@ -98,7 +98,6 @@ inline bool withinPositionGoalTolerance(
   return false;
 }
 
-
 /**
   * @brief normalize
   *
@@ -112,7 +111,6 @@ auto normalize_angles(const T & angles)
   auto theta = xt::eval(xt::fmod(angles + M_PI, 2.0 * M_PI));
   return xt::eval(xt::where(theta <= 0.0, theta + M_PI, theta - M_PI));
 }
-
 
 /**
   * @brief shortest_angular_distance
