@@ -259,6 +259,7 @@ void Optimizer::integrateStateVelocities(
 
   auto & w = state.wz;
   double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
+
   yaw = utils::normalize_angles(xt::cumsum(w * settings_.model_dt, 1) + initial_yaw);
   xt::xtensor<float, 2> yaw_offseted = yaw;
 
