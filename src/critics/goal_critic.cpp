@@ -24,8 +24,7 @@ void GoalCritic::score(CriticData & data)
 
   const auto goal_points = xt::view(data.path, -1, xt::range(0, 2));
 
-  auto trajectories_end =
-    xt::view(data.trajectories, xt::all(), -1, xt::range(0, 2));
+  auto trajectories_end = utils::getLastPoses(data.trajectories);
 
   auto dim = trajectories_end.dimension() - 1;
 

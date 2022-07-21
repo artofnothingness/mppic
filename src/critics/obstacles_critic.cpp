@@ -62,13 +62,13 @@ void ObstaclesCritic::score(CriticData & data)
   }
 
   bool all_trajectories_collide = true;
-  for (size_t i = 0; i < data.trajectories.shape(0); ++i) {
+  for (size_t i = 0; i < data.trajectories.x.shape(0); ++i) {
     bool trajectory_collide = false;
     unsigned char trajectory_cost = nav2_costmap_2d::FREE_SPACE;
 
-    for (size_t j = 0; j < data.trajectories.shape(1); j++) {
+    for (size_t j = 0; j < data.trajectories.x.shape(1); j++) {
       unsigned char pose_cost = costAtPose(
-        data.trajectories(i, j, 0), data.trajectories(i, j, 1), data.trajectories(i, j, 2));
+        data.trajectories.x(i, j), data.trajectories.y(i, j), data.trajectories.yaws(i, j));
       trajectory_cost = std::max(trajectory_cost, pose_cost);
 
       if (inCollision(trajectory_cost)) {

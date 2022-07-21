@@ -131,6 +131,11 @@ auto shortest_angular_distance(
   return normalize_angles(to - from);
 }
 
+inline xt::xtensor<float, 3> getLastPoses(const models::Trajectories & trajectories)
+{
+  // TODO
+}
+
 /**
  * @brief Evaluate furthest point idx of data.path which is
  * nearset to some trajectory in data.trajectories

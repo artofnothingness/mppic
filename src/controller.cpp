@@ -78,11 +78,11 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   return cmd;
 }
 
-void Controller::visualize(nav_msgs::msg::Path transformed_plan)
+void Controller::visualize(nav_msgs::msg::Path)
 {
-  trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories());
-  trajectory_visualizer_.add(optimizer_.getOptimizedTrajectory());
-  trajectory_visualizer_.visualize(std::move(transformed_plan));
+  // trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories());
+  // trajectory_visualizer_.add(optimizer_.getOptimizedTrajectory());
+  // trajectory_visualizer_.visualize(std::move(transformed_plan));
 }
 
 void Controller::setPlan(const nav_msgs::msg::Path & path)
