@@ -254,9 +254,9 @@ void Optimizer::integrateStateVelocities(
   models::Trajectories & trajectories,
   const models::State & state) const
 {
-  auto &x = trajectories.x;
-  auto &y = trajectories.y;
-  auto &yaw = trajectories.yaws;
+  auto & x = trajectories.x;
+  auto & y = trajectories.y;
+  auto & yaw = trajectories.yaws;
 
   auto & w = state.wz;
   double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
