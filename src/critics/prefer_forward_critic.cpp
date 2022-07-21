@@ -21,21 +21,8 @@ void PreferForwardCritic::score(CriticData & data)
     return;
   }
 
-  using namespace xt::placeholders;  // NOLINT
-
-  auto dx = xt::view(data.trajectories, xt::all(), xt::range(1, _), 0) -
-    xt::view(data.trajectories, xt::all(), xt::range(_, -1), 0);
-  auto dy = xt::view(data.trajectories, xt::all(), xt::range(1, _), 1) -
-    xt::view(data.trajectories, xt::all(), xt::range(_, -1), 1);
-
-  auto thetas = xt::atan2(dy, dx);
-  auto yaws = xt::view(data.trajectories, xt::all(), xt::range(_, -1), 2);
-
-  auto yaws_local = xt::abs(utils::shortest_angular_distance(thetas, yaws));
-  auto forward_translation_reversed = -xt::cos(yaws_local) * xt::hypot(dx, dy);
-  auto backward_translation = xt::maximum(forward_translation_reversed, 0);
-
-  data.costs += xt::pow(xt::sum(backward_translation, {1}) * weight_, power_);
+  auto backward_motion = xt::maximum(-data.state.vx, 0);
+  data.costs += xt::pow(xt::sum(backward_motion * data.model_dt, {1}, xt::evaluation_strategy::immediate) * weight_, power_);
 }
 }  // namespace mppi::critics
 
