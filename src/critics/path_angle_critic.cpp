@@ -46,11 +46,11 @@ void PathAngleCritic::score(CriticData & data)
     return;
   }
 
-  auto traj_xs = xt::view(data.trajectories, xt::all(), xt::all(), 0);
-  auto traj_ys = xt::view(data.trajectories, xt::all(), xt::all(), 1);
+  auto traj_xs = xt::view(data.trajectories.x, xt::all(), xt::all());
+  auto traj_ys = xt::view(data.trajectories.y, xt::all(), xt::all());
   auto yaws_between_points = xt::atan2(goal_y - traj_ys, goal_x - traj_xs);
 
-  auto traj_yaws = xt::view(data.trajectories, xt::all(), xt::all(), 2);
+  auto traj_yaws = xt::view(data.trajectories.yaws, xt::all(), xt::all());
   auto yaws = xt::abs(utils::shortest_angular_distance(traj_yaws, yaws_between_points));
   auto mean_yaws = xt::mean(yaws, {1});
 

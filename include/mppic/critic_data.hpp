@@ -7,6 +7,7 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav2_core/goal_checker.hpp"
 #include "mppic/models/state.hpp"
+#include "mppic/models/trajectories.hpp"
 
 
 namespace mppi
@@ -15,7 +16,7 @@ namespace mppi
 struct CriticData
 {
   const models::State & state;
-  const xt::xtensor<float, 3> & trajectories;
+  const models::Trajectories & trajectories;
   const xt::xtensor<float, 2> & path;
 
   xt::xtensor<float, 1> & costs;

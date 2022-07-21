@@ -23,6 +23,7 @@
 #include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
+#include "mppic/models/trajectories.hpp"
 #include "mppic/tools/noise_generator.hpp"
 #include "mppic/tools/parameters_handler.hpp"
 #include "mppic/tools/utils.hpp"
@@ -49,8 +50,8 @@ public:
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan,
     nav2_core::GoalChecker * goal_checker);
 
-  xt::xtensor<float, 3> & getGeneratedTrajectories();
-  xt::xtensor<float, 2> getOptimizedTrajectory();
+  // xt::xtensor<float, 3> & getGeneratedTrajectories();
+  // xt::xtensor<float, 2> getOptimizedTrajectory();
 
   void setSpeedLimit(double speed_limit, bool percentage);
 
@@ -94,7 +95,7 @@ protected:
   void propagateStateVelocitiesFromInitials(models::State & state) const;
 
   void integrateStateVelocities(
-    xt::xtensor<float, 3> & trajectories,
+    models::Trajectories & trajectories,
     const models::State & state) const;
 
   /**
@@ -128,8 +129,7 @@ protected:
 
   models::State state_;
   models::ControlSequence control_sequence_;
-
-  xt::xtensor<float, 3> generated_trajectories_;
+  models::Trajectories generated_trajectories_;
   xt::xtensor<float, 2> plan_;
   xt::xtensor<float, 1> costs_;
 

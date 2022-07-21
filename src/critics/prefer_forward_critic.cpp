@@ -63,13 +63,13 @@ void PreferForwardCritic::score(CriticData & data)
 
   using namespace xt::placeholders;  // NOLINT
 
-  auto dx = xt::view(data.trajectories, xt::all(), xt::range(1, _), 0) -
-    xt::view(data.trajectories, xt::all(), xt::range(_, -1), 0);
-  auto dy = xt::view(data.trajectories, xt::all(), xt::range(1, _), 1) -
-    xt::view(data.trajectories, xt::all(), xt::range(_, -1), 1);
+  auto dx = xt::view(data.trajectories.x, xt::all(), xt::range(1, _)) -
+    xt::view(data.trajectories.x, xt::all(), xt::range(_, -1));
+  auto dy = xt::view(data.trajectories.y, xt::all(), xt::range(1, _)) -
+    xt::view(data.trajectories.y, xt::all(), xt::range(_, -1));
   
   auto thetas = approx_atan2(dy, dx);  // Speeds up
-  auto yaws = xt::view(data.trajectories, xt::all(), xt::range(_, -1), 2);
+  auto yaws = xt::view(data.trajectories.yaws, xt::all(), xt::range(_, -1));
 
   auto yaws_local = thetas - yaws;
 
