@@ -1,7 +1,6 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 
 #include "mppic/critics/prefer_forward_critic.hpp"
-#include <xtensor/xvectorize.hpp>
 
 namespace mppi::critics
 {
