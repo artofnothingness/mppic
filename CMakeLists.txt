@@ -4,6 +4,10 @@ project(mppic)
 add_definitions(-DXTENSOR_ENABLE_XSIMD)
 add_definitions(-DXTENSOR_USE_XSIMD)
 
+set(XTENSOR_USE_TBB 0)
+set(XTENSOR_USE_OPENMP 0)
+
+
 find_package(ament_cmake REQUIRED)
 find_package(xtensor REQUIRED)
 
