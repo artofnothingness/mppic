@@ -78,7 +78,7 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   return cmd;
 }
 
-void Controller::visualize(nav_msgs::msg::Path)
+void Controller::visualize(nav_msgs::msg::Path transformed_plan)
 {
   trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories());
   trajectory_visualizer_.add(optimizer_.getOptimizedTrajectory());
