@@ -24,12 +24,12 @@ void GoalCritic::score(CriticData & data)
 
   const auto goal_points = xt::view(data.path, -1, xt::range(0, 2));
 
-  auto trajectories_end = utils::getLastPoses(data.trajectories);
+  auto trajectories_last_points = data.trajectories.getLastPoints();
 
-  auto dim = trajectories_end.dimension() - 1;
+  auto dim = trajectories_last_points.dimension() - 1;
 
   auto && dists_trajectories_end_to_goal =
-    xt::norm_l2(std::move(trajectories_end) - goal_points, {dim});
+    xt::norm_l2(std::move(trajectories_last_points) - goal_points, {dim});
 
   data.costs += xt::pow(std::move(dists_trajectories_end_to_goal) * weight_, power_);
 }

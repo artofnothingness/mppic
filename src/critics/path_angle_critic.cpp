@@ -26,6 +26,8 @@ void PathAngleCritic::initialize()
 
 void PathAngleCritic::score(CriticData & data)
 {
+
+  using xt::evaluation_strategy::immediate;
   if (!enabled_) {
     return;
   }
@@ -46,15 +48,15 @@ void PathAngleCritic::score(CriticData & data)
     return;
   }
 
-  auto traj_xs = xt::view(data.trajectories.x, xt::all(), xt::all());
-  auto traj_ys = xt::view(data.trajectories.y, xt::all(), xt::all());
-  auto yaws_between_points = xt::atan2(goal_y - traj_ys, goal_x - traj_xs);
+  auto &traj_x = data.trajectories.x;
+  auto &traj_y = data.trajectories.y;
+  auto &traj_yaws = data.trajectories.yaws;
 
-  auto traj_yaws = xt::view(data.trajectories.yaws, xt::all(), xt::all());
+  auto yaws_between_points = xt::atan2(goal_y - traj_y, goal_x - traj_x);
+
   auto yaws = xt::abs(utils::shortest_angular_distance(traj_yaws, yaws_between_points));
-  auto mean_yaws = xt::mean(yaws, {1});
 
-  data.costs += xt::pow(mean_yaws * weight_, power_);
+  data.costs += xt::pow(xt::mean(yaws, {1}, immediate) * weight_, power_);
 }
 
 }  // namespace mppi::critics

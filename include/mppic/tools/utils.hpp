@@ -131,11 +131,6 @@ auto shortest_angular_distance(
   return normalize_angles(to - from);
 }
 
-inline xt::xtensor<float, 3> getLastPoses(const models::Trajectories & trajectories)
-{
-  // TODO
-}
-
 /**
  * @brief Evaluate furthest point idx of data.path which is
  * nearset to some trajectory in data.trajectories
@@ -144,8 +139,10 @@ inline size_t findPathFurthestReachedPoint(const CriticData & data)
 {
   auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
 
-  auto last_points_ext =
-    xt::view(data.trajectories, xt::all(), -1, xt::newaxis(), xt::range(0, 2));
+  auto last_points = data.trajectories.getLastPoints();
+
+  auto last_points_ext = xt::view(last_points, xt::all(), xt::newaxis(), xt::all());
+
   auto distances = xt::norm_l2(last_points_ext - path_points, {2});
   size_t max_id_by_trajectories = 0;
   double min_distance_by_path = std::numeric_limits<float>::max();

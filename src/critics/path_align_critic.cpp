@@ -31,11 +31,13 @@ void PathAlignCritic::score(CriticData & data)
   }
 
   using namespace xt::placeholders;  // NOLINT
-  //
+ 
   // see http://paulbourke.net/geometry/pointlineplane/
-  const auto & P3x = data.trajectories.x;  // P3 points from which we calculate distance to segments
-  const auto & P3y = data.trajectories.y;  // P3 points from which we calculate distance to segments
-  const auto & P3yaw = data.trajectories.yaws;  // P3 points from which we calculate distance to segments
+  
+  // P3 points from which we calculate distance to segments
+  const auto & P3x = data.trajectories.x;  
+  const auto & P3y = data.trajectories.y;
+
   auto P1 = xt::view(data.path, xt::range(_, -1), xt::all());  // segments start points
   auto P2 = xt::view(data.path, xt::range(1, _), xt::all());  // segments end points
 
@@ -48,7 +50,7 @@ void PathAlignCritic::score(CriticData & data)
   xt::xtensor<float, 2> P2_P1_diff = P2 - P1;
   xt::xtensor<float, 1> P2_P1_norm_sq = xt::eval(xt::norm_sq(P2_P1_diff, {1}));
 
-  auto evaluate_u = [&P1, &P3, &P2_P1_diff, &P2_P1_norm_sq](
+  auto evaluate_u = [&P1, &P3x, &P3y, &P2_P1_diff, &P2_P1_norm_sq](
     size_t t, size_t p, size_t s) {
       return ((P3x(t, p) - P1(s, 0)) * (P2_P1_diff(s, 0)) +
              (P3y(t, p) - P1(s, 1)) * (P2_P1_diff(s, 1))) /
@@ -56,7 +58,7 @@ void PathAlignCritic::score(CriticData & data)
     };
 
   auto segment_short = P2_P1_norm_sq < 1e-3f;
-  auto evaluate_dist = [&P3](const auto & P,
+  auto evaluate_dist = [&P3x, &P3y](const auto & P,
       size_t t, size_t p) {
       auto dx = P(0) - P3x(t, p);
       auto dy = P(1) - P3y(t, p);
@@ -64,13 +66,14 @@ void PathAlignCritic::score(CriticData & data)
     };
 
 
+  auto dx = xt::view(data.trajectories.x, xt::all(), xt::range(1, _)) -
+    xt::view(data.trajectories.x, xt::all(), xt::range(_, -1));
+  auto dy = xt::view(data.trajectories.y, xt::all(), xt::range(1, _)) -
+    xt::view(data.trajectories.y, xt::all(), xt::range(_, -1));
+
   xt::xtensor<float, 1> trajectories_lengths;
-  {
-    auto next = xt::view(P3, xt::all(), xt::range(1, _), xt::range(0, 2)); // TODO
-    auto prev = xt::view(P3, xt::all(), xt::range(_, -1), xt::range(0, 2)); // TODO
-    auto dist = xt::eval(xt::norm_sq(next - prev, {2}));
-    trajectories_lengths = xt::sum(dist, {1}, xt::evaluation_strategy::immediate);
-  }
+  auto dist = xt::pow(dx + dy, 2);
+  trajectories_lengths = xt::sum(dist, {1}, xt::evaluation_strategy::immediate);
   auto accumulated_path_distances = xt::eval(xt::cumsum(P2_P1_norm_sq));
 
   size_t max_s = 0;

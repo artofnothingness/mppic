@@ -38,8 +38,8 @@ void GoalAngleCritic::score(CriticData & data)
   auto points_to_goal_dists = xt::norm_sq(tensor_pose - path_points, {0})();
 
   if (points_to_goal_dists < threshold_to_consider_goal_angle_) {
-    auto yaws = xt::view(data.trajectories.yaws, xt::all(), xt::all());
-    auto goal_yaw = xt::view(data.path, -1, 2);
+    auto &yaws = data.trajectories.yaws;
+    auto goal_yaw = data.path(-1, 2);
 
     data.costs += xt::pow(
       xt::mean(xt::abs(utils::shortest_angular_distance(yaws, goal_yaw)), {1}) *
