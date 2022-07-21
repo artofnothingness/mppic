@@ -16,8 +16,6 @@ void PreferForwardCritic::initialize()
     logger_, "PreferForwardCritic instantiated with %d power and %f weight.", power_, weight_);
 }
 
-inline auto approx_atan2 = xt::vectorize(atan2_approx);
-
 void PreferForwardCritic::score(CriticData & data)
 {
   if (!enabled_) {
