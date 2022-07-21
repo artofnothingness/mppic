@@ -33,7 +33,6 @@ struct State
     cvy = xt::zeros<float>({batch_size, time_steps});
     cwz = xt::zeros<float>({batch_size, time_steps});
   }
-
 };
 
 }

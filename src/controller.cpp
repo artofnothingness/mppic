@@ -68,9 +68,7 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
     optimizer_.evalControl(robot_pose, robot_speed, transformed_plan, goal_checker);
 
   auto end = std::chrono::system_clock::now();
-
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-
   RCLCPP_INFO(logger_, "Control loop execution time: %ld [ms]", duration);
 
   if (visualize_) {

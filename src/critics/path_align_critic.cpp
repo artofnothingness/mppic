@@ -44,7 +44,7 @@ void PathAlignCritic::score(CriticData & data)
   auto cost = xt::xtensor<float, 1>::from_shape({trajectories_count});
 
   xt::xtensor<float, 2> P2_P1_diff = P2 - P1;
-  xt::xtensor<float, 1> P2_P1_norm_sq = xt::norm_sq(P2_P1_diff, {1});
+  xt::xtensor<float, 1> P2_P1_norm_sq = xt::eval(xt::norm_sq(P2_P1_diff, {1}));
 
   auto evaluate_u = [&P1, &P3, &P2_P1_diff, &P2_P1_norm_sq](
     size_t t, size_t p, size_t s) {
@@ -66,10 +66,10 @@ void PathAlignCritic::score(CriticData & data)
   {
     auto next = xt::view(P3, xt::all(), xt::range(1, _), xt::range(0, 2));
     auto prev = xt::view(P3, xt::all(), xt::range(_, -1), xt::range(0, 2));
-    auto dist = xt::norm_sq(next - prev, {2});
-    trajectories_lengths = xt::sum(dist, {1});
+    auto dist = xt::eval(xt::norm_sq(next - prev, {2}));
+    trajectories_lengths = xt::sum(dist, {1}, xt::evaluation_strategy::immediate);
   }
-  auto accumulated_path_distances = xt::cumsum(P2_P1_norm_sq);
+  auto accumulated_path_distances = xt::eval(xt::cumsum(P2_P1_norm_sq));
 
   size_t max_s = 0;
   for (size_t t = 0; t < trajectories_count; ++t) {
