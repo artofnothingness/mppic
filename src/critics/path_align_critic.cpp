@@ -66,10 +66,10 @@ void PathAlignCritic::score(CriticData & data)
   {
     auto next = xt::view(P3, xt::all(), xt::range(1, _), xt::range(0, 2));
     auto prev = xt::view(P3, xt::all(), xt::range(_, -1), xt::range(0, 2));
-    auto dist = xt::norm_sq(next - prev, {2});
-    trajectories_lengths = xt::sum(dist, {1});
+    auto dist = xt::eval(xt::norm_sq(next - prev, {2}));
+    trajectories_lengths = xt::sum(dist, {1}, xt::evaluation_strategy::immediate);
   }
-  auto accumulated_path_distances = xt::cumsum(P2_P1_norm_sq);
+  auto accumulated_path_distances = xt::eval(xt::cumsum(P2_P1_norm_sq));
 
   size_t max_s = 0;
   for (size_t t = 0; t < trajectories_count; ++t) {
