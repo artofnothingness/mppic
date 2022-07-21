@@ -104,7 +104,6 @@ void Optimizer::reset()
   control_sequence_.reset(settings_.time_steps);
 
   costs_ = xt::zeros<float>({settings_.batch_size});
-  // generated_trajectories_ = xt::zeros<float>({settings_.batch_size, settings_.time_steps, 3u});
   generated_trajectories_.reset(settings_.batch_size, settings_.time_steps);
 
   noise_generator_.reset(settings_, isHolonomic());

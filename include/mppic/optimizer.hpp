@@ -50,8 +50,8 @@ public:
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan,
     nav2_core::GoalChecker * goal_checker);
 
-  // xt::xtensor<float, 3> & getGeneratedTrajectories();
-  // xt::xtensor<float, 2> getOptimizedTrajectory();
+  xt::xtensor<float, 3> & getGeneratedTrajectories();
+  xt::xtensor<float, 2> getOptimizedTrajectory();
 
   void setSpeedLimit(double speed_limit, bool percentage);
 

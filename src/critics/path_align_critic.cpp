@@ -35,14 +35,14 @@ void PathAlignCritic::score(CriticData & data)
   // see http://paulbourke.net/geometry/pointlineplane/
   
   // P3 points from which we calculate distance to segments
-  const auto & P3x = data.trajectories.x;  
-  const auto & P3y = data.trajectories.y;
+  const auto & P3_x = data.trajectories.x;  
+  const auto & P3_y = data.trajectories.y;
 
   auto P1 = xt::view(data.path, xt::range(_, -1), xt::all());  // segments start points
   auto P2 = xt::view(data.path, xt::range(1, _), xt::all());  // segments end points
 
-  size_t trajectories_count = P3x.shape(0);
-  size_t trajectories_points_count = P3x.shape(1);
+  size_t trajectories_count = P3_x.shape(0);
+  size_t trajectories_points_count = P3_x.shape(1);
   size_t reference_segments_count = data.path.shape(0) - 1;
 
   auto cost = xt::xtensor<float, 1>::from_shape({trajectories_count});
@@ -50,18 +50,18 @@ void PathAlignCritic::score(CriticData & data)
   xt::xtensor<float, 2> P2_P1_diff = P2 - P1;
   xt::xtensor<float, 1> P2_P1_norm_sq = xt::eval(xt::norm_sq(P2_P1_diff, {1}));
 
-  auto evaluate_u = [&P1, &P3x, &P3y, &P2_P1_diff, &P2_P1_norm_sq](
+  auto evaluate_u = [&P1, &P3_x, &P3_y, &P2_P1_diff, &P2_P1_norm_sq](
     size_t t, size_t p, size_t s) {
-      return ((P3x(t, p) - P1(s, 0)) * (P2_P1_diff(s, 0)) +
-             (P3y(t, p) - P1(s, 1)) * (P2_P1_diff(s, 1))) /
+      return ((P3_x(t, p) - P1(s, 0)) * (P2_P1_diff(s, 0)) +
+             (P3_y(t, p) - P1(s, 1)) * (P2_P1_diff(s, 1))) /
              P2_P1_norm_sq(s);
     };
 
   auto segment_short = P2_P1_norm_sq < 1e-3f;
-  auto evaluate_dist = [&P3x, &P3y](const auto & P,
+  auto evaluate_dist = [&P3_x, &P3_y](const auto & P,
       size_t t, size_t p) {
-      auto dx = P(0) - P3x(t, p);
-      auto dy = P(1) - P3y(t, p);
+      auto dx = P(0) - P3_x(t, p);
+      auto dy = P(1) - P3_y(t, p);
       return std::sqrt(dx * dx + dy * dy);
     };
 
