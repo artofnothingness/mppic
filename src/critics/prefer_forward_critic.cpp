@@ -1,7 +1,6 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 
 #include "mppic/critics/prefer_forward_critic.hpp"
-#include <xtensor/xvectorize.hpp>
 
 namespace mppi::critics
 {
@@ -15,45 +14,6 @@ void PreferForwardCritic::initialize()
   RCLCPP_INFO(
     logger_, "PreferForwardCritic instantiated with %d power and %f weight.", power_, weight_);
 }
-
-// Derivative of https://gist.github.com/volkansalma/2972237
-#define PI_FLOAT     3.14159265f
-#define PIBY2_FLOAT  1.5707963f
-// |error| < 0.005
-float atan2_approx(float y, float x)
-{
-  if (x == 0.0f) {
-    if (y > 0.0f) {
-      return PIBY2_FLOAT;
-    }
-    if (y == 0.0f) {
-      return 0.0f;
-    }
-    return -PIBY2_FLOAT;
-  }
-
-  float atan;
-  float z = y / x;
-
-  if (fabs(z) < 1.0f ) {
-    atan = z / (1.0f + 0.28f * z * z);
-    if (x < 0.0f) {
-      if (y < 0.0f) {
-        return atan - PI_FLOAT;
-      }
-      return atan + PI_FLOAT;
-    }
-  } else {
-    atan = PIBY2_FLOAT - z / (z * z + 0.28f);
-    if (y < 0.0f) {
-      return atan - PI_FLOAT;
-    }
-  }
-
-  return atan;
-}
-
-inline auto approx_atan2 = xt::vectorize(atan2_approx);
 
 void PreferForwardCritic::score(CriticData & data)
 {
