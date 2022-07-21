@@ -19,6 +19,7 @@ struct CriticData
   const xt::xtensor<float, 2> & path;
 
   xt::xtensor<float, 1> & costs;
+  float & model_dt;
 
   bool fail_flag;
   nav2_core::GoalChecker * goal_checker;
