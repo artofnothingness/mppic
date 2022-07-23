@@ -50,7 +50,7 @@ public:
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan,
     nav2_core::GoalChecker * goal_checker);
 
-  xt::xtensor<float, 3> & getGeneratedTrajectories();
+  models::Trajectories & getGeneratedTrajectories();
   xt::xtensor<float, 2> getOptimizedTrajectory();
 
   void setSpeedLimit(double speed_limit, bool percentage);
@@ -97,6 +97,10 @@ protected:
   void integrateStateVelocities(
     models::Trajectories & trajectories,
     const models::State & state) const;
+
+  void integrateStateVelocities(
+    xt::xtensor<float, 2> & trajectories,
+    const xt::xtensor<float, 2> & state) const;
 
   /**
    * @brief Update control_sequence_ with state controls weighted by costs

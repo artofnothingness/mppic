@@ -249,6 +249,42 @@ void Optimizer::propagateStateVelocitiesFromInitials(
 {
   motion_model_->predict(state);
 }
+
+void Optimizer::integrateStateVelocities(
+  xt::xtensor<float, 2> & trajectories,
+  const xt::xtensor<float, 2> & state) const
+{
+  auto x = xt::view(trajectories, xt::all(), 0);
+  auto y = xt::view(trajectories, xt::all(), 1);
+  auto yaw = xt::view(trajectories, xt::all(), 2);
+
+  auto w = xt::view(state, xt::all(), 2);
+  double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
+
+  yaw = utils::normalize_angles(xt::cumsum(w * settings_.model_dt, 0) + initial_yaw);
+  xt::xtensor<float, 1> yaw_offseted = yaw;
+
+  xt::view(yaw_offseted, xt::range(1, _)) =
+    xt::view(yaw, xt::range(_, -1));
+  xt::view(yaw_offseted, 0) = initial_yaw;
+
+  xt::xtensor<float, 1> yaw_cos = xt::cos(yaw_offseted);
+  xt::xtensor<float, 1> yaw_sin = xt::sin(yaw_offseted);
+
+  auto vx = xt::view(state, 0);
+  xt::xtensor<float, 1> dx = vx * yaw_cos;
+  xt::xtensor<float, 1> dy = vx * yaw_sin;
+
+  if (isHolonomic()) {
+    auto vy = xt::view(state, 1);
+    dx = dx - vy * yaw_sin;
+    dy = dy + vy * yaw_cos;
+  }
+
+  x = state_.pose.pose.position.x + xt::cumsum(dx * settings_.model_dt, 0);
+  y = state_.pose.pose.position.y + xt::cumsum(dy * settings_.model_dt, 0);
+}
+
 void Optimizer::integrateStateVelocities(
   models::Trajectories & trajectories,
   const models::State & state) const
@@ -284,24 +320,21 @@ void Optimizer::integrateStateVelocities(
   y = state_.pose.pose.position.y + xt::cumsum(dy * settings_.model_dt, 1);
 }
 
-// xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
-// {
-//   models::State state;
-//   state.reset(1U, settings_.time_steps);
+ xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
+ {
+  xt::xtensor<float, 2> state = xt::xtensor<float, 2>::from_shape({settings_.time_steps, 3});
+  xt::xtensor<float, 2> trajectories = xt::xtensor<float, 2>::from_shape({settings_.time_steps, 3});
 
-//   xt::view(state.cvx, 0, xt::all()) = control_sequence_.vx;
-//   xt::view(state.cwz, 0, xt::all()) = control_sequence_.wz;
-//   if (isHolonomic()) {
-//     xt::view(state.cvy, 0, xt::all()) = control_sequence_.vy;
-//   }
+   xt::view(state, xt::all(), 0) = control_sequence_.vx;
+   xt::view(state, xt::all(), 1) = control_sequence_.wz;
 
-//   updateStateVelocities(state);
+   if (isHolonomic()) {
+     xt::view(state, xt::all(), 2) = control_sequence_.vy;
+   }
 
-//   auto trajectories = xt::xtensor<float, 3>::from_shape({1u, settings_.time_steps, 3u});
-
-//   integrateStateVelocities(trajectories, state);
-//   return xt::squeeze(trajectories);
-// }
+   integrateStateVelocities(trajectories, state);
+   return trajectories;
+}
 
 void Optimizer::updateControlSequence()
 {
@@ -376,9 +409,9 @@ void Optimizer::setSpeedLimit(double speed_limit, bool percentage)
   }
 }
 
-// xt::xtensor<float, 3> & Optimizer::getGeneratedTrajectories()
-// {
-//   return generated_trajectories_;
-// }
+models::Trajectories & Optimizer::getGeneratedTrajectories()
+{
+  return generated_trajectories_;
+}
 
 }  // namespace mppi

@@ -124,20 +124,16 @@ void TrajectoryVisualizer::add(const xt::xtensor<float, 2> & trajectory)
 }
 
 void TrajectoryVisualizer::add(
-  const xt::xtensor<float, 3> & trajectories)
+  const models::Trajectories & trajectories)
 {
-  if (!trajectories.shape()[0]) {
-    return;
-  }
 
-  auto & shape = trajectories.shape();
-
+  auto & shape = trajectories.x.shape();
   for (size_t i = 0; i < shape[0]; i += trajectory_step_) {
     for (size_t j = 0; j < shape[1]; j += time_step_) {
       float blue_component = 1.0f - static_cast<float>(j) / static_cast<float>(shape[1]);
       float green_component = static_cast<float>(j) / static_cast<float>(shape[1]);
 
-      auto pose = createPose(trajectories(i, j, 0), trajectories(i, j, 1), 0.03);
+      auto pose = createPose(trajectories.x(i, j), trajectories.y(i, j), 0.03);
       auto scale = createScale(0.03, 0.03, 0.03);
       auto color = createColor(0, green_component, blue_component, 1);
       auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
