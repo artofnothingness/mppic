@@ -22,16 +22,15 @@ void GoalCritic::score(CriticData & data)
     return;
   }
 
-  const auto goal_points = xt::view(data.path, -1, xt::range(0, 2));
+  const auto goal_x = data.path(-1, 0);
+  const auto goal_y = data.path(-1, 1);
 
-  auto trajectories_last_points = data.trajectories.getLastPoints();
+  const auto last_x = xt::view(data.trajectories.x, xt::all(), -1);
+  const auto last_y = xt::view(data.trajectories.y, xt::all(), -1);
 
-  auto dim = trajectories_last_points.dimension() - 1;
-
-  auto && dists_trajectories_end_to_goal =
-    xt::norm_l2(std::move(trajectories_last_points) - goal_points, {dim});
-
-  data.costs += xt::pow(std::move(dists_trajectories_end_to_goal) * weight_, power_);
+  auto dists = xt::sqrt(xt::pow(std::move(last_x) - std::move(goal_x) , 2) + 
+                        xt::pow(std::move(last_y) - std::move(goal_y), 2));
+  data.costs += xt::pow(std::move(dists) * weight_, power_);
 }
 
 }  // namespace mppi::critics

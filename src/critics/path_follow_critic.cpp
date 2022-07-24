@@ -32,16 +32,19 @@ void PathFollowCritic::score(CriticData & data)
     return;
   }
 
-  auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
-  auto trajectories_last_points = data.trajectories.getLastPoints();
-
   auto offseted_idx = std::min(
-    *data.furthest_reached_path_point + offset_from_furthest_, path_points.shape(0) - 1);
+    *data.furthest_reached_path_point + offset_from_furthest_, data.path.shape(0) - 1);
 
-  auto offseted_point = xt::view(path_points, offseted_idx, xt::all());
-  auto distance_to_furthest = xt::norm_l2(trajectories_last_points - offseted_point, {1});
+  auto path_x = xt::view(data.path, offseted_idx, 0);
+  auto path_y = xt::view(data.path, offseted_idx, 1);
 
-  data.costs += xt::pow(weight_ * distance_to_furthest, power_);
+  auto last_x = xt::view(data.trajectories.x, xt::all(), -1);
+  auto last_y = xt::view(data.trajectories.y, xt::all(), -1);
+
+  auto dists = xt::sqrt(xt::pow(std::move(last_x) - std::move(path_x) , 2) + 
+                        xt::pow(std::move(last_y) - std::move(path_y), 2));
+
+  data.costs += xt::pow(weight_ * std::move(dists), power_);
 }
 
 }  // namespace mppi::critics

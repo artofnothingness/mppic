@@ -114,9 +114,9 @@ bool ObstaclesCritic::inCollision(unsigned char cost) const
       return consider_footprint_ ? false : true;
     case (NO_INFORMATION):
       return is_tracking_unknown ? false : true;
-    default:
-      return false;
   }
+
+  return false;
 }
 
 unsigned char ObstaclesCritic::maxCost()
