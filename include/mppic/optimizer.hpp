@@ -24,6 +24,7 @@
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
 #include "mppic/models/trajectories.hpp"
+#include "mppic/models/path.hpp"
 #include "mppic/tools/noise_generator.hpp"
 #include "mppic/tools/parameters_handler.hpp"
 #include "mppic/tools/utils.hpp"
@@ -134,11 +135,11 @@ protected:
   models::State state_;
   models::ControlSequence control_sequence_;
   models::Trajectories generated_trajectories_;
-  xt::xtensor<float, 2> plan_;
+  models::Path path_;
   xt::xtensor<float, 1> costs_;
 
   CriticData critics_data_ =
-  {state_, generated_trajectories_, plan_, costs_, settings_.model_dt, false, nullptr, std::nullopt}; /// Caution, keep references
+  {state_, generated_trajectories_, path_, costs_, settings_.model_dt, false, nullptr, std::nullopt}; /// Caution, keep references
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };

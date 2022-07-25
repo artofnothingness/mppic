@@ -22,10 +22,10 @@ void GoalCritic::score(CriticData & data)
     return;
   }
 
-  const auto goal_idx = data.path.shape(0) - 1;
+  const auto goal_idx = data.path.x.shape(0) - 1;
 
-  const auto goal_x = data.path(goal_idx, 0);
-  const auto goal_y = data.path(goal_idx, 1);
+  const auto goal_x = data.path.x(goal_idx);
+  const auto goal_y = data.path.y(goal_idx);
 
   const auto last_x = xt::view(data.trajectories.x, xt::all(), -1);
   const auto last_y = xt::view(data.trajectories.y, xt::all(), -1);

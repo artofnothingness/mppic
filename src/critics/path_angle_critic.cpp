@@ -32,17 +32,17 @@ void PathAngleCritic::score(CriticData & data)
     return;
   }
 
-  if (utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose, data.path)) {
+  if (utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose.pose, data.path)) {
     return;
   }
 
   utils::setPathFurthestPointIfNotSet(data);
 
   auto offseted_idx = std::min(
-    *data.furthest_reached_path_point + offset_from_furthest_, data.path.shape(0) - 1);
+    *data.furthest_reached_path_point + offset_from_furthest_, data.path.x.shape(0) - 1);
 
-  const float goal_x = xt::view(data.path, offseted_idx, 0);
-  const float goal_y = xt::view(data.path, offseted_idx, 1);
+  const float goal_x = xt::view(data.path.x, offseted_idx);
+  const float goal_y = xt::view(data.path.y, offseted_idx);
 
   if (utils::posePointAngle(data.state.pose.pose, goal_x, goal_y) < max_angle_to_furthest_) {
     return;

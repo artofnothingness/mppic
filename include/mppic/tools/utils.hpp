@@ -27,6 +27,7 @@
 #include "nav2_core/goal_checker.hpp"
 
 #include "mppic/models/control_sequence.hpp"
+#include "mppic/models/path.hpp"
 #include "builtin_interfaces/msg/time.hpp"
 #include "mppic/critic_data.hpp"
 
@@ -55,42 +56,42 @@ inline geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
-inline xt::xtensor<float, 2> toTensor(const nav_msgs::msg::Path & path)
+inline models::Path toTensor(const nav_msgs::msg::Path & path)
 {
-  size_t path_size = path.poses.size();
-  static constexpr size_t last_dim_size = 3;
+  auto result = models::Path{};
+  result.reset(path.poses.size());
 
-  auto points = xt::empty<float>({path_size, last_dim_size});
-
-  for (size_t i = 0; i < path_size; ++i) {
-    points(i, 0) = path.poses[i].pose.position.x;
-    points(i, 1) = path.poses[i].pose.position.y;
-    points(i, 2) = tf2::getYaw(path.poses[i].pose.orientation);
+  for (size_t i = 0; i < path.poses.size(); ++i) {
+    result.x(i) = path.poses[i].pose.position.x;
+    result.y(i) = path.poses[i].pose.position.y;
+    result.yaws(i) = tf2::getYaw(path.poses[i].pose.orientation);
   }
 
-  return points;
+  return result;
 }
 
 inline bool withinPositionGoalTolerance(
   nav2_core::GoalChecker * goal_checker,
-  const geometry_msgs::msg::PoseStamped & robot_pose_arg,
-  const xt::xtensor<float, 2> & path)
+  const geometry_msgs::msg::Pose & robot,
+  const models::Path &path)
 {
+  const auto goal_idx = path.x.shape(0);
+  const auto goal_x = path.x(goal_idx);
+  const auto goal_y = path.y(goal_idx);
+
   if (goal_checker) {
-    geometry_msgs::msg::Pose pose_tol;
-    geometry_msgs::msg::Twist vel_tol;
-    goal_checker->getTolerances(pose_tol, vel_tol);
+    geometry_msgs::msg::Pose pose_tolerance;
+    geometry_msgs::msg::Twist velocity_tolerance;
+    goal_checker->getTolerances(pose_tolerance, velocity_tolerance);
+    
+    const auto pose_tolerance_sq =  pose_tolerance.position.x  * pose_tolerance.position.x;
 
-    const double goal_tol2 = pose_tol.position.x * pose_tol.position.x;
+    auto dx = robot.position.x - goal_x;
+    auto dy = robot.position.y - goal_y;
 
-    xt::xtensor<float, 1> robot_pose = {
-      static_cast<float>(robot_pose_arg.pose.position.x),
-      static_cast<float>(robot_pose_arg.pose.position.y)};
-    auto goal_pose = xt::view(path, -1, xt::range(0, 2));
+    auto dist_sq = dx * dx + dy * dy;
 
-    auto dist_to_goal = xt::norm_sq(robot_pose - goal_pose, {0})();
-
-    if (dist_to_goal < goal_tol2) {
+    if (dist_sq < pose_tolerance_sq) {
       return true;
     }
   }
@@ -137,21 +138,22 @@ auto shortest_angular_distance(
  */
 inline size_t findPathFurthestReachedPoint(const CriticData & data)
 {
-  auto path_points = xt::view(data.path, xt::all(), xt::range(0, 2));
+  const auto traj_x = xt::view(data.trajectories.x, xt::all(), -1, xt::newaxis());
+  const auto traj_y = xt::view(data.trajectories.y, xt::all(), -1, xt::newaxis());
 
-  auto last_points = data.trajectories.getLastPoints();
+  const auto dx = data.path.x - traj_x;
+  const auto dy = data.path.y - traj_y;
 
-  auto last_points_ext = xt::view(last_points, xt::all(), xt::newaxis(), xt::all());
+  const auto dists = dx * dx + dy * dy;
 
-  auto distances = xt::norm_l2(last_points_ext - path_points, {2});
   size_t max_id_by_trajectories = 0;
   double min_distance_by_path = std::numeric_limits<float>::max();
 
-  for (size_t i = 0; i < distances.shape(0); i++) {
+  for (size_t i = 0; i < dists.shape(0); i++) {
     size_t min_id_by_path = 0;
-    for (size_t j = 0; j < distances.shape(1); j++) {
-      if (min_distance_by_path < distances(i, j)) {
-        min_distance_by_path = distances(i, j);
+    for (size_t j = 0; j < dists.shape(1); j++) {
+      if (min_distance_by_path < dists(i, j)) {
+        min_distance_by_path = dists(i, j);
         min_id_by_path = j;
       }
     }
@@ -193,7 +195,7 @@ inline float getPathRatioReached(const CriticData & data)
     throw std::runtime_error("Furthest point not computed yet");
   }
 
-  auto path_points_count = static_cast<float>(data.path.shape(0));
+  auto path_points_count = static_cast<float>(data.path.x.shape(0));
   auto furthest_reached_path_point = static_cast<float>(*data.furthest_reached_path_point);
   return furthest_reached_path_point / path_points_count;
 }

@@ -8,6 +8,7 @@
 #include "nav2_core/goal_checker.hpp"
 #include "mppic/models/state.hpp"
 #include "mppic/models/trajectories.hpp"
+#include "mppic/models/path.hpp"
 
 
 namespace mppi
@@ -17,7 +18,7 @@ struct CriticData
 {
   const models::State & state;
   const models::Trajectories & trajectories;
-  const xt::xtensor<float, 2> & path;
+  const models::Path & path;
 
   xt::xtensor<float, 1> & costs;
   float & model_dt;

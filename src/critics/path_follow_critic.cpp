@@ -33,10 +33,10 @@ void PathFollowCritic::score(CriticData & data)
   }
 
   auto offseted_idx = std::min(
-    *data.furthest_reached_path_point + offset_from_furthest_, data.path.shape(0) - 1);
+    *data.furthest_reached_path_point + offset_from_furthest_, data.path.x.shape(0) - 1);
 
-  const auto path_x = xt::view(data.path, offseted_idx, 0);
-  const auto path_y = xt::view(data.path, offseted_idx, 1);
+  const auto path_x = xt::view(data.path.x, offseted_idx);
+  const auto path_y = xt::view(data.path.y, offseted_idx);
 
   const auto last_x = xt::view(data.trajectories.x, xt::all(), -1);
   const auto last_y = xt::view(data.trajectories.y, xt::all(), -1);

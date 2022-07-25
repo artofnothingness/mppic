@@ -26,10 +26,10 @@ void GoalAngleCritic::score(CriticData & data)
     return;
   }
 
-  const auto goal_idx = data.path.shape(0) - 1;
+  const auto goal_idx = data.path.x.shape(0) - 1;
 
-  const auto goal_x = data.path(goal_idx, 0);
-  const auto goal_y = data.path(goal_idx, 1);
+  const auto goal_x = data.path.x(goal_idx);
+  const auto goal_y = data.path.y(goal_idx);
 
   const auto dx = data.state.pose.pose.position.x - goal_x;
   const auto dy = data.state.pose.pose.position.y - goal_y;
@@ -37,7 +37,7 @@ void GoalAngleCritic::score(CriticData & data)
   const auto dist = std::sqrt(dx * dx + dy * dy);
 
   if (dist < threshold_to_consider_goal_angle_) {
-    const auto goal_yaw = data.path(goal_idx, 2);
+    const auto goal_yaw = data.path.yaws(goal_idx);
 
     data.costs += xt::pow(
       xt::mean(xt::abs(utils::shortest_angular_distance(data.trajectories.yaws, goal_yaw)), {1}) *

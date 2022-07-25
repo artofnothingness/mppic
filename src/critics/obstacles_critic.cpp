@@ -37,8 +37,8 @@ unsigned char ObstaclesCritic::findCircumscribedCost(
     }
 
     inflation_layer_found = true;
-    double circum_radius = costmap->getLayeredCostmap()->getCircumscribedRadius();
-    double resolution = costmap->getCostmap()->getResolution();
+    const double circum_radius = costmap->getLayeredCostmap()->getCircumscribedRadius();
+    const double resolution = costmap->getCostmap()->getResolution();
     result = inflation_layer->computeCost(circum_radius / resolution);
   }
 
@@ -127,7 +127,7 @@ unsigned char ObstaclesCritic::maxCost()
 
 double ObstaclesCritic::scoreCost(unsigned char cost_arg)
 {
-  double max_cost = static_cast<double>(maxCost());
+  const double max_cost = static_cast<double>(maxCost());
 
   double cost = static_cast<double>(cost_arg) / max_cost;
 
