@@ -26,35 +26,32 @@ void PathAngleCritic::initialize()
 
 void PathAngleCritic::score(CriticData & data)
 {
+
+  using xt::evaluation_strategy::immediate;
   if (!enabled_) {
     return;
   }
 
-  if (utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose, data.path)) {
+  if (utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose.pose, data.path)) {
     return;
   }
 
   utils::setPathFurthestPointIfNotSet(data);
 
   auto offseted_idx = std::min(
-    *data.furthest_reached_path_point + offset_from_furthest_, data.path.shape(0) - 1);
+    *data.furthest_reached_path_point + offset_from_furthest_, data.path.x.shape(0) - 1);
 
-  float goal_x = xt::view(data.path, offseted_idx, 0);
-  float goal_y = xt::view(data.path, offseted_idx, 1);
+  const float goal_x = xt::view(data.path.x, offseted_idx);
+  const float goal_y = xt::view(data.path.y, offseted_idx);
 
   if (utils::posePointAngle(data.state.pose.pose, goal_x, goal_y) < max_angle_to_furthest_) {
     return;
   }
 
-  auto traj_xs = xt::view(data.trajectories, xt::all(), xt::all(), 0);
-  auto traj_ys = xt::view(data.trajectories, xt::all(), xt::all(), 1);
-  auto yaws_between_points = xt::atan2(goal_y - traj_ys, goal_x - traj_xs);
+  const auto yaws_between_points = xt::atan2(goal_y - data.trajectories.y, goal_x - data.trajectories.x);
+  const auto yaws = xt::abs(utils::shortest_angular_distance(data.trajectories.yaws, yaws_between_points));
 
-  auto traj_yaws = xt::view(data.trajectories, xt::all(), xt::all(), 2);
-  auto yaws = xt::abs(utils::shortest_angular_distance(traj_yaws, yaws_between_points));
-  auto mean_yaws = xt::mean(yaws, {1});
-
-  data.costs += xt::pow(mean_yaws * weight_, power_);
+  data.costs += xt::pow(xt::mean(yaws, {1}, immediate) * weight_, power_);
 }
 
 }  // namespace mppi::critics

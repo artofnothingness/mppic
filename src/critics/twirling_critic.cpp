@@ -17,12 +17,14 @@ void TwirlingCritic::initialize()
 
 void TwirlingCritic::score(CriticData & data)
 {
+
+  using xt::evaluation_strategy::immediate;
   if (!enabled_) {
     return;
   }
 
-  auto wz = xt::abs(data.state.wz);
-  data.costs += xt::pow(xt::mean(wz, {1}) * weight_, power_);
+  const auto wz = xt::abs(data.state.wz);
+  data.costs += xt::pow(xt::mean(wz, {1}, immediate) * weight_, power_);
 }
 
 }  // namespace mppi::critics

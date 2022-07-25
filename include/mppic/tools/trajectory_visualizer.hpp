@@ -13,6 +13,7 @@
 #include "visualization_msgs/msg/marker_array.hpp"
 
 #include "mppic/tools/parameters_handler.hpp"
+#include "mppic/models/trajectories.hpp"
 
 namespace mppi
 {
@@ -30,8 +31,7 @@ public:
   void on_deactivate();
 
   void add(const xt::xtensor<float, 2> & trajectory);
-  void add(
-    const xt::xtensor<float, 3> & trajectories);
+  void add(const models::Trajectories & trajectories);
   void visualize(nav_msgs::msg::Path plan);
   void reset();
 

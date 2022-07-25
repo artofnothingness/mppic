@@ -23,6 +23,8 @@
 #include "mppic/motion_models.hpp"
 #include "mppic/critic_manager.hpp"
 #include "mppic/models/state.hpp"
+#include "mppic/models/trajectories.hpp"
+#include "mppic/models/path.hpp"
 #include "mppic/tools/noise_generator.hpp"
 #include "mppic/tools/parameters_handler.hpp"
 #include "mppic/tools/utils.hpp"
@@ -49,7 +51,7 @@ public:
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan,
     nav2_core::GoalChecker * goal_checker);
 
-  xt::xtensor<float, 3> & getGeneratedTrajectories();
+  models::Trajectories & getGeneratedTrajectories();
   xt::xtensor<float, 2> getOptimizedTrajectory();
 
   void setSpeedLimit(double speed_limit, bool percentage);
@@ -94,8 +96,12 @@ protected:
   void propagateStateVelocitiesFromInitials(models::State & state) const;
 
   void integrateStateVelocities(
-    xt::xtensor<float, 3> & trajectories,
+    models::Trajectories & trajectories,
     const models::State & state) const;
+
+  void integrateStateVelocities(
+    xt::xtensor<float, 2> & trajectories,
+    const xt::xtensor<float, 2> & state) const;
 
   /**
    * @brief Update control_sequence_ with state controls weighted by costs
@@ -128,13 +134,12 @@ protected:
 
   models::State state_;
   models::ControlSequence control_sequence_;
-
-  xt::xtensor<float, 3> generated_trajectories_;
-  xt::xtensor<float, 2> plan_;
+  models::Trajectories generated_trajectories_;
+  models::Path path_;
   xt::xtensor<float, 1> costs_;
 
   CriticData critics_data_ =
-  {state_, generated_trajectories_, plan_, costs_, settings_.model_dt, false, nullptr, std::nullopt}; /// Caution, keep references
+  {state_, generated_trajectories_, path_, costs_, settings_.model_dt, false, nullptr, std::nullopt}; /// Caution, keep references
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };
