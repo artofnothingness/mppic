@@ -255,34 +255,38 @@ void Optimizer::integrateStateVelocities(
   xt::xtensor<float, 2> & trajectories,
   const xt::xtensor<float, 2> & state) const
 {
-  auto x = xt::view(trajectories, xt::all(), 0);
-  auto y = xt::view(trajectories, xt::all(), 1);
-  auto w = xt::view(state, xt::all(), 2);
-  auto yaw = xt::view(trajectories, xt::all(), 2);
   double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
 
-  xt::noalias(yaw) = utils::normalize_angles(xt::cumsum(w * settings_.model_dt, 0) + initial_yaw);
-  xt::xtensor<float, 1> yaw_offseted = yaw;
+  auto vx = xt::view(state, xt::all(), 0);
+  auto vy = xt::view(state, xt::all(), 2);
+  auto wz = xt::view(state, xt::all(), 1);
 
-  xt::view(yaw_offseted, xt::range(1, _)) =
-    xt::view(yaw, xt::range(_, -1));
-  xt::view(yaw_offseted, 0) = initial_yaw;
+  auto traj_x = xt::view(trajectories, xt::all(), 0);
+  auto traj_y = xt::view(trajectories, xt::all(), 1);
+  auto traj_yaws = xt::view(trajectories, xt::all(), 2);
 
-  xt::xtensor<float, 1> yaw_cos = xt::cos(yaw_offseted);
-  xt::xtensor<float, 1> yaw_sin = xt::sin(yaw_offseted);
+  traj_yaws = xt::cumsum(utils::normalize_angles(wz) * settings_.model_dt, 0) + initial_yaw;
 
-  auto vx = xt::view(state, 0);
-  xt::xtensor<float, 1> dx = vx * yaw_cos;
-  xt::xtensor<float, 1> dy = vx * yaw_sin;
+  auto && yaw_cos = xt::xtensor<float, 1>::from_shape(traj_yaws.shape());
+  auto && yaw_sin = xt::xtensor<float, 1>::from_shape(traj_yaws.shape());
+
+  auto yaw_offseted = xt::view(traj_yaws, xt::range(1, _));
+
+  xt::noalias(xt::view(yaw_cos, 0)) = std::cos(initial_yaw);
+  xt::noalias(xt::view(yaw_sin, 0)) = std::sin(initial_yaw);
+  xt::noalias(xt::view(yaw_cos, xt::range(1, _))) = xt::cos(yaw_offseted);
+  xt::noalias(xt::view(yaw_sin, xt::range(1, _))) = xt::sin(yaw_offseted);
+
+  auto && dx = xt::eval(vx * yaw_cos);
+  auto && dy = xt::eval(vx * yaw_sin);
 
   if (isHolonomic()) {
-    auto vy = xt::view(state, 1);
     dx = dx - vy * yaw_sin;
     dy = dy + vy * yaw_cos;
   }
 
-  x = state_.pose.pose.position.x + xt::cumsum(dx * settings_.model_dt, 0);
-  y = state_.pose.pose.position.y + xt::cumsum(dy * settings_.model_dt, 0);
+  xt::noalias(traj_x) = state_.pose.pose.position.x + xt::cumsum(dx * settings_.model_dt, 0);
+  xt::noalias(traj_y) = state_.pose.pose.position.y + xt::cumsum(dy * settings_.model_dt, 0);
 }
 
 void Optimizer::integrateStateVelocities(
@@ -301,7 +305,7 @@ void Optimizer::integrateStateVelocities(
   xt::noalias(xt::view(yaw_cos, xt::all(), 0)) = std::cos(initial_yaw);
   xt::noalias(xt::view(yaw_sin, xt::all(), 0)) = std::sin(initial_yaw);
   xt::noalias(xt::view(yaw_cos, xt::all(), xt::range(1, _))) = xt::cos(yaw_offseted);
-  xt::noalias(xt::view(yaw_sin, xt::all(), xt::range(1, _))) = xt::cos(yaw_offseted);
+  xt::noalias(xt::view(yaw_sin, xt::all(), xt::range(1, _))) = xt::sin(yaw_offseted);
 
   auto && dx = xt::eval(state.vx * yaw_cos);
   auto && dy = xt::eval(state.vx * yaw_sin);
@@ -317,7 +321,7 @@ void Optimizer::integrateStateVelocities(
 
  xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
  {
-  auto && state = xt::xtensor<float, 2>::from_shape({settings_.time_steps, 3});
+  auto && state = xt::xtensor<float, 2>::from_shape({settings_.time_steps, isHolonomic() ? 3u : 2u});
   auto && trajectories = xt::xtensor<float, 2>::from_shape({settings_.time_steps, 3});
 
   xt::noalias(xt::view(state, xt::all(), 0)) = control_sequence_.vx;

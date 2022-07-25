@@ -32,17 +32,16 @@ void GoalAngleCritic::score(CriticData & data)
     static_cast<float>(data.state.pose.pose.position.x),
     static_cast<float>(data.state.pose.pose.position.y)};
 
-  auto path_points = xt::view(data.path, -1, xt::range(0, 2));
+  const auto path_points = xt::view(data.path, -1, xt::range(0, 2));
 
   // Compare the squares to remove a sqrt evaluation
-  auto points_to_goal_dists = xt::norm_sq(tensor_pose - path_points, {0})();
+  const auto points_to_goal_dists = xt::norm_sq(tensor_pose - path_points, {0})();
 
   if (points_to_goal_dists < threshold_to_consider_goal_angle_) {
-    auto &yaws = data.trajectories.yaws;
-    auto goal_yaw = data.path(-1, 2);
+    const auto goal_yaw = data.path(-1, 2);
 
     data.costs += xt::pow(
-      xt::mean(xt::abs(utils::shortest_angular_distance(yaws, goal_yaw)), {1}) *
+      xt::mean(xt::abs(utils::shortest_angular_distance(data.trajectories.yaws, goal_yaw)), {1}) *
       weight_, power_);
   }
 }

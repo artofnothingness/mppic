@@ -28,8 +28,8 @@ void GoalCritic::score(CriticData & data)
   const auto last_x = xt::view(data.trajectories.x, xt::all(), -1);
   const auto last_y = xt::view(data.trajectories.y, xt::all(), -1);
 
-  auto dists = xt::sqrt(xt::pow(std::move(last_x) - std::move(goal_x) , 2) + 
-                        xt::pow(std::move(last_y) - std::move(goal_y), 2));
+  auto dists = xt::sqrt(xt::pow(last_x - goal_x, 2) + 
+                        xt::pow(last_y - goal_y, 2));
   data.costs += xt::pow(std::move(dists) * weight_, power_);
 }
 
