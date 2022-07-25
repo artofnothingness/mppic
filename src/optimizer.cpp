@@ -295,17 +295,15 @@ void Optimizer::integrateStateVelocities(
 {
   double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
 
-  trajectories.yaws = xt::cumsum(utils::normalize_angles(state.wz) * settings_.model_dt, 1) + initial_yaw;
+  trajectories.yaws = utils::normalize_angles(xt::cumsum(state.wz * settings_.model_dt, 1) + initial_yaw);
+  auto yaws_cutted = xt::view(trajectories.yaws, xt::all(), xt::range(0, -1));
 
   auto && yaw_cos = xt::xtensor<float, 2>::from_shape(trajectories.yaws.shape());
   auto && yaw_sin = xt::xtensor<float, 2>::from_shape(trajectories.yaws.shape());
-
-  auto yaw_offseted = xt::view(trajectories.yaws, xt::all(), xt::range(1, _));
-
   xt::noalias(xt::view(yaw_cos, xt::all(), 0)) = std::cos(initial_yaw);
   xt::noalias(xt::view(yaw_sin, xt::all(), 0)) = std::sin(initial_yaw);
-  xt::noalias(xt::view(yaw_cos, xt::all(), xt::range(1, _))) = xt::cos(yaw_offseted);
-  xt::noalias(xt::view(yaw_sin, xt::all(), xt::range(1, _))) = xt::sin(yaw_offseted);
+  xt::noalias(xt::view(yaw_cos, xt::all(), xt::range(1, _))) = xt::cos(yaws_cutted);
+  xt::noalias(xt::view(yaw_sin, xt::all(), xt::range(1, _))) = xt::sin(yaws_cutted);
 
   auto && dx = xt::eval(state.vx * yaw_cos);
   auto && dy = xt::eval(state.vx * yaw_sin);

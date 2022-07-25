@@ -42,11 +42,11 @@ void PathAlignCritic::score(CriticData & data)
   const auto P1 = xt::view(data.path, xt::range(_, -1), xt::all());  // segments start points
   const auto P2 = xt::view(data.path, xt::range(1, _), xt::all());  // segments end points
 
-  const size_t trajectories_count = P3_x.shape(0);
-  const size_t trajectories_points_count = P3_x.shape(1);
-  const size_t reference_segments_count = data.path.shape(0) - 1;
+  const size_t batch_size = P3_x.shape(0);
+  const size_t time_steps = P3_x.shape(1);
+  const size_t path_segments_count = data.path.shape(0) - 1;
 
-  auto cost = xt::xtensor<float, 1>::from_shape({trajectories_count});
+  auto cost = xt::xtensor<float, 1>::from_shape({batch_size});
 
   const xt::xtensor<float, 2> P2_P1_diff = P2 - P1;
   const xt::xtensor<float, 1> P2_P1_norm_sq = xt::eval(xt::norm_sq(P2_P1_diff, {1}));
@@ -66,24 +66,14 @@ void PathAlignCritic::score(CriticData & data)
       return std::sqrt(dx * dx + dy * dy);
     };
 
-
-  const auto dx = xt::view(data.trajectories.x, xt::all(), xt::range(1, _)) -
-    xt::view(data.trajectories.x, xt::all(), xt::range(_, -1));
-  const auto dy = xt::view(data.trajectories.y, xt::all(), xt::range(1, _)) -
-    xt::view(data.trajectories.y, xt::all(), xt::range(_, -1));
-
-  const auto && trajectories_lengths = xt::sum(xt::pow(dx + dy, 2), {1}, immediate);
-  const auto accumulated_path_distances = xt::eval(xt::cumsum(P2_P1_norm_sq));
-
   size_t max_s = 0;
-  for (size_t t = 0; t < trajectories_count; ++t) {
+  for (size_t t = 0; t < batch_size; ++t) {
     float mean_dist = 0;
-    for (size_t p = 0; p < trajectories_points_count; p += trajectory_point_step_) {
+    for (size_t p = 0; p < time_steps; p += trajectory_point_step_) {
       double min_dist = std::numeric_limits<float>::max();
       size_t min_s = 0;
-      bool is_path_longer_than_trajectory = false;
 
-      for (size_t s = 0; s < reference_segments_count; s += path_point_step_) {
+      for (size_t s = 0; s < path_segments_count; s += path_point_step_) {
         xt::xtensor_fixed<float, xt::xshape<2>> P;
         if (segment_short(s)) {
           P[0] = P1(s, 0);
@@ -103,20 +93,12 @@ void PathAlignCritic::score(CriticData & data)
           min_s = s;
           min_dist = dist;
         }
-
-        if (is_path_longer_than_trajectory) {
-          break;
-        }
-
-        if (accumulated_path_distances(s) > trajectories_lengths(t)) {
-          is_path_longer_than_trajectory = true;
-        }
       }
       max_s = std::max(max_s, min_s);
       mean_dist += min_dist;
     }
 
-    cost(t) = mean_dist / trajectories_points_count;
+    cost(t) = mean_dist / time_steps;
   }
 
   data.furthest_reached_path_point = max_s;

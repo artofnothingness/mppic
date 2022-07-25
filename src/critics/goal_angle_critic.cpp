@@ -11,9 +11,7 @@ void GoalAngleCritic::initialize()
   getParam(power_, "cost_power", 1);
   getParam(weight_, "cost_weight", 3.0);
 
-  float thresh;
-  getParam(thresh, "threshold_to_consider_goal_angle", 0.20);
-  threshold_to_consider_goal_angle_ = thresh * thresh;
+  getParam(threshold_to_consider_goal_angle_, "threshold_to_consider_goal_angle", 0.20);
 
   RCLCPP_INFO(
     logger_,
@@ -28,17 +26,18 @@ void GoalAngleCritic::score(CriticData & data)
     return;
   }
 
-  xt::xtensor<float, 1> tensor_pose = {
-    static_cast<float>(data.state.pose.pose.position.x),
-    static_cast<float>(data.state.pose.pose.position.y)};
+  const auto goal_idx = data.path.shape(0) - 1;
 
-  const auto path_points = xt::view(data.path, -1, xt::range(0, 2));
+  const auto goal_x = data.path(goal_idx, 0);
+  const auto goal_y = data.path(goal_idx, 1);
 
-  // Compare the squares to remove a sqrt evaluation
-  const auto points_to_goal_dists = xt::norm_sq(tensor_pose - path_points, {0})();
+  const auto dx = data.state.pose.pose.position.x - goal_x;
+  const auto dy = data.state.pose.pose.position.y - goal_y;
 
-  if (points_to_goal_dists < threshold_to_consider_goal_angle_) {
-    const auto goal_yaw = data.path(-1, 2);
+  const auto dist = std::sqrt(dx * dx + dy * dy);
+
+  if (dist < threshold_to_consider_goal_angle_) {
+    const auto goal_yaw = data.path(goal_idx, 2);
 
     data.costs += xt::pow(
       xt::mean(xt::abs(utils::shortest_angular_distance(data.trajectories.yaws, goal_yaw)), {1}) *
