@@ -23,6 +23,10 @@ void TwirlingCritic::score(CriticData & data)
     return;
   }
 
+  if (utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose.pose, data.path)) {
+    return;
+  }
+
   const auto wz = xt::abs(data.state.wz);
   data.costs += xt::pow(xt::mean(wz, {1}, immediate) * weight_, power_);
 }
