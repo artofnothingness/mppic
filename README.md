@@ -165,7 +165,7 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 3.0
-        threshold_to_consider_goal_angle: 0.20
+        threshold_to_consider_goal_angle: 0.35
       ObstaclesCritic:
         enabled: true
         cost_power: 2
