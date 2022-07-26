@@ -13,7 +13,8 @@
 #include <xtensor/xview.hpp>
 
 #include "mppic/models/optimizer_settings.hpp"
-#include "mppic/models/state.hpp"
+#include <mppic/models/control_sequence.hpp>
+#include <mppic/models/state.hpp>
 
 namespace mppi
 {
@@ -42,11 +43,10 @@ public:
   void generateNextNoises();
 
   /**
-   * @brief Get the current noises
+   * @brief set noised control_sequence to state controls
    * @return noises vx, vy, wz
    */
-  std::tuple<xt::xtensor<float, 2> &, xt::xtensor<float, 2> &, xt::xtensor<float, 2> &>
-  getNoises();
+  void setNoisedControls(models::State & state, const models::ControlSequence & control_sequence);
 
   /**
    * @brief Reset noise generator with settings and model types

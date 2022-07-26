@@ -139,7 +139,8 @@ protected:
   xt::xtensor<float, 1> costs_;
 
   CriticData critics_data_ =
-  {state_, generated_trajectories_, path_, costs_, settings_.model_dt, false, nullptr, std::nullopt}; /// Caution, keep references
+  {state_, generated_trajectories_, path_, costs_, settings_.model_dt, false, nullptr,
+    std::nullopt};                                                                                    /// Caution, keep references
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };

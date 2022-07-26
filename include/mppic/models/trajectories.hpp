@@ -22,10 +22,13 @@ struct Trajectories
 
   inline auto getLastPoints() const
   {
-    return xt::concatenate(xtuple(xt::view(x, xt::all(), -1, xt::newaxis()), xt::view(y, xt::all(), -1, xt::newaxis())), 1);
+    return xt::concatenate(
+      xtuple(
+        xt::view(x, xt::all(), -1, xt::newaxis()),
+        xt::view(y, xt::all(), -1, xt::newaxis())), 1);
   }
 
-}; 
+};
 
 }
 // namespace mppi::models

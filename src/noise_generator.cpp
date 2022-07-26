@@ -5,6 +5,7 @@
 #include <mutex>
 #include <xtensor/xmath.hpp>
 #include <xtensor/xrandom.hpp>
+#include <xtensor/xnoalias.hpp>
 
 namespace mppi
 {
@@ -36,11 +37,15 @@ void NoiseGenerator::generateNextNoises()
   noise_cond_.notify_all();
 }
 
-std::tuple<xt::xtensor<float, 2> &, xt::xtensor<float, 2> &, xt::xtensor<float, 2> &>
-NoiseGenerator::getNoises()
+void NoiseGenerator::setNoisedControls(
+  models::State & state,
+  const models::ControlSequence & control_sequence)
 {
   std::unique_lock<std::mutex> guard(noise_lock_);
-  return std::tie(noises_vx_, noises_vy_, noises_wz_);
+
+  xt::noalias(state.cvx) = control_sequence.vx + noises_vx_;
+  xt::noalias(state.cvy) = control_sequence.vy + noises_vy_;
+  xt::noalias(state.cwz) = control_sequence.wz + noises_wz_;
 }
 
 void NoiseGenerator::reset(mppi::models::OptimizerSettings & settings, bool is_holonomic)
@@ -51,9 +56,9 @@ void NoiseGenerator::reset(mppi::models::OptimizerSettings & settings, bool is_h
   // Recompute the noises on reset, initialization, and fallback
   {
     std::unique_lock<std::mutex> guard(noise_lock_);
-    noises_vx_ = xt::zeros<float>({settings_.batch_size, settings_.time_steps});
-    noises_vy_ = xt::zeros<float>({settings_.batch_size, settings_.time_steps});
-    noises_wz_ = xt::zeros<float>({settings_.batch_size, settings_.time_steps});
+    xt::noalias(noises_vx_) = xt::zeros<float>({settings_.batch_size, settings_.time_steps});
+    xt::noalias(noises_vy_) = xt::zeros<float>({settings_.batch_size, settings_.time_steps});
+    xt::noalias(noises_wz_) = xt::zeros<float>({settings_.batch_size, settings_.time_steps});
     ready_ = true;
   }
   noise_cond_.notify_all();
@@ -73,10 +78,16 @@ void NoiseGenerator::generateNoisedControls()
 {
   auto & s = settings_;
 
-  noises_vx_ = xt::random::randn<float>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vx);
-  noises_wz_ = xt::random::randn<float>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.wz);
+  xt::noalias(noises_vx_) = xt::random::randn<float>(
+    {s.batch_size, s.time_steps}, 0.0,
+    s.sampling_std.vx);
+  xt::noalias(noises_wz_) = xt::random::randn<float>(
+    {s.batch_size, s.time_steps}, 0.0,
+    s.sampling_std.wz);
   if (is_holonomic_) {
-    noises_vy_ = xt::random::randn<float>({s.batch_size, s.time_steps}, 0.0, s.sampling_std.vy);
+    xt::noalias(noises_vy_) = xt::random::randn<float>(
+      {s.batch_size, s.time_steps}, 0.0,
+      s.sampling_std.vy);
   }
 }
 

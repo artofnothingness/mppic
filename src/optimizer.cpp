@@ -151,12 +151,11 @@ bool Optimizer::fallback(bool fail)
 
   reset();
 
-  if (counter > settings_.retry_attempt_limit) {
+  if (counter++ > settings_.retry_attempt_limit) {
     counter = 0;
     throw std::runtime_error("Optimizer fail to compute path");
   }
 
-  counter++;
   return true;
 }
 
@@ -197,11 +196,7 @@ void Optimizer::shiftControlSequence()
 
 void Optimizer::generateNoisedTrajectories()
 {
-  const auto &[vx_noise, vy_noise, wz_noise] = noise_generator_.getNoises();
-  xt::noalias(state_.cvx) = control_sequence_.vx + vx_noise;
-  xt::noalias(state_.cvy) = control_sequence_.vy + vy_noise;
-  xt::noalias(state_.cwz) = control_sequence_.wz + wz_noise;
-
+  noise_generator_.setNoisedControls(state_, control_sequence_);
   noise_generator_.generateNextNoises();
   applyControlConstraints();
   updateStateVelocities(state_);
@@ -213,16 +208,13 @@ bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
 void Optimizer::applyControlConstraints()
 {
   auto & s = settings_;
-  auto & cvx = state_.cvx;
-  auto & cwz = state_.cwz;
 
   if (isHolonomic()) {
-    auto & cvy = state_.cvy;
-    cvy = xt::clip(cvy, -s.constraints.vy, s.constraints.vy);
+    state_.cvy = xt::clip(state_.cvy, -s.constraints.vy, s.constraints.vy);
   }
 
-  cvx = xt::clip(cvx, s.constraints.vx_min, s.constraints.vx_max);
-  cwz = xt::clip(cwz, -s.constraints.wz, s.constraints.wz);
+  state_.cvx = xt::clip(state_.cvx, s.constraints.vx_min, s.constraints.vx_max);
+  state_.cwz = xt::clip(state_.cwz, -s.constraints.wz, s.constraints.wz);
 
   motion_model_->applyConstraints(state_);
 }
@@ -257,15 +249,16 @@ void Optimizer::integrateStateVelocities(
 {
   double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
 
-  auto vx = xt::view(state, xt::all(), 0);
-  auto vy = xt::view(state, xt::all(), 2);
-  auto wz = xt::view(state, xt::all(), 1);
+  const auto vx = xt::view(state, xt::all(), 0);
+  const auto vy = xt::view(state, xt::all(), 2);
+  const auto wz = xt::view(state, xt::all(), 1);
 
   auto traj_x = xt::view(trajectories, xt::all(), 0);
   auto traj_y = xt::view(trajectories, xt::all(), 1);
   auto traj_yaws = xt::view(trajectories, xt::all(), 2);
 
-  traj_yaws = xt::cumsum(utils::normalize_angles(wz) * settings_.model_dt, 0) + initial_yaw;
+  xt::noalias(traj_yaws) =
+    xt::cumsum(utils::normalize_angles(wz) * settings_.model_dt, 0) + initial_yaw;
 
   auto && yaw_cos = xt::xtensor<float, 1>::from_shape(traj_yaws.shape());
   auto && yaw_sin = xt::xtensor<float, 1>::from_shape(traj_yaws.shape());
@@ -293,9 +286,11 @@ void Optimizer::integrateStateVelocities(
   models::Trajectories & trajectories,
   const models::State & state) const
 {
-  double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
+  const double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
 
-  trajectories.yaws = utils::normalize_angles(xt::cumsum(state.wz * settings_.model_dt, 1) + initial_yaw);
+  xt::noalias(trajectories.yaws) =
+    utils::normalize_angles(xt::cumsum(state.wz * settings_.model_dt, 1) + initial_yaw);
+
   auto yaws_cutted = xt::view(trajectories.yaws, xt::all(), xt::range(0, -1));
 
   auto && yaw_cos = xt::xtensor<float, 2>::from_shape(trajectories.yaws.shape());
@@ -313,24 +308,27 @@ void Optimizer::integrateStateVelocities(
     dy = dy + state.vy * yaw_cos;
   }
 
-  xt::noalias(trajectories.x) = state_.pose.pose.position.x + xt::cumsum(dx * settings_.model_dt, 1);
-  xt::noalias(trajectories.y) = state_.pose.pose.position.y + xt::cumsum(dy * settings_.model_dt, 1);
+  xt::noalias(trajectories.x) = state_.pose.pose.position.x +
+    xt::cumsum(dx * settings_.model_dt, 1);
+  xt::noalias(trajectories.y) = state_.pose.pose.position.y +
+    xt::cumsum(dy * settings_.model_dt, 1);
 }
 
- xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
- {
-  auto && state = xt::xtensor<float, 2>::from_shape({settings_.time_steps, isHolonomic() ? 3u : 2u});
+xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
+{
+  auto && state =
+    xt::xtensor<float, 2>::from_shape({settings_.time_steps, isHolonomic() ? 3u : 2u});
   auto && trajectories = xt::xtensor<float, 2>::from_shape({settings_.time_steps, 3});
 
   xt::noalias(xt::view(state, xt::all(), 0)) = control_sequence_.vx;
   xt::noalias(xt::view(state, xt::all(), 1)) = control_sequence_.wz;
 
-   if (isHolonomic()) {
+  if (isHolonomic()) {
     xt::noalias(xt::view(state, xt::all(), 2)) = control_sequence_.vy;
-   }
+  }
 
-   integrateStateVelocities(trajectories, state);
-   return std::move(trajectories);
+  integrateStateVelocities(trajectories, state);
+  return std::move(trajectories);
 }
 
 void Optimizer::updateControlSequence()
@@ -338,7 +336,7 @@ void Optimizer::updateControlSequence()
   auto && costs_normalized = costs_ - xt::amin(costs_, immediate);
   auto && exponents = xt::eval(xt::exp(-1 / settings_.temperature * costs_normalized));
   auto && softmaxes = xt::eval(exponents / xt::sum(exponents, immediate));
-  auto softmaxes_extened = xt::view(softmaxes, xt::all(), xt::newaxis());
+  auto && softmaxes_extened = xt::eval(xt::view(softmaxes, xt::all(), xt::newaxis()));
 
   xt::noalias(control_sequence_.vx) = xt::sum(state_.cvx * softmaxes_extened, 0, immediate);
   xt::noalias(control_sequence_.vy) = xt::sum(state_.cvy * softmaxes_extened, 0, immediate);

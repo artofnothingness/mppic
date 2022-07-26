@@ -24,23 +24,24 @@ void PathAlignCritic::initialize()
 
 void PathAlignCritic::score(CriticData & data)
 {
-  if (!enabled_ || utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose.pose, data.path))
+  if (!enabled_ ||
+    utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose.pose, data.path))
   {
     return;
   }
 
   using namespace xt::placeholders;  // NOLINT
   using xt::evaluation_strategy::immediate;
- 
+
   // see http://paulbourke.net/geometry/pointlineplane/
-  
+
   // P3 points from which we calculate distance to segments
-  const auto & P3_x = data.trajectories.x;  
+  const auto & P3_x = data.trajectories.x;
   const auto & P3_y = data.trajectories.y;
 
   const auto P1_x = xt::view(data.path.x, xt::range(_, -1));  // segments start points
   const auto P1_y = xt::view(data.path.y, xt::range(_, -1));  // segments start points
-  
+
   const auto P2_x = xt::view(data.path.x, xt::range(1, _));  // segments end points
   const auto P2_y = xt::view(data.path.y, xt::range(1, _));  // segments end points
 
@@ -56,8 +57,8 @@ void PathAlignCritic::score(CriticData & data)
   const auto && P2_P1_norm_sq = xt::eval(P2_P1_dx * P2_P1_dx + P2_P1_dy * P2_P1_dy);
 
   auto evaluate_u = [&](size_t t, size_t p, size_t s) {
-      return ((P3_x(t, p) - P1_x(s)) * P2_P1_dx(s)) + ((P3_y(t, p) - P1_y(s)) * P2_P1_dy(s)) 
-      / P2_P1_norm_sq(s);
+      return ((P3_x(t, p) - P1_x(s)) * P2_P1_dx(s)) + ((P3_y(t, p) - P1_y(s)) * P2_P1_dy(s)) /
+             P2_P1_norm_sq(s);
     };
 
   const auto segment_short = P2_P1_norm_sq < 1e-3f;

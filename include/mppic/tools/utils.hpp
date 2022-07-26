@@ -73,7 +73,7 @@ inline models::Path toTensor(const nav_msgs::msg::Path & path)
 inline bool withinPositionGoalTolerance(
   nav2_core::GoalChecker * goal_checker,
   const geometry_msgs::msg::Pose & robot,
-  const models::Path &path)
+  const models::Path & path)
 {
   const auto goal_idx = path.x.shape(0);
   const auto goal_x = path.x(goal_idx);
@@ -83,8 +83,8 @@ inline bool withinPositionGoalTolerance(
     geometry_msgs::msg::Pose pose_tolerance;
     geometry_msgs::msg::Twist velocity_tolerance;
     goal_checker->getTolerances(pose_tolerance, velocity_tolerance);
-    
-    const auto pose_tolerance_sq =  pose_tolerance.position.x  * pose_tolerance.position.x;
+
+    const auto pose_tolerance_sq = pose_tolerance.position.x * pose_tolerance.position.x;
 
     auto dx = robot.position.x - goal_x;
     auto dy = robot.position.y - goal_y;

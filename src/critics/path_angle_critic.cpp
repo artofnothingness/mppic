@@ -48,8 +48,11 @@ void PathAngleCritic::score(CriticData & data)
     return;
   }
 
-  const auto yaws_between_points = xt::atan2(goal_y - data.trajectories.y, goal_x - data.trajectories.x);
-  const auto yaws = xt::abs(utils::shortest_angular_distance(data.trajectories.yaws, yaws_between_points));
+  const auto yaws_between_points = xt::atan2(
+    goal_y - data.trajectories.y,
+    goal_x - data.trajectories.x);
+  const auto yaws =
+    xt::abs(utils::shortest_angular_distance(data.trajectories.yaws, yaws_between_points));
 
   data.costs += xt::pow(xt::mean(yaws, {1}, immediate) * weight_, power_);
 }

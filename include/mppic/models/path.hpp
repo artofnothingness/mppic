@@ -19,7 +19,7 @@ struct Path
     yaws = xt::zeros<float>({size});
   }
 
-}; 
+};
 
 }
 // namespace mppi::models

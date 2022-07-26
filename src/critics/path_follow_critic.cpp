@@ -41,8 +41,9 @@ void PathFollowCritic::score(CriticData & data)
   const auto last_x = xt::view(data.trajectories.x, xt::all(), -1);
   const auto last_y = xt::view(data.trajectories.y, xt::all(), -1);
 
-  auto dists = xt::sqrt(xt::pow(last_x - path_x, 2) + 
-                        xt::pow(last_y - path_y, 2));
+  auto dists = xt::sqrt(
+    xt::pow(last_x - path_x, 2) +
+    xt::pow(last_y - path_y, 2));
 
   data.costs += xt::pow(weight_ * std::move(dists), power_);
 }

@@ -24,7 +24,10 @@ void PreferForwardCritic::score(CriticData & data)
   }
 
   auto backward_motion = xt::maximum(-data.state.vx, 0);
-  data.costs += xt::pow(xt::sum(std::move(backward_motion) * data.model_dt, {1}, immediate) * weight_, power_);
+  data.costs += xt::pow(
+    xt::sum(
+      std::move(
+        backward_motion) * data.model_dt, {1}, immediate) * weight_, power_);
 }
 
 }  // namespace mppi::critics
