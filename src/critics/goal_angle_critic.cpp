@@ -11,7 +11,7 @@ void GoalAngleCritic::initialize()
   getParam(power_, "cost_power", 1);
   getParam(weight_, "cost_weight", 3.0);
 
-  getParam(threshold_to_consider_goal_angle_, "threshold_to_consider_goal_angle", 0.20);
+  getParam(threshold_to_consider_goal_angle_, "threshold_to_consider_goal_angle", 0.35);
 
   RCLCPP_INFO(
     logger_,

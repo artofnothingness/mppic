@@ -23,6 +23,10 @@ void PreferForwardCritic::score(CriticData & data)
     return;
   }
 
+  if (utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose.pose, data.path)) {
+    return;
+  }
+
   auto backward_motion = xt::maximum(-data.state.vx, 0);
   data.costs += xt::pow(
     xt::sum(
