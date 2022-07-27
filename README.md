@@ -160,7 +160,7 @@ controller_server:
       GoalCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 4.0
+        cost_weight: 5.0
       GoalAngleCritic:
         enabled: true
         cost_power: 1
@@ -181,8 +181,8 @@ controller_server:
       PathFollowCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 2.0
-        offset_from_furthest: 6
+        cost_weight: 3.0
+        offset_from_furthest: 10
         max_path_ratio: 0.40
       PathAngleCritic:
         enabled: true

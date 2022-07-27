@@ -15,10 +15,10 @@ void PathFollowCritic::initialize()
     max_path_ratio_,
     "max_path_ratio", 0.35f);
 
-  getParam(offset_from_furthest_, "offset_from_furthest", 6);
+  getParam(offset_from_furthest_, "offset_from_furthest", 10);
 
   getParam(power_, "cost_power", 1);
-  getParam(weight_, "cost_weight", 2.0);
+  getParam(weight_, "cost_weight", 3.0);
 }
 
 void PathFollowCritic::score(CriticData & data)
