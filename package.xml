@@ -28,6 +28,7 @@
   <depend>xtensor</depend>
   <depend>libomp-dev</depend>
   <depend>benchmark</depend>
+  <depend>xsimd</depend>
 
   <exec_depend>nav2_bringup</exec_depend>
 
