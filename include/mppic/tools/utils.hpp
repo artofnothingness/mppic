@@ -26,6 +26,7 @@
 #include "nav2_util/node_utils.hpp"
 #include "nav2_core/goal_checker.hpp"
 
+#include "mppic/models/action_sequence.hpp"
 #include "mppic/models/control_sequence.hpp"
 #include "mppic/models/path.hpp"
 #include "builtin_interfaces/msg/time.hpp"

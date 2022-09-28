@@ -71,6 +71,8 @@ protected:
 
   void shiftControlSequence();
 
+  void shiftActionSequence();
+
   /**
    *
    * @brief updates generated_trajectories_
@@ -109,8 +111,21 @@ protected:
    */
   void updateControlSequence();
 
+  /**
+   * @brief Update action_sequence_ with previous action sequence and current control
+   */
+  void updateActionSequence();
+
+  /**
+   * @brief Generate Batches' action sequence
+   */
+  void generateActionSequence();
+
   geometry_msgs::msg::TwistStamped
   getControlFromSequenceAsTwist(const builtin_interfaces::msg::Time & stamp);
+
+  geometry_msgs::msg::TwistStamped
+  getActionFromSequenceAsTwist(const builtin_interfaces::msg::Time & stamp);
 
   inline bool isHolonomic() const;
 
@@ -134,6 +149,7 @@ protected:
 
   models::State state_;
   models::ControlSequence control_sequence_;
+  models::ActionSequence action_sequence_;
   models::Trajectories generated_trajectories_;
   models::Path path_;
   xt::xtensor<float, 1> costs_;

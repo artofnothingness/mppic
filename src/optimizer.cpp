@@ -103,6 +103,7 @@ void Optimizer::reset()
 {
   state_.reset(settings_.batch_size, settings_.time_steps);
   control_sequence_.reset(settings_.time_steps);
+  action_sequence_.reset(settings_.time_steps);
 
   costs_ = xt::zeros<float>({settings_.batch_size});
   generated_trajectories_.reset(settings_.batch_size, settings_.time_steps);
@@ -122,10 +123,13 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
     optimize();
   } while (fallback(critics_data_.fail_flag));
 
-  auto control = getControlFromSequenceAsTwist(plan.header.stamp);
+  // TODO should I be using the action instead?
+  // getControlFromSequenceAsTwist(plan.header.stamp)
+  auto control = getActionFromSequenceAsTwist(plan.header.stamp);
 
   if (settings_.shift_control_sequence) {
     shiftControlSequence();
+    shiftActionSequence();
   }
 
   return control;
@@ -137,6 +141,7 @@ void Optimizer::optimize()
     generateNoisedTrajectories();
     critic_manager_.evalTrajectoriesScores(critics_data_);
     updateControlSequence();
+    updateActionSequence();
   }
 }
 
@@ -179,18 +184,35 @@ void Optimizer::shiftControlSequence()
   control_sequence_.vx = xt::roll(control_sequence_.vx, -1);
   control_sequence_.wz = xt::roll(control_sequence_.wz, -1);
 
-
   xt::view(control_sequence_.vx, -1) =
     xt::view(control_sequence_.vx, -2);
 
   xt::view(control_sequence_.wz, -1) =
     xt::view(control_sequence_.wz, -2);
 
-
   if (isHolonomic()) {
     control_sequence_.vy = xt::roll(control_sequence_.vy, -1);
     xt::view(control_sequence_.vy, -1) =
       xt::view(control_sequence_.vy, -2);
+  }
+}
+
+void Optimizer::shiftActionSequence()
+{
+  using namespace xt::placeholders;  // NOLINT
+  action_sequence_.vx = xt::roll(action_sequence_.vx, -1);
+  action_sequence_.wz = xt::roll(action_sequence_.wz, -1);
+
+  xt::view(action_sequence_.vx, -1) =
+    xt::view(action_sequence_.vx, -2);
+
+  xt::view(action_sequence_.wz, -1) =
+    xt::view(action_sequence_.wz, -2);
+
+  if (isHolonomic()) {
+    action_sequence_.vy = xt::roll(action_sequence_.vy, -1);
+    xt::view(action_sequence_.vy, -1) =
+      xt::view(action_sequence_.vy, -2);
   }
 }
 
@@ -200,6 +222,7 @@ void Optimizer::generateNoisedTrajectories()
   noise_generator_.generateNextNoises();
   applyControlConstraints();
   updateStateVelocities(state_);
+  generateActionSequence();
   integrateStateVelocities(generated_trajectories_, state_);
 }
 
@@ -217,6 +240,16 @@ void Optimizer::applyControlConstraints()
   state_.cwz = xt::clip(state_.cwz, -s.constraints.wz, s.constraints.wz);
 
   motion_model_->applyConstraints(state_);
+}
+
+void Optimizer::generateActionSequence()
+{
+  // TODO action sequence tensor for batches: a_t^k = a_t + v_t^k + delta t
+  state_.avx = action_sequence_.vx + (state_.vx * settings_.model_dt);
+  state_.awz = action_sequence_.wz + (state_.wz * settings_.model_dt);
+  if (isHolonomic()) {
+    state_.avy = action_sequence_.vy + (state_.vy * settings_.model_dt);
+  }
 }
 
 void Optimizer::updateStateVelocities(
@@ -333,6 +366,27 @@ xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
 
 void Optimizer::updateControlSequence()
 {
+  // TODO costs_ on action sequence
+  // maybe should be a critic function, maybe power of 1 like critics or 2 like paper?
+  // sum ((a_t - a_{t-1}) * w * (a_t - a_{t-1}))
+  float weight = 3.0;
+  const auto avx1 = xt::view(state_.avx,  xt::all(), xt::range(_, -1));
+  const auto avx2 = xt::view(state_.avx, xt::all(), xt::range(1, _));
+  const auto d_avx = xt::fabs(avx2 - avx1);
+
+  const auto awz1 = xt::view(state_.awz, xt::all(), xt::range(_, -1));
+  const auto awz2 = xt::view(state_.awz, xt::all(), xt::range(1, _));
+  const auto d_awz = xt::fabs(awz2 - awz1);
+
+  if (isHolonomic()) {
+    const auto avy1 = xt::view(state_.avy, xt::all(), xt::range(_, -1));
+    const auto avy2 = xt::view(state_.avy, xt::all(), xt::range(1, _));
+    const auto d_avy = xt::fabs(avy2 - avy1);
+    costs_ += xt::sum(d_avx * d_avx + d_avy * d_avy + d_awz * d_awz, {1}, immediate) * weight;
+  } else {
+    costs_ += xt::sum(d_avx * d_avx + d_awz * d_awz, {1}, immediate) * weight;
+  }
+
   auto && costs_normalized = costs_ - xt::amin(costs_, immediate);
   auto && exponents = xt::eval(xt::exp(-1 / settings_.temperature * costs_normalized));
   auto && softmaxes = xt::eval(exponents / xt::sum(exponents, immediate));
@@ -341,6 +395,14 @@ void Optimizer::updateControlSequence()
   xt::noalias(control_sequence_.vx) = xt::sum(state_.cvx * softmaxes_extened, 0, immediate);
   xt::noalias(control_sequence_.vy) = xt::sum(state_.cvy * softmaxes_extened, 0, immediate);
   xt::noalias(control_sequence_.wz) = xt::sum(state_.cwz * softmaxes_extened, 0, immediate);
+}
+
+void Optimizer::updateActionSequence()
+{
+  // TODO update action sequence
+  xt::noalias(action_sequence_.vx) = action_sequence_.vx + (control_sequence_.vx * settings_.model_dt);
+  xt::noalias(action_sequence_.vy) = action_sequence_.vy + (control_sequence_.vy * settings_.model_dt);
+  xt::noalias(action_sequence_.wz) = action_sequence_.wz + (control_sequence_.wz * settings_.model_dt);
 }
 
 geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
@@ -353,6 +415,22 @@ geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
 
   if (isHolonomic()) {
     auto vy = control_sequence_.vy(offset);
+    return utils::toTwistStamped(vx, vy, wz, stamp, costmap_ros_->getBaseFrameID());
+  }
+
+  return utils::toTwistStamped(vx, wz, stamp, costmap_ros_->getBaseFrameID());
+}
+
+geometry_msgs::msg::TwistStamped Optimizer::getActionFromSequenceAsTwist(
+  const builtin_interfaces::msg::Time & stamp)
+{
+  unsigned int offset = settings_.shift_control_sequence ? 1 : 0;
+
+  auto vx = action_sequence_.vx(offset);
+  auto wz = action_sequence_.wz(offset);
+
+  if (isHolonomic()) {
+    auto vy = action_sequence_.vy(offset);
     return utils::toTwistStamped(vx, vy, wz, stamp, costmap_ros_->getBaseFrameID());
   }
 
