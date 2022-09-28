@@ -354,11 +354,11 @@ xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
     xt::xtensor<float, 2>::from_shape({settings_.time_steps, isHolonomic() ? 3u : 2u});
   auto && trajectories = xt::xtensor<float, 2>::from_shape({settings_.time_steps, 3});
 
-  xt::noalias(xt::view(state, xt::all(), 0)) = control_sequence_.vx;
-  xt::noalias(xt::view(state, xt::all(), 1)) = control_sequence_.wz;
+  xt::noalias(xt::view(state, xt::all(), 0)) = action_sequence_.vx;
+  xt::noalias(xt::view(state, xt::all(), 1)) = action_sequence_.wz;
 
   if (isHolonomic()) {
-    xt::noalias(xt::view(state, xt::all(), 2)) = control_sequence_.vy;
+    xt::noalias(xt::view(state, xt::all(), 2)) = action_sequence_.vy;
   }
 
   integrateStateVelocities(trajectories, state);
