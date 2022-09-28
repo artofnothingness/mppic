@@ -369,7 +369,7 @@ void Optimizer::updateControlSequence()
   // TODO costs_ on action sequence
   // maybe should be a critic function, maybe power of 1 like critics or 2 like paper?
   // sum ((a_t - a_{t-1}) * w * (a_t - a_{t-1}))
-  float weight = 3.0;
+  float weight = 1.0;
   const auto avx1 = xt::view(state_.avx,  xt::all(), xt::range(_, -1));
   const auto avx2 = xt::view(state_.avx, xt::all(), xt::range(1, _));
   const auto d_avx = xt::fabs(avx2 - avx1);
