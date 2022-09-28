@@ -217,7 +217,7 @@ void Optimizer::shiftActionSequence()
 void Optimizer::generateNoisedTrajectories()
 {
   noise_generator_.setNoisedControls(state_, control_sequence_);
-  noise_generator_.generateNextNoises();
+  noise_generator_.generateNextNoises();  // TODO should still apply clipped limits?
   generateActionSequence();
   applyVelocityConstraints();
   updateStateVelocities(state_);
