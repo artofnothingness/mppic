@@ -24,16 +24,18 @@ public:
 
   virtual void predict(models::State & state)
   {
+    // TODO based on avx/avy/awz since this is what we send to the robot now
+    // use this to produce trajectories for scoring
     using namespace xt::placeholders;  // NOLINT
     xt::noalias(xt::view(state.vx, xt::all(), xt::range(1, _))) =
-      xt::view(state.cvx, xt::all(), xt::range(0, -1));
+      xt::view(state.avx, xt::all(), xt::range(0, -1));
 
     xt::noalias(xt::view(state.wz, xt::all(), xt::range(1, _))) =
-      xt::view(state.cwz, xt::all(), xt::range(0, -1));
+      xt::view(state.awz, xt::all(), xt::range(0, -1));
 
     if (isHolonomic()) {
       xt::noalias(xt::view(state.vy, xt::all(), xt::range(1, _))) =
-        xt::view(state.cvy, xt::all(), xt::range(0, -1));
+        xt::view(state.avy, xt::all(), xt::range(0, -1));
     }
   }
 

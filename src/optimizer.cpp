@@ -123,8 +123,6 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
     optimize();
   } while (fallback(critics_data_.fail_flag));
 
-  // TODO should I be using the action instead?
-  // getControlFromSequenceAsTwist(plan.header.stamp)
   auto control = getActionFromSequenceAsTwist(plan.header.stamp);
 
   if (settings_.shift_control_sequence) {
@@ -220,26 +218,26 @@ void Optimizer::generateNoisedTrajectories()
 {
   noise_generator_.setNoisedControls(state_, control_sequence_);
   noise_generator_.generateNextNoises();
-  applyControlConstraints();
-  updateStateVelocities(state_);
   generateActionSequence();
+  applyVelocityConstraints();
+  updateStateVelocities(state_);
   integrateStateVelocities(generated_trajectories_, state_);
 }
 
 bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
 
-void Optimizer::applyControlConstraints()
+void Optimizer::applyVelocityConstraints()
 {
   auto & s = settings_;
 
   if (isHolonomic()) {
-    state_.cvy = xt::clip(state_.cvy, -s.constraints.vy, s.constraints.vy);
+    state_.avy = xt::clip(state_.avy, -s.constraints.vy, s.constraints.vy);
   }
 
-  state_.cvx = xt::clip(state_.cvx, s.constraints.vx_min, s.constraints.vx_max);
-  state_.cwz = xt::clip(state_.cwz, -s.constraints.wz, s.constraints.wz);
+  state_.avx = xt::clip(state_.avx, s.constraints.vx_min, s.constraints.vx_max);
+  state_.awz = xt::clip(state_.awz, -s.constraints.wz, s.constraints.wz);
 
-  motion_model_->applyConstraints(state_);
+  motion_model_->applyConstraints(state_); // TODO this needs to be called after predict to have vx/vw populated
 }
 
 void Optimizer::generateActionSequence()
@@ -249,6 +247,7 @@ void Optimizer::generateActionSequence()
   // but doesn't seem technically right.
   state_.avx = action_sequence_.vx + (state_.cvx * settings_.model_dt);
   state_.awz = action_sequence_.wz + (state_.cwz * settings_.model_dt);
+
   if (isHolonomic()) {
     state_.avy = action_sequence_.vy + (state_.cvy * settings_.model_dt);
   }
@@ -371,6 +370,10 @@ void Optimizer::updateControlSequence()
   // TODO costs_ on action sequence
   // maybe should be a critic function, maybe power of 1 like critics or 2 like paper?
   // sum ((a_t - a_{t-1}) * w * (a_t - a_{t-1}))
+
+  // TODO maybe why not working: using vx derivative of `c` for trajectories/scoring, not of `a`?
+
+  // TODO trajectories still going nutty - not stopping at goal point or even on path at times, seems overly fast/not distributed as much
   float weight = 1.0;
   const auto avx1 = xt::view(state_.avx,  xt::all(), xt::range(_, -1));
   const auto avx2 = xt::view(state_.avx, xt::all(), xt::range(1, _));
@@ -401,10 +404,18 @@ void Optimizer::updateControlSequence()
 
 void Optimizer::updateActionSequence()
 {
-  // TODO update action sequence
   xt::noalias(action_sequence_.vx) = action_sequence_.vx + (control_sequence_.vx * settings_.model_dt);
   xt::noalias(action_sequence_.vy) = action_sequence_.vy + (control_sequence_.vy * settings_.model_dt);
   xt::noalias(action_sequence_.wz) = action_sequence_.wz + (control_sequence_.wz * settings_.model_dt);
+
+ auto & s = settings_;
+  if (isHolonomic()) {
+    action_sequence_.vy = xt::clip(action_sequence_.vy, -s.constraints.vy, s.constraints.vy);
+  }
+
+  action_sequence_.vx = xt::clip(action_sequence_.vx, s.constraints.vx_min, s.constraints.vx_max);
+  action_sequence_.wz = xt::clip(action_sequence_.wz, -s.constraints.wz, s.constraints.wz);
+
 }
 
 geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
