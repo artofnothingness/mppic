@@ -245,10 +245,12 @@ void Optimizer::applyControlConstraints()
 void Optimizer::generateActionSequence()
 {
   // TODO action sequence tensor for batches: a_t^k = a_t + v_t^k + delta t
-  state_.avx = action_sequence_.vx + (state_.vx * settings_.model_dt);
-  state_.awz = action_sequence_.wz + (state_.wz * settings_.model_dt);
+  // should be state_.cvx or state_.vx? Control seems to work better,
+  // but doesn't seem technically right.
+  state_.avx = action_sequence_.vx + (state_.cvx * settings_.model_dt);
+  state_.awz = action_sequence_.wz + (state_.cwz * settings_.model_dt);
   if (isHolonomic()) {
-    state_.avy = action_sequence_.vy + (state_.vy * settings_.model_dt);
+    state_.avy = action_sequence_.vy + (state_.cvy * settings_.model_dt);
   }
 }
 
