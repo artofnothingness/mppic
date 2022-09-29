@@ -218,8 +218,8 @@ void Optimizer::generateNoisedTrajectories()
 {
   noise_generator_.setNoisedControls(state_, control_sequence_);
   noise_generator_.generateNextNoises();
-  applyVelocityConstraints();
   generateActionSequence();
+  applyVelocityConstraints(); // TODO why after works only?!?!
   updateStateVelocities(state_);
   integrateStateVelocities(generated_trajectories_, state_);
 }
@@ -230,15 +230,19 @@ void Optimizer::applyVelocityConstraints()
 {
   auto & s = settings_;
 
+  // Shouldn't we clip the A's too?! TODO
   if (isHolonomic()) {
-    state_.avy = xt::clip(state_.avy, -s.constraints.vy, s.constraints.vy);
     state_.cvy = xt::clip(state_.cvy, -s.constraints.vy, s.constraints.vy);
+    // state_.avy = xt::clip(state_.avy, -s.constraints.vy, s.constraints.vy);
   }
 
   state_.cvx = xt::clip(state_.cvx, s.constraints.vx_min, s.constraints.vx_max);
   state_.cwz = xt::clip(state_.cwz, -s.constraints.wz, s.constraints.wz);
 
-  motion_model_->applyConstraints(state_);
+  // state_.avx = xt::clip(state_.avx, s.constraints.vx_min, s.constraints.vx_max);
+  // state_.awz = xt::clip(state_.awz, -s.constraints.wz, s.constraints.wz);
+
+  motion_model_->applyConstraints(state_); // TODO this needs to be called after predict to have vx/vw populated, or do cvx/avx
 }
 
 void Optimizer::generateActionSequence()
@@ -369,8 +373,9 @@ void Optimizer::updateControlSequence()
   // TODO maybe should be a critic function, maybe power of 1 like critics or 2 like paper?
   // sum((a_t - a_{t-1}) * w * (a_t - a_{t-1}))
 
-  // TODO not reactive to changes, distribution is really small from N + 0.1 * <distro>, rather than <distro>
-  // Contact SMMPI guys, incentives in citations to help. Plus 10,000+ devs / braggings rights in ROS. So close and solves a remaining issue
+  // TODO not reactive to changes or new paths, distribution is really small from N + 0.1 * <distro>, rather than <distro>
+
+  // TODO make entire thing optional
 
   float weight = 0.8; // TODO parameterize
   const auto avx1 = xt::view(state_.avx,  xt::all(), xt::range(_, -1));

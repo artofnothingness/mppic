@@ -36,6 +36,8 @@ void GoalAngleCritic::score(CriticData & data)
 
   const auto dist = std::sqrt(dx * dx + dy * dy);
 
+  // TODO apply only to PRIMITIVES within goal angle threshold, not based on current state 
+    // same with path_, prefer_, and twirling_ for prims near goal?
   if (dist < threshold_to_consider_goal_angle_) {
     const auto goal_yaw = data.path.yaws(goal_idx);
 
