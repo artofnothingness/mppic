@@ -24,8 +24,8 @@ public:
 
   virtual void predict(models::State & state)
   {
-    // TODO based on avx/avy/awz since this is what we send to the robot now
-    // use this to produce trajectories for scoring
+    // based on avx/avy/awz since this is what we send to the robot now
+    // instead of the direct U controls, so use this to produce trajectories for scoring
     using namespace xt::placeholders;  // NOLINT
     xt::noalias(xt::view(state.vx, xt::all(), xt::range(1, _))) =
       xt::view(state.avx, xt::all(), xt::range(0, -1));
