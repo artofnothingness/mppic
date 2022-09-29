@@ -219,7 +219,7 @@ void Optimizer::generateNoisedTrajectories()
   noise_generator_.setNoisedControls(state_, control_sequence_);
   noise_generator_.generateNextNoises();
   generateActionSequence();
-  applyVelocityConstraints(); // TODO why after works only?!?!
+  applyVelocityConstraints(); // TODO why after works only computing A?! But still necessary?!
   updateStateVelocities(state_);
   integrateStateVelocities(generated_trajectories_, state_);
 }
@@ -371,13 +371,14 @@ xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
 void Optimizer::updateControlSequence()
 {
   // TODO maybe should be a critic function, maybe power of 1 like critics or 2 like paper?
+    // parmeterize weight / powers
   // sum((a_t - a_{t-1}) * w * (a_t - a_{t-1}))
 
   // TODO not reactive to changes or new paths, distribution is really small from N + 0.1 * <distro>, rather than <distro>
 
   // TODO make entire thing optional
 
-  float weight = 0.8; // TODO parameterize
+  float weight = 0.8;
   const auto avx1 = xt::view(state_.avx,  xt::all(), xt::range(_, -1));
   const auto avx2 = xt::view(state_.avx, xt::all(), xt::range(1, _));
   const auto d_avx = xt::fabs(avx2 - avx1);
@@ -418,7 +419,6 @@ void Optimizer::updateActionSequence()
 
   action_sequence_.vx = xt::clip(action_sequence_.vx, s.constraints.vx_min, s.constraints.vx_max);
   action_sequence_.wz = xt::clip(action_sequence_.wz, -s.constraints.wz, s.constraints.wz);
-
 }
 
 geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
