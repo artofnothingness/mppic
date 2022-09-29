@@ -218,8 +218,8 @@ void Optimizer::generateNoisedTrajectories()
 {
   noise_generator_.setNoisedControls(state_, control_sequence_);
   noise_generator_.generateNextNoises();
-  generateActionSequence();
   applyVelocityConstraints();
+  generateActionSequence();
   updateStateVelocities(state_);
   integrateStateVelocities(generated_trajectories_, state_);
 }
@@ -230,7 +230,6 @@ void Optimizer::applyVelocityConstraints()
 {
   auto & s = settings_;
 
-  // TODO should still apply clipped limits to controls?
   if (isHolonomic()) {
     state_.avy = xt::clip(state_.avy, -s.constraints.vy, s.constraints.vy);
     state_.cvy = xt::clip(state_.cvy, -s.constraints.vy, s.constraints.vy);
@@ -239,14 +238,12 @@ void Optimizer::applyVelocityConstraints()
   state_.cvx = xt::clip(state_.cvx, s.constraints.vx_min, s.constraints.vx_max);
   state_.cwz = xt::clip(state_.cwz, -s.constraints.wz, s.constraints.wz);
 
-  motion_model_->applyConstraints(state_); // TODO this needs to be called after predict to have vx/vw populated, or do cvx/avx
+  motion_model_->applyConstraints(state_);
 }
 
 void Optimizer::generateActionSequence()
 {
-  // TODO action sequence tensor for batches: a_t^k = a_t + v_t^k + delta t
-  // should be state_.cvx or state_.vx? Control seems to work better,
-  // but doesn't seem technically right.
+  // a_t^k = a_t + v_t^k * dt
   state_.avx = action_sequence_.vx + (state_.cvx * settings_.model_dt);
   state_.awz = action_sequence_.wz + (state_.cwz * settings_.model_dt);
 
@@ -369,17 +366,13 @@ xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
 
 void Optimizer::updateControlSequence()
 {
-  // TODO costs_ on action sequence
-  // maybe should be a critic function, maybe power of 1 like critics or 2 like paper?
-  // sum ((a_t - a_{t-1}) * w * (a_t - a_{t-1}))
+  // TODO maybe should be a critic function, maybe power of 1 like critics or 2 like paper?
+  // sum((a_t - a_{t-1}) * w * (a_t - a_{t-1}))
 
-  // TODO maybe why not working: using vx derivative of `c` for trajectories/scoring, not of `a`?
-
-  // TODO trajectories still going nutty - not stopping at goal point or even on path at times, seems overly fast/not distributed as much
-  
+  // TODO not reactive to changes, distribution is really small from N + 0.1 * <distro>, rather than <distro>
   // Contact SMMPI guys, incentives in citations to help. Plus 10,000+ devs / braggings rights in ROS. So close and solves a remaining issue
-  // Look at figures
-  float weight = 0.8;
+
+  float weight = 0.8; // TODO parameterize
   const auto avx1 = xt::view(state_.avx,  xt::all(), xt::range(_, -1));
   const auto avx2 = xt::view(state_.avx, xt::all(), xt::range(1, _));
   const auto d_avx = xt::fabs(avx2 - avx1);
@@ -394,7 +387,7 @@ void Optimizer::updateControlSequence()
     const auto d_avy = xt::fabs(avy2 - avy1);
     costs_ += xt::sum(d_avx * d_avx + d_avy * d_avy + d_awz * d_awz, {1}, immediate) * weight;
   } else {
-    costs_ += xt::sum(d_avx * d_avx + d_awz * d_awz, {1}, immediate) * weight;
+    costs_ += xt::sum(d_avx * d_avx + d_awz * d_awz, {1}, immediate) * weight; // TODO order
   }
 
   auto && costs_normalized = costs_ - xt::amin(costs_, immediate);
