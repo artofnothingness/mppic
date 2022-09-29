@@ -217,7 +217,7 @@ void Optimizer::shiftActionSequence()
 void Optimizer::generateNoisedTrajectories()
 {
   noise_generator_.setNoisedControls(state_, control_sequence_);
-  noise_generator_.generateNextNoises();  // TODO should still apply clipped limits?
+  noise_generator_.generateNextNoises();
   generateActionSequence();
   applyVelocityConstraints();
   updateStateVelocities(state_);
@@ -230,14 +230,16 @@ void Optimizer::applyVelocityConstraints()
 {
   auto & s = settings_;
 
+  // TODO should still apply clipped limits to controls?
   if (isHolonomic()) {
     state_.avy = xt::clip(state_.avy, -s.constraints.vy, s.constraints.vy);
+    state_.cvy = xt::clip(state_.cvy, -s.constraints.vy, s.constraints.vy);
   }
 
-  state_.avx = xt::clip(state_.avx, s.constraints.vx_min, s.constraints.vx_max);
-  state_.awz = xt::clip(state_.awz, -s.constraints.wz, s.constraints.wz);
+  state_.cvx = xt::clip(state_.cvx, s.constraints.vx_min, s.constraints.vx_max);
+  state_.cwz = xt::clip(state_.cwz, -s.constraints.wz, s.constraints.wz);
 
-  motion_model_->applyConstraints(state_); // TODO this needs to be called after predict to have vx/vw populated
+  motion_model_->applyConstraints(state_); // TODO this needs to be called after predict to have vx/vw populated, or do cvx/avx
 }
 
 void Optimizer::generateActionSequence()
@@ -374,7 +376,10 @@ void Optimizer::updateControlSequence()
   // TODO maybe why not working: using vx derivative of `c` for trajectories/scoring, not of `a`?
 
   // TODO trajectories still going nutty - not stopping at goal point or even on path at times, seems overly fast/not distributed as much
-  float weight = 1.0;
+  
+  // Contact SMMPI guys, incentives in citations to help. Plus 10,000+ devs / braggings rights in ROS. So close and solves a remaining issue
+  // Look at figures
+  float weight = 0.8;
   const auto avx1 = xt::view(state_.avx,  xt::all(), xt::range(_, -1));
   const auto avx2 = xt::view(state_.avx, xt::all(), xt::range(1, _));
   const auto d_avx = xt::fabs(avx2 - avx1);
