@@ -242,7 +242,7 @@ void Optimizer::applyVelocityConstraints()
   // state_.avx = xt::clip(state_.avx, s.constraints.vx_min, s.constraints.vx_max);
   // state_.awz = xt::clip(state_.awz, -s.constraints.wz, s.constraints.wz);
 
-  motion_model_->applyConstraints(state_); // TODO this needs to be called after predict to have vx/vw populated, or do cvx/avx
+  // motion_model_->applyConstraints(state_); // TODO this needs to be called after predict to have vx/vw populated, or do cvx/avx
 }
 
 void Optimizer::generateActionSequence()
@@ -372,7 +372,6 @@ void Optimizer::updateControlSequence()
 {
   // TODO maybe should be a critic function, maybe power of 1 like critics or 2 like paper?
     // parmeterize weight / powers
-  // sum((a_t - a_{t-1}) * w * (a_t - a_{t-1}))
 
   // TODO not reactive to changes or new paths, distribution is really small from N + 0.1 * <distro>, rather than <distro>
 
@@ -393,7 +392,7 @@ void Optimizer::updateControlSequence()
     const auto d_avy = xt::fabs(avy2 - avy1);
     costs_ += xt::sum(d_avx * d_avx + d_avy * d_avy + d_awz * d_awz, {1}, immediate) * weight;
   } else {
-    costs_ += xt::sum(d_avx * d_avx + d_awz * d_awz, {1}, immediate) * weight; // TODO order
+    costs_ += xt::sum(d_avx * d_avx + d_awz * d_awz, {1}, immediate) * weight;
   }
 
   auto && costs_normalized = costs_ - xt::amin(costs_, immediate);
