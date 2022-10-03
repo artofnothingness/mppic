@@ -79,7 +79,8 @@ protected:
    */
   void generateNoisedTrajectories();
 
-  void applyVelocityConstraints();
+  void applyControlConstraints();
+  void applyActionConstraints();
 
   /**
    * @brief  Update velocities in state_

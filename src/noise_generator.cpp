@@ -91,4 +91,19 @@ void NoiseGenerator::generateNoisedControls()
   }
 }
 
+void NoiseGenerator::setBoundedNoises(
+  const models::State & state,
+  const models::ControlSequence & control_sequence,
+  const models::ActionSequence & action_sequence)
+{
+  bounded_noises_vx_ = state.avx - action_sequence.vx - control_sequence.vx;
+  bounded_noises_vy_ = state.avy - action_sequence.vy - control_sequence.vy;
+  bounded_noises_wz_ = state.awz - action_sequence.wz - control_sequence.wz;
+}
+
+BoundedNoises NoiseGenerator::getBoundedNoises()
+{
+  return {bounded_noises_vx_, bounded_noises_vy_, bounded_noises_wz_};
+}
+
 }  // namespace mppi

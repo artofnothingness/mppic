@@ -14,10 +14,18 @@
 
 #include "mppic/models/optimizer_settings.hpp"
 #include <mppic/models/control_sequence.hpp>
+#include <mppic/models/action_sequence.hpp>
 #include <mppic/models/state.hpp>
 
 namespace mppi
 {
+
+struct BoundedNoises
+{
+  xt::xtensor<float, 2> & bounded_noises_vx;
+  xt::xtensor<float, 2> & bounded_noises_vy;
+  xt::xtensor<float, 2> & bounded_noises_wz;
+};
 
 class NoiseGenerator
 {
@@ -49,6 +57,22 @@ public:
   void setNoisedControls(models::State & state, const models::ControlSequence & control_sequence);
 
   /**
+   * @brief set noises after bounded by control and action sequence constraints
+   * @param Current State
+   * @param Current Control sequence
+   * @param Current action sequence
+   */
+  void setBoundedNoises(
+    const models::State & state,
+    const models::ControlSequence & control_sequence,
+    const models::ActionSequence & action_sequence);
+
+  /**
+   * @brief Get noises after bounded by control and action sequence constraints
+   */
+  BoundedNoises getBoundedNoises();
+
+  /**
    * @brief Reset noise generator with settings and model types
    * @param settings Settings of controller
    * @param is_holonomic If base is holonomic
@@ -73,6 +97,10 @@ protected:
   xt::xtensor<float, 2> noises_vx_;
   xt::xtensor<float, 2> noises_vy_;
   xt::xtensor<float, 2> noises_wz_;
+
+  xt::xtensor<float, 2> bounded_noises_vx_;
+  xt::xtensor<float, 2> bounded_noises_vy_;
+  xt::xtensor<float, 2> bounded_noises_wz_;
 
   mppi::models::OptimizerSettings settings_;
   bool is_holonomic_;

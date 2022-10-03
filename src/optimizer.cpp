@@ -54,6 +54,7 @@ void Optimizer::getParams()
   auto getParam = parameters_handler_->getParamGetter(name_);
   auto getParentParam = parameters_handler_->getParamGetter("");
   getParam(s.model_dt, "model_dt", 0.1f);
+  getParam(s.action_dt, "action_dt", 1.0f);
   getParam(s.time_steps, "time_steps", 15);
   getParam(s.batch_size, "batch_size", 400);
   getParam(s.iteration_count, "iteration_count", 1);
@@ -218,42 +219,51 @@ void Optimizer::generateNoisedTrajectories()
 {
   noise_generator_.setNoisedControls(state_, control_sequence_);
   noise_generator_.generateNextNoises();
+  applyControlConstraints();
   generateActionSequence();
-  applyVelocityConstraints(); // TODO why after works only computing A?! But still necessary?!
+  applyActionConstraints();
+  noise_generator_.setBoundedNoises(state_, control_sequence_, action_sequence_);
   updateStateVelocities(state_);
   integrateStateVelocities(generated_trajectories_, state_);
 }
 
 bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
 
-void Optimizer::applyVelocityConstraints()
+void Optimizer::applyControlConstraints()
 {
   auto & s = settings_;
 
-  // Shouldn't we clip the A's too?! TODO
   if (isHolonomic()) {
     state_.cvy = xt::clip(state_.cvy, -s.constraints.vy, s.constraints.vy);
-    // state_.avy = xt::clip(state_.avy, -s.constraints.vy, s.constraints.vy);
   }
 
   state_.cvx = xt::clip(state_.cvx, s.constraints.vx_min, s.constraints.vx_max);
   state_.cwz = xt::clip(state_.cwz, -s.constraints.wz, s.constraints.wz);
-
-  // state_.avx = xt::clip(state_.avx, s.constraints.vx_min, s.constraints.vx_max);
-  // state_.awz = xt::clip(state_.awz, -s.constraints.wz, s.constraints.wz);
-
-  // motion_model_->applyConstraints(state_); // TODO this needs to be called after predict to have vx/vw populated, or do cvx/avx
 }
 
 void Optimizer::generateActionSequence()
 {
   // a_t^k = a_t + v_t^k * dt
-  state_.avx = action_sequence_.vx + (state_.cvx * settings_.model_dt);
-  state_.awz = action_sequence_.wz + (state_.cwz * settings_.model_dt);
+  state_.avx = action_sequence_.vx + (state_.cvx * settings_.action_dt);
+  state_.awz = action_sequence_.wz + (state_.cwz * settings_.action_dt);
 
   if (isHolonomic()) {
-    state_.avy = action_sequence_.vy + (state_.cvy * settings_.model_dt);
+    state_.avy = action_sequence_.vy + (state_.cvy * settings_.action_dt);
   }
+}
+
+void Optimizer::applyActionConstraints()
+{
+  auto & s = settings_;
+
+  if (isHolonomic()) {
+    state_.avy = xt::clip(state_.avy, -s.constraints.vy, s.constraints.vy);
+  }
+
+  state_.avx = xt::clip(state_.avx, s.constraints.vx_min, s.constraints.vx_max);
+  state_.awz = xt::clip(state_.awz, -s.constraints.wz, s.constraints.wz);
+
+  // motion_model_->applyConstraints(state_); // TODO this needs to be called after predict to have vx/vw populated, or do cvx/avx
 }
 
 void Optimizer::updateStateVelocities(
@@ -373,8 +383,6 @@ void Optimizer::updateControlSequence()
   // TODO maybe should be a critic function, maybe power of 1 like critics or 2 like paper?
     // parmeterize weight / powers
 
-  // TODO not reactive to changes or new paths, distribution is really small from N + 0.1 * <distro>, rather than <distro>
-
   // TODO make entire thing optional
 
   float weight = 0.8;
@@ -400,17 +408,19 @@ void Optimizer::updateControlSequence()
   auto && softmaxes = xt::eval(exponents / xt::sum(exponents, immediate));
   auto && softmaxes_extened = xt::eval(xt::view(softmaxes, xt::all(), xt::newaxis()));
 
-  xt::noalias(control_sequence_.vx) = xt::sum(state_.cvx * softmaxes_extened, 0, immediate);
-  xt::noalias(control_sequence_.vy) = xt::sum(state_.cvy * softmaxes_extened, 0, immediate);
-  xt::noalias(control_sequence_.wz) = xt::sum(state_.cwz * softmaxes_extened, 0, immediate);
+  auto [bounded_noise_vx, bounded_noise_vy, bounded_noise_wz] = noise_generator_.getBoundedNoises();
+  xt::noalias(control_sequence_.vx) = control_sequence_.vx + xt::sum(bounded_noise_vx * softmaxes_extened, 0, immediate);
+  xt::noalias(control_sequence_.vy) = control_sequence_.vy + xt::sum(bounded_noise_vy * softmaxes_extened, 0, immediate);
+  xt::noalias(control_sequence_.wz) = control_sequence_.wz + xt::sum(bounded_noise_wz * softmaxes_extened, 0, immediate);
 }
 
 void Optimizer::updateActionSequence()
 {
-  xt::noalias(action_sequence_.vx) = action_sequence_.vx + (control_sequence_.vx * settings_.model_dt);
-  xt::noalias(action_sequence_.vy) = action_sequence_.vy + (control_sequence_.vy * settings_.model_dt);
-  xt::noalias(action_sequence_.wz) = action_sequence_.wz + (control_sequence_.wz * settings_.model_dt);
+  xt::noalias(action_sequence_.vx) = action_sequence_.vx + (control_sequence_.vx * settings_.action_dt);
+  xt::noalias(action_sequence_.vy) = action_sequence_.vy + (control_sequence_.vy * settings_.action_dt);
+  xt::noalias(action_sequence_.wz) = action_sequence_.wz + (control_sequence_.wz * settings_.action_dt);
 
+  // TODO clipping shouldnt be required if already clipped, right?
  auto & s = settings_;
   if (isHolonomic()) {
     action_sequence_.vy = xt::clip(action_sequence_.vy, -s.constraints.vy, s.constraints.vy);
