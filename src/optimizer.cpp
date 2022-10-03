@@ -263,7 +263,7 @@ void Optimizer::applyActionConstraints()
   state_.avx = xt::clip(state_.avx, s.constraints.vx_min, s.constraints.vx_max);
   state_.awz = xt::clip(state_.awz, -s.constraints.wz, s.constraints.wz);
 
-  // motion_model_->applyConstraints(state_); // TODO this needs to be called after predict to have vx/vw populated, or do cvx/avx
+  motion_model_->applyConstraints(state_);
 }
 
 void Optimizer::updateStateVelocities(
@@ -384,6 +384,8 @@ void Optimizer::updateControlSequence()
     // parmeterize weight / powers
 
   // TODO make entire thing optional
+
+  // TODO unstable behavior / tied into action delta_T/noise distributions
 
   float weight = 0.8;
   const auto avx1 = xt::view(state_.avx,  xt::all(), xt::range(_, -1));

@@ -59,8 +59,8 @@ public:
 
   void applyConstraints(models::State & state) override
   {
-    auto & vx = state.vx;
-    auto & wz = state.wz;
+    auto & vx = state.avx;
+    auto & wz = state.awz;
 
     auto view = xt::masked_view(wz, vx / wz > min_turning_r_);
     view = xt::sign(vx) / min_turning_r_;
