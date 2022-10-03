@@ -96,6 +96,7 @@ void NoiseGenerator::setBoundedNoises(
   const models::ControlSequence & control_sequence,
   const models::ActionSequence & action_sequence)
 {
+  // TODO need to use action_dt when setting noise values when != 1.0 ?
   bounded_noises_vx_ = state.avx - action_sequence.vx - control_sequence.vx;
   bounded_noises_vy_ = state.avy - action_sequence.vy - control_sequence.vy;
   bounded_noises_wz_ = state.awz - action_sequence.wz - control_sequence.wz;
