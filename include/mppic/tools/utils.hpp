@@ -99,6 +99,29 @@ inline bool withinPositionGoalTolerance(
   return false;
 }
 
+inline bool withinPositionGoalTolerance(
+  const float & pose_tolerance,
+  const geometry_msgs::msg::Pose & robot,
+  const models::Path & path)
+{
+  const auto goal_idx = path.x.shape(0);
+  const auto goal_x = path.x(goal_idx);
+  const auto goal_y = path.y(goal_idx);
+
+  const auto pose_tolerance_sq = pose_tolerance * pose_tolerance;
+
+  auto dx = robot.position.x - goal_x;
+  auto dy = robot.position.y - goal_y;
+
+  auto dist_sq = dx * dx + dy * dy;
+
+  if (dist_sq < pose_tolerance_sq) {
+    return true;
+  }
+
+  return false;
+}
+
 /**
   * @brief normalize
   *

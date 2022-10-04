@@ -10,6 +10,9 @@ void PreferForwardCritic::initialize()
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(power_, "cost_power", 1);
   getParam(weight_, "cost_weight", 3.0);
+  getParam(
+    threshold_to_consider_,
+    "threshold_to_consider", 0.40f);
 
   RCLCPP_INFO(
     logger_, "PreferForwardCritic instantiated with %d power and %f weight.", power_, weight_);
@@ -23,7 +26,7 @@ void PreferForwardCritic::score(CriticData & data)
     return;
   }
 
-  if (utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose.pose, data.path)) {
+  if (utils::withinPositionGoalTolerance(threshold_to_consider_, data.state.pose.pose, data.path)) {
     return;
   }
 
