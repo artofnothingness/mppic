@@ -100,7 +100,7 @@ inline bool withinPositionGoalTolerance(
 }
 
 inline bool withinPositionGoalTolerance(
-  const float & pose_tolerance,
+  float tolerance,
   const geometry_msgs::msg::Pose & robot,
   const models::Path & path)
 {
