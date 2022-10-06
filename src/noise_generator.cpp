@@ -49,13 +49,13 @@ void NoiseGenerator::setNoisedControls(
   const int division = ceil((1.0 - settings_.zero_mean_percentage) * settings_.batch_size);
 
   auto applyNoises = [division](auto & state, const auto & noise, const auto & control) {
-      auto lhs_state = xt::view(state, xt::range(0, division));
-      const auto lhs_noise = xt::view(noise, xt::range(0, division));
+      auto lhs_state = xt::view(state, xt::range(0, division), xt::all());
+      const auto lhs_noise = xt::view(noise, xt::range(0, division), xt::all());
       xt::noalias(lhs_state) = lhs_noise;
       
-      auto rhs_state = xt::view(state, xt::range(division, _));
-      const auto rhs_noise = xt::view(noise, xt::range(division, _));
-      const auto rhs_control = xt::view(control, xt::range(division, _));
+      auto rhs_state = xt::view(state, xt::range(division, _), xt::all());
+      const auto rhs_noise = xt::view(noise, xt::range(division, _), xt::all());
+      const auto rhs_control = xt::view(control, xt::range(division, _), xt::all());
       xt::noalias(rhs_state) = rhs_control + rhs_noise;
     };
 
