@@ -58,6 +58,7 @@ void Optimizer::getParams()
   getParam(s.batch_size, "batch_size", 400);
   getParam(s.iteration_count, "iteration_count", 1);
   getParam(s.temperature, "temperature", 0.25f);
+  getParam(s.gamma, "gamma", 0.10f);
   getParam(s.base_constraints.vx_max, "vx_max", 0.5);
   getParam(s.base_constraints.vx_min, "vx_min", -0.35);
   getParam(s.base_constraints.vy, "vy_max", 0.5);
@@ -333,6 +334,24 @@ xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
 
 void Optimizer::updateControlSequence()
 {
+  auto & s = settings_;
+  auto bounded_noises_vx = state_.cvx - control_sequence_.vx;
+  auto bounded_noises_wz = state_.cwz - control_sequence_.wz;
+  xt::noalias(costs_) +=
+    s.gamma / s.sampling_std.vx * xt::sum(
+      xt::view(control_sequence_.vx, xt::newaxis(), xt::all()) * bounded_noises_vx, 1, immediate);
+  xt::noalias(costs_) +=
+    s.gamma / s.sampling_std.wz * xt::sum(
+      xt::view(control_sequence_.wz, xt::newaxis(), xt::all()) * bounded_noises_wz, 1, immediate);
+
+  if (isHolonomic()) {
+    auto bounded_noises_vy = state_.cvy - control_sequence_.vy;
+    xt::noalias(costs_) +=
+      s.gamma / s.sampling_std.vy * xt::sum(
+        xt::view(control_sequence_.vy, xt::newaxis(), xt::all()) * bounded_noises_vy,
+        1, immediate);
+  }
+
   auto && costs_normalized = costs_ - xt::amin(costs_, immediate);
   auto && exponents = xt::eval(xt::exp(-1 / settings_.temperature * costs_normalized));
   auto && softmaxes = xt::eval(exponents / xt::sum(exponents, immediate));
