@@ -12,7 +12,9 @@ void PathAngleCritic::initialize()
   getParam(offset_from_furthest_, "offset_from_furthest", 4);
   getParam(power_, "cost_power", 1);
   getParam(weight_, "cost_weight", 2.0);
-
+  getParam(
+    threshold_to_consider_,
+    "threshold_to_consider", 0.40f);
   getParam(
     max_angle_to_furthest_,
     "max_angle_to_furthest", M_PI_2);
@@ -26,13 +28,12 @@ void PathAngleCritic::initialize()
 
 void PathAngleCritic::score(CriticData & data)
 {
-
   using xt::evaluation_strategy::immediate;
   if (!enabled_) {
     return;
   }
 
-  if (utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose.pose, data.path)) {
+  if (utils::withinPositionGoalTolerance(threshold_to_consider_, data.state.pose.pose, data.path)) {
     return;
   }
 
