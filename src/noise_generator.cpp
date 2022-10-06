@@ -59,9 +59,9 @@ void NoiseGenerator::setNoisedControls(
       xt::noalias(rhs_state) = rhs_control + rhs_noise;
     };
 
-  applyNoises(noises_vx_, state.cvx, control_sequence.vx);
-  applyNoises(noises_vy_, state.cvy, control_sequence.vy);
-  applyNoises(noises_wz_, state.cwz, control_sequence.wz);
+  applyNoises(state.cvx, noises_vx_, control_sequence.vx);
+  applyNoises(state.cvy, noises_vy_, control_sequence.vy);
+  applyNoises(state.cwz, noises_wz_, control_sequence.wz);
 }
 
 void NoiseGenerator::reset(mppi::models::OptimizerSettings & settings, bool is_holonomic)
