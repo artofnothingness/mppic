@@ -48,13 +48,15 @@ void NoiseGenerator::setNoisedControls(
   // Where to divide set of noises between zero- and U-meaned controls
   const int division = ceil((1.0 - settings_.zero_mean_percentage) * settings_.batch_size);
 
-  auto applyNoises = [&](auto & axis_noises, auto & axis_state, auto & axis_control) -> void {
-      auto noises = xt::view(axis_noises, xt::range(0, division), xt::all());
-      auto zero_mean_noises = xt::view(axis_noises, xt::range(division, _), xt::all());
-      auto noised_controls = xt::view(axis_state, xt::range(0, division), xt::all());
-      auto zero_mean_controls = xt::view(axis_state, xt::range(division, _), xt::all());
-      xt::noalias(noised_controls) = axis_control + noises;
-      xt::noalias(zero_mean_controls) = zero_mean_noises;
+  auto applyNoises = [division](auto & state, const auto & noise, const auto & control) {
+      auto lhs_state = xt::view(state, xt::range(0, division));
+      const auto lhs_noise = xt::view(noise, xt::range(0, division));
+      xt::noalias(lhs_state) = lhs_noise;
+      
+      auto rhs_state = xt::view(state, xt::range(division, _));
+      const auto rhs_noise = xt::view(noise, xt::range(division, _));
+      const auto rhs_control = xt::view(control, xt::range(division, _));
+      xt::noalias(rhs_state) = rhs_control + rhs_noise;
     };
 
   applyNoises(noises_vx_, state.cvx, control_sequence.vx);
