@@ -104,7 +104,7 @@ inline bool withinPositionGoalTolerance(
   const geometry_msgs::msg::Pose & robot,
   const models::Path & path)
 {
-  const auto goal_idx = path.x.shape(0);
+  const auto goal_idx = path.x.shape(0) - 1;
   const auto goal_x = path.x(goal_idx);
   const auto goal_y = path.y(goal_idx);
 
