@@ -10,6 +10,8 @@
 namespace mppi
 {
 
+using xt::placeholders::_;
+
 void NoiseGenerator::initialize(mppi::models::OptimizerSettings & settings, bool is_holonomic)
 {
   settings_ = settings;
@@ -43,9 +45,21 @@ void NoiseGenerator::setNoisedControls(
 {
   std::unique_lock<std::mutex> guard(noise_lock_);
 
-  xt::noalias(state.cvx) = control_sequence.vx + noises_vx_;
-  xt::noalias(state.cvy) = control_sequence.vy + noises_vy_;
-  xt::noalias(state.cwz) = control_sequence.wz + noises_wz_;
+  // Where to divide set of noises between zero- and U-meaned controls
+  const int division = ceil((1.0 - settings_.zero_mean_percentage) * settings_.batch_size);
+
+  auto applyNoises = [&](auto & axis_noises, auto & axis_state, auto & axis_control) -> void {
+      auto noises = xt::view(axis_noises, xt::range(0, division), xt::all());
+      auto zero_mean_noises = xt::view(axis_noises, xt::range(division, _), xt::all());
+      auto noised_controls = xt::view(axis_state, xt::range(0, division), xt::all());
+      auto zero_mean_controls = xt::view(axis_state, xt::range(division, _), xt::all());
+      xt::noalias(noised_controls) = axis_control + noises;
+      xt::noalias(zero_mean_controls) = zero_mean_noises;
+    };
+
+  applyNoises(noises_vx_, state.cvx, control_sequence.vx);
+  applyNoises(noises_vy_, state.cvy, control_sequence.vy);
+  applyNoises(noises_wz_, state.cwz, control_sequence.wz);
 }
 
 void NoiseGenerator::reset(mppi::models::OptimizerSettings & settings, bool is_holonomic)
