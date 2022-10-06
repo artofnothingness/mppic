@@ -75,6 +75,12 @@ protected:
 
   /**
    *
+   * @brief add control_cost
+   */
+   void evalControlCost();
+
+  /**
+   *
    * @brief updates generated_trajectories_
    */
   void generateNoisedTrajectories();

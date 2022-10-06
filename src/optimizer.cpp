@@ -144,6 +144,25 @@ void Optimizer::optimize()
   }
 }
 
+void Optimizer::evalControlCost()
+{
+  auto & s = settings_;
+
+  // TODO make it a parameter
+  float gamma = 0.1;
+
+  auto [bounded_noise_vx, bounded_noise_vy, bounded_noise_wz] = noise_generator_.getBoundedNoises();
+
+  // TODO make it as a critic function
+  costs_ += gamma * pow(s.sampling_std.vx, 2) * xt::sum(xt::eval(xt::view(control_sequence_.vx, xt::newaxis(), xt::all())) * bounded_noise_vx, 1, immediate);
+  costs_ += gamma * pow(s.sampling_std.wz, 2) * xt::sum(xt::eval(xt::view(control_sequence_.wz, xt::newaxis(), xt::all())) * bounded_noise_wz, 1, immediate);
+  
+  if (isHolonomic()) {
+    costs_ += gamma * pow(s.sampling_std.vy, 2) * xt::sum(xt::eval(xt::view(control_sequence_.vy, xt::newaxis(), xt::all())) * bounded_noise_vy, 1, immediate);
+  }
+
+}
+
 bool Optimizer::fallback(bool fail)
 {
   static size_t counter = 0;
@@ -387,7 +406,7 @@ void Optimizer::updateControlSequence()
 
   // TODO unstable behavior / tied into action delta_T/noise distributions
 
-  float weight = 0.8;
+  float weight = 0.2;
   const auto avx1 = xt::view(state_.avx,  xt::all(), xt::range(_, -1));
   const auto avx2 = xt::view(state_.avx, xt::all(), xt::range(1, _));
   const auto d_avx = xt::fabs(avx2 - avx1);
@@ -404,6 +423,8 @@ void Optimizer::updateControlSequence()
   } else {
     costs_ += xt::sum(d_avx * d_avx + d_awz * d_awz, {1}, immediate) * weight;
   }
+
+  evalControlCost();
 
   auto && costs_normalized = costs_ - xt::amin(costs_, immediate);
   auto && exponents = xt::eval(xt::exp(-1 / settings_.temperature * costs_normalized));
