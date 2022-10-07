@@ -63,6 +63,10 @@ void Optimizer::getParams()
   getParam(s.base_constraints.vx_min, "vx_min", -0.35);
   getParam(s.base_constraints.vy, "vy_max", 0.5);
   getParam(s.base_constraints.wz, "wz_max", 1.3);
+  getParam(s.d_constraints.vx_max, "d_vx_max", 0.2);
+  getParam(s.d_constraints.vx_min, "d_vx_min", -0.2);
+  getParam(s.d_constraints.vy, "d_vy_max", 0.2);
+  getParam(s.d_constraints.wz, "d_wz_max", 0.4);
   getParam(s.sampling_std.vx, "vx_std", 0.2);
   getParam(s.sampling_std.vy, "vy_std", 0.2);
   getParam(s.sampling_std.wz, "wz_std", 1.0);
@@ -154,11 +158,11 @@ void Optimizer::evalControlCost()
   auto [bounded_noise_vx, bounded_noise_vy, bounded_noise_wz] = noise_generator_.getBoundedNoises();
 
   // TODO make it as a critic function
-  costs_ += gamma * pow(s.sampling_std.vx, 2) * xt::sum(xt::eval(xt::view(control_sequence_.vx, xt::newaxis(), xt::all())) * bounded_noise_vx, 1, immediate);
-  costs_ += gamma * pow(s.sampling_std.wz, 2) * xt::sum(xt::eval(xt::view(control_sequence_.wz, xt::newaxis(), xt::all())) * bounded_noise_wz, 1, immediate);
+  costs_ += gamma / pow(s.sampling_std.vx, 2) * xt::sum(xt::eval(xt::view(control_sequence_.vx, xt::newaxis(), xt::all())) * bounded_noise_vx, 1, immediate);
+  costs_ += gamma / pow(s.sampling_std.wz, 2) * xt::sum(xt::eval(xt::view(control_sequence_.wz, xt::newaxis(), xt::all())) * bounded_noise_wz, 1, immediate);
   
   if (isHolonomic()) {
-    costs_ += gamma * pow(s.sampling_std.vy, 2) * xt::sum(xt::eval(xt::view(control_sequence_.vy, xt::newaxis(), xt::all())) * bounded_noise_vy, 1, immediate);
+    costs_ += gamma / pow(s.sampling_std.vy, 2) * xt::sum(xt::eval(xt::view(control_sequence_.vy, xt::newaxis(), xt::all())) * bounded_noise_vy, 1, immediate);
   }
 
 }
@@ -253,11 +257,11 @@ void Optimizer::applyControlConstraints()
   auto & s = settings_;
 
   if (isHolonomic()) {
-    state_.cvy = xt::clip(state_.cvy, -s.constraints.vy, s.constraints.vy);
+    state_.cvy = xt::clip(state_.cvy, -s.d_constraints.vy, s.d_constraints.vy);
   }
 
-  state_.cvx = xt::clip(state_.cvx, s.constraints.vx_min, s.constraints.vx_max);
-  state_.cwz = xt::clip(state_.cwz, -s.constraints.wz, s.constraints.wz);
+  state_.cvx = xt::clip(state_.cvx, s.d_constraints.vx_min, s.d_constraints.vx_max);
+  state_.cwz = xt::clip(state_.cwz, -s.d_constraints.wz, s.d_constraints.wz);
 }
 
 void Optimizer::generateActionSequence()
@@ -406,7 +410,9 @@ void Optimizer::updateControlSequence()
 
   // TODO unstable behavior / tied into action delta_T/noise distributions
 
-  float weight = 0.2;
+  float weight_vx = 0.0;
+  float weight_vy = 0.0;
+  float weight_wz = 0.0;
   const auto avx1 = xt::view(state_.avx,  xt::all(), xt::range(_, -1));
   const auto avx2 = xt::view(state_.avx, xt::all(), xt::range(1, _));
   const auto d_avx = xt::fabs(avx2 - avx1);
@@ -419,9 +425,9 @@ void Optimizer::updateControlSequence()
     const auto avy1 = xt::view(state_.avy, xt::all(), xt::range(_, -1));
     const auto avy2 = xt::view(state_.avy, xt::all(), xt::range(1, _));
     const auto d_avy = xt::fabs(avy2 - avy1);
-    costs_ += xt::sum(d_avx * d_avx + d_avy * d_avy + d_awz * d_awz, {1}, immediate) * weight;
+    costs_ += xt::sum(weight_vx * d_avx * d_avx + weight_vy * d_avy * d_avy + weight_wz * d_awz * d_awz, {1}, immediate);
   } else {
-    costs_ += xt::sum(d_avx * d_avx + d_awz * d_awz, {1}, immediate) * weight;
+    costs_ += xt::sum(weight_vx * d_avx * d_avx + weight_wz * d_awz * d_awz, {1}, immediate);
   }
 
   evalControlCost();
