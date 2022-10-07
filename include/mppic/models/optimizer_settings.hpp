@@ -11,6 +11,7 @@ struct OptimizerSettings
 {
   models::ControlConstraints base_constraints{0, 0, 0, 0};
   models::ControlConstraints constraints{0, 0, 0, 0};
+  models::ControlConstraints d_constraints{0, 0, 0, 0};
   models::SamplingStd sampling_std{0, 0, 0};
   float model_dt{0};
   float action_dt{0};
