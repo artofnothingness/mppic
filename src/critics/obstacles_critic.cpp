@@ -9,7 +9,7 @@ void ObstaclesCritic::initialize()
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(consider_footprint_, "consider_footprint", false);
   getParam(power_, "cost_power", 2);
-  getParam(weight_, "cost_weight", 1.25);
+  getParam(weight_, "cost_weight", 2.0);
   getParam(collision_cost_, "collision_cost", 2000.0);
 
   collision_checker_.setCostmap(costmap_);
@@ -61,17 +61,18 @@ void ObstaclesCritic::score(CriticData & data)
     return;
   }
 
+  const size_t traj_len = data.trajectories.x.shape(1);
   bool all_trajectories_collide = true;
   for (size_t i = 0; i < data.trajectories.x.shape(0); ++i) {
     bool trajectory_collide = false;
     unsigned char trajectory_cost = nav2_costmap_2d::FREE_SPACE;
 
-    for (size_t j = 0; j < data.trajectories.x.shape(1); j++) {
+    for (size_t j = 0; j < traj_len; j++) {
       unsigned char pose_cost = costAtPose(
         data.trajectories.x(i, j), data.trajectories.y(i, j), data.trajectories.yaws(i, j));
-      trajectory_cost = std::max(trajectory_cost, pose_cost);
+      trajectory_cost += pose_cost;
 
-      if (inCollision(trajectory_cost)) {
+      if (inCollision(pose_cost)) {
         trajectory_collide = true;
         break;
       }

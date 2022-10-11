@@ -17,7 +17,6 @@ void GoalCritic::initialize()
 
 void GoalCritic::score(CriticData & data)
 {
-
   if (!enabled_) {
     return;
   }
