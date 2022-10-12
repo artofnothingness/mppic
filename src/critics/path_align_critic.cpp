@@ -57,7 +57,7 @@ void PathAlignCritic::score(CriticData & data)
   const auto && P2_P1_norm_sq = xt::eval(P2_P1_dx * P2_P1_dx + P2_P1_dy * P2_P1_dy);
 
   auto evaluate_u = [&](size_t t, size_t p, size_t s) {
-      return ((P3_x(t, p) - P1_x(s)) * P2_P1_dx(s)) + ((P3_y(t, p) - P1_y(s)) * P2_P1_dy(s)) /
+      return (((P3_x(t, p) - P1_x(s)) * P2_P1_dx(s)) + ((P3_y(t, p) - P1_y(s)) * P2_P1_dy(s))) /
              P2_P1_norm_sq(s);
     };
 
