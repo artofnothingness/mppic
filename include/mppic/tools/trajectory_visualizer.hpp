@@ -32,7 +32,7 @@ public:
 
   void add(const xt::xtensor<float, 2> & trajectory);
   void add(const models::Trajectories & trajectories);
-  void visualize(nav_msgs::msg::Path plan);
+  void visualize(const nav_msgs::msg::Path & plan);
   void reset();
 
 protected:
