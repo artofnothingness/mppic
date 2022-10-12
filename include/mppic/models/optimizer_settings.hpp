@@ -14,6 +14,7 @@ struct OptimizerSettings
   models::SamplingStd sampling_std{0, 0, 0};
   float model_dt{0};
   float temperature{0};
+  float zero_mean_percentage{0.0};
   unsigned int batch_size{0};
   unsigned int time_steps{0};
   unsigned int iteration_count{0};

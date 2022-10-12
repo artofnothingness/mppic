@@ -70,6 +70,7 @@ sudo make install
  | vx_min                     | double | Min VX                                                                                                                                                                                                                                                                                                               |
  | wz_max                     | double | Max WZ                                                                                                                                                                                                                                                                                                               |
  | temperature                | double | Selectiveness of trajectories by their costs (The closer this value to 0, the "more" we take in considiration controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories without cost consideration                                                   |
+ | zero_mean_percentage       | double | A percentage (0-1) of trajectory samples that should be around a zero-velocity mean to allow for some implicit recovery if path solutions change or dynamic obstacles result in collisions at full speed with a "soft reset". Under or near 1% (e.g. 0.01) is reasonable.                                                  |
  | visualize                  | bool   | Use visualization                                                                                                                                                                                                                                                                                                    |
  | retry_attempt_limit        | int    | Number of attempts to find feasible trajectory before failure                                                                                                                                                                                                                                                      |
 
@@ -152,6 +153,7 @@ controller_server:
       prune_distance: 1.7
       transform_tolerance: 0.1
       temperature: 0.35
+      zero_mean_percentage: 0.01
       motion_model: "DiffDrive"
       visualize: false
       TrajectoryVisualizer:

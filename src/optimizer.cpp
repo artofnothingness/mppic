@@ -58,6 +58,7 @@ void Optimizer::getParams()
   getParam(s.batch_size, "batch_size", 400);
   getParam(s.iteration_count, "iteration_count", 1);
   getParam(s.temperature, "temperature", 0.25f);
+  getParam(s.zero_mean_percentage, "zero_mean_percentage", 0.01f);
   getParam(s.base_constraints.vx_max, "vx_max", 0.5);
   getParam(s.base_constraints.vx_min, "vx_min", -0.35);
   getParam(s.base_constraints.vy, "vy_max", 0.5);
