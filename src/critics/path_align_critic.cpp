@@ -69,6 +69,7 @@ void PathAlignCritic::score(CriticData & data)
       return dx * dx + dy * dy;
     };
 
+  size_t traj_pts_eval = floor(time_steps / trajectory_point_step_);
   size_t max_s = 0;
   for (size_t t = 0; t < batch_size; ++t) {
     float mean_dist = 0;
@@ -101,7 +102,7 @@ void PathAlignCritic::score(CriticData & data)
       mean_dist += std::sqrt(min_dist_sq);
     }
 
-    cost(t) = mean_dist / time_steps;
+    cost(t) = mean_dist / traj_pts_eval;
   }
 
   data.furthest_reached_path_point = max_s;
