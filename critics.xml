@@ -33,6 +33,9 @@
       <description>mppi critic for preventing twirling behavior when using omnidirectional models</description>
     </class>
 
+    <class type="mppi::critics::ConstraintCritic" base_class_type="mppi::critics::CriticFunction">
+      <description>mppi critic for incentivizing moving within dynamic bounds</description>
+    </class>
 
   </library>
 </class_libraries>

@@ -199,25 +199,22 @@ void Optimizer::generateNoisedTrajectories()
 {
   noise_generator_.setNoisedControls(state_, control_sequence_);
   noise_generator_.generateNextNoises();
-  applyControlConstraints();
   updateStateVelocities(state_);
   integrateStateVelocities(generated_trajectories_, state_);
 }
 
 bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
 
-void Optimizer::applyControlConstraints()
+void Optimizer::applyControlSequenceConstraints()
 {
   auto & s = settings_;
 
   if (isHolonomic()) {
-    state_.cvy = xt::clip(state_.cvy, -s.constraints.vy, s.constraints.vy);
+    control_sequence_.vy = xt::clip(control_sequence_.vy, -s.constraints.vy, s.constraints.vy);
   }
 
-  state_.cvx = xt::clip(state_.cvx, s.constraints.vx_min, s.constraints.vx_max);
-  state_.cwz = xt::clip(state_.cwz, -s.constraints.wz, s.constraints.wz);
-
-  motion_model_->applyConstraints(state_);
+  control_sequence_.vx = xt::clip(control_sequence_.vx, s.constraints.vx_min, s.constraints.vx_max);
+  control_sequence_.wz = xt::clip(control_sequence_.wz, -s.constraints.wz, s.constraints.wz);
 }
 
 void Optimizer::updateStateVelocities(
@@ -360,6 +357,8 @@ void Optimizer::updateControlSequence()
   xt::noalias(control_sequence_.vx) = xt::sum(state_.cvx * softmaxes_extened, 0, immediate);
   xt::noalias(control_sequence_.vy) = xt::sum(state_.cvy * softmaxes_extened, 0, immediate);
   xt::noalias(control_sequence_.wz) = xt::sum(state_.cwz * softmaxes_extened, 0, immediate);
+
+  applyControlSequenceConstraints();
 }
 
 geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(

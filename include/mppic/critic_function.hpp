@@ -21,6 +21,7 @@ public:
 
   void on_configure(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent,
+    const std::string & parent_name,
     const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros,
     ParametersHandler * param_handler)
@@ -28,6 +29,7 @@ public:
     parent_ = parent;
     logger_ = parent_.lock()->get_logger();
     name_ = name;
+    parent_name_ = parent_name;
     costmap_ros_ = costmap_ros;
     costmap_ = costmap_ros_->getCostmap();
     parameters_handler_ = param_handler;
@@ -49,7 +51,7 @@ public:
 
 protected:
   bool enabled_;
-  std::string name_;
+  std::string name_, parent_name_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   nav2_costmap_2d::Costmap2D * costmap_{nullptr};
