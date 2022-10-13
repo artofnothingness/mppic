@@ -80,8 +80,7 @@ void ObstaclesCritic::score(CriticData & data)
 
     if (!trajectory_collide) {all_trajectories_collide = false;}
     data.costs[i] +=
-      trajectory_collide ? collision_cost_ : scoreCost(trajectory_cost);
-
+      trajectory_collide ? collision_cost_ : scoreCost(trajectory_cost, traj_len);
   }
 
   data.fail_flag = all_trajectories_collide;
@@ -126,11 +125,11 @@ unsigned char ObstaclesCritic::maxCost()
          nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE - 1;
 }
 
-double ObstaclesCritic::scoreCost(unsigned char cost_arg)
+double ObstaclesCritic::scoreCost(unsigned char cost_arg, const size_t traj_len)
 {
   const double max_cost = static_cast<double>(maxCost());
 
-  double cost = static_cast<double>(cost_arg) / max_cost;
+  double cost = static_cast<double>(cost_arg) / (max_cost * traj_len);
 
   return pow(cost * weight_, power_);
 }

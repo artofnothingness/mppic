@@ -25,7 +25,7 @@ public:
 
 protected:
   bool inCollision(unsigned char cost) const;
-  double scoreCost(unsigned char cost);
+  double scoreCost(unsigned char cost, const size_t traj_len);
   unsigned char maxCost();
   unsigned char costAtPose(double x, double y, double theta);
 
@@ -43,7 +43,8 @@ protected:
   collision_checker_{nullptr};
 
   bool consider_footprint_{true};
-  double collision_cost_{0};
+  float collision_cost_{0};
+
   unsigned char possibly_inscribed_cost_;
 
   unsigned int power_{0};
