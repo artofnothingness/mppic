@@ -124,7 +124,7 @@ protected:
   nav2_costmap_2d::Costmap2D * costmap_;
   std::string name_;
 
-  std::unique_ptr<MotionModel> motion_model_;
+  std::shared_ptr<MotionModel> motion_model_;
 
   ParametersHandler * parameters_handler_;
   CriticManager critic_manager_;
@@ -139,7 +139,7 @@ protected:
   xt::xtensor<float, 1> costs_;
 
   CriticData critics_data_ =
-  {state_, generated_trajectories_, path_, costs_, settings_.model_dt, false, nullptr,
+  {state_, generated_trajectories_, path_, costs_, settings_.model_dt, false, nullptr, nullptr,
     std::nullopt};                                                                                    /// Caution, keep references
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};

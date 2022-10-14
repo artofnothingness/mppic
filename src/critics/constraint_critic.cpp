@@ -36,10 +36,27 @@ void ConstraintCritic::score(CriticData & data)
 
   auto out_of_max_bounds_motion = xt::maximum(data.state.vx - max_vel_, 0);
   auto out_of_min_bounds_motion = xt::maximum(min_vel_ - data.state.vx, 0);
+
+  auto acker = dynamic_cast<AckermannMotionModel*>(data.motion_model.get());
+  if (acker != nullptr) {
+    auto & vx = data.state.vx;
+    auto & wz = data.state.wz;
+    auto out_of_turning_rad_motion = xt::maximum(
+      acker->getMinTurningRadius() - (xt::fabs(vx) / xt::fabs(wz)), 0.0);
+
+    data.costs += xt::pow(
+      xt::sum(
+        (std::move(out_of_max_bounds_motion) +
+          std::move(out_of_min_bounds_motion) +
+          std::move(out_of_turning_rad_motion))
+        * data.model_dt, {1}, immediate) * weight_, power_);
+  }
+
   data.costs += xt::pow(
     xt::sum(
-      std::move(out_of_max_bounds_motion) + std::move(out_of_min_bounds_motion) * data.model_dt,
-      {1}, immediate) * weight_, power_);
+      (std::move(out_of_max_bounds_motion) +
+        std::move(out_of_min_bounds_motion))
+      * data.model_dt, {1}, immediate) * weight_, power_);
 }
 
 }  // namespace mppi::critics

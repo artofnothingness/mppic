@@ -9,6 +9,7 @@
 #include "mppic/models/state.hpp"
 #include "mppic/models/trajectories.hpp"
 #include "mppic/models/path.hpp"
+#include "mppic/motion_models.hpp"
 
 
 namespace mppi
@@ -25,6 +26,7 @@ struct CriticData
 
   bool fail_flag;
   nav2_core::GoalChecker * goal_checker;
+  std::shared_ptr<MotionModel> motion_model;
   std::optional<size_t> furthest_reached_path_point;
 };
 

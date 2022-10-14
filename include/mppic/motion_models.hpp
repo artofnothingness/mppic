@@ -5,6 +5,7 @@
 
 #include <cstdint>
 
+#include "mppic/models/control_sequence.hpp"
 #include "mppic/models/state.hpp"
 #include <xtensor/xmath.hpp>
 #include <xtensor/xmasked_view.hpp>
@@ -38,7 +39,7 @@ public:
   }
 
   virtual bool isHolonomic() = 0;
-  virtual void applyConstraints(models::State & /*state*/) {}
+  virtual void applyConstraints(models::ControlSequence & /*state*/) {}
 };
 
 class AckermannMotionModel : public MotionModel
@@ -55,17 +56,19 @@ public:
     return false;
   }
 
-  void applyConstraints(models::State & state) override
+  void applyConstraints(models::ControlSequence & control_sequence) override
   {
-    auto & vx = state.vx;
-    auto & wz = state.wz;
+    auto & vx = control_sequence.vx;
+    auto & wz = control_sequence.wz;
 
     auto view = xt::masked_view(wz, vx / wz > min_turning_r_);
     view = xt::sign(vx) / min_turning_r_;
   }
 
+  float getMinTurningRadius() {return min_turning_r_;}
+
 private:
-  double min_turning_r_{0};
+  float min_turning_r_{0};
 };
 
 class DiffDriveMotionModel : public MotionModel

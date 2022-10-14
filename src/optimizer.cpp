@@ -172,6 +172,7 @@ void Optimizer::prepare(
 
   critics_data_.fail_flag = false;
   critics_data_.goal_checker = goal_checker;
+  critics_data_.motion_model = motion_model_;
 }
 
 void Optimizer::shiftControlSequence()
@@ -215,6 +216,8 @@ void Optimizer::applyControlSequenceConstraints()
 
   control_sequence_.vx = xt::clip(control_sequence_.vx, s.constraints.vx_min, s.constraints.vx_max);
   control_sequence_.wz = xt::clip(control_sequence_.wz, -s.constraints.wz, s.constraints.wz);
+
+  motion_model_->applyConstraints(control_sequence_);
 }
 
 void Optimizer::updateStateVelocities(
@@ -380,11 +383,11 @@ geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
 void Optimizer::setMotionModel(const std::string & model)
 {
   if (model == "DiffDrive") {
-    motion_model_ = std::make_unique<DiffDriveMotionModel>();
+    motion_model_ = std::make_shared<DiffDriveMotionModel>();
   } else if (model == "Omni") {
-    motion_model_ = std::make_unique<OmniMotionModel>();
+    motion_model_ = std::make_shared<OmniMotionModel>();
   } else if (model == "Ackermann") {
-    motion_model_ = std::make_unique<AckermannMotionModel>(parameters_handler_);
+    motion_model_ = std::make_shared<AckermannMotionModel>(parameters_handler_);
   } else {
     throw std::runtime_error(
             std::string(
