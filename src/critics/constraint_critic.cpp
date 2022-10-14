@@ -10,7 +10,7 @@ void ConstraintCritic::initialize()
   auto getParentParam = parameters_handler_->getParamGetter(parent_name_);
 
   getParam(power_, "cost_power", 1);
-  getParam(weight_, "cost_weight", 1.0);
+  getParam(weight_, "cost_weight", 4.0);
   RCLCPP_INFO(
     logger_, "ConstraintCritic instantiated with %d power and %f weight.",
     power_, weight_);
