@@ -75,7 +75,7 @@ sudo make install
  | retry_attempt_limit        | int    | Number of attempts to find feasible trajectory before failure                                                                                                                                                                                                                                                      |
 
 
-#### AckermannConstrains params
+#### Ackermann Motion Model params
  | Parameter            | Type   | Definition                                                                                                  |
  | -------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
  | min_turning_r        | double | minimum turning radius for ackermann motion model                                                           |
@@ -84,27 +84,35 @@ sudo make install
 #### GoalCritic params
  | Parameter            | Type   | Definition                                                                                                  |
  | -------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
- | goal_cost_weight     | double |                                                                                                             |
- | goal_cost_power      | int    |                                                                                                             |
+ | cost_weight     | double |                                                                                                             |
+ | cost_power      | int    |                                                                                                             |
 
 #### GoalAngleCritic params
  | Parameter                        | Type   | Definition                                                                                                  |
  | ---------------                  | ------ | ----------------------------------------------------------------------------------------------------------- |
- | goal_angle_cost_weight           | double |                                                                                                             |
- | goal_angle_cost_power            | int    |                                                                                                             |
+ | cost_weight           | double |                                                                                                             |
+ | cost_power            | int    |                                                                                                             |
  | threshold_to_consider_goal_angle | double | Minimal distance between robot and goal above which angle goal cost considered                              |
+
+#### PathFollowCritic params
+ | Parameter             | Type   | Definition                                                                                                  |
+ | ---------------       | ------ | ----------------------------------------------------------------------------------------------------------- |
+ | cost_weight           | double |                                                                                                             |
+ | cost_power            | int    |    |
+ | offset_from_furthest  | int    |    |
+ | max_path_ratio        | float    |   | 
 
 #### PathAngleCritic params
  | Parameter                 | Type   | Definition                                                                                                  |
  | ---------------           | ------ | ----------------------------------------------------------------------------------------------------------- |
- | path_angle_cost_weight    | double |                                                                                                             |
- | path_angle_cost_power     | int    |                                                                                                             |
+ | cost_weight    | double |                                                                                                             |
+ | cost_power     | int    |                                                                                                             |
 
 #### PathAlignCritic params
  | Parameter                  | Type   | Definition                                                                                                              |
  | ---------------            | ------ | -----------------------------------------------------------------------------------------------------------             |
- | path_align_cost_weight     | double |                                                                                                                         |
- | path_align_cost_power      | int    |                                                                                                                         |
+ | cost_weight     | double |                                                                                                                         |
+ | cost_power      | int    |                                                                                                                         |
  | enable_nearest_goal_critic | bool   | enable critic that scores by mean distance from generated trajectories to nearest to generated trajectories path points |
  | path_point_step            | int    | Consider path points with given step                                                                                    |
  | trajectory_point_step      | int    | Consider generated trajectories points with given step                                                                  |
@@ -114,20 +122,26 @@ sudo make install
  | Parameter            | Type   | Definition                                                                                                  |
  | ---------------      | ------ | ----------------------------------------------------------------------------------------------------------- |
  | consider_footprint   | bool   |                                                                                                             |
- | obstacle_cost_weight | double |                                                                                                             |
- | obstacle_cost_power  | int    |                                                                                                             |
+ | cost_weight | double |                                                                                                             |
+ | cost_power  | int    |                                                                                                             |
 
 #### PreferForwardCritic params
  | Parameter             | Type   | Definition                                                                                                  |
  | ---------------       | ------ | ----------------------------------------------------------------------------------------------------------- |
- | prefer_forward_cost_weight | double |                                                                                                             |
- | prefer_forward_cost_power  | int    |                                                                                                             |
+ | cost_weight | double |                                                                                                             |
+ | cost_power  | int    |                                                                                                             |
 
 #### TwirlingCritic params
  | Parameter             | Type   | Definition                                                                                                  |
  | ---------------       | ------ | ----------------------------------------------------------------------------------------------------------- |
- | twirling_cost_weight | double |                                                                                                             |
- | twirling_cost_power  | int    |                                                                                                             |
+ | cost_weight | double |                                                                                                             |
+ | cost_power  | int    |                                                                                                             |
+#### ConstraintsCritic params
+ | Parameter             | Type   | Definition                                                                                                  |
+ | ---------------       | ------ | ----------------------------------------------------------------------------------------------------------- |
+ | cost_weight           | double |                                                                                                             |
+ | cost_power            | int    |    
+
 
 ### XML configuration example
 ```
