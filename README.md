@@ -92,7 +92,8 @@ sudo make install
  | ---------------                  | ------ | ----------------------------------------------------------------------------------------------------------- |
  | cost_weight           | double |                                                                                                             |
  | cost_power            | int    |                                                                                                             |
- | threshold_to_consider_goal_angle | double | Minimal distance between robot and goal above which angle goal cost considered                              |
+ | threshold_to_consider            | double | Minimal distance between robot and goal above which angle goal cost considered                              |
+
 
 #### PathFollowCritic params
  | Parameter             | Type   | Definition                                                                                                  |
@@ -107,6 +108,8 @@ sudo make install
  | ---------------           | ------ | ----------------------------------------------------------------------------------------------------------- |
  | cost_weight    | double |                                                                                                             |
  | cost_power     | int    |                                                                                                             |
+ | threshold_to_consider            | double | Distance between robot and goal above which path angle cost stops being considered                              |
+
 
 #### PathAlignCritic params
  | Parameter                  | Type   | Definition                                                                                                              |
@@ -116,6 +119,7 @@ sudo make install
  | enable_nearest_goal_critic | bool   | enable critic that scores by mean distance from generated trajectories to nearest to generated trajectories path points |
  | path_point_step            | int    | Consider path points with given step                                                                                    |
  | trajectory_point_step      | int    | Consider generated trajectories points with given step                                                                  |
+ | threshold_to_consider            | double | Distance between robot and goal above which path align cost stops being considered                              |
 
 
 #### ObstaclesCritic params
@@ -130,6 +134,8 @@ sudo make install
  | ---------------       | ------ | ----------------------------------------------------------------------------------------------------------- |
  | cost_weight | double |                                                                                                             |
  | cost_power  | int    |                                                                                                             |
+ | threshold_to_consider            | double | Distance between robot and goal above which prefer forward cost stops being considered                              |
+
 
 #### TwirlingCritic params
  | Parameter             | Type   | Definition                                                                                                  |
@@ -180,7 +186,7 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 3.0
-        threshold_to_consider_goal_angle: 0.35
+        threshold_to_consider: 0.4
       ObstaclesCritic:
         enabled: true
         cost_power: 2
@@ -193,6 +199,7 @@ controller_server:
         cost_weight: 2.0
         path_point_step: 2
         trajectory_point_step: 3
+        threshold_to_consider: 0.40
       PathFollowCritic:
         enabled: true
         cost_power: 1
@@ -204,10 +211,12 @@ controller_server:
         cost_power: 1
         cost_weight: 2.0
         offset_from_furthest: 4
+        threshold_to_consider: 0.40
       PreferForwardCritic:
         enabled: true
         cost_power: 1
         cost_weight: 3.0
+        threshold_to_consider: 0.4
       # TwirlingCritic:
       #   twirling_cost_power: 1
       #   twirling_cost_weight: 10.0

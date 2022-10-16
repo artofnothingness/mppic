@@ -15,6 +15,9 @@ void PathAlignCritic::initialize()
 
   getParam(path_point_step_, "path_point_step", 2);
   getParam(trajectory_point_step_, "trajectory_point_step", 3);
+  getParam(
+    threshold_to_consider_,
+    "threshold_to_consider", 0.40f);
 
   RCLCPP_INFO(
     logger_,
@@ -24,8 +27,8 @@ void PathAlignCritic::initialize()
 
 void PathAlignCritic::score(CriticData & data)
 {
-  if (!enabled_ ||
-    utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose.pose, data.path))
+  utils::setPathFurthestPointIfNotSet(data);
+  if (!enabled_ || utils::withinPositionGoalTolerance(threshold_to_consider_, data.state.pose.pose, data.path))
   {
     return;
   }

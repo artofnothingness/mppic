@@ -22,7 +22,7 @@ public:
   void score(CriticData & data) override;
 
 protected:
-  float threshold_to_consider_goal_angle_{0};
+  float threshold_to_consider_{0};
   unsigned int power_{0};
   float weight_{0};
 };
