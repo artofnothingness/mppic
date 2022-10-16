@@ -65,12 +65,12 @@ void ObstaclesCritic::score(CriticData & data)
   bool all_trajectories_collide = true;
   for (size_t i = 0; i < data.trajectories.x.shape(0); ++i) {
     bool trajectory_collide = false;
-    unsigned char trajectory_cost = nav2_costmap_2d::FREE_SPACE;
+    float trajectory_cost = 0.0;
 
     for (size_t j = 0; j < traj_len; j++) {
       unsigned char pose_cost = costAtPose(
         data.trajectories.x(i, j), data.trajectories.y(i, j), data.trajectories.yaws(i, j));
-      trajectory_cost += pose_cost;
+      trajectory_cost += static_cast<float>(pose_cost);
 
       if (inCollision(pose_cost)) {
         trajectory_collide = true;
@@ -125,11 +125,11 @@ unsigned char ObstaclesCritic::maxCost()
          nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE - 1;
 }
 
-double ObstaclesCritic::scoreCost(unsigned char cost_arg, const size_t traj_len)
+double ObstaclesCritic::scoreCost(float cost_arg, const size_t traj_len)
 {
-  const double max_cost = static_cast<double>(maxCost());
+  const float max_cost = static_cast<float>(maxCost());
 
-  double cost = static_cast<double>(cost_arg) / (max_cost * traj_len);
+  float cost = cost_arg / (max_cost * static_cast<float>(traj_len));
 
   return pow(cost * weight_, power_);
 }

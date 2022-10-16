@@ -25,7 +25,7 @@ public:
 
 protected:
   bool inCollision(unsigned char cost) const;
-  double scoreCost(unsigned char cost, const size_t traj_len);
+  double scoreCost(float cost, const size_t traj_len);
   unsigned char maxCost();
   unsigned char costAtPose(double x, double y, double theta);
 
