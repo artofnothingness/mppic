@@ -159,8 +159,8 @@ controller_server:
     controller_frequency: 30.0
     FollowPath:
       plugin: "mppi::Controller"
-      time_steps: 30
-      model_dt: 0.1
+      time_steps: 56
+      model_dt: 0.05
       batch_size: 2000
       vx_std: 0.2
       vy_std: 0.2
@@ -172,7 +172,8 @@ controller_server:
       iteration_count: 1
       prune_distance: 1.7
       transform_tolerance: 0.1
-      temperature: 0.35
+      temperature: 0.3
+      gamma: 0.015
       motion_model: "DiffDrive"
       visualize: false
       TrajectoryVisualizer:
@@ -180,7 +181,11 @@ controller_server:
         time_step: 3
       AckermannConstrains:
         min_turning_r: 0.2
-      critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
+      critics: ["ConstraintCritic", "ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
+      ConstraintCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 4.0
       GoalCritic:
         enabled: true
         cost_power: 1
@@ -193,14 +198,16 @@ controller_server:
       ObstaclesCritic:
         enabled: true
         cost_power: 2
-        cost_weight: 1.65
+        cost_weight: 1.2
         consider_footprint: false
         collision_cost: 2000.0
+        trajectory_penalty_distance: 1.0
+        collision_margin_distance: 0.12
       PathAlignCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 2.0
-        path_point_step: 2
+        cost_weight: 1.0
+        path_point_step: 1
         trajectory_point_step: 3
         threshold_to_consider: 0.40
       PathFollowCritic:
@@ -218,7 +225,7 @@ controller_server:
       PreferForwardCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 3.0
+        cost_weight: 5.0
         threshold_to_consider: 0.4
       # TwirlingCritic:
       #   twirling_cost_power: 1
