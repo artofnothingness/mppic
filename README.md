@@ -129,7 +129,8 @@ sudo make install
  | cost_weight | double |                                                                                                             |
  | cost_power  | int    |                                                                                                             |
  | collision_margin_distance  | double    | Margin distance from collision to apply severe penalty. Between 0.05-0.2 is reasonable.                                                                                                             |
- | trajectory_penalty_distance  | double    | Minimum trajectory distance from obstacle to apply a penalty to incentivize navigating farther away                                                                                                              |
+ | trajectory_penalty_distance  | double    | Minimum trajectory distance from obstacle to apply a preferential penalty to incentivize navigating farther away from obstacles.                                                                                                              |
+ | near_goal_distance  | double    | Distance near goal to stop applying preferential obstacle term (e.g. `trajectory_penalty_distance` term) to allow robot to smoothly converge to goal pose in close proximity to obstacles.                                                                                                              |
 
 #### PreferForwardCritic params
  | Parameter             | Type   | Definition                                                                                                  |

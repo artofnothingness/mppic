@@ -14,6 +14,7 @@ void ObstaclesCritic::initialize()
   getParam(collision_cost_, "collision_cost", 2000.0);
   getParam(trajectory_penalty_distance_, "trajectory_penalty_distance", 1.0);
   getParam(collision_margin_distance_, "collision_margin_distance", 0.12);
+  getParam(near_goal_distance_, "near_goal_distance", 0.5);
 
   collision_checker_.setCostmap(costmap_);
   possibly_inscribed_cost_ = findCircumscribedCost(costmap_ros_);
@@ -58,12 +59,6 @@ double ObstaclesCritic::findCircumscribedCost(
 
   return result;
 }
-// improve path alignment / follow critics so doesn't try to shortcut turns
-// higher driving force from path track / speed critics?
-
-// Testing without path align / follow critics. Only follow local path goal -- more flexible
-// Testing with exact path following.
-// Testing defaults to have generally good path following, but also can go around obstacles on path, and have smooth back out maneuvors
 
 float ObstaclesCritic::distanceToObstacle(const CollisionCost & cost)
 {
@@ -87,6 +82,12 @@ void ObstaclesCritic::score(CriticData & data)
     return;
   }
 
+  // If near the goal, don't apply the preferential term since the goal is near obstacles
+  bool near_goal = false;
+  if (utils::withinPositionGoalTolerance(near_goal_distance_, data.state.pose.pose, data.path)) {
+    near_goal = true;
+  }
+
   auto && raw_cost = xt::xtensor<float, 1>::from_shape({data.costs.shape(0)});
   const size_t traj_len = data.trajectories.x.shape(1);
   bool all_trajectories_collide = true;
@@ -104,12 +105,11 @@ void ObstaclesCritic::score(CriticData & data)
         break;
       }
 
-      // TODO Give each term its own weight?
       const float dist_to_obj = distanceToObstacle(pose_cost);
       if (dist_to_obj < collision_margin_distance_) {
         // Near-collision, all points must be punished
         traj_cost += (collision_margin_distance_ - dist_to_obj);
-      } else if (dist_to_obj < trajectory_penalty_distance_) {
+      } else if (dist_to_obj < trajectory_penalty_distance_ && !near_goal) {
         // Prefer general trajectories further from obstacles
         repulsion_cost = std::max(repulsion_cost, (trajectory_penalty_distance_ - dist_to_obj));
       }

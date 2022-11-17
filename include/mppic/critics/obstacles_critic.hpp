@@ -55,6 +55,7 @@ protected:
   float possibly_inscribed_cost_;
   float trajectory_penalty_distance_;
   float collision_margin_distance_;
+  float near_goal_distance_;
 
   unsigned int power_{0};
   float weight_{0};
