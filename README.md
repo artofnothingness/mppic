@@ -128,6 +128,8 @@ sudo make install
  | consider_footprint   | bool   |                                                                                                             |
  | cost_weight | double |                                                                                                             |
  | cost_power  | int    |                                                                                                             |
+ | collision_margin_distance  | double    | Margin distance from collision to apply severe penalty. Between 0.05-0.2 is reasonable.                                                                                                             |
+ | trajectory_penalty_distance  | double    | Minimum trajectory distance from obstacle to apply a penalty to incentivize navigating farther away                                                                                                              |
 
 #### PreferForwardCritic params
  | Parameter             | Type   | Definition                                                                                                  |

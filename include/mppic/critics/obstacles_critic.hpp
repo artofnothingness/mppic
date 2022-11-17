@@ -11,6 +11,12 @@
 namespace mppi::critics
 {
 
+struct CollisionCost
+{
+  float cost;
+  bool using_footprint;
+};
+
 class ObstaclesCritic : public CriticFunction
 {
 public:
@@ -24,10 +30,10 @@ public:
   void score(CriticData & data) override;
 
 protected:
-  bool inCollision(unsigned char cost) const;
-  double scoreCost(float cost, const size_t traj_len);
+  bool inCollision(float cost) const;
   unsigned char maxCost();
-  unsigned char costAtPose(double x, double y, double theta);
+  CollisionCost costAtPose(float x, float y, float theta);
+  float distanceToObstacle(const CollisionCost & cost);
 
   /**
     * @brief Find the min cost of the inflation decay function for which the robot MAY be
@@ -36,16 +42,19 @@ protected:
     * @return double circumscribed cost, any higher than this and need to do full footprint collision checking
     * since some element of the robot could be in collision
     */
-  unsigned char findCircumscribedCost(std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap);
+  double findCircumscribedCost(std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap);
 
 protected:
   nav2_costmap_2d::FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *>
   collision_checker_{nullptr};
 
   bool consider_footprint_{true};
-  float collision_cost_{0};
+  double collision_cost_{0};
+  float inflation_scale_factor_;
 
-  unsigned char possibly_inscribed_cost_;
+  float possibly_inscribed_cost_;
+  float trajectory_penalty_distance_;
+  float collision_margin_distance_;
 
   unsigned int power_{0};
   float weight_{0};
