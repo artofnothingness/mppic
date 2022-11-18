@@ -26,6 +26,7 @@
 #include "nav2_util/node_utils.hpp"
 #include "nav2_core/goal_checker.hpp"
 
+#include "mppic/models/optimizer_settings.hpp"
 #include "mppic/models/control_sequence.hpp"
 #include "mppic/models/path.hpp"
 #include "builtin_interfaces/msg/time.hpp"
@@ -33,6 +34,7 @@
 
 namespace mppi::utils
 {
+using xt::evaluation_strategy::immediate;
 
 inline geometry_msgs::msg::TwistStamped toTwistStamped(
   float vx, float wz, const builtin_interfaces::msg::Time & stamp, const std::string & frame)
@@ -223,6 +225,86 @@ inline float getPathRatioReached(const CriticData & data)
   return furthest_reached_path_point / path_points_count;
 }
 
+
+inline void savitskyGolayFilter(
+  models::ControlSequence & control_sequence,
+  std::array<mppi::models::Control, 2> & control_history,
+  const models::OptimizerSettings & settings)
+{
+  // Savitzky-Golay Quadratic, 5-point Coefficients
+  xt::xarray<float> filter = {-3.0, 12.0, 17.0, 12.0, -3.0};
+  filter /= 35.0;
+
+  const unsigned int num_sequences = control_sequence.vx.shape(0);
+
+  // Too short to smooth meaningfully
+  if (num_sequences < 10) {
+    return;
+  }
+
+  auto applyFilter = [&](const xt::xarray<float> & data) -> float {
+      return xt::sum(data * filter, {0}, immediate)();
+    };
+
+  auto applyFilterOverAxis =
+    [&](xt::xtensor<float, 1> & sequence, const float hist_0, const float hist_1) -> void
+    {
+      unsigned int idx = 0;
+      sequence(idx) = applyFilter({
+        hist_0,
+        hist_1,
+        sequence(idx),
+        sequence(idx + 1),
+        sequence(idx + 2)});
+
+      idx++;
+      sequence(idx) = applyFilter({
+        hist_1,
+        sequence(idx - 1),
+        sequence(idx),
+        sequence(idx + 1),
+        sequence(idx + 2)});
+
+      for (idx = 2; idx != num_sequences - 3; idx++) {
+        sequence(idx) = applyFilter({
+          sequence(idx - 2),
+          sequence(idx - 1),
+          sequence(idx),
+          sequence(idx + 1),
+          sequence(idx + 2)});
+      }
+
+      idx++;
+      sequence(idx) = applyFilter({
+        sequence(idx - 2),
+        sequence(idx - 1),
+        sequence(idx),
+        sequence(idx + 1),
+        sequence(idx + 1)});
+
+      idx++;
+      sequence(idx) = applyFilter({
+        sequence(idx - 2),
+        sequence(idx - 1),
+        sequence(idx),
+        sequence(idx),
+        sequence(idx)});
+    };
+
+  // Filter trajectories
+  applyFilterOverAxis(control_sequence.vx, control_history[0].vx, control_history[1].vx);
+  applyFilterOverAxis(control_sequence.vy, control_history[0].vy, control_history[1].vy);
+  applyFilterOverAxis(control_sequence.wz, control_history[0].wz, control_history[1].wz);
+
+  // Update control history
+  unsigned int offset = settings.shift_control_sequence ? 1 : 0;
+  control_history[0] = control_history[1];
+  control_history[1] = {
+    control_sequence.vx(offset),
+    control_sequence.vy(offset),
+    control_sequence.wz(offset)};
+}
+
 }  // namespace mppi::utils
-//
+
 #endif  // MPPIC__UTILS_HPP_

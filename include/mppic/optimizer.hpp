@@ -134,6 +134,7 @@ protected:
 
   models::State state_;
   models::ControlSequence control_sequence_;
+  std::array<mppi::models::Control, 2> control_history_;
   models::Trajectories generated_trajectories_;
   models::Path path_;
   xt::xtensor<float, 1> costs_;
