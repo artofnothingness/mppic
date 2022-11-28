@@ -7,6 +7,11 @@
 namespace mppi::models
 {
 
+struct Control
+{
+  float vx, vy, wz;
+};
+
 struct ControlSequence
 {
   xt::xtensor<float, 1> vx;
