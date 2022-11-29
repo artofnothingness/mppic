@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef MPPIC__CRITICS__OBSTACLES_CRITIC_HPP_
+#define MPPIC__CRITICS__OBSTACLES_CRITIC_HPP_
+
 #include <memory>
 #include "nav2_costmap_2d/footprint_collision_checker.hpp"
 #include "nav2_costmap_2d/inflation_layer.hpp"
@@ -110,3 +112,5 @@ protected:
 };
 
 }  // namespace mppi::critics
+
+#endif  // MPPIC__CRITICS__OBSTACLES_CRITIC_HPP_

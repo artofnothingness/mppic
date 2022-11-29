@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef MPPIC__CRITICS__PREFER_FORWARD_CRITIC_HPP_
+#define MPPIC__CRITICS__PREFER_FORWARD_CRITIC_HPP_
 
 #include "mppic/critic_function.hpp"
 #include "mppic/tools/utils.hpp"
@@ -47,3 +48,5 @@ protected:
 };
 
 }  // namespace mppi::critics
+
+#endif  // MPPIC__CRITICS__PREFER_FORWARD_CRITIC_HPP_
