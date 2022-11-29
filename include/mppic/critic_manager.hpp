@@ -23,20 +23,49 @@
 namespace mppi
 {
 
+/**
+ * @class mppi::CriticManager
+ * @brief Manager of objective function plugins for scoring trajectories
+ */
 class CriticManager
 {
 public:
+  /**
+    * @brief Constructor for mppi::CriticManager
+    */
   CriticManager() = default;
 
+  /**
+    * @brief Configure critic manager on bringup and load plugins
+    * @param parent WeakPtr to node
+    * @param name Name of plugin
+    * @param costmap_ros Costmap2DROS object of environment
+    * @param dynamic_parameter_handler Parameter handler object
+    */
   void on_configure(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS>, ParametersHandler *);
 
+  /**
+    * @brief Score trajectories by the set of loaded critic functions
+    * @param CriticData Struct of necessary information to pass to the critic functions
+    */
   void evalTrajectoriesScores(CriticData & data) const;
 
 protected:
+  /**
+    * @brief Get parameters (critics to load)
+    */
   void getParams();
+
+  /**
+    * @brief Load the critic plugins
+    */
   void loadCritics();
+
+  /**
+    * @brief Get full-name namespaced critic IDs
+    */
   std::string getFullName(const std::string & name);
 
 protected:

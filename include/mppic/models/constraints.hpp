@@ -5,6 +5,10 @@
 namespace mppi::models
 {
 
+/**
+ * @struct mppi::models::ControlConstraints
+ * @brief Constraints on control
+ */
 struct ControlConstraints
 {
   double vx_max;
@@ -13,6 +17,10 @@ struct ControlConstraints
   double wz;
 };
 
+/**
+ * @struct mppi::models::SamplingStd
+ * @brief Noise parameters for sampling trajectories
+ */
 struct SamplingStd
 {
   double vx;

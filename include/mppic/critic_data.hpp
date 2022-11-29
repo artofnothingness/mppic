@@ -1,7 +1,9 @@
 // Copyright 2022 @artofnothingness Aleksei Budyakov, Samsung Research
 
-#pragma once
+#ifndef MPPIC__CRITIC_DATA_HPP_
+#define MPPIC__CRITIC_DATA_HPP_
 
+#include <memory>
 #include <xtensor/xtensor.hpp>
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -15,6 +17,11 @@
 namespace mppi
 {
 
+/**
+ * @struct mppi::CriticData
+ * @brief Data to pass to critics for scoring, including state, trajectories, path, costs, and
+ * important parameters to share
+ */
 struct CriticData
 {
   const models::State & state;
@@ -30,4 +37,6 @@ struct CriticData
   std::optional<size_t> furthest_reached_path_point;
 };
 
-}  // namespace mppi::models
+}  // namespace mppi
+
+#endif  // MPPIC__CRITIC_DATA_HPP_

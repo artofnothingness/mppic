@@ -27,7 +27,8 @@ void PathAlignCritic::initialize()
 
 void PathAlignCritic::score(CriticData & data)
 {
-  if (!enabled_ || utils::withinPositionGoalTolerance(threshold_to_consider_, data.state.pose.pose, data.path))
+  if (!enabled_ ||
+    utils::withinPositionGoalTolerance(threshold_to_consider_, data.state.pose.pose, data.path))
   {
     return;
   }

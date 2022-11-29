@@ -79,7 +79,6 @@ void prepareAndRunBenchmark(
   for (auto _ : state) {
     optimizer->evalControl(pose, velocity, path, dummy_goal_checker);
   }
-
 }
 
 static void BM_DiffDrivePointFootprint(benchmark::State & state)

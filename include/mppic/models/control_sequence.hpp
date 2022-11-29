@@ -7,11 +7,19 @@
 namespace mppi::models
 {
 
+/**
+ * @struct mppi::models::Control
+ * @brief A set of controls
+ */
 struct Control
 {
   float vx, vy, wz;
 };
 
+/**
+ * @struct mppi::models::ControlSequence
+ * @brief A control sequence over time (e.g. trajectory)
+ */
 struct ControlSequence
 {
   xt::xtensor<float, 1> vx;

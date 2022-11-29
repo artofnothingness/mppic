@@ -39,7 +39,9 @@ void CriticManager::loadCritics()
     auto instance = std::unique_ptr<critics::CriticFunction>(
       loader_->createUnmanagedInstance(fullname));
     critics_.push_back(std::move(instance));
-    critics_.back()->on_configure(parent_, name_, name_ + "." + name, costmap_ros_, parameters_handler_);
+    critics_.back()->on_configure(
+      parent_, name_, name_ + "." + name, costmap_ros_,
+      parameters_handler_);
     RCLCPP_INFO(logger_, "Critic loaded : %s", fullname.c_str());
   }
 }

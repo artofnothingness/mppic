@@ -13,12 +13,32 @@
 
 namespace mppi::critics
 {
+
+/**
+ * @class mppi::critics::CriticFunction
+ * @brief Abstract critic objective function to score trajectories
+ */
 class CriticFunction
 {
 public:
+  /**
+    * @brief Constructor for mppi::critics::CriticFunction
+    */
   CriticFunction() = default;
+
+  /**
+    * @brief Destructor for mppi::critics::CriticFunction
+    */
   virtual ~CriticFunction() = default;
 
+  /**
+    * @brief Configure critic on bringup
+    * @param parent WeakPtr to node
+    * @param parent_name name of the controller
+    * @param name Name of plugin
+    * @param costmap_ros Costmap2DROS object of environment
+    * @param dynamic_parameter_handler Parameter handler object
+    */
   void on_configure(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent,
     const std::string & parent_name,
@@ -40,10 +60,20 @@ public:
     initialize();
   }
 
+  /**
+    * @brief Main function to score trajectory
+    * @param data Critic data to use in scoring
+    */
   virtual void score(CriticData & data) = 0;
 
+  /**
+    * @brief Initialize critic
+    */
   virtual void initialize() = 0;
 
+  /**
+    * @brief Get name of critic
+    */
   std::string getName()
   {
     return name_;

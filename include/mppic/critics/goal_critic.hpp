@@ -8,9 +8,16 @@
 namespace mppi::critics
 {
 
+/**
+ * @class mppi::critics::ConstraintCritic
+ * @brief Critic objective function for driving towards goal
+ */
 class GoalCritic : public CriticFunction
 {
 public:
+  /**
+    * @brief Initialize critic
+    */
   void initialize() override;
 
   /**

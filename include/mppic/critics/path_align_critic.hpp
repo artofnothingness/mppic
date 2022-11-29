@@ -8,9 +8,16 @@
 namespace mppi::critics
 {
 
+/**
+ * @class mppi::critics::ConstraintCritic
+ * @brief Critic objective function for aligning to the path
+ */
 class PathAlignCritic : public CriticFunction
 {
 public:
+  /**
+    * @brief Initialize critic
+    */
   void initialize() override;
 
   /**

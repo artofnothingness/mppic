@@ -1,6 +1,7 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 
-#pragma once
+#ifndef MPPIC__TOOLS__PARAMETERS_HANDLER_HPP_
+#define MPPIC__TOOLS__PARAMETERS_HANDLER_HPP_
 
 #include <functional>
 #include <string>
@@ -16,8 +17,15 @@
 
 namespace mppi
 {
+/**
+ * @class Parameter Type enum
+ */
 enum class ParameterType { Dynamic, Static };
 
+/**
+ * @class mppi::ParametersHandler
+ * @brief Handles getting parameters and dynamic parmaeter changes
+ */
 class ParametersHandler
 {
 public:
@@ -25,43 +33,104 @@ public:
   using post_callback_t = void ();
   using pre_callback_t = void ();
 
+  /**
+    * @brief Constructor for mppi::ParametersHandler
+    */
   ParametersHandler() = default;
+
+  /**
+    * @brief Constructor for mppi::ParametersHandler
+    * @param parent Weak ptr to node
+    */
   explicit ParametersHandler(
     const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent);
 
+  /**
+    * @brief Starts processing dynamic parameter changes
+    */
   void start();
 
+  /**
+    * @brief Dynamic parameter callback
+    * @param parameter Parameter changes to process
+    * @return Set Parameter Result
+    */
   rcl_interfaces::msg::SetParametersResult dynamicParamsCallback(
     std::vector<rclcpp::Parameter> parameters);
 
+  /**
+    * @brief Get an object to retreive parameters
+    * @param ns Namespace to get parameters within
+    * @return Parameter getter object
+    */
   inline auto getParamGetter(const std::string & ns);
 
+  /**
+    * @brief Gets parameter
+    * @param setting Return Parameter type
+    * @param name Parameter name
+    * @param default_value Default parameter value
+    * @param param_type Type of parameter (dynamic or static)
+    */
   template<typename SettingT, typename ParamT>
   void getParam(
     SettingT & setting, const std::string & name, ParamT default_value,
     ParameterType param_type = ParameterType::Dynamic);
 
+  /**
+    * @brief Set a callback to process after parameter changes
+    * @param callback Callback function
+    */
   template<typename T>
   void addPostCallback(T && callback);
 
+  /**
+    * @brief Set a callback to process before parameter changes
+    * @param callback Callback function
+    */
   template<typename T>
   void addPreCallback(T && callback);
 
+  /**
+    * @brief Set a parameter
+    * @param setting Return Parameter type
+    * @param name Parameter name
+    * @param node Node to set parameter via
+    */
   template<typename ParamT, typename SettingT, typename NodeT>
   void setParam(SettingT & setting, const std::string & name, NodeT node) const;
 
+  /**
+    * @brief Set a parameter to a dynamic parameter callback
+    * @param setting Parameter
+    * @param name Name of parameter
+    */
   template<typename T>
   void setDynamicParamCallback(T & setting, const std::string & name);
 
+  /**
+    * @brief Get mutex lock for changing parameters
+    * @return Pointer to mutex
+    */
   std::mutex * getLock()
   {
     return &parameters_change_mutex_;
   }
 
 protected:
+  /**
+    * @brief Set a parameter to a dynamic parameter callback
+    * @param name Name of parameter
+    * @param callback Parameter callback
+    */
   template<typename T>
   void addDynamicParamCallback(const std::string & name, T && callback);
 
+  /**
+    * @brief Converts parameter type to real types
+    * @param parameter Parameter to convert into real type
+    * @return parameter as a functional type
+    */
   template<typename T>
   static auto as(const rclcpp::Parameter & parameter);
 
@@ -181,3 +250,5 @@ auto ParametersHandler::as(const rclcpp::Parameter & parameter)
 }
 
 }  // namespace mppi
+
+#endif  // MPPIC__TOOLS__PARAMETERS_HANDLER_HPP_

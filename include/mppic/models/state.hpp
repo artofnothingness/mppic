@@ -10,6 +10,10 @@
 namespace mppi::models
 {
 
+/**
+ * @struct mppi::models::State
+ * @brief State information: velocities, controls, poses, speed
+ */
 struct State
 {
   xt::xtensor<float, 2> vx;
@@ -23,6 +27,9 @@ struct State
   geometry_msgs::msg::PoseStamped pose;
   geometry_msgs::msg::Twist speed;
 
+  /**
+    * @brief Reset state data
+    */
   void reset(unsigned int batch_size, unsigned int time_steps)
   {
     vx = xt::zeros<float>({batch_size, time_steps});
@@ -34,7 +41,6 @@ struct State
     cwz = xt::zeros<float>({batch_size, time_steps});
   }
 };
-
-}
+}  // namespace mppi::models
 
 #endif  // MPPIC__MODELS__STATE_HPP_

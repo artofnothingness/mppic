@@ -1,12 +1,17 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#pragma once
+#ifndef MPPIC__MODELS__OPTIMIZER_SETTINGS_HPP_
+#define MPPIC__MODELS__OPTIMIZER_SETTINGS_HPP_
 
-#include "mppic/models/constraints.hpp"
 #include <cstddef>
+#include "mppic/models/constraints.hpp"
 
 namespace mppi::models
 {
 
+/**
+ * @struct mppi::models::OptimizerSettings
+ * @brief Settings for the optimizer to use
+ */
 struct OptimizerSettings
 {
   models::ControlConstraints base_constraints{0, 0, 0, 0};
@@ -23,3 +28,5 @@ struct OptimizerSettings
 };
 
 }  // namespace mppi::models
+
+#endif  // MPPIC__MODELS__OPTIMIZER_SETTINGS_HPP_

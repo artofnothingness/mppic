@@ -32,90 +32,191 @@
 namespace mppi
 {
 
+/**
+ * @class mppi::Optimizer
+ * @brief Main algorithm optimizer of the MPPI Controller
+ */
 class Optimizer
 {
 public:
+  /**
+    * @brief Constructor for mppi::Optimizer
+    */
   Optimizer() = default;
 
+  /**
+   * @brief Destructor for mppi::Optimizer
+   */
   ~Optimizer() {shutdown();}
 
+
+  /**
+   * @brief Initializes optimizer on startup
+   * @param parent WeakPtr to node
+   * @param name Name of plugin
+   * @param costmap_ros Costmap2DROS object of environment
+   * @param dynamic_parameter_handler Parameter handler object
+   */
   void initialize(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros,
     ParametersHandler * dynamic_parameters_handler);
 
+  /**
+   * @brief Shutdown for optimizer at process end
+   */
   void shutdown();
 
+  /**
+   * @brief Compute control using MPPI algorithm
+   * @param robot_pose Pose of the robot at given time
+   * @param robot_speed Speed of the robot at given time
+   * @param plan Path plan to track
+   * @param goal_checker Object to check if goal is completed
+   * @return TwistStamped of the MPPI control
+   */
   geometry_msgs::msg::TwistStamped evalControl(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed, const nav_msgs::msg::Path & plan,
     nav2_core::GoalChecker * goal_checker);
 
+  /**
+   * @brief Get the trajectories generated in a cycle for visualization
+   * @return Set of trajectories evaluated in cycle
+   */
   models::Trajectories & getGeneratedTrajectories();
+
+  /**
+   * @brief Get the optimal trajectory for a cycle for visualization
+   * @return Optimal trajectory
+   */
   xt::xtensor<float, 2> getOptimizedTrajectory();
 
+  /**
+   * @brief Set the maximum speed based on the speed limits callback
+   * @param speed_limit Limit of the speed for use
+   * @param percentage Whether the speed limit is absolute or relative
+   */
   void setSpeedLimit(double speed_limit, bool percentage);
 
 protected:
+  /**
+   * @brief Main function to generate, score, and return trajectories
+   */
   void optimize();
 
+  /**
+   * @brief Prepare state information on new request for trajectory rollouts
+   * @param robot_pose Pose of the robot at given time
+   * @param robot_speed Speed of the robot at given time
+   * @param plan Path plan to track
+   * @param goal_checker Object to check if goal is completed
+   */
   void prepare(
     const geometry_msgs::msg::PoseStamped & robot_pose,
     const geometry_msgs::msg::Twist & robot_speed,
     const nav_msgs::msg::Path & plan, nav2_core::GoalChecker * goal_checker);
 
+  /**
+   * @brief Obtain the main controller's parameters
+   */
   void getParams();
+
+  /**
+   * @brief Reset the optimization problem to initial conditions
+   */
   void reset();
 
+  /**
+   * @brief Set the motion model of the vehicle platform
+   * @param model Model string to use
+   */
   void setMotionModel(const std::string & model);
 
+  /**
+   * @brief Shift the optimal control sequence after processing for
+   * next iterations initial conditions after execution
+   */
   void shiftControlSequence();
 
   /**
-   *
-   * @brief updates generated_trajectories_
+   * @brief updates generated trajectories with noised trajectories
+   * from the last cycle's optimal control
    */
   void generateNoisedTrajectories();
 
+  /**
+   * @brief Apply hard vehicle constraints on control sequence
+   */
   void applyControlSequenceConstraints();
 
   /**
-   * @brief  Update velocities in state_
-   *
-   * @param twist current robot speed
-   * @param state[out] fill state with velocities on each step
+   * @brief  Update velocities in state
+   * @param state fill state with velocities on each step
    */
   void updateStateVelocities(models::State & state) const;
 
+  /**
+   * @brief  Update initial velocity in state
+   * @param state fill state
+   */
   void updateInitialStateVelocities(models::State & state) const;
 
   /**
-   * @brief predict velocities in state_ using model
-   * for time horizont equal to time_steps_
+   * @brief predict velocities in state using model
+   * for time horizon equal to timesteps
+   * @param state fill state
    */
   void propagateStateVelocitiesFromInitials(models::State & state) const;
 
+  /**
+   * @brief Rollout velocities in state to poses
+   * @param trajectories to rollout
+   * @param state fill state
+   */
   void integrateStateVelocities(
     models::Trajectories & trajectories,
     const models::State & state) const;
 
+  /**
+   * @brief Rollout velocities in state to poses
+   * @param trajectories to rollout
+   * @param state fill state
+   */
   void integrateStateVelocities(
     xt::xtensor<float, 2> & trajectories,
     const xt::xtensor<float, 2> & state) const;
 
   /**
-   * @brief Update control_sequence_ with state controls weighted by costs
+   * @brief Update control sequence with state controls weighted by costs
    * using softmax function
    */
   void updateControlSequence();
 
+  /**
+   * @brief Convert control sequence to a twist commant
+   * @param stamp Timestamp to use
+   * @return TwistStamped of command to send to robot base
+   */
   geometry_msgs::msg::TwistStamped
   getControlFromSequenceAsTwist(const builtin_interfaces::msg::Time & stamp);
 
+  /**
+   * @brief Whether the motion model is holonomic
+   * @return Bool if holonomic to populate `y` axis of state
+   */
   inline bool isHolonomic() const;
 
+  /**
+   * @brief Using control frequence and time step size, determine if trajectory
+   * offset should be used to populate initial state of the next cycle
+   */
   void setOffset(double controller_frequency);
 
+  /**
+   * @brief Perform fallback behavior to try to recover from a set of trajectories in collision
+   * @param fail Whether the system failed to recover from
+   */
   bool fallback(bool fail);
 
 protected:
@@ -141,7 +242,7 @@ protected:
 
   CriticData critics_data_ =
   {state_, generated_trajectories_, path_, costs_, settings_.model_dt, false, nullptr, nullptr,
-    std::nullopt};                                                                                    /// Caution, keep references
+    std::nullopt};  /// Caution, keep references
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };

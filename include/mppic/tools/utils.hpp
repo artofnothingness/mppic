@@ -1,11 +1,11 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#ifndef MPPIC__UTILS_HPP_
-#define MPPIC__UTILS_HPP_
+#ifndef MPPIC__TOOLS__UTILS_HPP_
+#define MPPIC__TOOLS__UTILS_HPP_
 
 #include <algorithm>
 #include <chrono>
 #include <string>
-
+#include <limits>
 
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
@@ -36,6 +36,13 @@ namespace mppi::utils
 {
 using xt::evaluation_strategy::immediate;
 
+/**
+ * @brief Convert data into TwistStamped
+ * @param vx X velocity
+ * @param wz Angular velocity
+ * @param stamp Timestamp
+ * @param frame Reference frame to use
+ */
 inline geometry_msgs::msg::TwistStamped toTwistStamped(
   float vx, float wz, const builtin_interfaces::msg::Time & stamp, const std::string & frame)
 {
@@ -48,6 +55,14 @@ inline geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
+/**
+ * @brief Convert data into TwistStamped
+ * @param vx X velocity
+ * @param vy Y velocity
+ * @param wz Angular velocity
+ * @param stamp Timestamp
+ * @param frame Reference frame to use
+ */
 inline geometry_msgs::msg::TwistStamped toTwistStamped(
   float vx, float vy, float wz, const builtin_interfaces::msg::Time & stamp,
   const std::string & frame)
@@ -58,6 +73,11 @@ inline geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
+/**
+ * @brief Convert path to a tensor
+ * @param path Path to convert
+ * @return Path tensor
+ */
 inline models::Path toTensor(const nav_msgs::msg::Path & path)
 {
   auto result = models::Path{};
@@ -72,6 +92,13 @@ inline models::Path toTensor(const nav_msgs::msg::Path & path)
   return result;
 }
 
+/**
+ * @brief Check if the robot pose is within the Goal Checker's tolerances to goal
+ * @param global_checker Pointer to the goal checker
+ * @param robot Pose of robot
+ * @param path Path to retreive goal pose from
+ * @return bool If robot is within goal checker tolerances to the goal
+ */
 inline bool withinPositionGoalTolerance(
   nav2_core::GoalChecker * goal_checker,
   const geometry_msgs::msg::Pose & robot,
@@ -101,6 +128,13 @@ inline bool withinPositionGoalTolerance(
   return false;
 }
 
+/**
+ * @brief Check if the robot pose is within tolerance to the goal
+ * @param pose_tolerance Pose tolerance to use
+ * @param robot Pose of robot
+ * @param path Path to retreive goal pose from
+ * @return bool If robot is within tolerance to the goal
+ */
 inline bool withinPositionGoalTolerance(
   float pose_tolerance,
   const geometry_msgs::msg::Pose & robot,
@@ -126,10 +160,10 @@ inline bool withinPositionGoalTolerance(
 
 /**
   * @brief normalize
-  *
   * Normalizes the angle to be -M_PI circle to +M_PI circle
   * It takes and returns radians.
-  *
+  * @param angles Angles to normalize
+  * @return normalized angles
   */
 template<typename T>
 auto normalize_angles(const T & angles)
@@ -147,7 +181,9 @@ auto normalize_angles(const T & angles)
   * The result
   * would always be -pi <= result <= pi.  Adding the result
   * to "from" will always get you an equivelent angle to "to".
-  *
+  * @param from Start angle
+  * @param to End angle
+  * @return Shortest distance between angles
   */
 template<typename F, typename T>
 auto shortest_angular_distance(
@@ -160,6 +196,8 @@ auto shortest_angular_distance(
 /**
  * @brief Evaluate furthest point idx of data.path which is
  * nearset to some trajectory in data.trajectories
+ * @param data Data to use
+ * @return Idx of furthest path point reached by a set of trajectories
  */
 inline size_t findPathFurthestReachedPoint(const CriticData & data)
 {
@@ -190,6 +228,7 @@ inline size_t findPathFurthestReachedPoint(const CriticData & data)
 
 /**
  * @brief evaluate path furthest point if it is not set
+ * @param data Data to use
  */
 inline void setPathFurthestPointIfNotSet(CriticData & data)
 {
@@ -200,6 +239,10 @@ inline void setPathFurthestPointIfNotSet(CriticData & data)
 
 /**
  * @brief evaluate angle from pose (have angle) to point (no angle)
+ * @param pose pose
+ * @param point_x Point to find angle relative to X axis
+ * @param point_y Point to find angle relative to Y axis
+ * @return Angle between two points
  */
 inline double posePointAngle(const geometry_msgs::msg::Pose & pose, double point_x, double point_y)
 {
@@ -213,6 +256,8 @@ inline double posePointAngle(const geometry_msgs::msg::Pose & pose, double point
 
 /**
  * @brief Evaluate ratio of data.path which reached by all trajectories in data.trajectories
+ * @param data Data to use
+ * @return ratio of path reached
  */
 inline float getPathRatioReached(const CriticData & data)
 {
@@ -225,7 +270,12 @@ inline float getPathRatioReached(const CriticData & data)
   return furthest_reached_path_point / path_points_count;
 }
 
-
+/**
+ * @brief Apply Savisky-Golay filter to optimal trajectory
+ * @param control_sequence Sequence to apply filter to
+ * @param control_history Recent set of controls for edge-case handling
+ * @param Settings Settings to use
+ */
 inline void savitskyGolayFilter(
   models::ControlSequence & control_sequence,
   std::array<mppi::models::Control, 2> & control_history,
@@ -250,7 +300,8 @@ inline void savitskyGolayFilter(
     [&](xt::xtensor<float, 1> & sequence, const float hist_0, const float hist_1) -> void
     {
       unsigned int idx = 0;
-      sequence(idx) = applyFilter({
+      sequence(idx) = applyFilter(
+      {
         hist_0,
         hist_1,
         sequence(idx),
@@ -258,7 +309,8 @@ inline void savitskyGolayFilter(
         sequence(idx + 2)});
 
       idx++;
-      sequence(idx) = applyFilter({
+      sequence(idx) = applyFilter(
+      {
         hist_1,
         sequence(idx - 1),
         sequence(idx),
@@ -266,7 +318,8 @@ inline void savitskyGolayFilter(
         sequence(idx + 2)});
 
       for (idx = 2; idx != num_sequences - 3; idx++) {
-        sequence(idx) = applyFilter({
+        sequence(idx) = applyFilter(
+        {
           sequence(idx - 2),
           sequence(idx - 1),
           sequence(idx),
@@ -275,7 +328,8 @@ inline void savitskyGolayFilter(
       }
 
       idx++;
-      sequence(idx) = applyFilter({
+      sequence(idx) = applyFilter(
+      {
         sequence(idx - 2),
         sequence(idx - 1),
         sequence(idx),
@@ -283,7 +337,8 @@ inline void savitskyGolayFilter(
         sequence(idx + 1)});
 
       idx++;
-      sequence(idx) = applyFilter({
+      sequence(idx) = applyFilter(
+      {
         sequence(idx - 2),
         sequence(idx - 1),
         sequence(idx),
@@ -307,4 +362,4 @@ inline void savitskyGolayFilter(
 
 }  // namespace mppi::utils
 
-#endif  // MPPIC__UTILS_HPP_
+#endif  // MPPIC__TOOLS__UTILS_HPP_

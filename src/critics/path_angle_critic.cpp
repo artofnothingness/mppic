@@ -1,7 +1,7 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 #include "mppic/critics/path_angle_critic.hpp"
 
-#include "math.h"
+#include <math.h>
 
 namespace mppi::critics
 {

@@ -17,7 +17,6 @@ void TwirlingCritic::initialize()
 
 void TwirlingCritic::score(CriticData & data)
 {
-
   using xt::evaluation_strategy::immediate;
   if (!enabled_) {
     return;

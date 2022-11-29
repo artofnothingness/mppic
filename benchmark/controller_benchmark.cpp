@@ -34,7 +34,6 @@ void prepareAndRunBenchmark(
   bool consider_footprint, std::string motion_model,
   std::vector<std::string> critics, benchmark::State & state)
 {
-
   bool visualize = false;
 
   int batch_size = 300;

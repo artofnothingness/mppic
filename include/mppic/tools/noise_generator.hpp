@@ -1,7 +1,7 @@
 // Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
 
-#ifndef MPPIC__NOISE_GENERATOR_HPP_
-#define MPPIC__NOISE_GENERATOR_HPP_
+#ifndef MPPIC__TOOLS__NOISE_GENERATOR_HPP_
+#define MPPIC__TOOLS__NOISE_GENERATOR_HPP_
 
 #include <string>
 #include <memory>
@@ -19,9 +19,16 @@
 namespace mppi
 {
 
+/**
+ * @class mppi::NoiseGenerator
+ * @brief Generates noise trajectories from optimal trajectory
+ */
 class NoiseGenerator
 {
 public:
+  /**
+    * @brief Constructor for mppi::NoiseGenerator
+    */
   NoiseGenerator() = default;
 
   /**
@@ -85,4 +92,4 @@ protected:
 
 }  // namespace mppi
 
-#endif  // MPPIC__NOISE_GENERATOR_HPP_
+#endif  // MPPIC__TOOLS__NOISE_GENERATOR_HPP_

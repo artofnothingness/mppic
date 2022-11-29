@@ -17,12 +17,27 @@
 namespace mppi
 {
 
+/**
+ * @class mppi::MotionModel
+ * @brief Abstract motion model for modeling a vehicle
+ */
 class MotionModel
 {
 public:
+  /**
+    * @brief Constructor for mppi::MotionModel
+    */
   MotionModel() = default;
+
+  /**
+    * @brief Destructor for mppi::MotionModel
+    */
   virtual ~MotionModel() = default;
 
+  /**
+   * @brief With input velocities, find the vehicle's output velocities
+   * @param state Contains control velocities to use to populate vehicle velocities
+   */
   virtual void predict(models::State & state)
   {
     using namespace xt::placeholders;  // NOLINT
@@ -38,24 +53,48 @@ public:
     }
   }
 
+  /**
+   * @brief Whether the motion model is holonomic, using Y axis
+   * @return Bool If holonomic
+   */
   virtual bool isHolonomic() = 0;
-  virtual void applyConstraints(models::ControlSequence & /*state*/) {}
+
+  /**
+   * @brief Apply hard vehicle constraints to a control sequence
+   * @param control_sequence Control sequence to apply constraints to
+   */
+  virtual void applyConstraints(models::ControlSequence & /*control_sequence*/) {}
 };
 
+/**
+ * @class mppi::AckermannMotionModel
+ * @brief Ackermann motion model
+ */
 class AckermannMotionModel : public MotionModel
 {
 public:
+  /**
+    * @brief Constructor for mppi::AckermannMotionModel
+    */
   explicit AckermannMotionModel(ParametersHandler * param_handler)
   {
     auto getParam = param_handler->getParamGetter("AckermannConstraints");
     getParam(min_turning_r_, "min_turning_r", 0.2);
   }
 
+  /**
+   * @brief Whether the motion model is holonomic, using Y axis
+   * @return Bool If holonomic
+   */
   bool isHolonomic() override
   {
     return false;
   }
 
+  /**
+   * @brief Apply hard vehicle constraints to a control sequence
+   * @param control_sequence Control sequence to apply constraints to
+   */
   void applyConstraints(models::ControlSequence & control_sequence) override
   {
     auto & vx = control_sequence.vx;
@@ -65,35 +104,60 @@ public:
     view = xt::sign(vx) / min_turning_r_;
   }
 
+  /**
+   * @brief Get minimum turning radius of ackermann drive
+   * @return Minimum turning radius
+   */
   float getMinTurningRadius() {return min_turning_r_;}
 
 private:
   float min_turning_r_{0};
 };
 
+/**
+ * @class mppi::DiffDriveMotionModel
+ * @brief Differential drive motion model
+ */
 class DiffDriveMotionModel : public MotionModel
 {
 public:
+  /**
+    * @brief Constructor for mppi::DiffDriveMotionModel
+    */
   DiffDriveMotionModel() = default;
 
+  /**
+   * @brief Whether the motion model is holonomic, using Y axis
+   * @return Bool If holonomic
+   */
   bool isHolonomic() override
   {
     return false;
   }
 };
 
+/**
+ * @class mppi::OmniMotionModel
+ * @brief Omnidirectional motion model
+ */
 class OmniMotionModel : public MotionModel
 {
 public:
+  /**
+    * @brief Constructor for mppi::OmniMotionModel
+    */
   OmniMotionModel() = default;
 
+  /**
+   * @brief Whether the motion model is holonomic, using Y axis
+   * @return Bool If holonomic
+   */
   bool isHolonomic() override
   {
     return true;
   }
-
 };
 
-}  // namespace mppi::models
+}  // namespace mppi
 
 #endif  // MPPIC__MOTION_MODELS_HPP_

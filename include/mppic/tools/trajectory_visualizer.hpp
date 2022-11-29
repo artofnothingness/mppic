@@ -1,6 +1,6 @@
 // Copyright 2022 FastSense, Samsung Research
-#ifndef MPPIC__TRAJECTORY_VISUALIZER_HPP_
-#define MPPIC__TRAJECTORY_VISUALIZER_HPP_
+#ifndef MPPIC__TOOLS__TRAJECTORY_VISUALIZER_HPP_
+#define MPPIC__TOOLS__TRAJECTORY_VISUALIZER_HPP_
 
 #include <memory>
 #include <string>
@@ -18,21 +18,65 @@
 namespace mppi
 {
 
+/**
+ * @class mppi::TrajectoryVisualizer
+ * @brief Visualizes trajectories for debugging
+ */
 class TrajectoryVisualizer
 {
 public:
+  /**
+    * @brief Constructor for mppi::TrajectoryVisualizer
+    */
   TrajectoryVisualizer() = default;
 
+  /**
+    * @brief Configure trajectory visualizer
+    * @param parent WeakPtr to node
+    * @param name Name of plugin
+    * @param frame_id Frame to publish trajectories in
+    * @param dynamic_parameter_handler Parameter handler object
+    */
   void on_configure(
     rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
     const std::string & frame_id, ParametersHandler * parameters_handler);
+
+  /**
+    * @brief Cleanup object on shutdown
+    */
   void on_cleanup();
+
+  /**
+    * @brief Activate object
+    */
   void on_activate();
+
+  /**
+    * @brief Deactivate object
+    */
   void on_deactivate();
 
+  /**
+    * @brief Add an optimal trajectory to visualize
+    * @param trajectory Optimal trajectory
+    */
   void add(const xt::xtensor<float, 2> & trajectory);
+
+  /**
+    * @brief Add candidate trajectories to visualize
+    * @param trajectories Candidate trajectories
+    */
   void add(const models::Trajectories & trajectories);
+
+  /**
+    * @brief Visualize the plan
+    * @param plan Plan to visualize
+    */
   void visualize(const nav_msgs::msg::Path & plan);
+
+  /**
+    * @brief Reset object
+    */
   void reset();
 
 protected:
@@ -54,4 +98,4 @@ protected:
 
 }  // namespace mppi
 
-#endif  // MPPIC__TRAJECTORY_VISUALIZER_HPP_
+#endif  // MPPIC__TOOLS__TRAJECTORY_VISUALIZER_HPP_
