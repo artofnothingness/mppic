@@ -168,9 +168,9 @@ mppi::PathHandler getDummyPathHandler(
   return path_handler;
 }
 
-std::shared_ptr<mppi::Controller> getDummyController(auto node, auto tf_buffer, auto costmap_ros)
+std::shared_ptr<mppi::MPPIController> getDummyController(auto node, auto tf_buffer, auto costmap_ros)
 {
-  std::shared_ptr<mppi::Controller> controller = std::make_shared<mppi::Controller>();
+  std::shared_ptr<mppi::MPPIController> controller = std::make_shared<mppi::MPPIController>();
   std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};
 
   controller->configure(weak_ptr_node, node->get_name(), tf_buffer, costmap_ros);
