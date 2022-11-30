@@ -22,6 +22,7 @@ This process is then repeated a number of times and returns a converged solution
 
 ## Features
 
+- Predictive MPC trajectory planner
 - Utilizes plugin-based critics which can be swapped out, tuned, or replaced easily by the user
 - Highly optimized CPU-only performance using vectorization and tensor operations
 - Supports a number of common motion models, including Ackermann, Differential-Drive, and Omni-directional
