@@ -158,7 +158,7 @@ controller_server:
   ros__parameters:
     controller_frequency: 30.0
     FollowPath:
-      plugin: "mppi::Controller"
+      plugin: "mppi::MPPIController"
       time_steps: 56
       model_dt: 0.05
       batch_size: 2000

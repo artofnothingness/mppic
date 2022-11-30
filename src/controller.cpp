@@ -22,7 +22,7 @@
 namespace mppi
 {
 
-void Controller::configure(
+void MPPIController::configure(
   const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
   std::string name, const std::shared_ptr<tf2_ros::Buffer> tf,
   const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
@@ -48,7 +48,7 @@ void Controller::configure(
   RCLCPP_INFO(logger_, "Configured MPPI Controller: %s", name_.c_str());
 }
 
-void Controller::cleanup()
+void MPPIController::cleanup()
 {
   optimizer_.shutdown();
   trajectory_visualizer_.on_cleanup();
@@ -56,20 +56,20 @@ void Controller::cleanup()
   RCLCPP_INFO(logger_, "Cleaned up MPPI Controller: %s", name_.c_str());
 }
 
-void Controller::activate()
+void MPPIController::activate()
 {
   trajectory_visualizer_.on_activate();
   parameters_handler_->start();
   RCLCPP_INFO(logger_, "Activated MPPI Controller: %s", name_.c_str());
 }
 
-void Controller::deactivate()
+void MPPIController::deactivate()
 {
   trajectory_visualizer_.on_deactivate();
   RCLCPP_INFO(logger_, "Deactivated MPPI Controller: %s", name_.c_str());
 }
 
-geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
+geometry_msgs::msg::TwistStamped MPPIController::computeVelocityCommands(
   const geometry_msgs::msg::PoseStamped & robot_pose,
   const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * goal_checker)
@@ -97,19 +97,19 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   return cmd;
 }
 
-void Controller::visualize(nav_msgs::msg::Path transformed_plan)
+void MPPIController::visualize(nav_msgs::msg::Path transformed_plan)
 {
   trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories());
   trajectory_visualizer_.add(optimizer_.getOptimizedTrajectory());
   trajectory_visualizer_.visualize(std::move(transformed_plan));
 }
 
-void Controller::setPlan(const nav_msgs::msg::Path & path)
+void MPPIController::setPlan(const nav_msgs::msg::Path & path)
 {
   path_handler_.setPath(path);
 }
 
-void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
+void MPPIController::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {
   optimizer_.setSpeedLimit(speed_limit, percentage);
 }
@@ -117,4 +117,4 @@ void Controller::setSpeedLimit(const double & speed_limit, const bool & percenta
 }  // namespace mppi
 
 #include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(mppi::Controller, nav2_core::Controller)
+PLUGINLIB_EXPORT_CLASS(mppi::MPPIController, nav2_core::Controller)

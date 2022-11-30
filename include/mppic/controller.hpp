@@ -32,16 +32,16 @@ namespace mppi
 {
 
 /**
- * @class mppi::Controller
+ * @class mppi::MPPIController
  * @brief Main plugin controller for MPPI Controller
  */
-class Controller : public nav2_core::Controller
+class MPPIController : public nav2_core::Controller
 {
 public:
   /**
-    * @brief Constructor for mppi::Controller
+    * @brief Constructor for mppi::MPPIController
     */
-  Controller() = default;
+  MPPIController() = default;
 
   /**
     * @brief Configure controller on bringup
