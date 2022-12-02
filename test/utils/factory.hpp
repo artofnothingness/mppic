@@ -95,6 +95,7 @@ geometry_msgs::msg::Point getDummyPoint(double x, double y)
 
   return point;
 }
+
 std::shared_ptr<nav2_costmap_2d::Costmap2DROS> getDummyCostmapRos()
 {
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("cost_map_node");
@@ -168,7 +169,9 @@ mppi::PathHandler getDummyPathHandler(
   return path_handler;
 }
 
-std::shared_ptr<mppi::MPPIController> getDummyController(auto node, auto tf_buffer, auto costmap_ros)
+std::shared_ptr<mppi::MPPIController> getDummyController(
+  auto node, auto tf_buffer,
+  auto costmap_ros)
 {
   std::shared_ptr<mppi::MPPIController> controller = std::make_shared<mppi::MPPIController>();
   std::weak_ptr<rclcpp_lifecycle::LifecycleNode> weak_ptr_node{node};

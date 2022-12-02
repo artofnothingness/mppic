@@ -78,18 +78,6 @@ public:
   inline auto getParamGetter(const std::string & ns);
 
   /**
-    * @brief Gets parameter
-    * @param setting Return Parameter type
-    * @param name Parameter name
-    * @param default_value Default parameter value
-    * @param param_type Type of parameter (dynamic or static)
-    */
-  template<typename SettingT, typename ParamT>
-  void getParam(
-    SettingT & setting, const std::string & name, ParamT default_value,
-    ParameterType param_type = ParameterType::Dynamic);
-
-  /**
     * @brief Set a callback to process after parameter changes
     * @param callback Callback function
     */
@@ -102,15 +90,6 @@ public:
     */
   template<typename T>
   void addPreCallback(T && callback);
-
-  /**
-    * @brief Set a parameter
-    * @param setting Return Parameter type
-    * @param name Parameter name
-    * @param node Node to set parameter via
-    */
-  template<typename ParamT, typename SettingT, typename NodeT>
-  void setParam(SettingT & setting, const std::string & name, NodeT node) const;
 
   /**
     * @brief Set a parameter to a dynamic parameter callback
@@ -129,7 +108,6 @@ public:
     return &parameters_change_mutex_;
   }
 
-protected:
   /**
     * @brief Set a parameter to a dynamic parameter callback
     * @param name Name of parameter
@@ -137,6 +115,28 @@ protected:
     */
   template<typename T>
   void addDynamicParamCallback(const std::string & name, T && callback);
+
+protected:
+  /**
+    * @brief Gets parameter
+    * @param setting Return Parameter type
+    * @param name Parameter name
+    * @param default_value Default parameter value
+    * @param param_type Type of parameter (dynamic or static)
+    */
+  template<typename SettingT, typename ParamT>
+  void getParam(
+    SettingT & setting, const std::string & name, ParamT default_value,
+    ParameterType param_type = ParameterType::Dynamic);
+
+  /**
+    * @brief Set a parameter
+    * @param setting Return Parameter type
+    * @param name Parameter name
+    * @param node Node to set parameter via
+    */
+  template<typename ParamT, typename SettingT, typename NodeT>
+  void setParam(SettingT & setting, const std::string & name, NodeT node) const;
 
   /**
     * @brief Converts parameter type to real types
@@ -172,7 +172,6 @@ inline auto ParametersHandler::getParamGetter(const std::string & ns)
              std::move(default_value), param_type);
          };
 }
-
 
 template<typename T>
 void ParametersHandler::addDynamicParamCallback(const std::string & name, T && callback)
@@ -258,6 +257,8 @@ auto ParametersHandler::as(const rclcpp::Parameter & parameter)
     return parameter.as_double_array();
   } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
     return parameter.as_string_array();
+  } else if constexpr (std::is_same_v<T, std::vector<bool>>) {
+    return parameter.as_bool_array();
   }
 }
 

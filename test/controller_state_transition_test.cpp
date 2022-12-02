@@ -32,10 +32,11 @@ public:
 };
 RosLockGuard g_rclcpp;
 
-TEST(ControllerTest, ControllerNotFail)
+// Tests basic transition from configure->active->process->deactive->cleanup
+
+TEST(ControllerStateTransitionTest, ControllerNotFail)
 {
   const bool visualize = true;
-
   TestCostmapSettings costmap_settings{};
 
   // Node Options

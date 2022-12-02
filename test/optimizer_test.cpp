@@ -40,6 +40,8 @@ public:
 };
 RosLockGuard g_rclcpp;
 
+// Smoke tests the optimizer
+
 class OptimizerSuite : public ::testing::TestWithParam<std::tuple<std::string,
     std::vector<std::string>, bool>> {};
 

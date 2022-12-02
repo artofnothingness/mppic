@@ -40,18 +40,6 @@ struct Trajectories
     y = xt::zeros<float>({batch_size, time_steps});
     yaws = xt::zeros<float>({batch_size, time_steps});
   }
-
-  /**
-    * @brief Get the last point in all trajectories
-    * @return A tensor containing only final points in trajectories
-    */
-  inline auto getLastPoints() const
-  {
-    return xt::concatenate(
-      xtuple(
-        xt::view(x, xt::all(), -1, xt::newaxis()),
-        xt::view(y, xt::all(), -1, xt::newaxis())), 1);
-  }
 };
 
 }  // namespace mppi::models

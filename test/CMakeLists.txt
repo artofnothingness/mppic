@@ -1,6 +1,9 @@
 set(TEST_NAMES
   optimizer_test
-  controller_test
+  controller_state_transition_test
+  models_test
+  noise_generator_test
+  parameter_handler_test
 )
 
 foreach(name IN LISTS TEST_NAMES)
