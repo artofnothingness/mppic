@@ -4,6 +4,7 @@ set(TEST_NAMES
   models_test
   noise_generator_test
   parameter_handler_test
+  motion_model_tests
 )
 
 foreach(name IN LISTS TEST_NAMES)
