@@ -18,62 +18,6 @@
 namespace mppi
 {
 
-namespace
-{
-
-inline geometry_msgs::msg::Pose createPose(double x, double y, double z)
-{
-  geometry_msgs::msg::Pose pose;
-  pose.position.x = x;
-  pose.position.y = y;
-  pose.position.z = z;
-  pose.orientation.w = 1;
-  pose.orientation.x = 0;
-  pose.orientation.y = 0;
-  pose.orientation.z = 0;
-  return pose;
-}
-
-inline geometry_msgs::msg::Vector3 createScale(double x, double y, double z)
-{
-  geometry_msgs::msg::Vector3 scale;
-  scale.x = x;
-  scale.y = y;
-  scale.z = z;
-  return scale;
-}
-
-inline std_msgs::msg::ColorRGBA createColor(float r, float g, float b, float a)
-{
-  std_msgs::msg::ColorRGBA color;
-  color.r = r;
-  color.g = g;
-  color.b = b;
-  color.a = a;
-  return color;
-}
-
-inline visualization_msgs::msg::Marker createMarker(
-  int id, const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & scale,
-  const std_msgs::msg::ColorRGBA & color, const std::string & frame_id)
-{
-  using visualization_msgs::msg::Marker;
-  Marker marker;
-  marker.header.frame_id = frame_id;
-  marker.header.stamp = rclcpp::Time(0, 0);
-  marker.ns = "MarkerNS";
-  marker.id = id;
-  marker.type = Marker::SPHERE;
-  marker.action = Marker::ADD;
-
-  marker.pose = pose;
-  marker.scale = scale;
-  marker.color = color;
-  return marker;
-}
-
-}  // namespace
-
 void TrajectoryVisualizer::on_configure(
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent, const std::string & name,
   const std::string & frame_id, ParametersHandler * parameters_handler)
@@ -122,10 +66,13 @@ void TrajectoryVisualizer::add(const xt::xtensor<float, 2> & trajectory)
   auto add_marker = [&](auto i) {
       float component = static_cast<float>(i) / static_cast<float>(size);
 
-      auto pose = createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
-      auto scale = i != size - 1 ? createScale(0.03, 0.03, 0.07) : createScale(0.07, 0.07, 0.09);
-      auto color = createColor(0, component, component, 1);
-      auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
+      auto pose = utils::createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
+      auto scale =
+        i != size - 1 ?
+        utils::createScale(0.03, 0.03, 0.07) :
+        utils::createScale(0.07, 0.07, 0.09);
+      auto color = utils::createColor(0, component, component, 1);
+      auto marker = utils::createMarker(marker_id_++, pose, scale, color, frame_id_);
       points_->markers.push_back(marker);
     };
 
@@ -147,10 +94,10 @@ void TrajectoryVisualizer::add(
       float blue_component = 1.0f - j_flt / shape_1;
       float green_component = j_flt / shape_1;
 
-      auto pose = createPose(trajectories.x(i, j), trajectories.y(i, j), 0.03);
-      auto scale = createScale(0.03, 0.03, 0.03);
-      auto color = createColor(0, green_component, blue_component, 1);
-      auto marker = createMarker(marker_id_++, pose, scale, color, frame_id_);
+      auto pose = utils::createPose(trajectories.x(i, j), trajectories.y(i, j), 0.03);
+      auto scale = utils::createScale(0.03, 0.03, 0.03);
+      auto color = utils::createColor(0, green_component, blue_component, 1);
+      auto marker = utils::createMarker(marker_id_++, pose, scale, color, frame_id_);
 
       points_->markers.push_back(marker);
     }

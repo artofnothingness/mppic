@@ -23,9 +23,9 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-#include "visualization_msgs/msg/marker_array.hpp"
 
 #include "mppic/tools/parameters_handler.hpp"
+#include "mppic/tools/utils.hpp"
 #include "mppic/models/trajectories.hpp"
 
 namespace mppi

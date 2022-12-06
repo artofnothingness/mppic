@@ -32,6 +32,7 @@
 
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -48,6 +49,88 @@
 namespace mppi::utils
 {
 using xt::evaluation_strategy::immediate;
+
+/**
+ * @brief Convert data into pose
+ * @param x X position
+ * @param y Y position
+ * @param z Z position
+ * @return Pose object
+ */
+inline geometry_msgs::msg::Pose createPose(double x, double y, double z)
+{
+  geometry_msgs::msg::Pose pose;
+  pose.position.x = x;
+  pose.position.y = y;
+  pose.position.z = z;
+  pose.orientation.w = 1;
+  pose.orientation.x = 0;
+  pose.orientation.y = 0;
+  pose.orientation.z = 0;
+  return pose;
+}
+
+/**
+ * @brief Convert data into scale
+ * @param x X scale
+ * @param y Y scale
+ * @param z Z scale
+ * @return Scale object
+ */
+inline geometry_msgs::msg::Vector3 createScale(double x, double y, double z)
+{
+  geometry_msgs::msg::Vector3 scale;
+  scale.x = x;
+  scale.y = y;
+  scale.z = z;
+  return scale;
+}
+
+/**
+ * @brief Convert data into color
+ * @param r Red component
+ * @param g Green component
+ * @param b Blue component
+ * @param a Alpha component (transparency)
+ * @return Color object
+ */
+inline std_msgs::msg::ColorRGBA createColor(float r, float g, float b, float a)
+{
+  std_msgs::msg::ColorRGBA color;
+  color.r = r;
+  color.g = g;
+  color.b = b;
+  color.a = a;
+  return color;
+}
+
+/**
+ * @brief Convert data into a Maarker
+ * @param id Marker ID
+ * @param pose Marker pose
+ * @param scale Marker scale
+ * @param color Marker color
+ * @param frame Reference frame to use
+ * @return Visualization Marker
+ */
+inline visualization_msgs::msg::Marker createMarker(
+  int id, const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & scale,
+  const std_msgs::msg::ColorRGBA & color, const std::string & frame_id)
+{
+  using visualization_msgs::msg::Marker;
+  Marker marker;
+  marker.header.frame_id = frame_id;
+  marker.header.stamp = rclcpp::Time(0, 0);
+  marker.ns = "MarkerNS";
+  marker.id = id;
+  marker.type = Marker::SPHERE;
+  marker.action = Marker::ADD;
+
+  marker.pose = pose;
+  marker.scale = scale;
+  marker.color = color;
+  return marker;
+}
 
 /**
  * @brief Convert data into TwistStamped
@@ -237,7 +320,6 @@ inline size_t findPathFurthestReachedPoint(const CriticData & data)
   }
   return max_id_by_trajectories;
 }
-
 
 /**
  * @brief evaluate path furthest point if it is not set
