@@ -15,6 +15,7 @@
 #include <chrono>
 #include <thread>
 
+#include <xtensor/xrandom.hpp>
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
 #include "mppic/tools/utils.hpp"
@@ -196,3 +197,100 @@ TEST(UtilsTests, AnglesTests)
   EXPECT_NEAR(posePointAngle(pose, point_x, point_y), 0.0, 1e-6);
 }
 
+TEST(UtilsTests, FurthestReachedPoint)
+{
+  models::State state;
+  models::Trajectories generated_trajectories;
+  models::Path path;
+  xt::xtensor<float, 1> costs;
+  float model_dt = 0.1;
+
+  CriticData data =
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr,
+    std::nullopt};  /// Caution, keep references
+
+  // Attempt to set furthest point if notionally set, should not change
+  data.furthest_reached_path_point = 99999;
+  setPathFurthestPointIfNotSet(data);
+  EXPECT_EQ(data.furthest_reached_path_point, 99999);
+
+  // Attempt to set if not set already with no other information, should fail
+  CriticData data2 =
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr,
+    std::nullopt};  /// Caution, keep references
+  setPathFurthestPointIfNotSet(data2);
+  EXPECT_EQ(data2.furthest_reached_path_point, 0);
+
+  // Test the actual computation of the path point reached
+  generated_trajectories.x = xt::ones<float>({100, 2});
+  generated_trajectories.y = xt::zeros<float>({100, 2});
+  generated_trajectories.yaws = xt::zeros<float>({100, 2});
+
+  nav_msgs::msg::Path plan;
+  plan.poses.resize(10);
+  for (unsigned int i = 0; i != plan.poses.size(); i++) {
+    plan.poses[i].pose.position.x = 0.2 * i;
+    plan.poses[i].pose.position.y = 0.0;
+  }
+  path = toTensor(plan);
+
+  CriticData data3 =
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr,
+    std::nullopt};  /// Caution, keep references
+  EXPECT_EQ(findPathFurthestReachedPoint(data3), 5u);
+  data3.furthest_reached_path_point = 5u;
+  EXPECT_EQ(getPathRatioReached(data3), 0.5);
+}
+
+TEST(UtilsTests, SmootherTest)
+{
+  models::ControlSequence noisey_sequence, sequence_init;
+  noisey_sequence.vx = 0.2 * xt::ones<float>({30});
+  noisey_sequence.vy = 0.0 * xt::ones<float>({30});
+  noisey_sequence.wz = 0.3 * xt::ones<float>({30});
+
+  // Make the sequence noisey
+  auto noises = xt::random::randn<float>({30}, 0.0, 0.2);
+  noisey_sequence.vx += noises;
+  noisey_sequence.vy += noises;
+  noisey_sequence.wz += noises;
+  sequence_init = noisey_sequence;
+
+  std::array<mppi::models::Control, 2> history, history_init;
+  history[1].vx = 0.1;
+  history[1].vy = 0.0;
+  history[1].wz = 0.3;
+  history[0].vx = 0.0;
+  history[0].vy = 0.0;
+  history[0].wz = 0.0;
+  history_init = history;
+
+  models::OptimizerSettings settings;
+  settings.shift_control_sequence = false;  // so result stores 0th value in history
+
+  savitskyGolayFilter(noisey_sequence, history, settings);
+
+  // Check history is propogated backward
+  EXPECT_NEAR(history_init[1].vx, history[0].vx, 0.02);
+  EXPECT_NEAR(history_init[1].vy, history[0].vy, 0.02);
+  EXPECT_NEAR(history_init[1].wz, history[0].wz, 0.02);
+
+  // Check history element is updated for first command
+  EXPECT_NEAR(history[1].vx, 0.2, 0.05);
+  EXPECT_NEAR(history[1].vy, 0.0, 0.02);
+  EXPECT_NEAR(history[1].wz, 0.23, 0.02);
+
+  // Check that path is smoother
+  float smoothed_val, original_val;
+  for (unsigned int i = 0; i != noisey_sequence.vx.shape(0); i++) {
+    smoothed_val += fabs(noisey_sequence.vx(i) - 0.2);
+    smoothed_val += fabs(noisey_sequence.vy(i) - 0.0);
+    smoothed_val += fabs(noisey_sequence.wz(i) - 0.3);
+
+    original_val += fabs(sequence_init.vx(i) - 0.2);
+    original_val += fabs(sequence_init.vy(i) - 0.0);
+    original_val += fabs(sequence_init.wz(i) - 0.3);
+  }
+
+  EXPECT_LT(smoothed_val, original_val);
+}

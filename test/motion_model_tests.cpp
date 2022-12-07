@@ -21,7 +21,7 @@
 #include "mppic/models/state.hpp"
 #include "mppic/models/control_sequence.hpp"
 
-// Tests noise generator object
+// Tests motion models
 
 class RosLockGuard
 {

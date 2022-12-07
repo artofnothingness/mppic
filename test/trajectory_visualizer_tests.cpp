@@ -19,7 +19,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "mppic/tools/trajectory_visualizer.hpp"
 
-// Tests noise generator object
+// Tests trajectory visualization
 
 class RosLockGuard
 {

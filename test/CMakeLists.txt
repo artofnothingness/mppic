@@ -7,6 +7,7 @@ set(TEST_NAMES
   motion_model_tests
   trajectory_visualizer_tests
   utils_test
+  path_handler_test
 )
 
 foreach(name IN LISTS TEST_NAMES)
