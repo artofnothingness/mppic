@@ -8,6 +8,7 @@ set(TEST_NAMES
   trajectory_visualizer_tests
   utils_test
   path_handler_test
+  critic_manager_test
 )
 
 foreach(name IN LISTS TEST_NAMES)
@@ -28,3 +29,11 @@ foreach(name IN LISTS TEST_NAMES)
   endif()
 
 endforeach()
+
+# This is a special case requiring linking against the critics library
+ament_add_gtest(critics_tests critics_tests.cpp)
+ament_target_dependencies(critics_tests ${dependencies_pkgs})
+target_link_libraries(critics_tests mppic critics)
+if(${TEST_DEBUG_INFO})
+  target_compile_definitions(critics_tests PUBLIC -DTEST_DEBUG_INFO)
+endif()

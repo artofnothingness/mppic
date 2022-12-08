@@ -73,7 +73,7 @@ protected:
   /**
     * @brief Load the critic plugins
     */
-  void loadCritics();
+  virtual void loadCritics();
 
   /**
     * @brief Get full-name namespaced critic IDs

@@ -47,8 +47,10 @@ void ConstraintCritic::score(CriticData & data)
     return;
   }
 
-  auto out_of_max_bounds_motion = xt::maximum(data.state.vx - max_vel_, 0);
-  auto out_of_min_bounds_motion = xt::maximum(min_vel_ - data.state.vx, 0);
+  auto sgn = xt::where(data.state.vx > 0.0, 1.0, -1.0);
+  auto vel_total = sgn * xt::sqrt(data.state.vx * data.state.vx + data.state.vy * data.state.vy);
+  auto out_of_max_bounds_motion = xt::maximum(vel_total - max_vel_, 0);
+  auto out_of_min_bounds_motion = xt::maximum(min_vel_ - vel_total, 0);
 
   auto acker = dynamic_cast<AckermannMotionModel *>(data.motion_model.get());
   if (acker != nullptr) {
