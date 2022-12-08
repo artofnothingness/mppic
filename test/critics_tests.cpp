@@ -209,24 +209,112 @@ TEST(CriticTests, GoalCritic)
   EXPECT_NEAR(xt::sum(costs, immediate)(), 2500.0, 1e-6);  // should be 2.5 * 1000
 }
 
-TEST(CriticTests, ObstaclesCritic)
-{
-}
-
-TEST(CriticTests, PathAlignCritic)
-{
-}
-
 TEST(CriticTests, PathAngleCritic)
 {
-}
+  // Standard preamble
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("my_node");
+  auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
+    "dummy_costmap", "", "dummy_costmap", true);
+  ParametersHandler param_handler(node);
+  rclcpp_lifecycle::State lstate;
+  costmap_ros->on_configure(lstate);
 
-TEST(CriticTests, PathFollowCritic)
-{
+  models::State state;
+  state.reset(1000, 30);
+  models::ControlSequence control_sequence;
+  models::Trajectories generated_trajectories;
+  generated_trajectories.reset(1000, 30);
+  models::Path path;
+  xt::xtensor<float, 1> costs = xt::zeros<float>({1000});
+  float model_dt = 0.1;
+  CriticData data =
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt};
+  data.motion_model = std::make_shared<DiffDriveMotionModel>();
+  TestGoalChecker goal_checker;  // from utils_tests tolerance of 0.25 positionally
+
+  // Initialization testing
+
+  // Make sure initializes correctly
+  PathAngleCritic critic;
+  critic.on_configure(node, "mppi", "critic", costmap_ros, &param_handler);
+  EXPECT_EQ(critic.getName(), "critic");
+
+  // Scoring testing
+
+  // provide state poses and path close, within pose tolerance so won't do anything
+  state.pose.pose.position.x = 0.0;
+  state.pose.pose.position.y = 0.0;
+  path.reset(10);
+  path.x(9) = 0.15;
+  critic.score(data);
+  EXPECT_NEAR(xt::sum(costs, immediate)(), 0.0, 1e-6);
+
+  // provide state pose and path close but outside of tol. with less than PI/2 angular diff.
+  path.x(9) = 0.95;
+  data.furthest_reached_path_point = 2;  // So it grabs the 2 + offset_from_furthest_ = 6th point
+  path.x(6) = 1.0;  // angle between path point and pose = 0 < max_angle_to_furthest_
+  path.y(6) = 0.0;
+  critic.score(data);
+  EXPECT_NEAR(xt::sum(costs, immediate)(), 0.0, 1e-6);
+
+  // provide state pose and path close but outside of tol. with more than PI/2 angular diff.
+  path.x(6) = -1.0;  // angle between path point and pose > max_angle_to_furthest_
+  path.y(6) = 4.0;
+  critic.score(data);
+  EXPECT_GT(xt::sum(costs, immediate)(), 0.0);
+  EXPECT_NEAR(costs(0), 3.6315, 1e-2);  // atan2(4,-1) [1.81] * 2.0 weight
 }
 
 TEST(CriticTests, PreferForwardCritic)
 {
+  // Standard preamble
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("my_node");
+  auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
+    "dummy_costmap", "", "dummy_costmap", true);
+  ParametersHandler param_handler(node);
+  rclcpp_lifecycle::State lstate;
+  costmap_ros->on_configure(lstate);
+
+  models::State state;
+  state.reset(1000, 30);
+  models::ControlSequence control_sequence;
+  models::Trajectories generated_trajectories;
+  generated_trajectories.reset(1000, 30);
+  models::Path path;
+  xt::xtensor<float, 1> costs = xt::zeros<float>({1000});
+  float model_dt = 0.1;
+  CriticData data =
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt};
+  data.motion_model = std::make_shared<DiffDriveMotionModel>();
+  TestGoalChecker goal_checker;  // from utils_tests tolerance of 0.25 positionally
+
+  // Initialization testing
+
+  // Make sure initializes correctly
+  PreferForwardCritic critic;
+  critic.on_configure(node, "mppi", "critic", costmap_ros, &param_handler);
+  EXPECT_EQ(critic.getName(), "critic");
+
+  // Scoring testing
+
+  // provide state poses and path far away, not within positional tolerances
+  state.pose.pose.position.x = 1.0;
+  path.reset(10);
+  path.x(9) = 10.0;
+  critic.score(data);
+  EXPECT_NEAR(xt::sum(costs, immediate)(), 0.0, 1e-6);
+
+  // provide state pose and path close to trigger behavior but with all forward motion
+  path.x(9) = 0.15;
+  state.vx = xt::ones<float>({1000, 30});
+  critic.score(data);
+  EXPECT_NEAR(xt::sum(costs, immediate)(), 0.0, 1e-6);
+
+  // provide state pose and path close to trigger behavior but with all reverse motion
+  state.vx = -1.0 * xt::ones<float>({1000, 30});
+  critic.score(data);
+  EXPECT_GT(xt::sum(costs, immediate)(), 0.0);
+  EXPECT_NEAR(costs(0), 15.0, 1e-6);  // 1.0 * 0.1 model_dt * 5.0 weight * 30 length
 }
 
 TEST(CriticTests, TwirlingCritic)
