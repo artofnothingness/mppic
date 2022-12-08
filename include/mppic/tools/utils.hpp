@@ -177,7 +177,7 @@ inline size_t findPathFurthestReachedPoint(const CriticData & data)
   for (size_t i = 0; i < dists.shape(0); i++) {
     size_t min_id_by_path = 0;
     for (size_t j = 0; j < dists.shape(1); j++) {
-      if (min_distance_by_path < dists(i, j)) {
+      if (min_distance_by_path > dists(i, j)) {
         min_distance_by_path = dists(i, j);
         min_id_by_path = j;
       }
