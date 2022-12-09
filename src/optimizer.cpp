@@ -246,11 +246,11 @@ void Optimizer::updateStateVelocities(
 void Optimizer::updateInitialStateVelocities(
   models::State & state) const
 {
-  xt::noalias(xt::view(state.vx, xt::all(), 0)) = state_.speed.linear.x;
-  xt::noalias(xt::view(state.wz, xt::all(), 0)) = state_.speed.angular.z;
+  xt::noalias(xt::view(state.vx, xt::all(), 0)) = state.speed.linear.x;
+  xt::noalias(xt::view(state.wz, xt::all(), 0)) = state.speed.angular.z;
 
   if (isHolonomic()) {
-    xt::noalias(xt::view(state.vy, xt::all(), 0)) = state_.speed.linear.y;
+    xt::noalias(xt::view(state.vy, xt::all(), 0)) = state.speed.linear.y;
   }
 }
 
@@ -262,13 +262,13 @@ void Optimizer::propagateStateVelocitiesFromInitials(
 
 void Optimizer::integrateStateVelocities(
   xt::xtensor<float, 2> & trajectory,
-  const xt::xtensor<float, 2> & state) const
+  const xt::xtensor<float, 2> & sequence) const
 {
   double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
 
-  const auto vx = xt::view(state, xt::all(), 0);
-  const auto vy = xt::view(state, xt::all(), 2);
-  const auto wz = xt::view(state, xt::all(), 1);
+  const auto vx = xt::view(sequence, xt::all(), 0);
+  const auto vy = xt::view(sequence, xt::all(), 2);
+  const auto wz = xt::view(sequence, xt::all(), 1);
 
   auto traj_x = xt::view(trajectory, xt::all(), 0);
   auto traj_y = xt::view(trajectory, xt::all(), 1);
@@ -303,7 +303,7 @@ void Optimizer::integrateStateVelocities(
   models::Trajectories & trajectories,
   const models::State & state) const
 {
-  const double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
+  const double initial_yaw = tf2::getYaw(state.pose.pose.orientation);
 
   xt::noalias(trajectories.yaws) =
     utils::normalize_angles(xt::cumsum(state.wz * settings_.model_dt, 1) + initial_yaw);
@@ -325,26 +325,26 @@ void Optimizer::integrateStateVelocities(
     dy = dy + state.vy * yaw_cos;
   }
 
-  xt::noalias(trajectories.x) = state_.pose.pose.position.x +
+  xt::noalias(trajectories.x) = state.pose.pose.position.x +
     xt::cumsum(dx * settings_.model_dt, 1);
-  xt::noalias(trajectories.y) = state_.pose.pose.position.y +
+  xt::noalias(trajectories.y) = state.pose.pose.position.y +
     xt::cumsum(dy * settings_.model_dt, 1);
 }
 
 xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
 {
-  auto && state =
+  auto && sequence =
     xt::xtensor<float, 2>::from_shape({settings_.time_steps, isHolonomic() ? 3u : 2u});
   auto && trajectories = xt::xtensor<float, 2>::from_shape({settings_.time_steps, 3});
 
-  xt::noalias(xt::view(state, xt::all(), 0)) = control_sequence_.vx;
-  xt::noalias(xt::view(state, xt::all(), 1)) = control_sequence_.wz;
+  xt::noalias(xt::view(sequence, xt::all(), 0)) = control_sequence_.vx;
+  xt::noalias(xt::view(sequence, xt::all(), 1)) = control_sequence_.wz;
 
   if (isHolonomic()) {
-    xt::noalias(xt::view(state, xt::all(), 2)) = control_sequence_.vy;
+    xt::noalias(xt::view(sequence, xt::all(), 2)) = control_sequence_.vy;
   }
 
-  integrateStateVelocities(trajectories, state);
+  integrateStateVelocities(trajectories, sequence);
   return std::move(trajectories);
 }
 

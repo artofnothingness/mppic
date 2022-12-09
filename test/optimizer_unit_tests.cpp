@@ -21,12 +21,6 @@
 
 // Tests main optimizer functions
 
-// applyControlSequenceConstraints - Check min/max respected. Ackermann rad too.
-// updateInitialStateVelocities - Check first values are initials
-// propagateStateVelocitiesFromInitials - check pass through on cvx/vx
-// getControlFromSequenceAsTwist - set sequence and check returns valid object with right info
-// integrateStateVelocities - Give it a couple of easy const traj and check rollout
-
 class RosLockGuard
 {
 public:
@@ -142,51 +136,80 @@ public:
     EXPECT_EQ(path_.x.shape(0), 17u);
   }
 
-  void testShiftControlSequence()
+  void shiftControlSequenceWrapper()
   {
-    control_sequence_.reset({100});
-    control_sequence_.vx(0) = 9999;
-    control_sequence_.vx(1) = 6;
-    control_sequence_.vx(2) = 888;
-    control_sequence_.vy(0) = 9999;
-    control_sequence_.vy(1) = 6;
-    control_sequence_.vy(2) = 888;
-    control_sequence_.wz(0) = 9999;
-    control_sequence_.wz(1) = 6;
-    control_sequence_.wz(2) = 888;
-
-    resetMotionModel();
-    testSetOmniModel();
-    shiftControlSequence();
-
-    EXPECT_EQ(control_sequence_.vx(0), 6);
-    EXPECT_EQ(control_sequence_.vy(0), 6);
-    EXPECT_EQ(control_sequence_.wz(0), 6);
-    EXPECT_EQ(control_sequence_.vx(1), 888);
-    EXPECT_EQ(control_sequence_.vy(1), 888);
-    EXPECT_EQ(control_sequence_.wz(1), 888);
-    EXPECT_EQ(control_sequence_.vx(2), 0);
-    EXPECT_EQ(control_sequence_.vy(2), 0);
-    EXPECT_EQ(control_sequence_.wz(2), 0);
+    return shiftControlSequence();
   }
 
-  void testSpeedLimit()
+  std::pair<double, double> getVelLimits()
   {
     auto & s = settings_;
-    EXPECT_EQ(s.constraints.vx_max, 0.5);
-    EXPECT_EQ(s.constraints.vx_min, -0.35);
-    setSpeedLimit(0, false);
-    EXPECT_EQ(s.constraints.vx_max, 0.5);
-    EXPECT_EQ(s.constraints.vx_min, -0.35);
-    setSpeedLimit(50.0, true);
-    EXPECT_NEAR(s.constraints.vx_max, 0.5 / 2.0, 1e-3);
-    EXPECT_NEAR(s.constraints.vx_min, -0.35 / 2.0, 1e-3);
-    setSpeedLimit(0, true);
-    EXPECT_EQ(s.constraints.vx_max, 0.5);
-    EXPECT_EQ(s.constraints.vx_min, -0.35);
-    setSpeedLimit(0.75, false);
-    EXPECT_NEAR(s.constraints.vx_max, 0.75, 1e-3);
-    EXPECT_NEAR(s.constraints.vx_min, -0.5249, 1e-2);
+    return {s.constraints.vx_min, s.constraints.vx_max};
+  }
+
+  void applyControlSequenceConstraintsWrapper()
+  {
+    return applyControlSequenceConstraints();
+  }
+
+  models::ControlSequence & grabControlSequence()
+  {
+    return control_sequence_;
+  }
+
+  void testupdateStateVels()
+  {
+    // updateInitialStateVelocities
+    models::State state;
+    state.reset(1000, 50);
+    state.speed.linear.x = 5.0;
+    state.speed.linear.y = 1.0;
+    state.speed.angular.z = 6.0;
+    state.cvx = 0.75 * xt::ones<float>({1000, 50});
+    state.cvy = 0.5 * xt::ones<float>({1000, 50});
+    state.cwz = 0.1 * xt::ones<float>({1000, 50});
+    updateInitialStateVelocities(state);
+    EXPECT_NEAR(state.vx(0, 0), 5.0, 1e-6);
+    EXPECT_NEAR(state.vy(0, 0), 1.0, 1e-6);
+    EXPECT_NEAR(state.wz(0, 0), 6.0, 1e-6);
+
+    // propagateStateVelocitiesFromInitials
+    propagateStateVelocitiesFromInitials(state);
+    EXPECT_NEAR(state.vx(0, 0), 5.0, 1e-6);
+    EXPECT_NEAR(state.vy(0, 0), 1.0, 1e-6);
+    EXPECT_NEAR(state.wz(0, 0), 6.0, 1e-6);
+    EXPECT_NEAR(state.vx(0, 1), 0.75, 1e-6);
+    EXPECT_NEAR(state.vy(0, 1), 0.5, 1e-6);
+    EXPECT_NEAR(state.wz(0, 1), 0.1, 1e-6);
+
+    // Putting them together: updateStateVelocities
+    state.reset(1000, 50);
+    state.speed.linear.x = -5.0;
+    state.speed.linear.y = -1.0;
+    state.speed.angular.z = -6.0;
+    state.cvx = -0.75 * xt::ones<float>({1000, 50});
+    state.cvy = -0.5 * xt::ones<float>({1000, 50});
+    state.cwz = -0.1 * xt::ones<float>({1000, 50});
+    updateStateVelocities(state);
+    EXPECT_NEAR(state.vx(0, 0), -5.0, 1e-6);
+    EXPECT_NEAR(state.vy(0, 0), -1.0, 1e-6);
+    EXPECT_NEAR(state.wz(0, 0), -6.0, 1e-6);
+    EXPECT_NEAR(state.vx(0, 1), -0.75, 1e-6);
+    EXPECT_NEAR(state.vy(0, 1), -0.5, 1e-6);
+    EXPECT_NEAR(state.wz(0, 1), -0.1, 1e-6);
+  }
+
+  geometry_msgs::msg::TwistStamped getControlFromSequenceAsTwistWrapper()
+  {
+    builtin_interfaces::msg::Time stamp;
+    return getControlFromSequenceAsTwist(stamp);
+  }
+
+  void integrateStateVelocitiesWrapper(
+    models::Trajectories & traj,
+    const models::State & state)
+  {
+    return integrateStateVelocities(traj, state);
   }
 };
 
@@ -362,7 +385,31 @@ TEST(OptimizerTests, shiftControlSequenceTests)
   optimizer_tester.initialize(node, "mppic", costmap_ros, &param_handler);
 
   // Test shiftControlSequence by setting the 2nd value to something unique to neighbors
-  optimizer_tester.testShiftControlSequence();
+  auto & sequence = optimizer_tester.grabControlSequence();
+  sequence.reset({100});
+  sequence.vx(0) = 9999;
+  sequence.vx(1) = 6;
+  sequence.vx(2) = 888;
+  sequence.vy(0) = 9999;
+  sequence.vy(1) = 6;
+  sequence.vy(2) = 888;
+  sequence.wz(0) = 9999;
+  sequence.wz(1) = 6;
+  sequence.wz(2) = 888;
+
+  optimizer_tester.resetMotionModel();
+  optimizer_tester.testSetOmniModel();
+  optimizer_tester.shiftControlSequenceWrapper();
+
+  EXPECT_EQ(sequence.vx(0), 6);
+  EXPECT_EQ(sequence.vy(0), 6);
+  EXPECT_EQ(sequence.wz(0), 6);
+  EXPECT_EQ(sequence.vx(1), 888);
+  EXPECT_EQ(sequence.vy(1), 888);
+  EXPECT_EQ(sequence.wz(1), 888);
+  EXPECT_EQ(sequence.vx(2), 0);
+  EXPECT_EQ(sequence.vy(2), 0);
+  EXPECT_EQ(sequence.wz(2), 0);
 }
 
 TEST(OptimizerTests, SpeedLimitTests)
@@ -381,5 +428,206 @@ TEST(OptimizerTests, SpeedLimitTests)
   optimizer_tester.initialize(node, "mppic", costmap_ros, &param_handler);
 
   // Test Speed limits API
-  optimizer_tester.testSpeedLimit();
+  auto [v_min, v_max] = optimizer_tester.getVelLimits();
+  EXPECT_EQ(v_max, 0.5);
+  EXPECT_EQ(v_min, -0.35);
+  optimizer_tester.setSpeedLimit(0, false);
+  auto [v_min2, v_max2] = optimizer_tester.getVelLimits();
+  EXPECT_EQ(v_max2, 0.5);
+  EXPECT_EQ(v_min2, -0.35);
+  optimizer_tester.setSpeedLimit(50.0, true);
+  auto [v_min3, v_max3] = optimizer_tester.getVelLimits();
+  EXPECT_NEAR(v_max3, 0.5 / 2.0, 1e-3);
+  EXPECT_NEAR(v_min3, -0.35 / 2.0, 1e-3);
+  optimizer_tester.setSpeedLimit(0, true);
+  auto [v_min4, v_max4] = optimizer_tester.getVelLimits();
+  EXPECT_EQ(v_max4, 0.5);
+  EXPECT_EQ(v_min4, -0.35);
+  optimizer_tester.setSpeedLimit(0.75, false);
+  auto [v_min5, v_max5] = optimizer_tester.getVelLimits();
+  EXPECT_NEAR(v_max5, 0.75, 1e-3);
+  EXPECT_NEAR(v_min5, -0.5249, 1e-2);
+}
+
+TEST(OptimizerTests, applyControlSequenceConstraintsTests)
+{
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("my_node");
+  OptimizerTester optimizer_tester;
+  node->declare_parameter("controller_frequency", rclcpp::ParameterValue(30.0));
+  node->declare_parameter("mppic.batch_size", rclcpp::ParameterValue(1000));
+  node->declare_parameter("mppic.time_steps", rclcpp::ParameterValue(50));
+  node->declare_parameter("mppic.vx_max", rclcpp::ParameterValue(1.0));
+  node->declare_parameter("mppic.vx_min", rclcpp::ParameterValue(-1.0));
+  node->declare_parameter("mppic.vy_max", rclcpp::ParameterValue(0.75));
+  node->declare_parameter("mppic.wz_max", rclcpp::ParameterValue(2.0));
+  auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
+    "dummy_costmap", "", "dummy_costmap", true);
+  ParametersHandler param_handler(node);
+  rclcpp_lifecycle::State lstate;
+  costmap_ros->on_configure(lstate);
+  optimizer_tester.initialize(node, "mppic", costmap_ros, &param_handler);
+
+  // Test constraints being applied to ensure feasibility of trajectories
+  // Also tests param get of set vx/vy/wz min/maxes
+
+  // Set model to omni to consider holonomic vy elements
+  // Ack is not tested here because `applyConstraints` is covered in detail
+  // in motion_models_test.cpp
+  optimizer_tester.resetMotionModel();
+  optimizer_tester.testSetOmniModel();
+  auto & sequence = optimizer_tester.grabControlSequence();
+
+  // Test boundary of limits
+  sequence.vx = xt::ones<float>({50});
+  sequence.vy = 0.75 * xt::ones<float>({50});
+  sequence.wz = 2.0 * xt::ones<float>({50});
+  optimizer_tester.applyControlSequenceConstraintsWrapper();
+  EXPECT_EQ(sequence.vx, xt::ones<float>({50}));
+  EXPECT_EQ(sequence.vy, 0.75 * xt::ones<float>({50}));
+  EXPECT_EQ(sequence.wz, 2.0 * xt::ones<float>({50}));
+
+  // Test breaking limits sets to maximum
+  sequence.vx = 5.0 * xt::ones<float>({50});
+  sequence.vy = 5.0 * xt::ones<float>({50});
+  sequence.wz = 5.0 * xt::ones<float>({50});
+  optimizer_tester.applyControlSequenceConstraintsWrapper();
+  EXPECT_EQ(sequence.vx, xt::ones<float>({50}));
+  EXPECT_EQ(sequence.vy, 0.75 * xt::ones<float>({50}));
+  EXPECT_EQ(sequence.wz, 2.0 * xt::ones<float>({50}));
+
+  // Test breaking limits sets to minimum
+  sequence.vx = -5.0 * xt::ones<float>({50});
+  sequence.vy = -5.0 * xt::ones<float>({50});
+  sequence.wz = -5.0 * xt::ones<float>({50});
+  optimizer_tester.applyControlSequenceConstraintsWrapper();
+  EXPECT_EQ(sequence.vx, -1.0 * xt::ones<float>({50}));
+  EXPECT_EQ(sequence.vy, -0.75 * xt::ones<float>({50}));
+  EXPECT_EQ(sequence.wz, -2.0 * xt::ones<float>({50}));
+}
+
+TEST(OptimizerTests, updateStateVelocitiesTests)
+{
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("my_node");
+  OptimizerTester optimizer_tester;
+  node->declare_parameter("controller_frequency", rclcpp::ParameterValue(30.0));
+  node->declare_parameter("mppic.batch_size", rclcpp::ParameterValue(1000));
+  node->declare_parameter("mppic.time_steps", rclcpp::ParameterValue(50));
+  node->declare_parameter("mppic.vx_max", rclcpp::ParameterValue(1.0));
+  node->declare_parameter("mppic.vx_min", rclcpp::ParameterValue(-1.0));
+  node->declare_parameter("mppic.vy_max", rclcpp::ParameterValue(0.60));
+  node->declare_parameter("mppic.wz_max", rclcpp::ParameterValue(2.0));
+  auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
+    "dummy_costmap", "", "dummy_costmap", true);
+  ParametersHandler param_handler(node);
+  rclcpp_lifecycle::State lstate;
+  costmap_ros->on_configure(lstate);
+  optimizer_tester.initialize(node, "mppic", costmap_ros, &param_handler);
+
+  // Test settings of the state to the initial robot speed to start rollout
+  // Set model to omni to consider holonomic vy elements
+  optimizer_tester.resetMotionModel();
+  optimizer_tester.testSetOmniModel();
+  optimizer_tester.testupdateStateVels();
+}
+
+TEST(OptimizerTests, getControlFromSequenceAsTwistTests)
+{
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("my_node");
+  OptimizerTester optimizer_tester;
+  node->declare_parameter("controller_frequency", rclcpp::ParameterValue(30.0));
+  node->declare_parameter("mppic.batch_size", rclcpp::ParameterValue(1000));
+  node->declare_parameter("mppic.time_steps", rclcpp::ParameterValue(50));
+  node->declare_parameter("mppic.vx_max", rclcpp::ParameterValue(1.0));
+  node->declare_parameter("mppic.vx_min", rclcpp::ParameterValue(-1.0));
+  node->declare_parameter("mppic.vy_max", rclcpp::ParameterValue(0.60));
+  node->declare_parameter("mppic.wz_max", rclcpp::ParameterValue(2.0));
+  auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
+    "dummy_costmap", "", "dummy_costmap", true);
+  ParametersHandler param_handler(node);
+  rclcpp_lifecycle::State lstate;
+  costmap_ros->on_configure(lstate);
+  optimizer_tester.initialize(node, "mppic", costmap_ros, &param_handler);
+
+  // Test conversion of control sequence into a Twist command to execute
+  auto & sequence = optimizer_tester.grabControlSequence();
+  sequence.vx = 0.25 * xt::ones<float>({10});
+  sequence.vy = 0.5 * xt::ones<float>({10});
+  sequence.wz = 0.1 * xt::ones<float>({10});
+
+  auto diff_t = optimizer_tester.getControlFromSequenceAsTwistWrapper();
+  EXPECT_NEAR(diff_t.twist.linear.x, 0.25, 1e-6);
+  EXPECT_NEAR(diff_t.twist.linear.y, 0.0, 1e-6);  // Y should not be populated
+  EXPECT_NEAR(diff_t.twist.angular.z, 0.1, 1e-6);
+
+  // Set model to omni to consider holonomic vy elements
+  optimizer_tester.resetMotionModel();
+  optimizer_tester.testSetOmniModel();
+  auto omni_t = optimizer_tester.getControlFromSequenceAsTwistWrapper();
+  EXPECT_NEAR(omni_t.twist.linear.x, 0.25, 1e-6);
+  EXPECT_NEAR(omni_t.twist.linear.y, 0.5, 1e-6);  // Now it should be
+  EXPECT_NEAR(omni_t.twist.angular.z, 0.1, 1e-6);
+}
+
+TEST(OptimizerTests, integrateStateVelocitiesTests)
+{
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("my_node");
+  OptimizerTester optimizer_tester;
+  node->declare_parameter("controller_frequency", rclcpp::ParameterValue(30.0));
+  node->declare_parameter("mppic.batch_size", rclcpp::ParameterValue(1000));
+  node->declare_parameter("mppic.model_dt", rclcpp::ParameterValue(0.1));
+  node->declare_parameter("mppic.time_steps", rclcpp::ParameterValue(50));
+  auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
+    "dummy_costmap", "", "dummy_costmap", true);
+  ParametersHandler param_handler(node);
+  rclcpp_lifecycle::State lstate;
+  costmap_ros->on_configure(lstate);
+  optimizer_tester.initialize(node, "mppic", costmap_ros, &param_handler);
+  optimizer_tester.resetMotionModel();
+  optimizer_tester.testSetOmniModel();
+
+  // Test integration of velocities for trajectory rollout poses
+
+  // Give it a couple of easy const traj and check rollout, start from 0
+  models::State state;
+  state.reset(1000, 50);
+  models::Trajectories traj;
+  state.vx = 0.1 * xt::ones<float>({1000, 50});
+  xt::view(state.vx, xt::all(), 0) = xt::zeros<float>({1000});
+  state.vy = xt::zeros<float>({1000, 50});
+  state.wz = xt::zeros<float>({1000, 50});
+
+  optimizer_tester.integrateStateVelocitiesWrapper(traj, state);
+  EXPECT_EQ(traj.y, xt::zeros<float>({1000, 50}));
+  EXPECT_EQ(traj.yaws, xt::zeros<float>({1000, 50}));
+  for (unsigned int i = 0; i != traj.x.shape(1); i++) {
+    EXPECT_NEAR(traj.x(1, i), i * 0.1 /*vel*/ * 0.1 /*dt*/, 1e-3);
+  }
+
+  // Give it a bit of a more complex trajectory to crunch
+  state.vy = 0.2 * xt::ones<float>({1000, 50});
+  xt::view(state.vy, xt::all(), 0) = xt::zeros<float>({1000});
+  optimizer_tester.integrateStateVelocitiesWrapper(traj, state);
+
+  EXPECT_EQ(traj.yaws, xt::zeros<float>({1000, 50}));
+  for (unsigned int i = 0; i != traj.x.shape(1); i++) {
+    EXPECT_NEAR(traj.x(1, i), i * 0.1 /*vel*/ * 0.1 /*dt*/, 1e-3);
+    EXPECT_NEAR(traj.y(1, i), i * 0.2 /*vel*/ * 0.1 /*dt*/, 1e-3);
+  }
+
+  // Lets add some angular motion to the mix
+  state.vy = xt::zeros<float>({1000, 50});
+  state.wz = 0.2 * xt::ones<float>({1000, 50});
+  xt::view(state.wz, xt::all(), 0) = xt::zeros<float>({1000});
+  optimizer_tester.integrateStateVelocitiesWrapper(traj, state);
+
+  float x = 0;
+  float y = 0;
+  for (unsigned int i = 1; i != traj.x.shape(1); i++) {
+    std::cout << i << std::endl;
+    x += (0.1 /*vx*/ * cos(0.2 /*wz*/ * 0.1 /*model_dt*/ * (i - 1))) * 0.1 /*model_dt*/;
+    y += (0.1 /*vx*/ * sin(0.2 /*wz*/ * 0.1 /*model_dt*/ * (i - 1))) * 0.1 /*model_dt*/;
+
+    EXPECT_NEAR(traj.x(1, i), x, 1e-6);
+    EXPECT_NEAR(traj.y(1, i), y, 1e-6);
+  }
 }
