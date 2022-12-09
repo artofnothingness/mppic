@@ -1,6 +1,21 @@
-// Copyright 2022 FastSense, Samsung Research
-#pragma once
+// Copyright (c) 2022 Samsung Research America, @artofnothingness Alexey Budyakov
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
+#ifndef MPPIC__CRITICS__OBSTACLES_CRITIC_HPP_
+#define MPPIC__CRITICS__OBSTACLES_CRITIC_HPP_
+
+#include <memory>
 #include "nav2_costmap_2d/footprint_collision_checker.hpp"
 #include "nav2_costmap_2d/inflation_layer.hpp"
 
@@ -11,15 +26,26 @@
 namespace mppi::critics
 {
 
+/**
+ * @class mppi::critics::CollisionCost
+ * @brief Utility for storing cost information
+ */
 struct CollisionCost
 {
   float cost;
   bool using_footprint;
 };
 
+/**
+ * @class mppi::critics::ConstraintCritic
+ * @brief Critic objective function for avoiding obstacles
+ */
 class ObstaclesCritic : public CriticFunction
 {
 public:
+  /**
+    * @brief Initialize critic
+    */
   void initialize() override;
 
   /**
@@ -30,9 +56,33 @@ public:
   void score(CriticData & data) override;
 
 protected:
+  /**
+    * @brief Checks if cost represents a collision
+    * @param cost Costmap cost
+    * @return bool if in collision
+    */
   bool inCollision(float cost) const;
+
+  /**
+    * @brief Get max useful cost
+    * @return unsigned char Max cost
+    */
   unsigned char maxCost();
+
+  /**
+    * @brief cost at a robot pose
+    * @param x X of pose
+    * @param y Y of pose
+    * @param theta theta of pose
+    * @return Collision information at pose
+    */
   CollisionCost costAtPose(float x, float y, float theta);
+
+  /**
+    * @brief Distance to obstacle from cost
+    * @param cost Costmap cost
+    * @return float Distance to the obstacle represented by cost
+    */
   float distanceToObstacle(const CollisionCost & cost);
 
   /**
@@ -62,3 +112,5 @@ protected:
 };
 
 }  // namespace mppi::critics
+
+#endif  // MPPIC__CRITICS__OBSTACLES_CRITIC_HPP_

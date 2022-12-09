@@ -1,4 +1,17 @@
-// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
+// Copyright (c) 2022 Samsung Research America, @artofnothingness Alexey Budyakov
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "mppic/critics/constraint_critic.hpp"
 
 namespace mppi::critics
@@ -34,10 +47,12 @@ void ConstraintCritic::score(CriticData & data)
     return;
   }
 
-  auto out_of_max_bounds_motion = xt::maximum(data.state.vx - max_vel_, 0);
-  auto out_of_min_bounds_motion = xt::maximum(min_vel_ - data.state.vx, 0);
+  auto sgn = xt::where(data.state.vx > 0.0, 1.0, -1.0);
+  auto vel_total = sgn * xt::sqrt(data.state.vx * data.state.vx + data.state.vy * data.state.vy);
+  auto out_of_max_bounds_motion = xt::maximum(vel_total - max_vel_, 0);
+  auto out_of_min_bounds_motion = xt::maximum(min_vel_ - vel_total, 0);
 
-  auto acker = dynamic_cast<AckermannMotionModel*>(data.motion_model.get());
+  auto acker = dynamic_cast<AckermannMotionModel *>(data.motion_model.get());
   if (acker != nullptr) {
     auto & vx = data.state.vx;
     auto & wz = data.state.wz;
@@ -47,16 +62,16 @@ void ConstraintCritic::score(CriticData & data)
     data.costs += xt::pow(
       xt::sum(
         (std::move(out_of_max_bounds_motion) +
-          std::move(out_of_min_bounds_motion) +
-          std::move(out_of_turning_rad_motion))
-        * data.model_dt, {1}, immediate) * weight_, power_);
+        std::move(out_of_min_bounds_motion) +
+        std::move(out_of_turning_rad_motion)) *
+        data.model_dt, {1}, immediate) * weight_, power_);
   }
 
   data.costs += xt::pow(
     xt::sum(
       (std::move(out_of_max_bounds_motion) +
-        std::move(out_of_min_bounds_motion))
-      * data.model_dt, {1}, immediate) * weight_, power_);
+      std::move(out_of_min_bounds_motion)) *
+      data.model_dt, {1}, immediate) * weight_, power_);
 }
 
 }  // namespace mppi::critics

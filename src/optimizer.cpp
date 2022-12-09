@@ -1,4 +1,17 @@
-// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
+// Copyright (c) 2022 Samsung Research America, @artofnothingness Alexey Budyakov
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "mppic/optimizer.hpp"
 
 #include <limits>
@@ -84,14 +97,14 @@ void Optimizer::setOffset(double controller_frequency)
   const double controller_period = 1.0 / controller_frequency;
   constexpr double eps = 1e-6;
 
-  if (controller_period < settings_.model_dt) {
+  if ((controller_period + eps) < settings_.model_dt) {
     RCLCPP_WARN(
       logger_,
       "Controller period is less then model dt, consider setting it equal");
   } else if (abs(controller_period - settings_.model_dt) < eps) {
     RCLCPP_INFO(
       logger_,
-      "Controller period is equal to model dt. Control seuqence "
+      "Controller period is equal to model dt. Control sequence "
       "shifting is ON");
     settings_.shift_control_sequence = true;
   } else {
@@ -155,7 +168,7 @@ bool Optimizer::fallback(bool fail)
 
   reset();
 
-  if (counter++ > settings_.retry_attempt_limit) {
+  if (++counter > settings_.retry_attempt_limit) {
     counter = 0;
     throw std::runtime_error("Optimizer fail to compute path");
   }
@@ -233,11 +246,11 @@ void Optimizer::updateStateVelocities(
 void Optimizer::updateInitialStateVelocities(
   models::State & state) const
 {
-  xt::noalias(xt::view(state.vx, xt::all(), 0)) = state_.speed.linear.x;
-  xt::noalias(xt::view(state.wz, xt::all(), 0)) = state_.speed.angular.z;
+  xt::noalias(xt::view(state.vx, xt::all(), 0)) = state.speed.linear.x;
+  xt::noalias(xt::view(state.wz, xt::all(), 0)) = state.speed.angular.z;
 
   if (isHolonomic()) {
-    xt::noalias(xt::view(state.vy, xt::all(), 0)) = state_.speed.linear.y;
+    xt::noalias(xt::view(state.vy, xt::all(), 0)) = state.speed.linear.y;
   }
 }
 
@@ -249,13 +262,13 @@ void Optimizer::propagateStateVelocitiesFromInitials(
 
 void Optimizer::integrateStateVelocities(
   xt::xtensor<float, 2> & trajectory,
-  const xt::xtensor<float, 2> & state) const
+  const xt::xtensor<float, 2> & sequence) const
 {
   double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
 
-  const auto vx = xt::view(state, xt::all(), 0);
-  const auto vy = xt::view(state, xt::all(), 2);
-  const auto wz = xt::view(state, xt::all(), 1);
+  const auto vx = xt::view(sequence, xt::all(), 0);
+  const auto vy = xt::view(sequence, xt::all(), 2);
+  const auto wz = xt::view(sequence, xt::all(), 1);
 
   auto traj_x = xt::view(trajectory, xt::all(), 0);
   auto traj_y = xt::view(trajectory, xt::all(), 1);
@@ -290,7 +303,7 @@ void Optimizer::integrateStateVelocities(
   models::Trajectories & trajectories,
   const models::State & state) const
 {
-  const double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
+  const double initial_yaw = tf2::getYaw(state.pose.pose.orientation);
 
   xt::noalias(trajectories.yaws) =
     utils::normalize_angles(xt::cumsum(state.wz * settings_.model_dt, 1) + initial_yaw);
@@ -312,26 +325,26 @@ void Optimizer::integrateStateVelocities(
     dy = dy + state.vy * yaw_cos;
   }
 
-  xt::noalias(trajectories.x) = state_.pose.pose.position.x +
+  xt::noalias(trajectories.x) = state.pose.pose.position.x +
     xt::cumsum(dx * settings_.model_dt, 1);
-  xt::noalias(trajectories.y) = state_.pose.pose.position.y +
+  xt::noalias(trajectories.y) = state.pose.pose.position.y +
     xt::cumsum(dy * settings_.model_dt, 1);
 }
 
 xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
 {
-  auto && state =
+  auto && sequence =
     xt::xtensor<float, 2>::from_shape({settings_.time_steps, isHolonomic() ? 3u : 2u});
   auto && trajectories = xt::xtensor<float, 2>::from_shape({settings_.time_steps, 3});
 
-  xt::noalias(xt::view(state, xt::all(), 0)) = control_sequence_.vx;
-  xt::noalias(xt::view(state, xt::all(), 1)) = control_sequence_.wz;
+  xt::noalias(xt::view(sequence, xt::all(), 0)) = control_sequence_.vx;
+  xt::noalias(xt::view(sequence, xt::all(), 1)) = control_sequence_.wz;
 
   if (isHolonomic()) {
-    xt::noalias(xt::view(state, xt::all(), 2)) = control_sequence_.vy;
+    xt::noalias(xt::view(sequence, xt::all(), 2)) = control_sequence_.vy;
   }
 
-  integrateStateVelocities(trajectories, state);
+  integrateStateVelocities(trajectories, sequence);
   return std::move(trajectories);
 }
 
@@ -342,17 +355,17 @@ void Optimizer::updateControlSequence()
   auto bounded_noises_wz = state_.cwz - control_sequence_.wz;
   xt::noalias(costs_) +=
     s.gamma / std::pow(s.sampling_std.vx, 2) * xt::sum(
-      xt::view(control_sequence_.vx, xt::newaxis(), xt::all()) * bounded_noises_vx, 1, immediate);
+    xt::view(control_sequence_.vx, xt::newaxis(), xt::all()) * bounded_noises_vx, 1, immediate);
   xt::noalias(costs_) +=
     s.gamma / std::pow(s.sampling_std.wz, 2) * xt::sum(
-      xt::view(control_sequence_.wz, xt::newaxis(), xt::all()) * bounded_noises_wz, 1, immediate);
+    xt::view(control_sequence_.wz, xt::newaxis(), xt::all()) * bounded_noises_wz, 1, immediate);
 
   if (isHolonomic()) {
     auto bounded_noises_vy = state_.cvy - control_sequence_.vy;
     xt::noalias(costs_) +=
       s.gamma / std::pow(s.sampling_std.vy, 2) * xt::sum(
-        xt::view(control_sequence_.vy, xt::newaxis(), xt::all()) * bounded_noises_vy,
-        1, immediate);
+      xt::view(control_sequence_.vy, xt::newaxis(), xt::all()) * bounded_noises_vy,
+      1, immediate);
   }
 
   auto && costs_normalized = costs_ - xt::amin(costs_, immediate);
