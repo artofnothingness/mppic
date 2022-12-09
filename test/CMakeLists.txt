@@ -1,5 +1,5 @@
 set(TEST_NAMES
-  optimizer_test
+  optimizer_smoke_test
   controller_state_transition_test
   models_test
   noise_generator_test
@@ -9,6 +9,7 @@ set(TEST_NAMES
   utils_test
   path_handler_test
   critic_manager_test
+  optimizer_unit_tests
 )
 
 foreach(name IN LISTS TEST_NAMES)

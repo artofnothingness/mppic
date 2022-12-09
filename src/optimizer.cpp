@@ -97,14 +97,14 @@ void Optimizer::setOffset(double controller_frequency)
   const double controller_period = 1.0 / controller_frequency;
   constexpr double eps = 1e-6;
 
-  if (controller_period < settings_.model_dt) {
+  if ((controller_period + eps) < settings_.model_dt) {
     RCLCPP_WARN(
       logger_,
       "Controller period is less then model dt, consider setting it equal");
   } else if (abs(controller_period - settings_.model_dt) < eps) {
     RCLCPP_INFO(
       logger_,
-      "Controller period is equal to model dt. Control seuqence "
+      "Controller period is equal to model dt. Control sequence "
       "shifting is ON");
     settings_.shift_control_sequence = true;
   } else {
@@ -168,7 +168,7 @@ bool Optimizer::fallback(bool fail)
 
   reset();
 
-  if (counter++ > settings_.retry_attempt_limit) {
+  if (++counter > settings_.retry_attempt_limit) {
     counter = 0;
     throw std::runtime_error("Optimizer fail to compute path");
   }
