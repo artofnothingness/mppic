@@ -26,16 +26,17 @@ void ObstaclesCritic::initialize()
   getParam(repulsion_weight_, "repulsion_weight", 4.0);
   getParam(critical_weight_, "critical_weight", 1.2);
   getParam(collision_cost_, "collision_cost", 2000.0);
-  getParam(collision_margin_distance_, "collision_margin_distance", 0.12);
+  getParam(collision_margin_distance_, "collision_margin_distance", 0.10);
   getParam(near_goal_distance_, "near_goal_distance", 0.5);
 
   collision_checker_.setCostmap(costmap_);
   possibly_inscribed_cost_ = findCircumscribedCost(costmap_ros_);
   RCLCPP_INFO(
     logger_,
-    "ObstaclesCritic instantiated with %d power and %f weight. "
+    "ObstaclesCritic instantiated with %d power and %f / %f weights. "
     "Critic will collision check based on %s cost.",
-    power_, weight_, consider_footprint_ ? "footprint" : "circular");
+    power_, critical_weight_, repulsion_weight_, consider_footprint_ ?
+    "footprint" : "circular");
 }
 
 double ObstaclesCritic::findCircumscribedCost(

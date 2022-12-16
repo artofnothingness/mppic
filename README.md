@@ -88,27 +88,29 @@ This process is then repeated a number of times and returns a converged solution
  | -------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
  | cost_weight          | double | Default 5.0. Weight to apply to critic term.                                                                |
  | cost_power           | int    | Default 1. Power order to apply to term.                                                                    |
+ | threshold_to_consider      | double | Default 1.0. Distance between robot and goal above which goal cost starts being considered                                    |
 
 
 #### Obstacles Critic
  | Parameter            | Type   | Definition                                                                                                  |
  | ---------------      | ------ | ----------------------------------------------------------------------------------------------------------- |
  | consider_footprint   | bool   | Default: False. Whether to use point cost (if robot is circular or low compute power) or compute SE2 footprint cost. |
- | cost_weight          | double | Default 2.0. Weight to apply to critic term.                                                                |
+ | critical_weight          | double | Default 1.2. Weight to apply to critic for near collisions closer than `collision_margin_distance` to prevent near collisions **only** as a method of virtually inflating the footprint. This should not be used to generally influence obstacle avoidance away from criticial collisions.                                                                |
+ | repulsion_weight          | double | Default 2.0. Weight to apply to critic for generally preferring routes in lower cost space. This is separated from the critical term to allow for fine tuning of obstacle behaviors with path alignment for dynamic scenes without impacting actions which may directly lead to near-collisions. This is applied within the `inflation_radius` distance from obstacles.                                                                |
  | cost_power           | int    | Default 2. Power order to apply to term.                                                                    |
  | collision_cost       | double | Default 2000.0. Cost to apply to a true collision in a trajectory.                                          |
- | collision_margin_distance   | double    | Default 0.12. Margin distance from collision to apply severe penalty. Between 0.05-0.2 is reasonable. |
- | trajectory_penalty_distance | double    | Default 1.0. Minimum trajectory distance from obstacle to apply a preferential penalty to incentivize navigating farther away from obstacles. |
- | near_goal_distance          | double    | Default 0.5. Distance near goal to stop applying preferential obstacle term (e.g. `trajectory_penalty_distance` term) to allow robot to smoothly converge to goal pose in close proximity to obstacles.   
+ | collision_margin_distance   | double    | Default 0.10. Margin distance from collision to apply severe penalty, similar to footprint inflation. Between 0.05-0.2 is reasonable. |
+ | near_goal_distance          | double    | Default 0.5. Distance near goal to stop applying preferential obstacle term to allow robot to smoothly converge to goal pose in close proximity to obstacles.   
 
 #### Path Align Critic
- | Parameter                  | Type   | Definition                                                                                                              |
- | ---------------            | ------ | -----------------------------------------------------------------------------------------------------------             |
- | cost_weight                | double | Default 2.0. Weight to apply to critic term.                                                                            |
- | cost_power                 | int    | Default 1. Power order to apply to term.                                                                                |
- | path_point_step            | int    | Default 2. Consider every N path points for alignment to speed up critic.                                               |
- | trajectory_point_step      | int    | Default 3. Consider every N generated trajectories points to speed up critic evaluation.                                |
- | threshold_to_consider      | double | Default 0.4. Distance between robot and goal above which path align cost stops being considered                         |
+ | Parameter                  | Type   | Definition                                                                                                                         |
+ | ---------------            | ------ | -----------------------------------------------------------------------------------------------------------                        |
+ | cost_weight                | double | Default 2.0. Weight to apply to critic term.                                                                                       |
+ | cost_power                 | int    | Default 1. Power order to apply to term.                                                                                           |
+ | threshold_to_consider      | double | Default 0.4. Distance between robot and goal above which path align cost stops being considered                                    |
+ | offset_from_furthest      | double | Default 20. Checks that the candidate trajectories are sufficiently far along their way tracking the path to apply the alignment critic. This ensures that path alignment is only considered when actually tracking the path, preventing awkward initialization motions preventing the robot from leaving the path to achieve the appropriate heading.  |
+ | trajectory_point_step      | double | Default 5. Step of trajectory points to evaluate for path distance to reduce compute time. Between 1-10 is typically reasonable.   |
+
 
 #### Path Angle Critic
  | Parameter                 | Type   | Definition                                                                                                  |
@@ -125,7 +127,7 @@ This process is then repeated a number of times and returns a converged solution
  | cost_weight           | double | Default 3.0. Weight to apply to critic term.                                                                |
  | cost_power            | int    | Default 1. Power order to apply to term.   |
  | offset_from_furthest  | int    | Default 10. Number of path points after furthest one any trajectory achieves to drive path tracking relative to.     |
- | max_path_ratio        | float  | Default 0.4. Maximum percentage (0-1.0) of path overlapping with trajectory points to apply critic. Lets goal critics take over on approach to goal.  | 
+ | threshold_to_consider        | float  | Default 0.4. Distance between robot and goal above which path follow cost stops being considered  | 
 
 #### Prefer Forward Critic
  | Parameter             | Type   | Definition                                                                                                  |
@@ -179,6 +181,7 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 5.0
+        threshold_to_consider: 1.0
       GoalAngleCritic:
         enabled: true
         cost_power: 1
@@ -187,24 +190,24 @@ controller_server:
       ObstaclesCritic:
         enabled: true
         cost_power: 2
-        cost_weight: 1.2
+        critical_weight: 1.2
+        repulsion_weight: 1.2
         consider_footprint: false
         collision_cost: 2000.0
-        trajectory_penalty_distance: 1.0
-        collision_margin_distance: 0.12
+        collision_margin_distance: 0.10
       PathAlignCritic:
         enabled: true
         cost_power: 1
         cost_weight: 1.0
-        path_point_step: 1
-        trajectory_point_step: 3
         threshold_to_consider: 0.40
+        trajectory_point_step: 5
+        offset_from_furthest: 20
       PathFollowCritic:
         enabled: true
         cost_power: 1
         cost_weight: 3.0
         offset_from_furthest: 10
-        max_path_ratio: 0.40
+        threshold_to_consider: 0.40
       PathAngleCritic:
         enabled: true
         cost_power: 1
