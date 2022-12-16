@@ -32,13 +32,16 @@ namespace mppi::critics
  */
 struct CollisionCost
 {
-  float cost;
-  bool using_footprint;
+  float cost{0};
+  bool using_footprint{false};
 };
 
 /**
  * @class mppi::critics::ConstraintCritic
- * @brief Critic objective function for avoiding obstacles
+ * @brief Critic objective function for avoiding obstacles, allowing it to deviate off
+ * the planned path. This is important to tune in tandem with PathAlign to make a balance
+ * between path-tracking and dynamic obstacle avoidance capabilities as desirable for a
+ * particular application
  */
 class ObstaclesCritic : public CriticFunction
 {
@@ -100,15 +103,14 @@ protected:
 
   bool consider_footprint_{true};
   double collision_cost_{0};
-  float inflation_scale_factor_;
+  float inflation_scale_factor_{0}, inflation_radius_{0};
 
   float possibly_inscribed_cost_;
-  float trajectory_penalty_distance_;
   float collision_margin_distance_;
   float near_goal_distance_;
 
   unsigned int power_{0};
-  float weight_{0};
+  float repulsion_weight_, critical_weight_{0};
 };
 
 }  // namespace mppi::critics

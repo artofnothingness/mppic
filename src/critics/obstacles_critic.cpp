@@ -23,9 +23,9 @@ void ObstaclesCritic::initialize()
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(consider_footprint_, "consider_footprint", false);
   getParam(power_, "cost_power", 2);
-  getParam(weight_, "cost_weight", 1.2);
+  getParam(repulsion_weight_, "repulsion_weight", 4.0);
+  getParam(critical_weight_, "critical_weight", 1.2);
   getParam(collision_cost_, "collision_cost", 2000.0);
-  getParam(trajectory_penalty_distance_, "trajectory_penalty_distance", 1.0);
   getParam(collision_margin_distance_, "collision_margin_distance", 0.12);
   getParam(near_goal_distance_, "near_goal_distance", 0.5);
 
@@ -58,6 +58,7 @@ double ObstaclesCritic::findCircumscribedCost(
     const double resolution = costmap->getCostmap()->getResolution();
     result = inflation_layer->computeCost(circum_radius / resolution);
     inflation_scale_factor_ = static_cast<float>(inflation_layer->getCostScalingFactor());
+    inflation_radius_ = static_cast<float>(inflation_layer->getInflationRadius());
   }
 
   if (!inflation_layer_found) {
@@ -67,7 +68,7 @@ double ObstaclesCritic::findCircumscribedCost(
       "If this is an SE2-collision checking plugin, it cannot use costmap potential "
       "field to speed up collision checking by only checking the full footprint "
       "when robot is within possibly-inscribed radius of an obstacle. This may "
-      "significantly slow down planning times!");
+      "significantly slow down planning times and not avoid anything but absolute collisions!");
   }
 
   return result;
@@ -102,38 +103,53 @@ void ObstaclesCritic::score(CriticData & data)
   }
 
   auto && raw_cost = xt::xtensor<float, 1>::from_shape({data.costs.shape(0)});
+  raw_cost.fill(0.0);
+  auto && repulsive_cost = xt::xtensor<float, 1>::from_shape({data.costs.shape(0)});
+  repulsive_cost.fill(0.0);
+
   const size_t traj_len = data.trajectories.x.shape(1);
   bool all_trajectories_collide = true;
   for (size_t i = 0; i < data.trajectories.x.shape(0); ++i) {
     bool trajectory_collide = false;
     float traj_cost = 0.0;
     const auto & traj = data.trajectories;
-    float repulsion_cost = 0.0;
+    CollisionCost pose_cost;
 
     for (size_t j = 0; j < traj_len; j++) {
-      const CollisionCost pose_cost = costAtPose(traj.x(i, j), traj.y(i, j), traj.yaws(i, j));
+      pose_cost = costAtPose(traj.x(i, j), traj.y(i, j), traj.yaws(i, j));
+      if (pose_cost.cost < 1) {continue;}  // In free space
 
       if (inCollision(pose_cost.cost)) {
         trajectory_collide = true;
         break;
       }
 
+      // Cannot process repulsion if inflation layer does not exist
+      if (inflation_radius_ == 0 || inflation_scale_factor_ == 0) {
+        continue;
+      }
+
       const float dist_to_obj = distanceToObstacle(pose_cost);
+
+      // Let near-collision trajectory points be punished severely
       if (dist_to_obj < collision_margin_distance_) {
-        // Near-collision, all points must be punished
         traj_cost += (collision_margin_distance_ - dist_to_obj);
-      } else if (dist_to_obj < trajectory_penalty_distance_ && !near_goal) {
-        // Prefer general trajectories further from obstacles
-        repulsion_cost = std::max(repulsion_cost, (trajectory_penalty_distance_ - dist_to_obj));
+      }
+
+      // Generally prefer trajectories further from obstacles
+      if (!near_goal) {
+        repulsive_cost[i] += inflation_radius_ - dist_to_obj;
       }
     }
 
-    traj_cost += repulsion_cost;
     if (!trajectory_collide) {all_trajectories_collide = false;}
     raw_cost[i] = static_cast<float>(trajectory_collide ? collision_cost_ : traj_cost);
   }
 
-  data.costs = xt::pow(raw_cost * weight_, power_);
+  data.costs += xt::pow(
+    (critical_weight_ * raw_cost) +
+    (repulsion_weight_ * repulsive_cost / traj_len),
+    power_);
   data.fail_flag = all_trajectories_collide;
 }
 
