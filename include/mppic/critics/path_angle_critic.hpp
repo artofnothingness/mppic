@@ -25,6 +25,7 @@ namespace mppi::critics
 /**
  * @class mppi::critics::ConstraintCritic
  * @brief Critic objective function for aligning to path in cases of extreme misalignment
+ * or turning
  */
 class PathAngleCritic : public CriticFunction
 {

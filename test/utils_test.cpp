@@ -238,8 +238,6 @@ TEST(UtilsTests, FurthestReachedPoint)
   {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr,
     std::nullopt};  /// Caution, keep references
   EXPECT_EQ(findPathFurthestReachedPoint(data3), 5u);
-  data3.furthest_reached_path_point = 5u;
-  EXPECT_EQ(getPathRatioReached(data3), 0.5);
 }
 
 TEST(UtilsTests, SmootherTest)

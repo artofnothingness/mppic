@@ -20,14 +20,17 @@
 namespace mppi::critics
 {
 
+using namespace xt::placeholders;  // NOLINT
+using xt::evaluation_strategy::immediate;
+
 void PathAlignCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(power_, "cost_power", 1);
   getParam(weight_, "cost_weight", 1.0);
 
-  getParam(path_point_step_, "path_point_step", 1);
-  getParam(trajectory_point_step_, "trajectory_point_step", 3);
+  getParam(offset_from_furthest_, "offset_from_furthest", 20);
+  getParam(trajectory_point_step_, "trajectory_point_step", 5);
   getParam(
     threshold_to_consider_,
     "threshold_to_consider", 0.40f);
@@ -46,83 +49,48 @@ void PathAlignCritic::score(CriticData & data)
     return;
   }
 
-  using namespace xt::placeholders;  // NOLINT
-  using xt::evaluation_strategy::immediate;
-
-  // see http://paulbourke.net/geometry/pointlineplane/
-
-  // P3 points from which we calculate distance to segments
-  const auto & P3_x = data.trajectories.x;
-  const auto & P3_y = data.trajectories.y;
-
-  const auto P1_x = xt::view(data.path.x, xt::range(_, -1));  // segments start points
-  const auto P1_y = xt::view(data.path.y, xt::range(_, -1));  // segments start points
-
-  const auto P2_x = xt::view(data.path.x, xt::range(1, _));  // segments end points
-  const auto P2_y = xt::view(data.path.y, xt::range(1, _));  // segments end points
-
-  const size_t batch_size = P3_x.shape(0);
-  const size_t time_steps = P3_x.shape(1);
-  const size_t path_segments_count = data.path.x.shape(0) - 1;
-
-  auto && cost = xt::xtensor<float, 1>::from_shape({batch_size});
-
-  const auto P2_P1_dx = P2_x - P1_x;
-  const auto P2_P1_dy = P2_y - P1_y;
-
-  const auto && P2_P1_norm_sq = xt::eval(P2_P1_dx * P2_P1_dx + P2_P1_dy * P2_P1_dy);
-
-  auto evaluate_u = [&](size_t t, size_t p, size_t s) {
-      return (((P3_x(t, p) - P1_x(s)) * P2_P1_dx(s)) + ((P3_y(t, p) - P1_y(s)) * P2_P1_dy(s))) /
-             P2_P1_norm_sq(s);
-    };
-
-  const auto segment_short = P2_P1_norm_sq < 1e-3f;
-  auto evaluate_dist_sq = [&P3_x, &P3_y](const auto & P,
-      size_t t, size_t p) {
-      auto dx = P(0) - P3_x(t, p);
-      auto dy = P(1) - P3_y(t, p);
-      return dx * dx + dy * dy;
-    };
-
-  size_t traj_pts_eval = floor(time_steps / trajectory_point_step_);
-  size_t max_s = 0;
-  for (size_t t = 0; t < batch_size; ++t) {
-    float mean_dist = 0;
-    for (size_t p = 0; p < time_steps; p += trajectory_point_step_) {
-      double min_dist_sq = std::numeric_limits<float>::max();
-      size_t min_s = 0;
-
-      for (size_t s = 0; s < path_segments_count; s += path_point_step_) {
-        xt::xtensor_fixed<float, xt::xshape<2>> P;
-        if (segment_short(s)) {
-          P[0] = P1_x(s);
-          P[1] = P1_y(s);
-        } else if (auto u = evaluate_u(t, p, s); u <= 0) {
-          P[0] = P1_x(s);
-          P[1] = P1_y(s);
-        } else if (u >= 1) {
-          P[0] = P2_x(s);
-          P[1] = P2_y(s);
-        } else {
-          P[0] = P1_x(s) + u * P2_P1_dx(s);
-          P[1] = P1_y(s) + u * P2_P1_dy(s);
-        }
-        auto dist = evaluate_dist_sq(P, t, p);
-        if (dist < min_dist_sq) {
-          min_s = s;
-          min_dist_sq = dist;
-        }
-      }
-      max_s = std::max(max_s, min_s);
-      mean_dist += std::sqrt(min_dist_sq);
-    }
-
-    cost(t) = mean_dist / traj_pts_eval;
+  utils::setPathFurthestPointIfNotSet(data);
+  if (*data.furthest_reached_path_point < offset_from_furthest_) {
+    return;
   }
 
-  data.furthest_reached_path_point = max_s;
-  data.costs += xt::pow(cost * weight_, power_);
+  const auto & T_x = data.trajectories.x;
+  const auto & T_y = data.trajectories.y;
+
+  const auto P_x = xt::view(data.path.x, xt::range(_, -1));  // path points
+  const auto P_y = xt::view(data.path.y, xt::range(_, -1));  // path points
+
+  const size_t batch_size = T_x.shape(0);
+  const size_t time_steps = T_x.shape(1);
+  const size_t traj_pts_eval = floor(time_steps / trajectory_point_step_);
+  const size_t path_segments_count = data.path.x.shape(0) - 1;
+  if (path_segments_count < 1) {
+    return;
+  }
+
+  auto && cost = xt::xtensor<float, 1>::from_shape({data.costs.shape(0)});
+
+  for (size_t t = 0; t < batch_size; ++t) {
+    float summed_dist = 0;
+    for (size_t p = trajectory_point_step_; p < time_steps; p += trajectory_point_step_) {
+      double min_dist_sq = std::numeric_limits<float>::max();
+
+      // Find closest path segment to the trajectory point
+      for (size_t s = 0; s < path_segments_count - 1; s++) {
+        xt::xtensor_fixed<float, xt::xshape<2>> P;
+        float dx = P_x(s) - T_x(t, p);
+        float dy = P_y(s) - T_y(t, p);
+        float dist_sq = dx * dx + dy * dy;
+        if (dist_sq < min_dist_sq) {
+          min_dist_sq = dist_sq;
+        }
+      }
+      summed_dist += std::sqrt(min_dist_sq);
+    }
+    cost[t] = summed_dist / traj_pts_eval;
+  }
+
+  data.costs += xt::pow(std::move(cost) * weight_, power_);
 }
 
 }  // namespace mppi::critics

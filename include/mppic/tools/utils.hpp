@@ -311,7 +311,7 @@ inline size_t findPathFurthestReachedPoint(const CriticData & data)
   for (size_t i = 0; i < dists.shape(0); i++) {
     size_t min_id_by_path = 0;
     for (size_t j = 0; j < dists.shape(1); j++) {
-      if (min_distance_by_path > dists(i, j)) {
+      if (dists(i, j) < min_distance_by_path) {
         min_distance_by_path = dists(i, j);
         min_id_by_path = j;
       }
@@ -347,22 +347,6 @@ inline double posePointAngle(const geometry_msgs::msg::Pose & pose, double point
 
   double yaw = atan2(point_y - pose_y, point_x - pose_x);
   return abs(angles::shortest_angular_distance(yaw, pose_yaw));
-}
-
-/**
- * @brief Evaluate ratio of data.path which reached by all trajectories in data.trajectories
- * @param data Data to use
- * @return ratio of path reached
- */
-inline float getPathRatioReached(const CriticData & data)
-{
-  if (!data.furthest_reached_path_point) {
-    throw std::runtime_error("Furthest point not computed yet");
-  }
-
-  auto path_points_count = static_cast<float>(data.path.x.shape(0));
-  auto furthest_reached_path_point = static_cast<float>(*data.furthest_reached_path_point);
-  return furthest_reached_path_point / path_points_count;
 }
 
 /**

@@ -111,6 +111,11 @@ public:
    */
   void setSpeedLimit(double speed_limit, bool percentage);
 
+  /**
+   * @brief Reset the optimization problem to initial conditions
+   */
+  void reset();
+
 protected:
   /**
    * @brief Main function to generate, score, and return trajectories
@@ -133,11 +138,6 @@ protected:
    * @brief Obtain the main controller's parameters
    */
   void getParams();
-
-  /**
-   * @brief Reset the optimization problem to initial conditions
-   */
-  void reset();
 
   /**
    * @brief Set the motion model of the vehicle platform
