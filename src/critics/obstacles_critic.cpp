@@ -138,8 +138,8 @@ void ObstaclesCritic::score(CriticData & data)
       }
 
       // Generally prefer trajectories further from obstacles
-      if (!near_goal) {
-        repulsive_cost[i] += inflation_radius_ - dist_to_obj;
+      else if (!near_goal) {
+        repulsive_cost[i] += (inflation_radius_ - dist_to_obj);
       }
     }
 
