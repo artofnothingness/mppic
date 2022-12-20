@@ -19,6 +19,7 @@
 #include <chrono>
 #include <string>
 #include <limits>
+#include <memory>
 
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
@@ -329,6 +330,58 @@ inline void setPathFurthestPointIfNotSet(CriticData & data)
 {
   if (!data.furthest_reached_path_point) {
     data.furthest_reached_path_point = findPathFurthestReachedPoint(data);
+  }
+}
+
+/**
+ * @brief evaluate path costs
+ * @param data Data to use
+ */
+inline void findPathCosts(
+  CriticData & data,
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
+{
+  auto * costmap = costmap_ros->getCostmap();
+  unsigned int map_x, map_y;
+  const size_t path_segments_count = data.path.x.shape(0) - 1;
+  data.path_pts_valid->resize(path_segments_count - 1, false);
+  for (unsigned int idx = 0; idx < path_segments_count - 1; idx++) {
+    const auto path_x = data.path.x(idx);
+    const auto path_y = data.path.y(idx);
+    if (!costmap->worldToMap(path_x, path_y, map_x, map_y)) {
+      (*data.path_pts_valid)[idx] = false;
+      continue;
+    }
+
+    switch (costmap->getCost(map_x, map_y)) {
+      using namespace nav2_costmap_2d; // NOLINT
+      case (LETHAL_OBSTACLE):
+        (*data.path_pts_valid)[idx] = false;
+        continue;
+      case (INSCRIBED_INFLATED_OBSTACLE):
+        (*data.path_pts_valid)[idx] = false;
+        continue;
+      case (NO_INFORMATION):
+        const bool is_tracking_unknown =
+          costmap_ros->getLayeredCostmap()->isTrackingUnknown();
+        (*data.path_pts_valid)[idx] = is_tracking_unknown ? true : false;
+        continue;
+    }
+
+    (*data.path_pts_valid)[idx] = true;
+  }
+}
+
+/**
+ * @brief evaluate path costs if it is not set
+ * @param data Data to use
+ */
+inline void setPathCostsIfNotSet(
+  CriticData & data,
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
+{
+  if (!data.path_pts_valid) {
+    findPathCosts(data, costmap_ros);
   }
 }
 

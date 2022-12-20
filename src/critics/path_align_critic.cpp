@@ -54,6 +54,8 @@ void PathAlignCritic::score(CriticData & data)
     return;
   }
 
+  utils::setPathCostsIfNotSet(data, costmap_ros_);
+
   const auto & T_x = data.trajectories.x;
   const auto & T_y = data.trajectories.y;
 
@@ -64,16 +66,17 @@ void PathAlignCritic::score(CriticData & data)
   const size_t time_steps = T_x.shape(1);
   const size_t traj_pts_eval = floor(time_steps / trajectory_point_step_);
   const size_t path_segments_count = data.path.x.shape(0) - 1;
+  auto && cost = xt::xtensor<float, 1>::from_shape({data.costs.shape(0)});
+
   if (path_segments_count < 1) {
     return;
   }
-
-  auto && cost = xt::xtensor<float, 1>::from_shape({data.costs.shape(0)});
 
   for (size_t t = 0; t < batch_size; ++t) {
     float summed_dist = 0;
     for (size_t p = trajectory_point_step_; p < time_steps; p += trajectory_point_step_) {
       double min_dist_sq = std::numeric_limits<float>::max();
+      size_t min_s = 0;
 
       // Find closest path segment to the trajectory point
       for (size_t s = 0; s < path_segments_count - 1; s++) {
@@ -83,10 +86,17 @@ void PathAlignCritic::score(CriticData & data)
         float dist_sq = dx * dx + dy * dy;
         if (dist_sq < min_dist_sq) {
           min_dist_sq = dist_sq;
+          min_s = s;
         }
       }
-      summed_dist += std::sqrt(min_dist_sq);
+
+      // The nearest path point to align to needs to be not in collision, else
+      // let the obstacle critic take over in this region due to dynamic obstacles
+      if (min_s != 0 && (*data.path_pts_valid)[min_s]) {
+        summed_dist += std::sqrt(min_dist_sq);
+      }
     }
+
     cost[t] = summed_dist / traj_pts_eval;
   }
 

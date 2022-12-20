@@ -135,10 +135,7 @@ void ObstaclesCritic::score(CriticData & data)
       // Let near-collision trajectory points be punished severely
       if (dist_to_obj < collision_margin_distance_) {
         traj_cost += (collision_margin_distance_ - dist_to_obj);
-      }
-
-      // Generally prefer trajectories further from obstacles
-      else if (!near_goal) {
+      } else if (!near_goal) {  // Generally prefer trajectories further from obstacles
         repulsive_cost[i] += (inflation_radius_ - dist_to_obj);
       }
     }

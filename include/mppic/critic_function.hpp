@@ -103,49 +103,6 @@ public:
   }
 
 protected:
-  /**
-    * @brief Checks if cost represents a collision for a path point
-    * @param cost Costmap cost
-    * @return bool if in collision
-    */
-  bool inCollision(float cost)
-  {
-    bool is_tracking_unknown =
-      costmap_ros_->getLayeredCostmap()->isTrackingUnknown();
-
-    switch (static_cast<unsigned char>(cost)) {
-      using namespace nav2_costmap_2d; // NOLINT
-      case (LETHAL_OBSTACLE):
-        return true;
-      case (INSCRIBED_INFLATED_OBSTACLE):
-        return true;
-      case (NO_INFORMATION):
-        return is_tracking_unknown ? false : true;
-    }
-
-    return false;
-  }
-
-  /**
-   * @brief  Checks if the path point for driving is valid
-   * @param idx Index of path point to evaluate
-   * @param data Data struct
-   */
-  bool isPathPtValid(size_t idx, CriticData & data)
-  {
-    const auto path_x = data.path.x(idx);
-    const auto path_y = data.path.y(idx);
-    unsigned int map_x, map_y;
-    auto * costmap = costmap_ros_->getCostmap();
-    costmap->worldToMap(path_x, path_y, map_x, map_y);
-
-    if (inCollision(static_cast<float>(costmap->getCost(map_x, map_y)))) {
-      return false;
-    }
-
-    return true;
-  }
-
   bool enabled_;
   std::string name_, parent_name_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;
