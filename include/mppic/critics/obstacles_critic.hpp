@@ -27,16 +27,6 @@ namespace mppi::critics
 {
 
 /**
- * @class mppi::critics::CollisionCost
- * @brief Utility for storing cost information
- */
-struct CollisionCost
-{
-  float cost{0};
-  bool using_footprint{false};
-};
-
-/**
  * @class mppi::critics::ConstraintCritic
  * @brief Critic objective function for avoiding obstacles, allowing it to deviate off
  * the planned path. This is important to tune in tandem with PathAlign to make a balance

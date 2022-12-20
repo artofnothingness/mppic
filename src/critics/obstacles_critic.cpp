@@ -154,24 +154,11 @@ void ObstaclesCritic::score(CriticData & data)
   data.fail_flag = all_trajectories_collide;
 }
 
-CollisionCost ObstaclesCritic::costAtPose(float x, float y, float theta)
-{
-  CollisionCost collision_cost;
-  float & cost = collision_cost.cost;
-  collision_cost.using_footprint = false;
-  unsigned int x_i, y_i;
-  collision_checker_.worldToMap(x, y, x_i, y_i);
-  cost = collision_checker_.pointCost(x_i, y_i);
-
-  if (consider_footprint_ && cost >= possibly_inscribed_cost_) {
-    cost = static_cast<float>(collision_checker_.footprintCostAtPose(
-        x, y, theta, costmap_ros_->getRobotFootprint()));
-    collision_cost.using_footprint = true;
-  }
-
-  return collision_cost;
-}
-
+/**
+  * @brief Checks if cost represents a collision
+  * @param cost Costmap cost
+  * @return bool if in collision
+  */
 bool ObstaclesCritic::inCollision(float cost) const
 {
   bool is_tracking_unknown =
@@ -188,6 +175,24 @@ bool ObstaclesCritic::inCollision(float cost) const
   }
 
   return false;
+}
+
+CollisionCost ObstaclesCritic::costAtPose(float x, float y, float theta)
+{
+  CollisionCost collision_cost;
+  float & cost = collision_cost.cost;
+  collision_cost.using_footprint = false;
+  unsigned int x_i, y_i;
+  collision_checker_.worldToMap(x, y, x_i, y_i);
+  cost = collision_checker_.pointCost(x_i, y_i);
+
+  if (consider_footprint_ && cost >= possibly_inscribed_cost_) {
+    cost = static_cast<float>(collision_checker_.footprintCostAtPose(
+        x, y, theta, costmap_ros_->getRobotFootprint()));
+    collision_cost.using_footprint = true;
+  }
+
+  return collision_cost;
 }
 
 unsigned char ObstaclesCritic::maxCost()
