@@ -46,13 +46,6 @@ void PathFollowCritic::score(CriticData & data)
   auto offseted_idx = std::min(
     *data.furthest_reached_path_point + offset_from_furthest_, path_size);
 
-  // The path point to drive towards needs to be valid for safety
-  bool valid = false;
-  while (!valid && offseted_idx < path_size) {
-    valid = isPathPtValid(offseted_idx, data);
-    offseted_idx++;
-  }
-
   const auto path_x = data.path.x(offseted_idx);
   const auto path_y = data.path.y(offseted_idx);
 
