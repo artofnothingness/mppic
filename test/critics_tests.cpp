@@ -527,7 +527,7 @@ TEST(CriticTests, PathAlignCritic)
   }
 
   data.path_pts_valid.reset();  // Recompute on new path
-  xt::xtensor<float, 1> costs = xt::zeros<float>({1000});
+  costs = xt::zeros<float>({1000});
   path.x = 1.5 * xt::ones<float>({22});
   path.y = 1.5 * xt::ones<float>({22});
   critic.score(data);
