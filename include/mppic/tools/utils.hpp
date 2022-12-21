@@ -366,6 +366,10 @@ inline void findPathCosts(
   CriticData & data,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
 {
+  if (!costmap_ros) {
+    return;
+  }
+
   auto * costmap = costmap_ros->getCostmap();
   unsigned int map_x, map_y;
   const size_t path_segments_count = data.path.x.shape(0) - 1;

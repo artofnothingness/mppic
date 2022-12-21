@@ -64,7 +64,7 @@ PathRange PathHandler::getGlobalPlanConsideringBounds(
     closest_point, end, [&](const geometry_msgs::msg::PoseStamped & global_plan_pose) {
       auto distance = euclidean_distance(global_pose, global_plan_pose);
       return distance >= prune_distance_ || !costmap->worldToMap(
-          global_plan_pose.pose.position.x, global_plan_pose.pose.position.y, mx, my);
+        global_plan_pose.pose.position.x, global_plan_pose.pose.position.y, mx, my);
     });
 
   return {closest_point, last_point};
