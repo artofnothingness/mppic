@@ -131,6 +131,7 @@ public:
     EXPECT_NEAR(xt::sum(costs_, immediate)(), 0, 1e-6);  // should be reset
     EXPECT_FALSE(critics_data_.fail_flag);  // should be reset
     EXPECT_FALSE(critics_data_.motion_model->isHolonomic());  // object is valid + diff drive
+    EXPECT_FALSE(critics_data_.furthest_reached_path_point.has_value());  // val is not set
     EXPECT_EQ(state_.pose.pose.position.x, 999);
     EXPECT_EQ(state_.speed.linear.y, 4.0);
     EXPECT_EQ(path_.x.shape(0), 17u);

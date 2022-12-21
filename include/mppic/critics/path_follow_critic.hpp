@@ -24,7 +24,11 @@ namespace mppi::critics
 
 /**
  * @class mppi::critics::ConstraintCritic
- * @brief Critic objective function for following the path
+ * @brief Critic objective function for following the path approximately
+ * To allow for deviation from path in case of dynamic obstacles. Path Align
+ * is what aligns the trajectories to the path more or less precisely, if desireable.
+ * A higher weight here with an offset > 1 will accelerate the samples to full speed
+ * faster and push the follow point further ahead, creating some shortcutting.
  */
 class PathFollowCritic : public CriticFunction
 {
@@ -43,7 +47,7 @@ public:
   void score(CriticData & data) override;
 
 protected:
-  float max_path_ratio_{0};
+  float threshold_to_consider_{0};
   size_t offset_from_furthest_{0};
 
   unsigned int power_{0};

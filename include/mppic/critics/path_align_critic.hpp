@@ -24,7 +24,10 @@ namespace mppi::critics
 
 /**
  * @class mppi::critics::ConstraintCritic
- * @brief Critic objective function for aligning to the path
+ * @brief Critic objective function for aligning to the path. Note:
+ * High settings of this will follow the path more precisely, but also makes it
+ * difficult (or impossible) to deviate in the presense of dynamic obstacles.
+ * This is an important critic to tune and consider in tandem with Obstacle.
  */
 class PathAlignCritic : public CriticFunction
 {
@@ -42,10 +45,10 @@ public:
   void score(CriticData & data) override;
 
 protected:
-  unsigned int path_point_step_{0};
-  unsigned int trajectory_point_step_{0};
+  size_t offset_from_furthest_{0};
+  int trajectory_point_step_{0};
   float threshold_to_consider_{0};
-
+  float max_path_occupancy_ratio_{0};
   unsigned int power_{0};
   float weight_{0};
 };

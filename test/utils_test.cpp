@@ -207,7 +207,7 @@ TEST(UtilsTests, FurthestReachedPoint)
 
   CriticData data =
   {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr,
-    std::nullopt};  /// Caution, keep references
+    std::nullopt, std::nullopt};  /// Caution, keep references
 
   // Attempt to set furthest point if notionally set, should not change
   data.furthest_reached_path_point = 99999;
@@ -217,7 +217,7 @@ TEST(UtilsTests, FurthestReachedPoint)
   // Attempt to set if not set already with no other information, should fail
   CriticData data2 =
   {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr,
-    std::nullopt};  /// Caution, keep references
+    std::nullopt, std::nullopt};  /// Caution, keep references
   setPathFurthestPointIfNotSet(data2);
   EXPECT_EQ(data2.furthest_reached_path_point, 0);
 
@@ -236,10 +236,8 @@ TEST(UtilsTests, FurthestReachedPoint)
 
   CriticData data3 =
   {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr,
-    std::nullopt};  /// Caution, keep references
+    std::nullopt, std::nullopt};  /// Caution, keep references
   EXPECT_EQ(findPathFurthestReachedPoint(data3), 5u);
-  data3.furthest_reached_path_point = 5u;
-  EXPECT_EQ(getPathRatioReached(data3), 0.5);
 }
 
 TEST(UtilsTests, SmootherTest)

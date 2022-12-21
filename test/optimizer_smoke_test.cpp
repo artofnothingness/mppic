@@ -103,13 +103,13 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_tuple(
       "DiffDrive",
       std::vector<std::string>(
-        {{"GoalCritic"}, {"GoalAngleCritic"}, {"ObstaclesCritic"}, {"PathAlignCritic"},
+        {{"GoalCritic"}, {"GoalAngleCritic"}, {"ObstaclesCritic"},
           {"PathAngleCritic"}, {"PathFollowCritic"}, {"PreferForwardCritic"}}),
       true),
     std::make_tuple(
       "Ackermann",
       std::vector<std::string>(
-        {{"GoalCritic"}, {"GoalAngleCritic"}, {"ObstaclesCritic"}, {"PathAlignCritic"},
+        {{"GoalCritic"}, {"GoalAngleCritic"}, {"ObstaclesCritic"},
           {"PathAngleCritic"}, {"PathFollowCritic"}, {"PreferForwardCritic"}}),
       true))
 );

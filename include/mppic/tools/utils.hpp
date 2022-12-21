@@ -19,6 +19,7 @@
 #include <chrono>
 #include <string>
 #include <limits>
+#include <memory>
 
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
@@ -311,7 +312,7 @@ inline size_t findPathFurthestReachedPoint(const CriticData & data)
   for (size_t i = 0; i < dists.shape(0); i++) {
     size_t min_id_by_path = 0;
     for (size_t j = 0; j < dists.shape(1); j++) {
-      if (min_distance_by_path > dists(i, j)) {
+      if (dists(i, j) < min_distance_by_path) {
         min_distance_by_path = dists(i, j);
         min_id_by_path = j;
       }
@@ -322,6 +323,31 @@ inline size_t findPathFurthestReachedPoint(const CriticData & data)
 }
 
 /**
+ * @brief Evaluate closest point idx of data.path which is
+ * nearset to the start of the trajectory in data.trajectories
+ * @param data Data to use
+ * @return Idx of closest path point at start of the trajectories
+ */
+inline size_t findPathTrajectoryInitialPoint(const CriticData & data)
+{
+  // First point should be the same for all trajectories from initial conditions
+  const auto dx = data.path.x - data.trajectories.x(0, 0);
+  const auto dy = data.path.y - data.trajectories.y(0, 0);
+  const auto dists = dx * dx + dy * dy;
+
+  double min_distance_by_path = std::numeric_limits<float>::max();
+  size_t min_id = 0;
+  for (size_t j = 0; j < dists.shape(0); j++) {
+    if (dists(j) < min_distance_by_path) {
+      min_distance_by_path = dists(j);
+      min_id = j;
+    }
+  }
+
+  return min_id;
+}
+
+/**
  * @brief evaluate path furthest point if it is not set
  * @param data Data to use
  */
@@ -329,6 +355,58 @@ inline void setPathFurthestPointIfNotSet(CriticData & data)
 {
   if (!data.furthest_reached_path_point) {
     data.furthest_reached_path_point = findPathFurthestReachedPoint(data);
+  }
+}
+
+/**
+ * @brief evaluate path costs
+ * @param data Data to use
+ */
+inline void findPathCosts(
+  CriticData & data,
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
+{
+  auto * costmap = costmap_ros->getCostmap();
+  unsigned int map_x, map_y;
+  const size_t path_segments_count = data.path.x.shape(0) - 1;
+  data.path_pts_valid->resize(path_segments_count - 1, false);
+  for (unsigned int idx = 0; idx < path_segments_count - 1; idx++) {
+    const auto path_x = data.path.x(idx);
+    const auto path_y = data.path.y(idx);
+    if (!costmap->worldToMap(path_x, path_y, map_x, map_y)) {
+      (*data.path_pts_valid)[idx] = false;
+      continue;
+    }
+
+    switch (costmap->getCost(map_x, map_y)) {
+      using namespace nav2_costmap_2d; // NOLINT
+      case (LETHAL_OBSTACLE):
+        (*data.path_pts_valid)[idx] = false;
+        continue;
+      case (INSCRIBED_INFLATED_OBSTACLE):
+        (*data.path_pts_valid)[idx] = false;
+        continue;
+      case (NO_INFORMATION):
+        const bool is_tracking_unknown =
+          costmap_ros->getLayeredCostmap()->isTrackingUnknown();
+        (*data.path_pts_valid)[idx] = is_tracking_unknown ? true : false;
+        continue;
+    }
+
+    (*data.path_pts_valid)[idx] = true;
+  }
+}
+
+/**
+ * @brief evaluate path costs if it is not set
+ * @param data Data to use
+ */
+inline void setPathCostsIfNotSet(
+  CriticData & data,
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
+{
+  if (!data.path_pts_valid) {
+    findPathCosts(data, costmap_ros);
   }
 }
 
@@ -347,22 +425,6 @@ inline double posePointAngle(const geometry_msgs::msg::Pose & pose, double point
 
   double yaw = atan2(point_y - pose_y, point_x - pose_x);
   return abs(angles::shortest_angular_distance(yaw, pose_yaw));
-}
-
-/**
- * @brief Evaluate ratio of data.path which reached by all trajectories in data.trajectories
- * @param data Data to use
- * @return ratio of path reached
- */
-inline float getPathRatioReached(const CriticData & data)
-{
-  if (!data.furthest_reached_path_point) {
-    throw std::runtime_error("Furthest point not computed yet");
-  }
-
-  auto path_points_count = static_cast<float>(data.path.x.shape(0));
-  auto furthest_reached_path_point = static_cast<float>(*data.furthest_reached_path_point);
-  return furthest_reached_path_point / path_points_count;
 }
 
 /**

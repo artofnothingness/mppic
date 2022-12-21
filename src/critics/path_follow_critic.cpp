@@ -25,31 +25,40 @@ void PathFollowCritic::initialize()
   auto getParam = parameters_handler_->getParamGetter(name_);
 
   getParam(
-    max_path_ratio_,
-    "max_path_ratio", 0.40f);
-
+    threshold_to_consider_,
+    "threshold_to_consider", 0.40f);
   getParam(offset_from_furthest_, "offset_from_furthest", 10);
-
   getParam(power_, "cost_power", 1);
   getParam(weight_, "cost_weight", 3.0);
 }
 
 void PathFollowCritic::score(CriticData & data)
 {
-  if (!enabled_) {
+  if (!enabled_ ||
+    utils::withinPositionGoalTolerance(threshold_to_consider_, data.state.pose.pose, data.path))
+  {
     return;
   }
 
   utils::setPathFurthestPointIfNotSet(data);
-  if (utils::getPathRatioReached(data) > max_path_ratio_) {
-    return;
-  }
+  utils::setPathCostsIfNotSet(data, costmap_ros_);
+  const size_t path_size = data.path.x.shape(0) - 1;
 
   auto offseted_idx = std::min(
-    *data.furthest_reached_path_point + offset_from_furthest_, data.path.x.shape(0) - 1);
+    *data.furthest_reached_path_point + offset_from_furthest_, path_size);
 
-  const auto path_x = xt::view(data.path.x, offseted_idx);
-  const auto path_y = xt::view(data.path.y, offseted_idx);
+  // Drive to the first valid path point, in case of dynamic obstacles on path
+  // we want to drive past it, not through it
+  bool valid = false;
+  while (!valid && offseted_idx < path_size - 1) {
+    valid = (*data.path_pts_valid)[offseted_idx];
+    if (!valid) {
+      offseted_idx++;
+    }
+  }
+
+  const auto path_x = data.path.x(offseted_idx);
+  const auto path_y = data.path.y(offseted_idx);
 
   const auto last_x = xt::view(data.trajectories.x, xt::all(), -1);
   const auto last_y = xt::view(data.trajectories.y, xt::all(), -1);

@@ -69,6 +69,11 @@ void MPPIController::deactivate()
   RCLCPP_INFO(logger_, "Deactivated MPPI Controller: %s", name_.c_str());
 }
 
+void MPPIController::reset()
+{
+  optimizer_.reset();
+}
+
 geometry_msgs::msg::TwistStamped MPPIController::computeVelocityCommands(
   const geometry_msgs::msg::PoseStamped & robot_pose,
   const geometry_msgs::msg::Twist & robot_speed,

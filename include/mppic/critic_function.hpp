@@ -28,6 +28,16 @@ namespace mppi::critics
 {
 
 /**
+ * @class mppi::critics::CollisionCost
+ * @brief Utility for storing cost information
+ */
+struct CollisionCost
+{
+  float cost{0};
+  bool using_footprint{false};
+};
+
+/**
  * @class mppi::critics::CriticFunction
  * @brief Abstract critic objective function to score trajectories
  */

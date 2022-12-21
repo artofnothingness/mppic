@@ -71,6 +71,11 @@ public:
   void deactivate() override;
 
   /**
+    * @brief Reset the controller state between tasks
+    */
+  void reset() override;
+
+  /**
     * @brief Main method to compute velocities using the optimizer
     * @param robot_pose Robot pose
     * @param robot_speed Robot speed

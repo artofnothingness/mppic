@@ -165,7 +165,7 @@ TEST(MotionModelTests, AckermannTest)
   EXPECT_EQ(initial_control_sequence.vx, control_sequence.vx);
   EXPECT_NE(initial_control_sequence.wz, control_sequence.wz);
 
-  // Now, check the specifics of the minimum curvature constraint TODO(SM)
+  // Now, check the specifics of the minimum curvature constraint
   EXPECT_NEAR(model->getMinTurningRadius(), 0.2, 1e-6);
   for (unsigned int i = 1; i != control_sequence.vx.shape(0); i++) {
     EXPECT_TRUE(fabs(control_sequence.vx(i)) / fabs(control_sequence.wz(i)) <= 0.2);

@@ -111,6 +111,11 @@ public:
    */
   void setSpeedLimit(double speed_limit, bool percentage);
 
+  /**
+   * @brief Reset the optimization problem to initial conditions
+   */
+  void reset();
+
 protected:
   /**
    * @brief Main function to generate, score, and return trajectories
@@ -133,11 +138,6 @@ protected:
    * @brief Obtain the main controller's parameters
    */
   void getParams();
-
-  /**
-   * @brief Reset the optimization problem to initial conditions
-   */
-  void reset();
 
   /**
    * @brief Set the motion model of the vehicle platform
@@ -254,7 +254,7 @@ protected:
 
   CriticData critics_data_ =
   {state_, generated_trajectories_, path_, costs_, settings_.model_dt, false, nullptr, nullptr,
-    std::nullopt};  /// Caution, keep references
+    std::nullopt, std::nullopt};  /// Caution, keep references
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };

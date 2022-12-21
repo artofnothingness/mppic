@@ -56,7 +56,8 @@ TEST(CriticTests, ConstraintsCritic)
   xt::xtensor<float, 1> costs = xt::zeros<float>({1000});
   float model_dt = 0.1;
   CriticData data =
-  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt};
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt,
+    std::nullopt};
   data.motion_model = std::make_shared<DiffDriveMotionModel>();
 
   // Initialization testing
@@ -128,7 +129,8 @@ TEST(CriticTests, GoalAngleCritic)
   xt::xtensor<float, 1> costs = xt::zeros<float>({1000});
   float model_dt = 0.1;
   CriticData data =
-  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt};
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt,
+    std::nullopt};
   data.motion_model = std::make_shared<DiffDriveMotionModel>();
 
   // Initialization testing
@@ -179,7 +181,8 @@ TEST(CriticTests, GoalCritic)
   xt::xtensor<float, 1> costs = xt::zeros<float>({1000});
   float model_dt = 0.1;
   CriticData data =
-  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt};
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt,
+    std::nullopt};
   data.motion_model = std::make_shared<DiffDriveMotionModel>();
 
   // Initialization testing
@@ -191,14 +194,14 @@ TEST(CriticTests, GoalCritic)
 
   // Scoring testing with all trajectories set to 0
 
-  // provide state poses and path far
+  // provide state poses and path far, should not trigger
   state.pose.pose.position.x = 1.0;
   path.reset(10);
   path.x(9) = 10.0;
   path.y(9) = 0.0;
   critic.score(data);
-  EXPECT_NEAR(costs(2), 50.0, 1e-6);  // (sqrt(10.0 * 10.0) * 5.0 weight
-  EXPECT_NEAR(xt::sum(costs, immediate)(), 50000.0, 1e-6);  // Should all be 50 * 1000
+  EXPECT_NEAR(costs(2), 0.0, 1e-6);  // (0 * 5.0 weight
+  EXPECT_NEAR(xt::sum(costs, immediate)(), 0.0, 1e-6);  // Should all be 0 * 1000
   costs = xt::zeros<float>({1000});
 
   // provide state pose and path close
@@ -228,7 +231,8 @@ TEST(CriticTests, PathAngleCritic)
   xt::xtensor<float, 1> costs = xt::zeros<float>({1000});
   float model_dt = 0.1;
   CriticData data =
-  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt};
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt,
+    std::nullopt};
   data.motion_model = std::make_shared<DiffDriveMotionModel>();
   TestGoalChecker goal_checker;  // from utils_tests tolerance of 0.25 positionally
 
@@ -284,7 +288,8 @@ TEST(CriticTests, PreferForwardCritic)
   xt::xtensor<float, 1> costs = xt::zeros<float>({1000});
   float model_dt = 0.1;
   CriticData data =
-  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt};
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt,
+    std::nullopt};
   data.motion_model = std::make_shared<DiffDriveMotionModel>();
   TestGoalChecker goal_checker;  // from utils_tests tolerance of 0.25 positionally
 
@@ -336,7 +341,8 @@ TEST(CriticTests, TwirlingCritic)
   xt::xtensor<float, 1> costs = xt::zeros<float>({1000});
   float model_dt = 0.1;
   CriticData data =
-  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt};
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt,
+    std::nullopt};
   data.motion_model = std::make_shared<DiffDriveMotionModel>();
   TestGoalChecker goal_checker;  // from utils_tests tolerance of 0.25 positionally
   data.goal_checker = &goal_checker;
@@ -374,4 +380,125 @@ TEST(CriticTests, TwirlingCritic)
   traj_view = xt::random::randn<float>({30}, 0.0, 0.5);
   critic.score(data);
   EXPECT_NEAR(costs(0), 3.3, 4e-1);  // (mean of noise with mu=0, sigma=0.5 * 10.0 weight
+}
+
+TEST(CriticTests, PathFollowCritic)
+{
+  // Standard preamble
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("my_node");
+  auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
+    "dummy_costmap", "", "dummy_costmap", true);
+  ParametersHandler param_handler(node);
+  rclcpp_lifecycle::State lstate;
+  costmap_ros->on_configure(lstate);
+
+  models::State state;
+  state.reset(1000, 30);
+  models::ControlSequence control_sequence;
+  models::Trajectories generated_trajectories;
+  generated_trajectories.reset(1000, 30);
+  models::Path path;
+  xt::xtensor<float, 1> costs = xt::zeros<float>({1000});
+  float model_dt = 0.1;
+  CriticData data =
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt,
+    std::nullopt};
+  data.motion_model = std::make_shared<DiffDriveMotionModel>();
+  TestGoalChecker goal_checker;  // from utils_tests tolerance of 0.25 positionally
+  data.goal_checker = &goal_checker;
+
+  // Initialization testing
+
+  // Make sure initializes correctly
+  PathFollowCritic critic;
+  critic.on_configure(node, "mppi", "critic", costmap_ros, &param_handler);
+  EXPECT_EQ(critic.getName(), "critic");
+
+  // Scoring testing
+
+  // provide state poses and path close within positional tolerances
+  state.pose.pose.position.x = 1.0;
+  path.reset(10);
+  path.x(9) = 0.85;
+  critic.score(data);
+  EXPECT_NEAR(xt::sum(costs, immediate)(), 0.0, 1e-6);
+
+  // provide state pose and path far enough to enable
+  // pose differential is (0, 0) and (0.15, 0)
+  path.x(9) = 0.15;
+  critic.score(data);
+  EXPECT_NEAR(xt::sum(costs, immediate)(), 450.0, 1e-2);  // 0.15 * 3 weight * 1000
+}
+
+
+TEST(CriticTests, PathAlignCritic)
+{
+  // Standard preamble
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("my_node");
+  auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
+    "dummy_costmap", "", "dummy_costmap", true);
+  ParametersHandler param_handler(node);
+  rclcpp_lifecycle::State lstate;
+  costmap_ros->on_configure(lstate);
+
+  models::State state;
+  state.reset(1000, 30);
+  models::ControlSequence control_sequence;
+  models::Trajectories generated_trajectories;
+  generated_trajectories.reset(1000, 30);
+  models::Path path;
+  xt::xtensor<float, 1> costs = xt::zeros<float>({1000});
+  float model_dt = 0.1;
+  CriticData data =
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr, std::nullopt,
+    std::nullopt};
+  data.motion_model = std::make_shared<DiffDriveMotionModel>();
+  TestGoalChecker goal_checker;  // from utils_tests tolerance of 0.25 positionally
+  data.goal_checker = &goal_checker;
+
+  // Initialization testing
+
+  // Make sure initializes correctly
+  PathAlignCritic critic;
+  critic.on_configure(node, "mppi", "critic", costmap_ros, &param_handler);
+  EXPECT_EQ(critic.getName(), "critic");
+
+  // Scoring testing
+
+  // provide state poses and path close within positional tolerances
+  state.pose.pose.position.x = 1.0;
+  path.reset(10);
+  path.x(9) = 0.85;
+  critic.score(data);
+  EXPECT_NEAR(xt::sum(costs, immediate)(), 0.0, 1e-6);
+
+  // provide state pose and path far enough to enable
+  // but data furthest point reached is 0 and offset default is 20, so returns
+  path.x(9) = 0.15;
+  critic.score(data);
+  EXPECT_NEAR(xt::sum(costs, immediate)(), 0.0, 1e-6);
+
+  // provide state pose and path far enough to enable, with data to pass condition
+  // but with empty trajectories and paths, should still be zero
+  *data.furthest_reached_path_point = 21;
+  path.x(9) = 0.15;
+  critic.score(data);
+  EXPECT_NEAR(xt::sum(costs, immediate)(), 0.0, 1e-6);
+
+  // provide state pose and path far enough to enable, with data to pass condition
+  state.pose.pose.position.x = 0.0;
+  path.x(0) = 0;
+  path.x(1) = 0.1;
+  path.x(2) = 0.2;
+  path.x(3) = 0.3;
+  path.x(4) = 0.4;
+  path.x(5) = 0.5;
+  path.x(6) = 0.6;
+  path.x(7) = 0.7;
+  path.x(8) = 0.8;
+  path.x(9) = 0.9;
+  generated_trajectories.x = 0.66 * xt::ones<float>({1000, 30});
+  critic.score(data);
+  // 0.04 * 1000 * 1 weight * 6 num pts eval / 6 normalization term
+  EXPECT_NEAR(xt::sum(costs, immediate)(), 40.0, 1e-2);
 }
