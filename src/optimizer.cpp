@@ -409,9 +409,8 @@ void Optimizer::setMotionModel(const std::string & model)
   } else {
     throw std::runtime_error(
             std::string(
-              "Model %s is not valid! Valid options are DiffDrive, Omni, "
-              "or Ackermann",
-              model.c_str()));
+              "Model " + model + " is not valid! Valid options are DiffDrive, Omni, "
+              "or Ackermann"));
   }
 }
 

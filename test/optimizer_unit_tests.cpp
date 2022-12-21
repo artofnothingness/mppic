@@ -245,6 +245,7 @@ TEST(OptimizerTests, BasicInitializedFunctions)
   EXPECT_EQ(traj.shape(0), 50u);
   EXPECT_EQ(traj.shape(1), 3u);
 
+  optimizer_tester.reset();
   optimizer_tester.shutdown();
 }
 
