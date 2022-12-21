@@ -22,10 +22,10 @@ void ObstaclesCritic::initialize()
 {
   auto getParam = parameters_handler_->getParamGetter(name_);
   getParam(consider_footprint_, "consider_footprint", false);
-  getParam(power_, "cost_power", 2);
-  getParam(repulsion_weight_, "repulsion_weight", 4.0);
-  getParam(critical_weight_, "critical_weight", 1.2);
-  getParam(collision_cost_, "collision_cost", 2000.0);
+  getParam(power_, "cost_power", 1);
+  getParam(repulsion_weight_, "repulsion_weight", 1.5);
+  getParam(critical_weight_, "critical_weight", 20.0);
+  getParam(collision_cost_, "collision_cost", 10000.0);
   getParam(collision_margin_distance_, "collision_margin_distance", 0.10);
   getParam(near_goal_distance_, "near_goal_distance", 0.5);
 

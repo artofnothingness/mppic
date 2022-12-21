@@ -30,7 +30,7 @@ void PathAngleCritic::initialize()
     "threshold_to_consider", 0.40f);
   getParam(
     max_angle_to_furthest_,
-    "max_angle_to_furthest", M_PI_2);
+    "max_angle_to_furthest", 1.2);
 
 
   RCLCPP_INFO(
