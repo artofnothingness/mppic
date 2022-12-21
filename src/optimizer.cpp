@@ -66,19 +66,19 @@ void Optimizer::getParams()
   auto & s = settings_;
   auto getParam = parameters_handler_->getParamGetter(name_);
   auto getParentParam = parameters_handler_->getParamGetter("");
-  getParam(s.model_dt, "model_dt", 0.1f);
-  getParam(s.time_steps, "time_steps", 15);
-  getParam(s.batch_size, "batch_size", 400);
+  getParam(s.model_dt, "model_dt", 0.05f);
+  getParam(s.time_steps, "time_steps", 56);
+  getParam(s.batch_size, "batch_size", 1000);
   getParam(s.iteration_count, "iteration_count", 1);
-  getParam(s.temperature, "temperature", 0.15f);
-  getParam(s.gamma, "gamma", 0.10f);
+  getParam(s.temperature, "temperature", 0.3f);
+  getParam(s.gamma, "gamma", 0.015f);
   getParam(s.base_constraints.vx_max, "vx_max", 0.5);
   getParam(s.base_constraints.vx_min, "vx_min", -0.35);
   getParam(s.base_constraints.vy, "vy_max", 0.5);
-  getParam(s.base_constraints.wz, "wz_max", 1.3);
+  getParam(s.base_constraints.wz, "wz_max", 1.9);
   getParam(s.sampling_std.vx, "vx_std", 0.2);
   getParam(s.sampling_std.vy, "vy_std", 0.2);
-  getParam(s.sampling_std.wz, "wz_std", 1.0);
+  getParam(s.sampling_std.wz, "wz_std", 0.4);
   getParam(s.retry_attempt_limit, "retry_attempt_limit", 1);
 
   getParam(motion_model_name, "motion_model", std::string("DiffDrive"));

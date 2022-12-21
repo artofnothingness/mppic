@@ -38,18 +38,18 @@ This process is then repeated a number of times and returns a converged solution
  | motion_model               | string | Default: DiffDrive. Type of model [DiffDrive, Omni, Ackermann].                                          |
  | critics                    | string | Default: None. Critics (plugins) names                                                                   |
  | iteration_count            | int    | Default 1. Iteration count in MPPI algorithm. Recommend to keep as 1 and prefer more batches.            |
- | batch_size                 | int    | Default 400. Count of randomly sampled candidate trajectories                                            |
- | time_steps                 | int    | Default 15. Number of time steps (points) in each sampled trajectory                                     |
- | model_dt                   | double | Default: 0.1. Time interval (s) between two sampled points in trajectories.                              |
+ | batch_size                 | int    | Default 1000. Count of randomly sampled candidate trajectories                                            |
+ | time_steps                 | int    | Default 56. Number of time steps (points) in each sampled trajectory                                     |
+ | model_dt                   | double | Default: 0.05. Time interval (s) between two sampled points in trajectories.                              |
  | vx_std                     | double | Default 0.2. Sampling standart deviation for VX                                                          |
  | vy_std                     | double | Default 0.2. Sampling standart deviation for VY                                                          |
- | wx_std                     | double | Default 1.0. Sampling standart deviation for WX                                                          |
+ | wx_std                     | double | Default 0.4. Sampling standart deviation for WX                                                          |
  | vx_max                     | double | Default 0.5. Max VX (m/s)                                                                                |
  | vy_max                     | double | Default 0.5. Max VY in either direction, if holonomic. (m/s)                                             |
  | vx_min                     | double | Default -0.35. Min VX (m/s)                                                                              |
- | wz_max                     | double | Default 1.3. Max WZ (rad/s)                                                                              |
- | temperature                | double | Default: 0.35. Selectiveness of trajectories by their costs (The closer this value to 0, the "more" we take in considiration controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories without cost consideration                                                   |
- | gamma                      | double | Default: 0.1. A trade-off between smoothness (high) and low energy (low). This is a complex parameter that likely won't need to be changed from the default of `0.1` which works well for a broad range of cases. See Section 3D-2 in "Information Theoretic Model Predictive Control: Theory and Applications to Autonomous Driving" for detailed information.       |
+ | wz_max                     | double | Default 1.9. Max WZ (rad/s)                                                                              |
+ | temperature                | double | Default: 0.3. Selectiveness of trajectories by their costs (The closer this value to 0, the "more" we take in considiration controls with less cost), 0 mean use control with best cost, huge value will lead to just taking mean of all trajectories without cost consideration                                                   |
+ | gamma                      | double | Default: 0.015. A trade-off between smoothness (high) and low energy (low). This is a complex parameter that likely won't need to be changed from the default of `0.1` which works well for a broad range of cases. See Section 3D-2 in "Information Theoretic Model Predictive Control: Theory and Applications to Autonomous Driving" for detailed information.       |
  | visualize                  | bool   | Default: false. Publish visualization of trajectories, which can slow down the controller significantly. Use only for debugging.                                                                                                                                       |
  | retry_attempt_limit        | int    | Default 1. Number of attempts to find feasible trajectory on failure for soft-resets before reporting failure.                                                                                                                                                                                                       |
 #### Trajectory Visualizer
