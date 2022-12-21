@@ -57,13 +57,14 @@ PathRange PathHandler::getGlobalPlanConsideringBounds(
 
   // Find the furthest relevent point on the path to consider within costmap
   // bounds
-  auto max_costmap_dist = getMaxCostmapDist();
-
+  const auto * costmap = costmap_->getCostmap();
+  unsigned int mx, my;
   auto last_point =
     std::find_if(
     closest_point, end, [&](const geometry_msgs::msg::PoseStamped & global_plan_pose) {
       auto distance = euclidean_distance(global_pose, global_plan_pose);
-      return distance > max_costmap_dist || distance >= prune_distance_;
+      return distance >= prune_distance_ || !costmap->worldToMap(
+          global_plan_pose.pose.position.x, global_plan_pose.pose.position.y, mx, my);
     });
 
   return {closest_point, last_point};
