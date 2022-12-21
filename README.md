@@ -110,6 +110,7 @@ This process is then repeated a number of times and returns a converged solution
  | threshold_to_consider      | double | Default 0.4. Distance between robot and goal above which path align cost stops being considered                                    |
  | offset_from_furthest      | double | Default 20. Checks that the candidate trajectories are sufficiently far along their way tracking the path to apply the alignment critic. This ensures that path alignment is only considered when actually tracking the path, preventing awkward initialization motions preventing the robot from leaving the path to achieve the appropriate heading.  |
  | trajectory_point_step      | double | Default 5. Step of trajectory points to evaluate for path distance to reduce compute time. Between 1-10 is typically reasonable.   |
+ | max_path_occupancy_ratio   | double | Default 0.07 (7%). Maximum proportion of the path that can be occupied before this critic is not considered to allow the obstacle and path follow critics to avoid obstacles while following the path's intent in presense of dynamic objects in the scene.  |
 
 
 #### Path Angle Critic

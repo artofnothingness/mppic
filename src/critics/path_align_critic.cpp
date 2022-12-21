@@ -29,6 +29,7 @@ void PathAlignCritic::initialize()
   getParam(power_, "cost_power", 1);
   getParam(weight_, "cost_weight", 1.0);
 
+  getParam(max_path_occupancy_ratio_, "max_path_occupancy_ratio", 0.07);
   getParam(offset_from_furthest_, "offset_from_furthest", 20);
   getParam(trajectory_point_step_, "trajectory_point_step", 5);
   getParam(
@@ -43,18 +44,30 @@ void PathAlignCritic::initialize()
 
 void PathAlignCritic::score(CriticData & data)
 {
+  // Don't apply close to goal, let the goal critics take over
   if (!enabled_ ||
     utils::withinPositionGoalTolerance(threshold_to_consider_, data.state.pose.pose, data.path))
   {
     return;
   }
 
+  // Don't apply when first getting bearing w.r.t. the path
   utils::setPathFurthestPointIfNotSet(data);
   if (*data.furthest_reached_path_point < offset_from_furthest_) {
     return;
   }
 
+  // Don't apply when dynamic obstacles are blocking significant proportions of the local path
   utils::setPathCostsIfNotSet(data, costmap_ros_);
+  const size_t closest_initial_path_point = utils::findPathTrajectoryInitialPoint(data);
+  unsigned int invalid_ctr = 0;
+  const float range = *data.furthest_reached_path_point - closest_initial_path_point;
+  for (size_t i = closest_initial_path_point; i < *data.furthest_reached_path_point; i++) {
+    if (!(*data.path_pts_valid)[i]) {invalid_ctr++;}
+    if (static_cast<float>(invalid_ctr) / range > max_path_occupancy_ratio_ && invalid_ctr > 2) {
+      return;
+    }
+  }
 
   const auto & T_x = data.trajectories.x;
   const auto & T_y = data.trajectories.y;

@@ -48,6 +48,7 @@ protected:
   size_t offset_from_furthest_{0};
   int trajectory_point_step_{0};
   float threshold_to_consider_{0};
+  float max_path_occupancy_ratio_{0};
   unsigned int power_{0};
   float weight_{0};
 };
