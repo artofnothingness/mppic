@@ -23,7 +23,7 @@
 #include <xtensor/xrandom.hpp>
 #include <xtensor/xnoalias.hpp>
 
-#include "nav2_core/exceptions.hpp"
+#include "nav2_core/controller_exceptions.hpp"
 #include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
 
 namespace mppi
@@ -190,6 +190,7 @@ void Optimizer::prepare(
   critics_data_.goal_checker = goal_checker;
   critics_data_.motion_model = motion_model_;
   critics_data_.furthest_reached_path_point.reset();
+  critics_data_.path_pts_valid.reset();
 }
 
 void Optimizer::shiftControlSequence()

@@ -197,7 +197,7 @@ TEST(UtilsTests, AnglesTests)
   EXPECT_NEAR(posePointAngle(pose, point_x, point_y), 0.0, 1e-6);
 }
 
-TEST(UtilsTests, FurthestReachedPoint)
+TEST(UtilsTests, FurthestAndClosestReachedPoint)
 {
   models::State state;
   models::Trajectories generated_trajectories;
@@ -238,6 +238,69 @@ TEST(UtilsTests, FurthestReachedPoint)
   {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr,
     std::nullopt, std::nullopt};  /// Caution, keep references
   EXPECT_EQ(findPathFurthestReachedPoint(data3), 5u);
+  EXPECT_EQ(findPathTrajectoryInitialPoint(data3), 5u);
+}
+
+TEST(UtilsTests, findPathCosts)
+{
+  models::State state;
+  models::Trajectories generated_trajectories;
+  models::Path path;
+  xt::xtensor<float, 1> costs;
+  float model_dt = 0.1;
+
+  CriticData data =
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr,
+    std::nullopt, std::nullopt};  /// Caution, keep references
+
+  // Test not set if already set, should not change
+  data.path_pts_valid = std::vector<bool>(10, false);
+  for (unsigned int i = 0; i != 10; i++) {
+    (*data.path_pts_valid)[i] = false;
+  }
+  EXPECT_TRUE(data.path_pts_valid);
+  setPathCostsIfNotSet(data, nullptr);
+  EXPECT_EQ(data.path_pts_valid->size(), 10u);
+
+  CriticData data3 =
+  {state, generated_trajectories, path, costs, model_dt, false, nullptr, nullptr,
+    std::nullopt, std::nullopt};  /// Caution, keep references
+
+  auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
+    "dummy_costmap", "", "dummy_costmap", true);
+  rclcpp_lifecycle::State lstate;
+  costmap_ros->on_configure(lstate);
+  auto * costmap = costmap_ros->getCostmap();
+  // island in the middle of lethal cost to cross. Costmap defaults to size 5x5 @ 10cm resolution
+  for (unsigned int i = 10; i <= 30; ++i) {  // 1m-3m
+    for (unsigned int j = 10; j <= 30; ++j) {  // 1m-3m
+      costmap->setCost(i, j, 254);
+    }
+  }
+  for (unsigned int i = 40; i <= 45; ++i) {  // 4m-4.5m
+    for (unsigned int j = 45; j <= 45; ++j) {  // 4m-4.5m
+      costmap->setCost(i, j, 253);
+    }
+  }
+
+  path.reset(50);
+  path.x(1) = 999999999;  // OFF COSTMAP
+  path.y(1) = 999999999;
+  path.x(10) = 1.5;  // IN LETHAL
+  path.y(10) = 1.5;
+  path.x(20) = 4.2;  // IN INFLATED
+  path.y(20) = 4.2;
+
+  // This should be evaluated and have real outputs now
+  setPathCostsIfNotSet(data3, costmap_ros);
+  EXPECT_TRUE(data3.path_pts_valid.has_value());
+  for (unsigned int i = 0; i != path.x.shape(0) - 1; i++) {
+    if (i == 1 || i == 10) {
+      EXPECT_FALSE((*data3.path_pts_valid)[i]);
+    } else {
+      EXPECT_TRUE((*data3.path_pts_valid)[i]);
+    }
+  }
 }
 
 TEST(UtilsTests, SmootherTest)

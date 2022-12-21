@@ -121,7 +121,7 @@ TEST(PathHandlerTests, TestBounds)
   auto [closest, furthest] = handler.getGlobalPlanConsideringBoundsWrapper(robot_pose);
   auto & path_in = handler.getPath();
   EXPECT_EQ(closest - path_in.poses.begin(), 25);
-  EXPECT_EQ(furthest - path_in.poses.begin(), 27);
+  EXPECT_EQ(furthest - path_in.poses.begin(), 25);
   handler.pruneGlobalPlanWrapper(closest);
   auto & path_pruned = handler.getPath();
   EXPECT_EQ(path_pruned.poses.size(), 75u);
@@ -150,10 +150,10 @@ TEST(PathHandlerTests, TestTransforms)
 
   geometry_msgs::msg::PoseStamped robot_pose, output_pose;
   robot_pose.header.frame_id = "map";
-  robot_pose.pose.position.x = 25.0;
+  robot_pose.pose.position.x = 2.5;
 
   EXPECT_TRUE(handler.transformPoseWrapper("map", robot_pose, output_pose));
-  EXPECT_EQ(output_pose.pose.position.x, 25.0);
+  EXPECT_EQ(output_pose.pose.position.x, 2.5);
 
   EXPECT_THROW(handler.transformToGlobalPlanFrameWrapper(robot_pose), std::runtime_error);
   handler.setPath(path);

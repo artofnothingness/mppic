@@ -20,6 +20,7 @@
 #include <string>
 #include <limits>
 #include <memory>
+#include <vector>
 
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
@@ -366,15 +367,11 @@ inline void findPathCosts(
   CriticData & data,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
 {
-  if (!costmap_ros) {
-    return;
-  }
-
   auto * costmap = costmap_ros->getCostmap();
   unsigned int map_x, map_y;
   const size_t path_segments_count = data.path.x.shape(0) - 1;
-  data.path_pts_valid->resize(path_segments_count - 1, false);
-  for (unsigned int idx = 0; idx < path_segments_count - 1; idx++) {
+  data.path_pts_valid = std::vector<bool>(path_segments_count - 1, false);
+  for (unsigned int idx = 0; idx < path_segments_count; idx++) {
     const auto path_x = data.path.x(idx);
     const auto path_y = data.path.y(idx);
     if (!costmap->worldToMap(path_x, path_y, map_x, map_y)) {
