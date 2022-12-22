@@ -1,11 +1,26 @@
-// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
-#ifndef MPPIC__UTILS_HPP_
-#define MPPIC__UTILS_HPP_
+// Copyright (c) 2022 Samsung Research America, @artofnothingness Alexey Budyakov
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef MPPIC__TOOLS__UTILS_HPP_
+#define MPPIC__TOOLS__UTILS_HPP_
 
 #include <algorithm>
 #include <chrono>
 #include <string>
-
+#include <limits>
+#include <memory>
+#include <vector>
 
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnorm.hpp>
@@ -19,6 +34,7 @@
 
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/path.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -26,6 +42,7 @@
 #include "nav2_util/node_utils.hpp"
 #include "nav2_core/goal_checker.hpp"
 
+#include "mppic/models/optimizer_settings.hpp"
 #include "mppic/models/control_sequence.hpp"
 #include "mppic/models/path.hpp"
 #include "builtin_interfaces/msg/time.hpp"
@@ -33,7 +50,97 @@
 
 namespace mppi::utils
 {
+using xt::evaluation_strategy::immediate;
 
+/**
+ * @brief Convert data into pose
+ * @param x X position
+ * @param y Y position
+ * @param z Z position
+ * @return Pose object
+ */
+inline geometry_msgs::msg::Pose createPose(double x, double y, double z)
+{
+  geometry_msgs::msg::Pose pose;
+  pose.position.x = x;
+  pose.position.y = y;
+  pose.position.z = z;
+  pose.orientation.w = 1;
+  pose.orientation.x = 0;
+  pose.orientation.y = 0;
+  pose.orientation.z = 0;
+  return pose;
+}
+
+/**
+ * @brief Convert data into scale
+ * @param x X scale
+ * @param y Y scale
+ * @param z Z scale
+ * @return Scale object
+ */
+inline geometry_msgs::msg::Vector3 createScale(double x, double y, double z)
+{
+  geometry_msgs::msg::Vector3 scale;
+  scale.x = x;
+  scale.y = y;
+  scale.z = z;
+  return scale;
+}
+
+/**
+ * @brief Convert data into color
+ * @param r Red component
+ * @param g Green component
+ * @param b Blue component
+ * @param a Alpha component (transparency)
+ * @return Color object
+ */
+inline std_msgs::msg::ColorRGBA createColor(float r, float g, float b, float a)
+{
+  std_msgs::msg::ColorRGBA color;
+  color.r = r;
+  color.g = g;
+  color.b = b;
+  color.a = a;
+  return color;
+}
+
+/**
+ * @brief Convert data into a Maarker
+ * @param id Marker ID
+ * @param pose Marker pose
+ * @param scale Marker scale
+ * @param color Marker color
+ * @param frame Reference frame to use
+ * @return Visualization Marker
+ */
+inline visualization_msgs::msg::Marker createMarker(
+  int id, const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & scale,
+  const std_msgs::msg::ColorRGBA & color, const std::string & frame_id)
+{
+  using visualization_msgs::msg::Marker;
+  Marker marker;
+  marker.header.frame_id = frame_id;
+  marker.header.stamp = rclcpp::Time(0, 0);
+  marker.ns = "MarkerNS";
+  marker.id = id;
+  marker.type = Marker::SPHERE;
+  marker.action = Marker::ADD;
+
+  marker.pose = pose;
+  marker.scale = scale;
+  marker.color = color;
+  return marker;
+}
+
+/**
+ * @brief Convert data into TwistStamped
+ * @param vx X velocity
+ * @param wz Angular velocity
+ * @param stamp Timestamp
+ * @param frame Reference frame to use
+ */
 inline geometry_msgs::msg::TwistStamped toTwistStamped(
   float vx, float wz, const builtin_interfaces::msg::Time & stamp, const std::string & frame)
 {
@@ -46,6 +153,14 @@ inline geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
+/**
+ * @brief Convert data into TwistStamped
+ * @param vx X velocity
+ * @param vy Y velocity
+ * @param wz Angular velocity
+ * @param stamp Timestamp
+ * @param frame Reference frame to use
+ */
 inline geometry_msgs::msg::TwistStamped toTwistStamped(
   float vx, float vy, float wz, const builtin_interfaces::msg::Time & stamp,
   const std::string & frame)
@@ -56,6 +171,11 @@ inline geometry_msgs::msg::TwistStamped toTwistStamped(
   return twist;
 }
 
+/**
+ * @brief Convert path to a tensor
+ * @param path Path to convert
+ * @return Path tensor
+ */
 inline models::Path toTensor(const nav_msgs::msg::Path & path)
 {
   auto result = models::Path{};
@@ -70,6 +190,13 @@ inline models::Path toTensor(const nav_msgs::msg::Path & path)
   return result;
 }
 
+/**
+ * @brief Check if the robot pose is within the Goal Checker's tolerances to goal
+ * @param global_checker Pointer to the goal checker
+ * @param robot Pose of robot
+ * @param path Path to retreive goal pose from
+ * @return bool If robot is within goal checker tolerances to the goal
+ */
 inline bool withinPositionGoalTolerance(
   nav2_core::GoalChecker * goal_checker,
   const geometry_msgs::msg::Pose & robot,
@@ -99,6 +226,13 @@ inline bool withinPositionGoalTolerance(
   return false;
 }
 
+/**
+ * @brief Check if the robot pose is within tolerance to the goal
+ * @param pose_tolerance Pose tolerance to use
+ * @param robot Pose of robot
+ * @param path Path to retreive goal pose from
+ * @return bool If robot is within tolerance to the goal
+ */
 inline bool withinPositionGoalTolerance(
   float pose_tolerance,
   const geometry_msgs::msg::Pose & robot,
@@ -124,10 +258,10 @@ inline bool withinPositionGoalTolerance(
 
 /**
   * @brief normalize
-  *
   * Normalizes the angle to be -M_PI circle to +M_PI circle
   * It takes and returns radians.
-  *
+  * @param angles Angles to normalize
+  * @return normalized angles
   */
 template<typename T>
 auto normalize_angles(const T & angles)
@@ -145,7 +279,9 @@ auto normalize_angles(const T & angles)
   * The result
   * would always be -pi <= result <= pi.  Adding the result
   * to "from" will always get you an equivelent angle to "to".
-  *
+  * @param from Start angle
+  * @param to End angle
+  * @return Shortest distance between angles
   */
 template<typename F, typename T>
 auto shortest_angular_distance(
@@ -158,6 +294,8 @@ auto shortest_angular_distance(
 /**
  * @brief Evaluate furthest point idx of data.path which is
  * nearset to some trajectory in data.trajectories
+ * @param data Data to use
+ * @return Idx of furthest path point reached by a set of trajectories
  */
 inline size_t findPathFurthestReachedPoint(const CriticData & data)
 {
@@ -175,7 +313,7 @@ inline size_t findPathFurthestReachedPoint(const CriticData & data)
   for (size_t i = 0; i < dists.shape(0); i++) {
     size_t min_id_by_path = 0;
     for (size_t j = 0; j < dists.shape(1); j++) {
-      if (min_distance_by_path < dists(i, j)) {
+      if (dists(i, j) < min_distance_by_path) {
         min_distance_by_path = dists(i, j);
         min_id_by_path = j;
       }
@@ -185,9 +323,34 @@ inline size_t findPathFurthestReachedPoint(const CriticData & data)
   return max_id_by_trajectories;
 }
 
+/**
+ * @brief Evaluate closest point idx of data.path which is
+ * nearset to the start of the trajectory in data.trajectories
+ * @param data Data to use
+ * @return Idx of closest path point at start of the trajectories
+ */
+inline size_t findPathTrajectoryInitialPoint(const CriticData & data)
+{
+  // First point should be the same for all trajectories from initial conditions
+  const auto dx = data.path.x - data.trajectories.x(0, 0);
+  const auto dy = data.path.y - data.trajectories.y(0, 0);
+  const auto dists = dx * dx + dy * dy;
+
+  double min_distance_by_path = std::numeric_limits<float>::max();
+  size_t min_id = 0;
+  for (size_t j = 0; j < dists.shape(0); j++) {
+    if (dists(j) < min_distance_by_path) {
+      min_distance_by_path = dists(j);
+      min_id = j;
+    }
+  }
+
+  return min_id;
+}
 
 /**
  * @brief evaluate path furthest point if it is not set
+ * @param data Data to use
  */
 inline void setPathFurthestPointIfNotSet(CriticData & data)
 {
@@ -197,7 +360,63 @@ inline void setPathFurthestPointIfNotSet(CriticData & data)
 }
 
 /**
+ * @brief evaluate path costs
+ * @param data Data to use
+ */
+inline void findPathCosts(
+  CriticData & data,
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
+{
+  auto * costmap = costmap_ros->getCostmap();
+  unsigned int map_x, map_y;
+  const size_t path_segments_count = data.path.x.shape(0) - 1;
+  data.path_pts_valid = std::vector<bool>(path_segments_count - 1, false);
+  for (unsigned int idx = 0; idx < path_segments_count; idx++) {
+    const auto path_x = data.path.x(idx);
+    const auto path_y = data.path.y(idx);
+    if (!costmap->worldToMap(path_x, path_y, map_x, map_y)) {
+      (*data.path_pts_valid)[idx] = false;
+      continue;
+    }
+
+    switch (costmap->getCost(map_x, map_y)) {
+      using namespace nav2_costmap_2d; // NOLINT
+      case (LETHAL_OBSTACLE):
+        (*data.path_pts_valid)[idx] = false;
+        continue;
+      case (INSCRIBED_INFLATED_OBSTACLE):
+        (*data.path_pts_valid)[idx] = false;
+        continue;
+      case (NO_INFORMATION):
+        const bool is_tracking_unknown =
+          costmap_ros->getLayeredCostmap()->isTrackingUnknown();
+        (*data.path_pts_valid)[idx] = is_tracking_unknown ? true : false;
+        continue;
+    }
+
+    (*data.path_pts_valid)[idx] = true;
+  }
+}
+
+/**
+ * @brief evaluate path costs if it is not set
+ * @param data Data to use
+ */
+inline void setPathCostsIfNotSet(
+  CriticData & data,
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
+{
+  if (!data.path_pts_valid) {
+    findPathCosts(data, costmap_ros);
+  }
+}
+
+/**
  * @brief evaluate angle from pose (have angle) to point (no angle)
+ * @param pose pose
+ * @param point_x Point to find angle relative to X axis
+ * @param point_y Point to find angle relative to Y axis
+ * @return Angle between two points
  */
 inline double posePointAngle(const geometry_msgs::msg::Pose & pose, double point_x, double point_y)
 {
@@ -210,19 +429,95 @@ inline double posePointAngle(const geometry_msgs::msg::Pose & pose, double point
 }
 
 /**
- * @brief Evaluate ratio of data.path which reached by all trajectories in data.trajectories
+ * @brief Apply Savisky-Golay filter to optimal trajectory
+ * @param control_sequence Sequence to apply filter to
+ * @param control_history Recent set of controls for edge-case handling
+ * @param Settings Settings to use
  */
-inline float getPathRatioReached(const CriticData & data)
+inline void savitskyGolayFilter(
+  models::ControlSequence & control_sequence,
+  std::array<mppi::models::Control, 2> & control_history,
+  const models::OptimizerSettings & settings)
 {
-  if (!data.furthest_reached_path_point) {
-    throw std::runtime_error("Furthest point not computed yet");
+  // Savitzky-Golay Quadratic, 5-point Coefficients
+  xt::xarray<float> filter = {-3.0, 12.0, 17.0, 12.0, -3.0};
+  filter /= 35.0;
+
+  const unsigned int num_sequences = control_sequence.vx.shape(0);
+
+  // Too short to smooth meaningfully
+  if (num_sequences < 10) {
+    return;
   }
 
-  auto path_points_count = static_cast<float>(data.path.x.shape(0));
-  auto furthest_reached_path_point = static_cast<float>(*data.furthest_reached_path_point);
-  return furthest_reached_path_point / path_points_count;
+  auto applyFilter = [&](const xt::xarray<float> & data) -> float {
+      return xt::sum(data * filter, {0}, immediate)();
+    };
+
+  auto applyFilterOverAxis =
+    [&](xt::xtensor<float, 1> & sequence, const float hist_0, const float hist_1) -> void
+    {
+      unsigned int idx = 0;
+      sequence(idx) = applyFilter(
+      {
+        hist_0,
+        hist_1,
+        sequence(idx),
+        sequence(idx + 1),
+        sequence(idx + 2)});
+
+      idx++;
+      sequence(idx) = applyFilter(
+      {
+        hist_1,
+        sequence(idx - 1),
+        sequence(idx),
+        sequence(idx + 1),
+        sequence(idx + 2)});
+
+      for (idx = 2; idx != num_sequences - 3; idx++) {
+        sequence(idx) = applyFilter(
+        {
+          sequence(idx - 2),
+          sequence(idx - 1),
+          sequence(idx),
+          sequence(idx + 1),
+          sequence(idx + 2)});
+      }
+
+      idx++;
+      sequence(idx) = applyFilter(
+      {
+        sequence(idx - 2),
+        sequence(idx - 1),
+        sequence(idx),
+        sequence(idx + 1),
+        sequence(idx + 1)});
+
+      idx++;
+      sequence(idx) = applyFilter(
+      {
+        sequence(idx - 2),
+        sequence(idx - 1),
+        sequence(idx),
+        sequence(idx),
+        sequence(idx)});
+    };
+
+  // Filter trajectories
+  applyFilterOverAxis(control_sequence.vx, control_history[0].vx, control_history[1].vx);
+  applyFilterOverAxis(control_sequence.vy, control_history[0].vy, control_history[1].vy);
+  applyFilterOverAxis(control_sequence.wz, control_history[0].wz, control_history[1].wz);
+
+  // Update control history
+  unsigned int offset = settings.shift_control_sequence ? 1 : 0;
+  control_history[0] = control_history[1];
+  control_history[1] = {
+    control_sequence.vx(offset),
+    control_sequence.vy(offset),
+    control_sequence.wz(offset)};
 }
 
 }  // namespace mppi::utils
-//
-#endif  // MPPIC__UTILS_HPP_
+
+#endif  // MPPIC__TOOLS__UTILS_HPP_

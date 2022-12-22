@@ -1,7 +1,19 @@
-// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
+// Copyright (c) 2022 Samsung Research America, @artofnothingness Alexey Budyakov
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-#ifndef MPPIC__NOISE_GENERATOR_HPP_
-#define MPPIC__NOISE_GENERATOR_HPP_
+#ifndef MPPIC__TOOLS__NOISE_GENERATOR_HPP_
+#define MPPIC__TOOLS__NOISE_GENERATOR_HPP_
 
 #include <string>
 #include <memory>
@@ -19,9 +31,16 @@
 namespace mppi
 {
 
+/**
+ * @class mppi::NoiseGenerator
+ * @brief Generates noise trajectories from optimal trajectory
+ */
 class NoiseGenerator
 {
 public:
+  /**
+    * @brief Constructor for mppi::NoiseGenerator
+    */
   NoiseGenerator() = default;
 
   /**
@@ -85,4 +104,4 @@ protected:
 
 }  // namespace mppi
 
-#endif  // MPPIC__NOISE_GENERATOR_HPP_
+#endif  // MPPIC__TOOLS__NOISE_GENERATOR_HPP_

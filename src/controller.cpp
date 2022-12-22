@@ -1,13 +1,28 @@
-// Copyright 2022 FastSense, Samsung Research
+// Copyright (c) 2022 Samsung Research America, @artofnothingness Alexey Budyakov
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <stdint.h>
 #include <chrono>
 #include "mppic/controller.hpp"
 #include "mppic/tools/utils.hpp"
 
+// #define BENCHMARK_TESTING
+
 namespace mppi
 {
 
-void Controller::configure(
+void MPPIController::configure(
   const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
   std::string name, const std::shared_ptr<tf2_ros::Buffer> tf,
   const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
@@ -33,7 +48,7 @@ void Controller::configure(
   RCLCPP_INFO(logger_, "Configured MPPI Controller: %s", name_.c_str());
 }
 
-void Controller::cleanup()
+void MPPIController::cleanup()
 {
   optimizer_.shutdown();
   trajectory_visualizer_.on_cleanup();
@@ -41,25 +56,32 @@ void Controller::cleanup()
   RCLCPP_INFO(logger_, "Cleaned up MPPI Controller: %s", name_.c_str());
 }
 
-void Controller::activate()
+void MPPIController::activate()
 {
   trajectory_visualizer_.on_activate();
   parameters_handler_->start();
   RCLCPP_INFO(logger_, "Activated MPPI Controller: %s", name_.c_str());
 }
 
-void Controller::deactivate()
+void MPPIController::deactivate()
 {
   trajectory_visualizer_.on_deactivate();
   RCLCPP_INFO(logger_, "Deactivated MPPI Controller: %s", name_.c_str());
 }
 
-geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
+void MPPIController::reset()
+{
+  optimizer_.reset();
+}
+
+geometry_msgs::msg::TwistStamped MPPIController::computeVelocityCommands(
   const geometry_msgs::msg::PoseStamped & robot_pose,
   const geometry_msgs::msg::Twist & robot_speed,
   nav2_core::GoalChecker * goal_checker)
 {
+#ifdef BENCHMARK_TESTING
   auto start = std::chrono::system_clock::now();
+#endif
 
   std::lock_guard<std::mutex> lock(*parameters_handler_->getLock());
   nav_msgs::msg::Path transformed_plan = path_handler_.transformPath(robot_pose);
@@ -67,9 +89,11 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   geometry_msgs::msg::TwistStamped cmd =
     optimizer_.evalControl(robot_pose, robot_speed, transformed_plan, goal_checker);
 
+#ifdef BENCHMARK_TESTING
   auto end = std::chrono::system_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   RCLCPP_INFO(logger_, "Control loop execution time: %ld [ms]", duration);
+#endif
 
   if (visualize_) {
     visualize(std::move(transformed_plan));
@@ -78,19 +102,19 @@ geometry_msgs::msg::TwistStamped Controller::computeVelocityCommands(
   return cmd;
 }
 
-void Controller::visualize(nav_msgs::msg::Path transformed_plan)
+void MPPIController::visualize(nav_msgs::msg::Path transformed_plan)
 {
   trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories());
   trajectory_visualizer_.add(optimizer_.getOptimizedTrajectory());
   trajectory_visualizer_.visualize(std::move(transformed_plan));
 }
 
-void Controller::setPlan(const nav_msgs::msg::Path & path)
+void MPPIController::setPlan(const nav_msgs::msg::Path & path)
 {
   path_handler_.setPath(path);
 }
 
-void Controller::setSpeedLimit(const double & speed_limit, const bool & percentage)
+void MPPIController::setSpeedLimit(const double & speed_limit, const bool & percentage)
 {
   optimizer_.setSpeedLimit(speed_limit, percentage);
 }
@@ -98,4 +122,4 @@ void Controller::setSpeedLimit(const double & speed_limit, const bool & percenta
 }  // namespace mppi
 
 #include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(mppi::Controller, nav2_core::Controller)
+PLUGINLIB_EXPORT_CLASS(mppi::MPPIController, nav2_core::Controller)

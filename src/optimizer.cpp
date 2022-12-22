@@ -1,4 +1,17 @@
-// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
+// Copyright (c) 2022 Samsung Research America, @artofnothingness Alexey Budyakov
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "mppic/optimizer.hpp"
 
 #include <limits>
@@ -10,7 +23,7 @@
 #include <xtensor/xrandom.hpp>
 #include <xtensor/xnoalias.hpp>
 
-#include "nav2_core/exceptions.hpp"
+#include "nav2_core/controller_exceptions.hpp"
 #include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
 
 namespace mppi
@@ -53,18 +66,19 @@ void Optimizer::getParams()
   auto & s = settings_;
   auto getParam = parameters_handler_->getParamGetter(name_);
   auto getParentParam = parameters_handler_->getParamGetter("");
-  getParam(s.model_dt, "model_dt", 0.1f);
-  getParam(s.time_steps, "time_steps", 15);
-  getParam(s.batch_size, "batch_size", 400);
+  getParam(s.model_dt, "model_dt", 0.05f);
+  getParam(s.time_steps, "time_steps", 56);
+  getParam(s.batch_size, "batch_size", 1000);
   getParam(s.iteration_count, "iteration_count", 1);
-  getParam(s.temperature, "temperature", 0.25f);
+  getParam(s.temperature, "temperature", 0.3f);
+  getParam(s.gamma, "gamma", 0.015f);
   getParam(s.base_constraints.vx_max, "vx_max", 0.5);
   getParam(s.base_constraints.vx_min, "vx_min", -0.35);
   getParam(s.base_constraints.vy, "vy_max", 0.5);
-  getParam(s.base_constraints.wz, "wz_max", 1.3);
+  getParam(s.base_constraints.wz, "wz_max", 1.9);
   getParam(s.sampling_std.vx, "vx_std", 0.2);
   getParam(s.sampling_std.vy, "vy_std", 0.2);
-  getParam(s.sampling_std.wz, "wz_std", 1.0);
+  getParam(s.sampling_std.wz, "wz_std", 0.4);
   getParam(s.retry_attempt_limit, "retry_attempt_limit", 1);
 
   getParam(motion_model_name, "motion_model", std::string("DiffDrive"));
@@ -83,14 +97,14 @@ void Optimizer::setOffset(double controller_frequency)
   const double controller_period = 1.0 / controller_frequency;
   constexpr double eps = 1e-6;
 
-  if (controller_period < settings_.model_dt) {
+  if ((controller_period + eps) < settings_.model_dt) {
     RCLCPP_WARN(
       logger_,
       "Controller period is less then model dt, consider setting it equal");
   } else if (abs(controller_period - settings_.model_dt) < eps) {
     RCLCPP_INFO(
       logger_,
-      "Controller period is equal to model dt. Control seuqence "
+      "Controller period is equal to model dt. Control sequence "
       "shifting is ON");
     settings_.shift_control_sequence = true;
   } else {
@@ -103,6 +117,8 @@ void Optimizer::reset()
 {
   state_.reset(settings_.batch_size, settings_.time_steps);
   control_sequence_.reset(settings_.time_steps);
+  control_history_[0] = {0.0, 0.0, 0.0};
+  control_history_[1] = {0.0, 0.0, 0.0};
 
   costs_ = xt::zeros<float>({settings_.batch_size});
   generated_trajectories_.reset(settings_.batch_size, settings_.time_steps);
@@ -122,6 +138,7 @@ geometry_msgs::msg::TwistStamped Optimizer::evalControl(
     optimize();
   } while (fallback(critics_data_.fail_flag));
 
+  utils::savitskyGolayFilter(control_sequence_, control_history_, settings_);
   auto control = getControlFromSequenceAsTwist(plan.header.stamp);
 
   if (settings_.shift_control_sequence) {
@@ -151,7 +168,7 @@ bool Optimizer::fallback(bool fail)
 
   reset();
 
-  if (counter++ > settings_.retry_attempt_limit) {
+  if (++counter > settings_.retry_attempt_limit) {
     counter = 0;
     throw std::runtime_error("Optimizer fail to compute path");
   }
@@ -171,6 +188,9 @@ void Optimizer::prepare(
 
   critics_data_.fail_flag = false;
   critics_data_.goal_checker = goal_checker;
+  critics_data_.motion_model = motion_model_;
+  critics_data_.furthest_reached_path_point.reset();
+  critics_data_.path_pts_valid.reset();
 }
 
 void Optimizer::shiftControlSequence()
@@ -198,25 +218,24 @@ void Optimizer::generateNoisedTrajectories()
 {
   noise_generator_.setNoisedControls(state_, control_sequence_);
   noise_generator_.generateNextNoises();
-  applyControlConstraints();
   updateStateVelocities(state_);
   integrateStateVelocities(generated_trajectories_, state_);
 }
 
 bool Optimizer::isHolonomic() const {return motion_model_->isHolonomic();}
 
-void Optimizer::applyControlConstraints()
+void Optimizer::applyControlSequenceConstraints()
 {
   auto & s = settings_;
 
   if (isHolonomic()) {
-    state_.cvy = xt::clip(state_.cvy, -s.constraints.vy, s.constraints.vy);
+    control_sequence_.vy = xt::clip(control_sequence_.vy, -s.constraints.vy, s.constraints.vy);
   }
 
-  state_.cvx = xt::clip(state_.cvx, s.constraints.vx_min, s.constraints.vx_max);
-  state_.cwz = xt::clip(state_.cwz, -s.constraints.wz, s.constraints.wz);
+  control_sequence_.vx = xt::clip(control_sequence_.vx, s.constraints.vx_min, s.constraints.vx_max);
+  control_sequence_.wz = xt::clip(control_sequence_.wz, -s.constraints.wz, s.constraints.wz);
 
-  motion_model_->applyConstraints(state_);
+  motion_model_->applyConstraints(control_sequence_);
 }
 
 void Optimizer::updateStateVelocities(
@@ -229,11 +248,11 @@ void Optimizer::updateStateVelocities(
 void Optimizer::updateInitialStateVelocities(
   models::State & state) const
 {
-  xt::noalias(xt::view(state.vx, xt::all(), 0)) = state_.speed.linear.x;
-  xt::noalias(xt::view(state.wz, xt::all(), 0)) = state_.speed.angular.z;
+  xt::noalias(xt::view(state.vx, xt::all(), 0)) = state.speed.linear.x;
+  xt::noalias(xt::view(state.wz, xt::all(), 0)) = state.speed.angular.z;
 
   if (isHolonomic()) {
-    xt::noalias(xt::view(state.vy, xt::all(), 0)) = state_.speed.linear.y;
+    xt::noalias(xt::view(state.vy, xt::all(), 0)) = state.speed.linear.y;
   }
 }
 
@@ -245,13 +264,13 @@ void Optimizer::propagateStateVelocitiesFromInitials(
 
 void Optimizer::integrateStateVelocities(
   xt::xtensor<float, 2> & trajectory,
-  const xt::xtensor<float, 2> & state) const
+  const xt::xtensor<float, 2> & sequence) const
 {
   double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
 
-  const auto vx = xt::view(state, xt::all(), 0);
-  const auto vy = xt::view(state, xt::all(), 2);
-  const auto wz = xt::view(state, xt::all(), 1);
+  const auto vx = xt::view(sequence, xt::all(), 0);
+  const auto vy = xt::view(sequence, xt::all(), 2);
+  const auto wz = xt::view(sequence, xt::all(), 1);
 
   auto traj_x = xt::view(trajectory, xt::all(), 0);
   auto traj_y = xt::view(trajectory, xt::all(), 1);
@@ -286,7 +305,7 @@ void Optimizer::integrateStateVelocities(
   models::Trajectories & trajectories,
   const models::State & state) const
 {
-  const double initial_yaw = tf2::getYaw(state_.pose.pose.orientation);
+  const double initial_yaw = tf2::getYaw(state.pose.pose.orientation);
 
   xt::noalias(trajectories.yaws) =
     utils::normalize_angles(xt::cumsum(state.wz * settings_.model_dt, 1) + initial_yaw);
@@ -308,31 +327,49 @@ void Optimizer::integrateStateVelocities(
     dy = dy + state.vy * yaw_cos;
   }
 
-  xt::noalias(trajectories.x) = state_.pose.pose.position.x +
+  xt::noalias(trajectories.x) = state.pose.pose.position.x +
     xt::cumsum(dx * settings_.model_dt, 1);
-  xt::noalias(trajectories.y) = state_.pose.pose.position.y +
+  xt::noalias(trajectories.y) = state.pose.pose.position.y +
     xt::cumsum(dy * settings_.model_dt, 1);
 }
 
 xt::xtensor<float, 2> Optimizer::getOptimizedTrajectory()
 {
-  auto && state =
+  auto && sequence =
     xt::xtensor<float, 2>::from_shape({settings_.time_steps, isHolonomic() ? 3u : 2u});
   auto && trajectories = xt::xtensor<float, 2>::from_shape({settings_.time_steps, 3});
 
-  xt::noalias(xt::view(state, xt::all(), 0)) = control_sequence_.vx;
-  xt::noalias(xt::view(state, xt::all(), 1)) = control_sequence_.wz;
+  xt::noalias(xt::view(sequence, xt::all(), 0)) = control_sequence_.vx;
+  xt::noalias(xt::view(sequence, xt::all(), 1)) = control_sequence_.wz;
 
   if (isHolonomic()) {
-    xt::noalias(xt::view(state, xt::all(), 2)) = control_sequence_.vy;
+    xt::noalias(xt::view(sequence, xt::all(), 2)) = control_sequence_.vy;
   }
 
-  integrateStateVelocities(trajectories, state);
+  integrateStateVelocities(trajectories, sequence);
   return std::move(trajectories);
 }
 
 void Optimizer::updateControlSequence()
 {
+  auto & s = settings_;
+  auto bounded_noises_vx = state_.cvx - control_sequence_.vx;
+  auto bounded_noises_wz = state_.cwz - control_sequence_.wz;
+  xt::noalias(costs_) +=
+    s.gamma / std::pow(s.sampling_std.vx, 2) * xt::sum(
+    xt::view(control_sequence_.vx, xt::newaxis(), xt::all()) * bounded_noises_vx, 1, immediate);
+  xt::noalias(costs_) +=
+    s.gamma / std::pow(s.sampling_std.wz, 2) * xt::sum(
+    xt::view(control_sequence_.wz, xt::newaxis(), xt::all()) * bounded_noises_wz, 1, immediate);
+
+  if (isHolonomic()) {
+    auto bounded_noises_vy = state_.cvy - control_sequence_.vy;
+    xt::noalias(costs_) +=
+      s.gamma / std::pow(s.sampling_std.vy, 2) * xt::sum(
+      xt::view(control_sequence_.vy, xt::newaxis(), xt::all()) * bounded_noises_vy,
+      1, immediate);
+  }
+
   auto && costs_normalized = costs_ - xt::amin(costs_, immediate);
   auto && exponents = xt::eval(xt::exp(-1 / settings_.temperature * costs_normalized));
   auto && softmaxes = xt::eval(exponents / xt::sum(exponents, immediate));
@@ -341,6 +378,8 @@ void Optimizer::updateControlSequence()
   xt::noalias(control_sequence_.vx) = xt::sum(state_.cvx * softmaxes_extened, 0, immediate);
   xt::noalias(control_sequence_.vy) = xt::sum(state_.cvy * softmaxes_extened, 0, immediate);
   xt::noalias(control_sequence_.wz) = xt::sum(state_.cwz * softmaxes_extened, 0, immediate);
+
+  applyControlSequenceConstraints();
 }
 
 geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
@@ -362,17 +401,16 @@ geometry_msgs::msg::TwistStamped Optimizer::getControlFromSequenceAsTwist(
 void Optimizer::setMotionModel(const std::string & model)
 {
   if (model == "DiffDrive") {
-    motion_model_ = std::make_unique<DiffDriveMotionModel>();
+    motion_model_ = std::make_shared<DiffDriveMotionModel>();
   } else if (model == "Omni") {
-    motion_model_ = std::make_unique<OmniMotionModel>();
+    motion_model_ = std::make_shared<OmniMotionModel>();
   } else if (model == "Ackermann") {
-    motion_model_ = std::make_unique<AckermannMotionModel>(parameters_handler_);
+    motion_model_ = std::make_shared<AckermannMotionModel>(parameters_handler_);
   } else {
     throw std::runtime_error(
             std::string(
-              "Model %s is not valid! Valid options are DiffDrive, Omni, "
-              "or Ackermann",
-              model.c_str()));
+              "Model " + model + " is not valid! Valid options are DiffDrive, Omni, "
+              "or Ackermann"));
   }
 }
 

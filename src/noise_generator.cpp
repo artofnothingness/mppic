@@ -1,4 +1,17 @@
-// Copyright 2022 @artofnothingness Alexey Budyakov, Samsung Research
+// Copyright (c) 2022 Samsung Research America, @artofnothingness Alexey Budyakov
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "mppic/tools/noise_generator.hpp"
 
 #include <memory>
@@ -23,7 +36,9 @@ void NoiseGenerator::shutdown()
   active_ = false;
   ready_ = true;
   noise_cond_.notify_all();
-  noise_thread_.join();
+  if (noise_thread_.joinable()) {
+    noise_thread_.join();
+  }
 }
 
 void NoiseGenerator::generateNextNoises()

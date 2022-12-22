@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MPPIC__CRITICS__GOAL_CRITIC_HPP_
-#define MPPIC__CRITICS__GOAL_CRITIC_HPP_
+#ifndef MPPIC__CRITICS__CONSTRAINT_CRITIC_HPP_
+#define MPPIC__CRITICS__CONSTRAINT_CRITIC_HPP_
 
 #include "mppic/critic_function.hpp"
 #include "mppic/models/state.hpp"
@@ -24,9 +24,9 @@ namespace mppi::critics
 
 /**
  * @class mppi::critics::ConstraintCritic
- * @brief Critic objective function for driving towards goal
+ * @brief Critic objective function for enforcing feasible constraints
  */
-class GoalCritic : public CriticFunction
+class ConstraintCritic : public CriticFunction
 {
 public:
   /**
@@ -41,12 +41,16 @@ public:
    */
   void score(CriticData & data) override;
 
+  float getMaxVelConstraint() {return max_vel_;}
+  float getMinVelConstraint() {return min_vel_;}
+
 protected:
   unsigned int power_{0};
   float weight_{0};
-  float threshold_to_consider_{0};
+  float min_vel_;
+  float max_vel_;
 };
 
 }  // namespace mppi::critics
 
-#endif  // MPPIC__CRITICS__GOAL_CRITIC_HPP_
+#endif  // MPPIC__CRITICS__CONSTRAINT_CRITIC_HPP_

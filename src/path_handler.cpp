@@ -1,6 +1,18 @@
-// Copyright 2022 FastSense, Samsung Research
-#include "mppic/tools/path_handler.hpp"
+// Copyright (c) 2022 Samsung Research America, @artofnothingness Alexey Budyakov
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
+#include "mppic/tools/path_handler.hpp"
 #include "mppic/tools/utils.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 
@@ -45,13 +57,14 @@ PathRange PathHandler::getGlobalPlanConsideringBounds(
 
   // Find the furthest relevent point on the path to consider within costmap
   // bounds
-  auto max_costmap_dist = getMaxCostmapDist();
-
+  const auto * costmap = costmap_->getCostmap();
+  unsigned int mx, my;
   auto last_point =
     std::find_if(
     closest_point, end, [&](const geometry_msgs::msg::PoseStamped & global_plan_pose) {
       auto distance = euclidean_distance(global_pose, global_plan_pose);
-      return distance > max_costmap_dist || distance >= prune_distance_;
+      return distance >= prune_distance_ || !costmap->worldToMap(
+        global_plan_pose.pose.position.x, global_plan_pose.pose.position.y, mx, my);
     });
 
   return {closest_point, last_point};
