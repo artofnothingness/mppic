@@ -2,6 +2,8 @@
 
 ![](media/demo.gif)
 
+:rotating_light: :rotating_light: While this project repository is absolutely critical and led to MPPI's inclusion into the Nav2 framework by the amazing work and efforts by @artofnothingness, the version in Nav2's repository fixes a number of bugs major and minor and will continue to receive community improvements and be maintained alongside the rest of the navigation stack into the future. Please see that version moving forward! This repository continues to be an important historical project to reference decisions made and Git histories of changes during development. :rotating_light: :rotating_light:
+
 ## Overview
 
 This is a predictive controller (local trajectory planner) that implements the [Model Predictive Path Integral (MPPI)](https://ieeexplore.ieee.org/document/7487277) algorithm to track a path with adaptive collision avoidance. It contains plugin-based critic functions to impact the behavior of the algorithm. It was created by [Aleksei Budyakov](https://www.linkedin.com/in/aleksei-budyakov-334889224/) and adapted & developed for Nav2 by [Steve Macenski](https://www.linkedin.com/in/steve-macenski-41a985101/).
